@@ -1,3 +1,8 @@
+import {
+  deriveCaseSupportStatus,
+  formatSupportScore,
+  getAverageSupportScore,
+} from "@/lib/caseMetrics";
 import type { CaseFile, SupportStatus } from "@/lib/types";
 
 type CaseSwitcherProps = {
@@ -48,8 +53,7 @@ export function CaseSwitcher({
       <div className="mt-6 grid gap-3 xl:grid-cols-3">
         {cases.map((currentCase) => {
           const isSelected = currentCase.id === selectedCaseId;
-          const caseStatus = getCaseStatus(currentCase);
-          const averageScore = getAverageSupportScore(currentCase);
+          const caseStatus = deriveCaseSupportStatus(currentCase);
 
           return (
             <button
@@ -79,7 +83,7 @@ export function CaseSwitcher({
                 {currentCase.topicLabel.explanation}
               </p>
               <div className="mt-4 flex items-center justify-between gap-3 text-sm text-[var(--color-muted)]">
-                <span>Support {averageScore}%</span>
+                <span>Support {formatSupportScore(getAverageSupportScore(currentCase))}</span>
                 <span>{currentCase.evidenceItems.length} evidence items</span>
               </div>
             </button>
@@ -88,37 +92,4 @@ export function CaseSwitcher({
       </div>
     </section>
   );
-}
-
-function getCaseStatus(currentCase: CaseFile): SupportStatus {
-  if (currentCase.claims.some((claim) => claim.status === "contradicted")) {
-    return "contradicted";
-  }
-
-  if (currentCase.claims.some((claim) => claim.status === "unsupported")) {
-    return "unsupported";
-  }
-
-  if (
-    currentCase.claims.some((claim) =>
-      ["weakly_supported", "insufficient_evidence"].includes(claim.status),
-    )
-  ) {
-    return "weakly_supported";
-  }
-
-  return "supported";
-}
-
-function getAverageSupportScore(currentCase: CaseFile): number {
-  if (currentCase.supportScores.length === 0) {
-    return 0;
-  }
-
-  const total = currentCase.supportScores.reduce(
-    (sum, score) => sum + score.value,
-    0,
-  );
-
-  return Math.round((total / currentCase.supportScores.length) * 100);
 }

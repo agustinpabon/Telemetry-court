@@ -16,7 +16,12 @@ import { InterpretationRisks } from "@/components/InterpretationRisks";
 import { ReviewActions } from "@/components/ReviewActions";
 import { ScorePanel } from "@/components/ScorePanel";
 import { sampleCases } from "@/data/sampleCases";
-import type { AnalystDecision, EvidencePolarity, EvidenceRelation } from "@/lib/types";
+import {
+  getClaimsForCluster,
+  getEvidenceForClaim,
+  getPrimaryEvidencePolarity,
+} from "@/lib/caseMetrics";
+import type { AnalystDecision, EvidenceRelation } from "@/lib/types";
 
 export default function Home() {
   const [selectedCaseId, setSelectedCaseId] = useState<string>(
@@ -53,7 +58,7 @@ export default function Home() {
     );
   }
 
-  const allClaims = selectedCase.claims;
+  const allClaims = getClaimsForCluster(selectedCase, selectedCase.cluster.id);
   const selectedClaim = allClaims.find((claim) => claim.id === selectedClaimId);
   const effectiveSelectedClaim =
     selectedClaim && allClaims.some((claim) => claim.id === selectedClaim.id)
@@ -61,22 +66,22 @@ export default function Home() {
       : undefined;
   const selectedClaimEvidenceIds = new Set(
     effectiveSelectedClaim
-      ? selectedCase.supportScores.find(
-          (score) => score.claimId === effectiveSelectedClaim.id,
-        )?.evidenceIds ?? []
+      ? getEvidenceForClaim(selectedCase, effectiveSelectedClaim.id).map(
+          (evidence) => evidence.id,
+        )
       : [],
   );
 
   const evidenceCounts: Record<EvidenceFilterValue, number> = {
     all: selectedCase.evidenceItems.length,
     supports: selectedCase.evidenceItems.filter(
-      (item) => getEvidencePolarity(relationsForEvidence(item.id)) === "supports",
+      (item) => getPrimaryEvidencePolarity(relationsForEvidence(item.id)) === "supports",
     ).length,
     neutral: selectedCase.evidenceItems.filter(
-      (item) => getEvidencePolarity(relationsForEvidence(item.id)) === "neutral",
+      (item) => getPrimaryEvidencePolarity(relationsForEvidence(item.id)) === "neutral",
     ).length,
     contradicts: selectedCase.evidenceItems.filter(
-      (item) => getEvidencePolarity(relationsForEvidence(item.id)) === "contradicts",
+      (item) => getPrimaryEvidencePolarity(relationsForEvidence(item.id)) === "contradicts",
     ).length,
   };
 
@@ -84,7 +89,9 @@ export default function Home() {
     selectedFilter === "all"
       ? selectedCase.evidenceItems
       : selectedCase.evidenceItems.filter(
-          (item) => getEvidencePolarity(relationsForEvidence(item.id)) === selectedFilter,
+          (item) =>
+            getPrimaryEvidencePolarity(relationsForEvidence(item.id)) ===
+            selectedFilter,
         );
 
   const filteredEvidence = effectiveSelectedClaim
@@ -172,7 +179,7 @@ export default function Home() {
               reviewDecision={currentReviewRecord?.decision}
               reviewTimestamp={currentReviewRecord?.timestamp}
               analystVerdict={selectedCase.analystVerdict}
-              supportScores={selectedCase.supportScores}
+              caseFile={selectedCase}
             />
             <InterpretationRisks claims={selectedCase.claims} />
             <ReviewActions
@@ -183,6 +190,7 @@ export default function Home() {
         </section>
 
         <ClaimLedger
+          caseFile={selectedCase}
           claims={allClaims}
           supportScores={selectedCase.supportScores}
           selectedClaimId={effectiveSelectedClaim?.id}
@@ -258,16 +266,4 @@ export default function Home() {
       </div>
     </main>
   );
-}
-
-function getEvidencePolarity(relations: EvidenceRelation[]): EvidencePolarity {
-  if (relations.some((relation) => relation.polarity === "contradicts")) {
-    return "contradicts";
-  }
-
-  if (relations.some((relation) => relation.polarity === "supports")) {
-    return "supports";
-  }
-
-  return "neutral";
 }

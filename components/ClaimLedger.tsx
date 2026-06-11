@@ -1,6 +1,8 @@
-import type { Claim, SupportScore, SupportStatus } from "@/lib/types";
+import { formatSupportScore, getClaimSupportScore } from "@/lib/caseMetrics";
+import type { CaseFile, Claim, SupportScore, SupportStatus } from "@/lib/types";
 
 type ClaimLedgerProps = {
+  caseFile: CaseFile;
   claims: Claim[];
   supportScores: SupportScore[];
   selectedClaimId?: string;
@@ -35,6 +37,7 @@ const statusMeta: Record<
 };
 
 export function ClaimLedger({
+  caseFile,
   claims,
   supportScores,
   selectedClaimId,
@@ -137,7 +140,8 @@ export function ClaimLedger({
                       )}
                     </div>
                     <p className="mt-3 text-xs text-[var(--color-muted)]">
-                      Support score {Math.round(claim.supportScore * 100)}%
+                      Support score{" "}
+                      {formatSupportScore(getClaimSupportScore(caseFile, claim.id))}
                     </p>
                   </div>
                 </div>

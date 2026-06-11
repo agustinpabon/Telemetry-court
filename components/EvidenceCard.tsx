@@ -1,3 +1,4 @@
+import { getPrimaryEvidencePolarity } from "@/lib/caseMetrics";
 import type {
   EvidenceItem,
   EvidencePolarity,
@@ -59,7 +60,7 @@ export function EvidenceCard({
   relations,
   highlighted = false,
 }: EvidenceCardProps) {
-  const polarity = getPrimaryPolarity(relations);
+  const polarity = getPrimaryEvidencePolarity(relations);
   const tone = polarityTone[polarity];
   const strongestRelation = [...relations].sort(
     (left, right) => strengthRank[right.strength] - strengthRank[left.strength],
@@ -147,18 +148,6 @@ export function EvidenceCard({
       </div>
     </article>
   );
-}
-
-function getPrimaryPolarity(relations: EvidenceRelation[]): EvidencePolarity {
-  if (relations.some((relation) => relation.polarity === "contradicts")) {
-    return "contradicts";
-  }
-
-  if (relations.some((relation) => relation.polarity === "supports")) {
-    return "supports";
-  }
-
-  return "neutral";
 }
 
 function MetaChip({ label }: { label: string }) {

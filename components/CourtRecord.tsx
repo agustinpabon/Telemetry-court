@@ -1,7 +1,8 @@
+import { formatSupportScore, getAverageSupportScore } from "@/lib/caseMetrics";
 import type {
   AnalystDecision,
   AnalystVerdict,
-  SupportScore,
+  CaseFile,
   TopicLabel,
 } from "@/lib/types";
 
@@ -10,7 +11,7 @@ type CourtRecordProps = {
   reviewDecision?: AnalystDecision;
   reviewTimestamp?: string;
   analystVerdict?: AnalystVerdict;
-  supportScores: SupportScore[];
+  caseFile: CaseFile;
 };
 
 const decisionLabel: Record<AnalystDecision, string> = {
@@ -25,11 +26,10 @@ export function CourtRecord({
   reviewDecision,
   reviewTimestamp,
   analystVerdict,
-  supportScores,
+  caseFile,
 }: CourtRecordProps) {
   const displayedDecision = reviewDecision ?? analystVerdict?.decision;
   const displayedTimestamp = reviewTimestamp ?? analystVerdict?.reviewedAt;
-  const averageScore = getAverageSupportScore(supportScores);
 
   return (
     <section className="rounded-[30px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[0_24px_60px_rgba(15,23,42,0.07)] sm:p-7">
@@ -48,7 +48,10 @@ export function CourtRecord({
       </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        <RecordField label="Average support" value={`${averageScore}%`} />
+        <RecordField
+          label="Average support"
+          value={formatSupportScore(getAverageSupportScore(caseFile))}
+        />
         <RecordField
           label="Review decision"
           value={displayedDecision ? decisionLabel[displayedDecision] : undefined}
@@ -65,16 +68,6 @@ export function CourtRecord({
       </div>
     </section>
   );
-}
-
-function getAverageSupportScore(supportScores: SupportScore[]): number {
-  if (supportScores.length === 0) {
-    return 0;
-  }
-
-  const total = supportScores.reduce((sum, score) => sum + score.value, 0);
-
-  return Math.round((total / supportScores.length) * 100);
 }
 
 function RecordField({

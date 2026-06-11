@@ -1,3 +1,9 @@
+import {
+  deriveCaseSupportStatus,
+  formatSupportScore,
+  getAverageSupportScore,
+  getClaimStatusCounts,
+} from "@/lib/caseMetrics";
 import type { CaseFile, SupportStatus } from "@/lib/types";
 
 type ScorePanelProps = {
@@ -54,9 +60,9 @@ const statusStates: SupportStatus[] = [
 ];
 
 export function ScorePanel({ caseFile }: ScorePanelProps) {
-  const caseStatus = getCaseStatus(caseFile);
+  const caseStatus = deriveCaseSupportStatus(caseFile);
   const currentStatus = statusMeta[caseStatus];
-  const averageScore = getAverageSupportScore(caseFile);
+  const claimStatusCounts = getClaimStatusCounts(caseFile);
 
   return (
     <section className="rounded-[30px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[0_24px_60px_rgba(15,23,42,0.07)] sm:p-7">
@@ -96,19 +102,22 @@ export function ScorePanel({ caseFile }: ScorePanelProps) {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <MetricTile label="Average support" value={`${averageScore}%`} />
+          <MetricTile
+            label="Average support"
+            value={formatSupportScore(getAverageSupportScore(caseFile))}
+          />
           <MetricTile label="Evidence items" value={`${caseFile.evidenceItems.length}`} />
           <MetricTile
             label="Supported claims"
-            value={`${countClaims(caseFile, "supported")}`}
+            value={`${claimStatusCounts.supported}`}
           />
           <MetricTile
             label="Weak claims"
-            value={`${countClaims(caseFile, "weakly_supported")}`}
+            value={`${claimStatusCounts.weakly_supported}`}
           />
           <MetricTile
             label="Contradicted claims"
-            value={`${countClaims(caseFile, "contradicted")}`}
+            value={`${claimStatusCounts.contradicted}`}
           />
           <MetricTile label="Record note" value={currentStatus.note} longValue />
         </div>
@@ -125,43 +134,6 @@ export function ScorePanel({ caseFile }: ScorePanelProps) {
       </div>
     </section>
   );
-}
-
-function getCaseStatus(caseFile: CaseFile): SupportStatus {
-  if (caseFile.claims.some((claim) => claim.status === "contradicted")) {
-    return "contradicted";
-  }
-
-  if (caseFile.claims.some((claim) => claim.status === "unsupported")) {
-    return "unsupported";
-  }
-
-  if (caseFile.claims.some((claim) => claim.status === "insufficient_evidence")) {
-    return "insufficient_evidence";
-  }
-
-  if (caseFile.claims.some((claim) => claim.status === "weakly_supported")) {
-    return "weakly_supported";
-  }
-
-  return "supported";
-}
-
-function getAverageSupportScore(caseFile: CaseFile): number {
-  if (caseFile.supportScores.length === 0) {
-    return 0;
-  }
-
-  const total = caseFile.supportScores.reduce(
-    (sum, score) => sum + score.value,
-    0,
-  );
-
-  return Math.round((total / caseFile.supportScores.length) * 100);
-}
-
-function countClaims(caseFile: CaseFile, status: SupportStatus): number {
-  return caseFile.claims.filter((claim) => claim.status === status).length;
 }
 
 function MetricTile({
