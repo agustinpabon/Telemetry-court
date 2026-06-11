@@ -20,17 +20,17 @@ const polarityTone: Record<
   supports: {
     label: "Supports",
     className:
-      "border-[color:rgba(47,107,84,0.16)] bg-[var(--color-supported-soft)] text-[var(--color-supported)]",
+      "border-[var(--tc-border)] bg-[var(--tc-supported-surface)] text-[var(--tc-supported)]",
   },
   neutral: {
     label: "Neutral",
     className:
-      "border-[color:rgba(138,104,53,0.16)] bg-[var(--color-uncertain-soft)] text-[var(--color-uncertain)]",
+      "border-[var(--tc-border)] bg-[var(--tc-insufficient-surface)] text-[var(--tc-insufficient)]",
   },
   contradicts: {
     label: "Contradicts",
     className:
-      "border-[color:rgba(134,82,91,0.16)] bg-[var(--color-unsupported-soft)] text-[var(--color-unsupported)]",
+      "border-[var(--tc-border)] bg-[var(--tc-contradicted-surface)] text-[var(--tc-contradicted)]",
   },
 };
 
@@ -69,20 +69,20 @@ export function EvidenceCard({
 
   return (
     <article
-      className={`rounded-[24px] border bg-white/80 p-5 ${
+      className={`rounded-[var(--tc-radius-lg)] border bg-[var(--tc-surface)] p-5 ${
         highlighted
-          ? "border-[var(--color-border-strong)] shadow-[0_12px_30px_rgba(15,23,42,0.07)]"
-          : "border-[var(--color-border)]"
+          ? "tc-panel-selected"
+          : "border-[var(--tc-border)]"
       }`}
     >
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-[0.18em] text-[var(--color-muted)]">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-[0.18em] text-[var(--tc-muted)]">
               <span>{evidence.id}</span>
               <span>{sourceTypeLabel[evidence.sourceType]}</span>
             </div>
-            <h3 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[var(--color-ink)]">
+            <h3 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[var(--tc-ink)]">
               {evidence.title}
             </h3>
           </div>
@@ -104,29 +104,29 @@ export function EvidenceCard({
       </div>
 
       {highlighted ? (
-        <div className="mt-4 rounded-full border border-[var(--color-border-strong)] bg-[var(--color-accent-soft)] px-3 py-1 text-xs font-medium text-[var(--color-accent-strong)]">
+        <div className="mt-4 rounded-full border border-[var(--tc-border)] bg-[var(--tc-focus-surface)] px-3 py-1 text-xs font-medium text-[var(--tc-focus)]">
           Linked to selected claim
         </div>
       ) : null}
 
-      <p className="mt-5 text-base leading-8 text-[var(--color-muted)]">{evidence.summary}</p>
+      <p className="mt-5 text-base leading-8 text-[var(--tc-muted)]">{evidence.summary}</p>
 
-      <div className="mt-5 rounded-[22px] border border-[var(--color-border)] bg-[var(--color-panel)]/68 px-4 py-4">
+      <div className="tc-panel-subtle mt-5 px-4 py-4">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
+          <p className="text-xs uppercase tracking-[0.18em] text-[var(--tc-muted)]">
             Relation note
           </p>
-          <span className="text-xs font-medium text-[var(--color-muted)]">
+          <span className="text-xs font-medium text-[var(--tc-muted)]">
             {relations.length} linked
           </span>
         </div>
-        <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
+        <p className="mt-2 text-sm leading-7 text-[var(--tc-muted)]">
           {strongestRelation?.explanation ?? "No claim relation is recorded for this item."}
         </p>
       </div>
 
-      <div className="mt-5 rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4">
-        <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
+      <div className="tc-panel-inset mt-5 px-4 py-4">
+        <p className="text-xs uppercase tracking-[0.18em] text-[var(--tc-muted)]">
           Linked validation claims
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
@@ -134,13 +134,13 @@ export function EvidenceCard({
             linkedClaimIds.map((claimId) => (
               <span
                 key={`${evidence.id}-${claimId}`}
-                className="rounded-full border border-[var(--color-border-strong)] bg-white/85 px-3 py-1.5 font-mono text-xs text-[var(--color-muted)]"
+                className="rounded-full border border-[var(--tc-border)] bg-[var(--tc-surface)] px-3 py-1.5 font-mono text-xs text-[var(--tc-muted)]"
               >
                 {claimId}
               </span>
             ))
           ) : (
-            <span className="rounded-full border border-dashed border-[var(--color-border-strong)] bg-white/85 px-3 py-1.5 text-xs text-[var(--color-muted)]">
+            <span className="rounded-full border border-dashed border-[var(--tc-border)] bg-[var(--tc-surface)] px-3 py-1.5 text-xs text-[var(--tc-muted)]">
               No linked claim
             </span>
           )}
@@ -152,7 +152,7 @@ export function EvidenceCard({
 
 function MetaChip({ label }: { label: string }) {
   return (
-    <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-panel)]/55 px-3 py-1.5 text-xs font-medium text-[var(--color-muted)]">
+    <span className="rounded-full border border-[var(--tc-border)] bg-[var(--tc-surface-muted)] px-3 py-1.5 text-xs font-medium text-[var(--tc-muted)]">
       {label}
     </span>
   );

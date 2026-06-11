@@ -19,6 +19,32 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-11: App Shell Surface Alignment
+
+- Agent/model: Codex
+- Prompt scope: Implement `style(app-shell): align app canvas and panel surfaces` as a styling-only pass using the existing `--tc-*` token foundation. Preserve behavior, avoid new dependencies, charts, product features, or broad redesign.
+- Files changed: `app/globals.css`, `app/layout.tsx`, `app/page.tsx`, `components/CaseSwitcher.tsx`, `components/ClaimPanel.tsx`, `components/ClaimLedger.tsx`, `components/ClusterPanel.tsx`, `components/CourtRecord.tsx`, `components/EvidenceCard.tsx`, `components/EvidenceFilters.tsx`, `components/InterpretationRisks.tsx`, `components/ReviewActions.tsx`, `components/ScorePanel.tsx`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added shared token-backed shell/surface classes for the off-white app canvas, major panels, inset panels, selected cards, hover states, and pills. Updated the app shell, case queue, generated interpretation, verdict rail, claim ledger, evidence workspace, evidence cards, review controls, risk panel, and cluster substrate to use warm muted Telemetry Court surfaces, restrained borders, quieter shadows, and direct `--tc-*` tokens. Corrected visual status mappings so contradicted and insufficient-evidence states use their distinct semantic tokens.
+- Decisions made: Kept the existing component structure and review behavior intact; reduced hero and generated-label visual dominance so evidence and review surfaces remain primary; retained compatibility `--color-*` aliases in `app/globals.css` while moving rendered components to `--tc-*` tokens.
+- Checks run: `npm test`; `npm run lint`; `npm run build`; attempted in-app Browser smoke check against local dev server but navigation to localhost/127.0.0.1 was blocked by the browser client with `ERR_BLOCKED_BY_CLIENT`; confirmed local HTTP render with `curl http://localhost:3000`.
+- Assumptions: This issue should align the shell and major surfaces only; detailed claim-row and evidence-card hierarchy can continue in their dedicated follow-up issues.
+- Risks/follow-ups: Some component-level duplication remains in status maps and card markup; a future cleanup could centralize shared status presentation after the focused styling issues land.
+- Next recommended step: Continue Milestone 1 with the dedicated claim-ledger/evidence-card hierarchy issues.
+- Suggested commit message: `style(app-shell): align app canvas and panel surfaces`
+
+## 2026-06-11: Global Telemetry Court Design Tokens
+
+- Agent/model: Codex
+- Prompt scope: Implement Issue #1, `style(tokens): add global Telemetry Court design tokens`, as a narrow tokenization and global-base-style pass without component redesign, behavior changes, new dependencies, or package changes.
+- Files changed: `app/globals.css` and `docs/CHANGELOG_AI.md`.
+- Summary: Added canonical `--tc-*` CSS variables for the documented warm ink, off-white canvas, muted surfaces, borders, semantic statuses, focus color, radius, spacing, and type scale. Mapped the existing `--color-*` aliases to the new token foundation so current app shell and card surfaces inherit the calmer palette. Replaced the decorative body gradient with a plain off-white canvas, added accessible `:focus-visible` defaults, and added reduced-motion handling.
+- Decisions made: Kept this as a global foundation pass rather than a component redesign; preserved current React layout and behavior; exposed distinct canonical tokens for supported, weakly supported, contradicted, unsupported, and insufficient-evidence states for follow-up component work.
+- Checks run: `npm test`; `npm run lint`; `npm run build`.
+- Assumptions: Issue #1 should update implementation tokens to match the existing documented design system, not change product/design documentation or restructure components.
+- Risks/follow-ups: Some existing component class maps still use older compatibility aliases and can adopt the distinct canonical status tokens in the later claim-ledger and evidence-card styling issues.
+- Next recommended step: Continue Milestone 1 with `style(app-shell): align app canvas and panel surfaces` while preserving the evidence-first hierarchy.
+- Suggested commit message: `style(tokens): add global Telemetry Court design tokens`
+
 ## 2026-06-11: UI And UX Design North Star Documentation
 
 - Agent/model: Codex

@@ -34,8 +34,8 @@ export function EvidenceFilters({
             onClick={() => onSelect(filter)}
             className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
               isActive
-                ? "border-[var(--color-border-strong)] bg-white text-[var(--color-ink)]"
-                : "border-[var(--color-border)] bg-[var(--color-panel)]/60 text-[var(--color-muted)] hover:bg-white/75"
+                ? "border-[var(--tc-border)] bg-[var(--tc-surface)] text-[var(--tc-ink)]"
+                : "border-[var(--tc-border)] bg-[var(--tc-surface-muted)] text-[var(--tc-muted)] hover:bg-[var(--tc-surface)]"
             }`}
           >
             {filterLabels[filter]} ({counts[filter]})
