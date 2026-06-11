@@ -95,6 +95,8 @@ npm run build
 
 Workflow docs:
 
+- [docs/ROADMAP.md](./docs/ROADMAP.md)
+- [docs/GITHUB_PLANNING.md](./docs/GITHUB_PLANNING.md)
 - [docs/DEVELOPMENT_WORKFLOW.md](./docs/DEVELOPMENT_WORKFLOW.md)
 - [docs/COMMIT_GUIDELINES.md](./docs/COMMIT_GUIDELINES.md)
 - [AGENTS.md](./AGENTS.md)
