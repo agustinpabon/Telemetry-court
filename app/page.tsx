@@ -19,9 +19,10 @@ import { sampleCases } from "@/data/sampleCases";
 import {
   getClaimsForCluster,
   getEvidenceForClaim,
+  getRelationsForEvidence,
   getPrimaryEvidencePolarity,
 } from "@/lib/caseMetrics";
-import type { AnalystDecision, EvidenceRelation } from "@/lib/types";
+import type { AnalystDecision } from "@/lib/types";
 
 export default function Home() {
   const [selectedCaseId, setSelectedCaseId] = useState<string>(
@@ -75,13 +76,19 @@ export default function Home() {
   const evidenceCounts: Record<EvidenceFilterValue, number> = {
     all: selectedCase.evidenceItems.length,
     supports: selectedCase.evidenceItems.filter(
-      (item) => getPrimaryEvidencePolarity(relationsForEvidence(item.id)) === "supports",
+      (item) =>
+        getPrimaryEvidencePolarity(getRelationsForEvidence(selectedCase, item.id)) ===
+        "supports",
     ).length,
     neutral: selectedCase.evidenceItems.filter(
-      (item) => getPrimaryEvidencePolarity(relationsForEvidence(item.id)) === "neutral",
+      (item) =>
+        getPrimaryEvidencePolarity(getRelationsForEvidence(selectedCase, item.id)) ===
+        "neutral",
     ).length,
     contradicts: selectedCase.evidenceItems.filter(
-      (item) => getPrimaryEvidencePolarity(relationsForEvidence(item.id)) === "contradicts",
+      (item) =>
+        getPrimaryEvidencePolarity(getRelationsForEvidence(selectedCase, item.id)) ===
+        "contradicts",
     ).length,
   };
 
@@ -90,7 +97,7 @@ export default function Home() {
       ? selectedCase.evidenceItems
       : selectedCase.evidenceItems.filter(
           (item) =>
-            getPrimaryEvidencePolarity(relationsForEvidence(item.id)) ===
+            getPrimaryEvidencePolarity(getRelationsForEvidence(selectedCase, item.id)) ===
             selectedFilter,
         );
 
@@ -99,13 +106,6 @@ export default function Home() {
     : polarityFilteredEvidence;
 
   const currentReviewRecord = decisionsByCase[selectedCase.id];
-
-  function relationsForEvidence(evidenceId: string): EvidenceRelation[] {
-    return selectedCase.evidenceRelations.filter(
-      (relation) => relation.evidenceId === evidenceId,
-    );
-  }
-
   function handleDecision(decision: AnalystDecision) {
     setDecisionsByCase((currentState) => ({
       ...currentState,
@@ -192,7 +192,6 @@ export default function Home() {
         <ClaimLedger
           caseFile={selectedCase}
           claims={allClaims}
-          supportScores={selectedCase.supportScores}
           selectedClaimId={effectiveSelectedClaim?.id}
           onSelectClaim={handleSelectClaim}
           onClearClaim={() => setSelectedClaimId(undefined)}
@@ -238,7 +237,7 @@ export default function Home() {
                   <EvidenceCard
                     key={item.id}
                     evidence={item}
-                    relations={relationsForEvidence(item.id)}
+                    relations={getRelationsForEvidence(selectedCase, item.id)}
                     highlighted={
                       effectiveSelectedClaim
                         ? selectedClaimEvidenceIds.has(item.id)

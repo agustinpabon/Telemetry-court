@@ -130,7 +130,6 @@ const sampleCasesData: CaseFile[] = [
         value: 0.91,
         status: "supported",
         rationale: "Strong direct support from synthetic session features.",
-        evidenceIds: ["evidence-001"],
       },
       {
         claimId: "claim-002",
@@ -138,7 +137,6 @@ const sampleCasesData: CaseFile[] = [
         status: "weakly_supported",
         rationale:
           "Moderate support from exemplars, with metadata that adds context but not decisive proof.",
-        evidenceIds: ["evidence-002", "evidence-003"],
       },
       {
         claimId: "claim-003",
@@ -146,7 +144,6 @@ const sampleCasesData: CaseFile[] = [
         status: "contradicted",
         rationale:
           "Strong contradictory evidence from one synthetic timing-origin outlier.",
-        evidenceIds: ["evidence-004"],
       },
     ],
     analystVerdict: {
@@ -270,7 +267,6 @@ const sampleCasesData: CaseFile[] = [
         status: "unsupported",
         rationale:
           "No synthetic evidence links support this claim; the missing evidence is the reason for the unsupported status.",
-        evidenceIds: [],
       },
       {
         claimId: "claim-102",
@@ -278,7 +274,6 @@ const sampleCasesData: CaseFile[] = [
         status: "contradicted",
         rationale:
           "Strong contradiction from setup-oriented exemplars and non-mutating feature shape.",
-        evidenceIds: ["evidence-101", "evidence-102"],
       },
       {
         claimId: "claim-103",
@@ -286,7 +281,6 @@ const sampleCasesData: CaseFile[] = [
         status: "insufficient_evidence",
         rationale:
           "Rollout metadata is useful context, but it does not support an intent claim.",
-        evidenceIds: ["evidence-103"],
       },
     ],
     analystVerdict: {
@@ -334,14 +328,6 @@ function assertCaseIntegrity(cases: CaseFile[]): CaseFile[] {
         throw new Error(
           `Case ${currentCase.id} score references missing claim ${score.claimId}.`,
         );
-      }
-
-      for (const evidenceId of score.evidenceIds) {
-        if (!evidenceIds.has(evidenceId)) {
-          throw new Error(
-            `Case ${currentCase.id} score references missing evidence ${evidenceId}.`,
-          );
-        }
       }
     }
   }

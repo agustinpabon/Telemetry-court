@@ -74,7 +74,6 @@ export type SupportScore = {
   value: number;
   status: SupportStatus;
   rationale: string;
-  evidenceIds: string[];
 };
 
 export type AnalystVerdict = {

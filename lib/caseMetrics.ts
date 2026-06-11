@@ -102,12 +102,34 @@ export function getClaimsForCluster(caseFile: CaseFile, clusterId: string): Clai
   return caseFile.claims.filter((claim) => claim.clusterId === clusterId);
 }
 
-export function getEvidenceForClaim(caseFile: CaseFile, claimId: string): EvidenceItem[] {
-  const relatedEvidenceIds = new Set(
-    caseFile.evidenceRelations
-      .filter((relation) => relation.claimId === claimId)
-      .map((relation) => relation.evidenceId),
+export function getEvidenceRelationsForClaim(
+  caseFile: CaseFile,
+  claimId: string,
+): EvidenceRelation[] {
+  return caseFile.evidenceRelations.filter((relation) => relation.claimId === claimId);
+}
+
+export function getEvidenceIdsForClaim(caseFile: CaseFile, claimId: string): string[] {
+  return Array.from(
+    new Set(
+      getEvidenceRelationsForClaim(caseFile, claimId).map(
+        (relation) => relation.evidenceId,
+      ),
+    ),
   );
+}
+
+export function getEvidenceForClaim(caseFile: CaseFile, claimId: string): EvidenceItem[] {
+  const relatedEvidenceIds = new Set(getEvidenceIdsForClaim(caseFile, claimId));
 
   return caseFile.evidenceItems.filter((item) => relatedEvidenceIds.has(item.id));
+}
+
+export function getRelationsForEvidence(
+  caseFile: CaseFile,
+  evidenceId: string,
+): EvidenceRelation[] {
+  return caseFile.evidenceRelations.filter(
+    (relation) => relation.evidenceId === evidenceId,
+  );
 }

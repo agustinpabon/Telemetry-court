@@ -1,10 +1,13 @@
-import { formatSupportScore, getClaimSupportScore } from "@/lib/caseMetrics";
-import type { CaseFile, Claim, SupportScore, SupportStatus } from "@/lib/types";
+import {
+  formatSupportScore,
+  getClaimSupportScore,
+  getEvidenceIdsForClaim,
+} from "@/lib/caseMetrics";
+import type { CaseFile, Claim, SupportStatus } from "@/lib/types";
 
 type ClaimLedgerProps = {
   caseFile: CaseFile;
   claims: Claim[];
-  supportScores: SupportScore[];
   selectedClaimId?: string;
   onSelectClaim: (claimId: string) => void;
   onClearClaim: () => void;
@@ -39,7 +42,6 @@ const statusMeta: Record<
 export function ClaimLedger({
   caseFile,
   claims,
-  supportScores,
   selectedClaimId,
   onSelectClaim,
   onClearClaim,
@@ -73,10 +75,7 @@ export function ClaimLedger({
           {claims.map((claim) => {
             const isSelected = claim.id === selectedClaimId;
             const status = statusMeta[claim.status];
-            const supportScore = supportScores.find(
-              (score) => score.claimId === claim.id,
-            );
-            const evidenceIds = supportScore?.evidenceIds ?? [];
+            const evidenceIds = getEvidenceIdsForClaim(caseFile, claim.id);
 
             return (
               <button

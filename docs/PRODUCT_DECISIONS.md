@@ -37,3 +37,9 @@ Rationale: The product should feel trustworthy, calm, and analytical. Neon visua
 Decision: Every AI-generated claim must be inspectable against evidence.
 
 Rationale: The audit flow depends on a clear path from generated claim to evidence IDs, polarity, strength, rationale, score, and analyst judgment. Unsupported or missing evidence should be visible.
+
+## 2026-06-11: Evidence Relations Are The Canonical Claim-Evidence Link
+
+Decision: `evidenceRelations` is the canonical source of truth for linking claims to evidence; `supportScores` should hold score information only.
+
+Rationale: Duplicating claim-evidence links inside `supportScores` creates avoidable drift between evidence chips, evidence filtering, and support logic. A single relationship path keeps the review workflow inspectable and consistent.

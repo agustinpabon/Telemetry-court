@@ -83,7 +83,6 @@ interface SupportScore {
   value: number;
   status: SupportStatus;
   rationale: string;
-  evidenceIds: string[];
 }
 
 interface AnalystVerdict {
@@ -184,15 +183,13 @@ interface CaseFile {
       "claimId": "claim-001",
       "value": 0.91,
       "status": "supported",
-      "rationale": "Strong direct support from synthetic session features.",
-      "evidenceIds": ["evidence-001"]
+      "rationale": "Strong direct support from synthetic session features."
     },
     {
       "claimId": "claim-002",
       "value": 0.28,
       "status": "contradicted",
-      "rationale": "Strong contradictory evidence from one synthetic exemplar.",
-      "evidenceIds": ["evidence-002"]
+      "rationale": "Strong contradictory evidence from one synthetic exemplar."
     }
   ],
   "analystVerdict": {

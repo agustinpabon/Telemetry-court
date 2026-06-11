@@ -10,6 +10,9 @@ import {
   getClaimSupportScore,
   getClaimsForCluster,
   getEvidenceForClaim,
+  getEvidenceIdsForClaim,
+  getEvidenceRelationsForClaim,
+  getRelationsForEvidence,
   getPrimaryEvidencePolarity,
 } from "@/lib/caseMetrics";
 import type {
@@ -40,7 +43,6 @@ function createSupportScore(overrides: Partial<SupportScore> = {}): SupportScore
     value: 0.8,
     status: "supported",
     rationale: "Synthetic score rationale",
-    evidenceIds: [],
     ...overrides,
   };
 }
@@ -249,6 +251,8 @@ test("cluster and claim evidence lookups return matching domain records and empt
   const iamReviewCase = sampleCases[0];
   const reviewClaims = getClaimsForCluster(iamReviewCase, "cluster-017");
   const claimEvidence = getEvidenceForClaim(iamReviewCase, "claim-002");
+  const claimEvidenceIds = getEvidenceIdsForClaim(iamReviewCase, "claim-002");
+  const claimRelations = getEvidenceRelationsForClaim(iamReviewCase, "claim-002");
 
   assert.equal(reviewClaims.length, 3);
   assert.deepEqual(
@@ -259,8 +263,15 @@ test("cluster and claim evidence lookups return matching domain records and empt
     claimEvidence.map((item) => item.id),
     ["evidence-002", "evidence-003"],
   );
+  assert.deepEqual(claimEvidenceIds, ["evidence-002", "evidence-003"]);
+  assert.deepEqual(
+    claimRelations.map((relation) => relation.evidenceId),
+    ["evidence-002", "evidence-003"],
+  );
   assert.deepEqual(getClaimsForCluster(iamReviewCase, "missing-cluster"), []);
   assert.deepEqual(getEvidenceForClaim(iamReviewCase, "missing-claim"), []);
+  assert.deepEqual(getEvidenceIdsForClaim(iamReviewCase, "missing-claim"), []);
+  assert.deepEqual(getEvidenceRelationsForClaim(iamReviewCase, "missing-claim"), []);
 });
 
 test("average support score ignores invalid values and uses the remaining valid claim-level scores", () => {
@@ -293,4 +304,51 @@ test("evidence lookup safely ignores relations that point to missing evidence it
   });
 
   assert.deepEqual(getEvidenceForClaim(caseFile, "claim-1"), []);
+});
+
+test("claims with no evidence relations stay explicit and safe", () => {
+  const caseFile = createCaseFile({
+    claims: [createClaim({ id: "claim-1", status: "unsupported" })],
+  });
+
+  assert.deepEqual(getEvidenceIdsForClaim(caseFile, "claim-1"), []);
+  assert.deepEqual(getEvidenceForClaim(caseFile, "claim-1"), []);
+  assert.deepEqual(getEvidenceRelationsForClaim(caseFile, "claim-1"), []);
+});
+
+test("evidence relations are the only source of truth for claim-to-evidence links", () => {
+  const caseFile = createCaseFile({
+    claims: [createClaim({ id: "claim-1" })],
+    evidenceItems: [
+      createEvidenceItem({ id: "evidence-linked" }),
+      createEvidenceItem({ id: "evidence-stray" }),
+    ],
+    evidenceRelations: [
+      createEvidenceRelation({
+        claimId: "claim-1",
+        evidenceId: "evidence-linked",
+      }),
+    ],
+    supportScores: [
+      {
+        ...createSupportScore({ claimId: "claim-1" }),
+        evidenceIds: ["evidence-stray"],
+      } as SupportScore,
+    ],
+  });
+
+  assert.deepEqual(getEvidenceIdsForClaim(caseFile, "claim-1"), ["evidence-linked"]);
+  assert.deepEqual(
+    getEvidenceForClaim(caseFile, "claim-1").map((item) => item.id),
+    ["evidence-linked"],
+  );
+});
+
+test("relations for evidence are shared for polarity and evidence-card style views", () => {
+  const caseFile = sampleCases[1];
+  const relations = getRelationsForEvidence(caseFile, "evidence-101");
+
+  assert.deepEqual(relations.map((relation) => relation.claimId), ["claim-102"]);
+  assert.equal(getPrimaryEvidencePolarity(relations), "contradicts");
+  assert.deepEqual(getRelationsForEvidence(caseFile, "missing-evidence"), []);
 });
