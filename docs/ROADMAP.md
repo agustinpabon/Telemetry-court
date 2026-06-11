@@ -14,6 +14,8 @@ The repo currently has:
 
 Current execution focus: polish the static evidence-review MVP so a reviewer can open one case, inspect the generated label and explanation, review each claim, inspect linked evidence, understand support status, and decide whether to accept or reject the label.
 
+Design north star for Milestone 1: make every AI label easy to inspect, challenge, and defend. The MVP should feel like a calm, premium, evidence-first review product with Wealthsimple-level restraint and trust clarity, not a clone and not a cyber dashboard.
+
 ## Work Tracks
 
 ### UI / UX
@@ -101,6 +103,14 @@ The product needs to prove its core review loop before adding infrastructure. A 
 
 This milestone keeps the focus on the question: can AI prove what it claims?
 
+Milestone 1 UI work must preserve the core UX loop:
+
+```text
+Cluster -> Proposed label -> Supporting evidence -> Confidence -> Verdict
+```
+
+The milestone is complete only if the interface reads as an evidence review workflow rather than generic analytics.
+
 ### Planned Issues
 
 - `style(tokens): add global Telemetry Court design tokens`
@@ -114,6 +124,7 @@ This milestone keeps the focus on the question: can AI prove what it claims?
 ### Definition of Done
 
 - The static app feels calm, spacious, and evidence-first.
+- The static app follows the documented north star in `docs/DESIGN_DIRECTION.md` and `docs/DESIGN_SYSTEM.md`.
 - Global visual tokens exist and are used by follow-up styling work.
 - Claims are easy to scan by text, status, score, and linked evidence.
 - Evidence cards clearly show source, polarity, strength, and relation explanation.
@@ -122,6 +133,7 @@ This milestone keeps the focus on the question: can AI prove what it claims?
 - The core case review language has lightweight render or smoke coverage.
 - `npm test`, `npm run lint`, and `npm run build` pass.
 - No backend, live AI, auth, real telemetry, or dependency expansion is introduced.
+- The product does not drift into a noisy cyber dashboard, decorative chart surface, or generic AI workspace.
 
 ## Milestone 2 — Evidence Integrity And Scoring Evaluation
 
@@ -253,7 +265,7 @@ Do not create every candidate issue as a GitHub issue up front. Candidate issues
 - Do not invent evidence.
 - Do not introduce real telemetry, secrets, customer data, or incident claims.
 - Do not turn the product into a SIEM, chatbot, threat-intelligence dashboard, or cyberpunk SOC interface.
-- Visual work must support evidence inspection and follow `docs/DESIGN_SYSTEM.md`.
+- Visual work must support evidence inspection and follow `docs/DESIGN_DIRECTION.md` plus `docs/DESIGN_SYSTEM.md`.
 
 ## Checks Required Before Closing Issues
 

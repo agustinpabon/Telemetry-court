@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-11: UI And UX Design North Star Documentation
+
+- Agent/model: Codex
+- Prompt scope: Update the project's UI/UX direction before Issue #1 so future agents have a clear evidence-first design north star. Add or update documentation only; do not make implementation changes.
+- Files changed: `README.md`, `docs/DESIGN_DIRECTION.md`, `docs/DESIGN_SYSTEM.md`, `docs/PRODUCT_DECISIONS.md`, `docs/ROADMAP.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a dedicated design-direction document and updated core product docs so Telemetry Court is clearly framed as a calm, premium, evidence-first review product for AI-generated telemetry labels. Documented the north star, design principles, initial visual direction, core UX flow, MVP screen priorities, and explicit warnings against noisy cyber-dashboard drift.
+- Decisions made: Established "Make every AI label easy to inspect, challenge, and defend" as the product design north star; made the evidence-review loop explicit as `Cluster -> Proposed label -> Supporting evidence -> Confidence -> Verdict`; reinforced that Wealthsimple-class restraint is inspiration for trust and clarity, not a cloning target.
+- Checks run: `npm test`; `npm run lint`; `npm run build`.
+- Assumptions: Existing design docs were directionally correct and should be tightened rather than replaced; documentation-only changes are the right precondition before Issue #1 implementation work.
+- Risks/follow-ups: Future UI implementation still needs to translate this guidance into actual tokens, layout choices, and component hierarchy without overfitting to any one reference product.
+- Next recommended step: Start Issue #1 by aligning global tokens and the app shell to the documented off-white canvas, muted surfaces, warm ink text, and evidence-first hierarchy.
+- Suggested commit message: `docs(design): add UI north star and evidence-review direction`
+
 ## 2026-06-11: GitHub Roadmap And Issue Structure
 
 - Agent/model: GPT-5.5

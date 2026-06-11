@@ -56,3 +56,16 @@ Consequences:
 - Semantic color is reserved for support state and evidence polarity.
 - Visual changes should improve claim/evidence inspection.
 - Agents must not add decorative cyber styling.
+
+## 2026-06-11: The Core UX Loop Is Evidence Review
+
+Decision: The product UX north star is "Make every AI label easy to inspect, challenge, and defend." The interface should guide users through cluster -> proposed label -> supporting evidence -> confidence -> verdict.
+
+Rationale: Telemetry Court's value is not that it displays data. Its value is that it helps a human reviewer evaluate whether an AI-generated interpretation is defensible. That requires a clear evidence-review flow rather than a generic analytics or dashboard posture.
+
+Consequences:
+
+- AI-generated labels must not visually outrank their supporting evidence.
+- Milestone 1 UI work should improve the evidence-review loop before adding secondary surfaces.
+- Future agents should avoid noisy dashboard patterns, decorative charts, or layouts that obscure claim-to-evidence inspection.
+- `docs/DESIGN_DIRECTION.md` is a required reference for future UI work alongside `docs/DESIGN_SYSTEM.md`.

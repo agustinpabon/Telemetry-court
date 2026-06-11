@@ -2,6 +2,8 @@
 
 This is the official design system for Telemetry Court. It defines how the product should feel, how UI decisions should be made, and how future visual work should support evidence inspection.
 
+Use this document with `docs/DESIGN_DIRECTION.md`: design direction defines the product north star and UX target, while this document defines the reusable system rules, tokens, and component guidance.
+
 ## 1. Design Positioning
 
 Telemetry Court should feel calm, premium, spacious, trustworthy, evidence-first, analyst-friendly, minimal, and warm but serious. Its visual direction is high-trust fintech-inspired: Apple / Wealthsimple-class restraint, but not copied from either.
@@ -13,6 +15,8 @@ Telemetry Court's design goal is not to look like a SOC dashboard. It should not
 Evidence first, ornament last.
 
 The UI exists to help analysts judge whether AI-generated claims are supported by evidence. Visual hierarchy must make claim -> evidence -> score -> verdict easy to inspect. Color should clarify support status, not decorate. Uncertainty must be visible. Missing evidence must be shown calmly and explicitly.
+
+AI output must never visually outrank the supporting evidence that justifies it.
 
 ## 3. Legal-Safe Inspiration Boundary
 
@@ -141,6 +145,10 @@ Evidence cards should show evidence title, source type, polarity, strength, and 
 
 Score panels should emphasize the score but not overstate certainty. Include rationale and show missing evidence states explicitly.
 
+### App Shell
+
+The app shell should feel quiet, warm, and spacious. Prefer an off-white background, muted surfaces, dark warm text, restrained borders, and only occasional pastel fields for orientation or empty states. Do not turn the shell into a dashboard frame with heavy chrome, dense sidebars, or decorative metrics.
+
 ### Empty States
 
 Empty states should be calm, specific, and useful. Do not use cute filler. Explain what is missing and suggest the next action if appropriate.
@@ -191,6 +199,12 @@ Any UI redesign should preserve this order unless there is a documented product 
 6. Analyst verdict
 7. Risks / missing evidence
 
+This hierarchy aligns to the core review loop:
+
+```text
+Cluster -> Proposed label -> Supporting evidence -> Confidence -> Verdict
+```
+
 ## 14. Implementation Rules for Future UI Work
 
 - Use the existing CSS approach unless asked otherwise.
@@ -200,3 +214,4 @@ Any UI redesign should preserve this order unless there is a documented product 
 - Prefer tokenized CSS variables.
 - Keep visual changes small and reviewable.
 - If changing layout, explain how it improves evidence inspection.
+- Do not introduce decorative charts or dense operational dashboard patterns unless a product decision explicitly requires them.

@@ -32,6 +32,20 @@ The MVP should help a reviewer inspect:
 - Whether the claim is supported, weakly supported, contradicted, unsupported, or missing enough evidence.
 - Why the system assigned that confidence.
 
+## Product Design North Star
+
+Make every AI label easy to inspect, challenge, and defend.
+
+Telemetry Court should guide a reviewer through a clear evidence-review flow:
+
+```text
+Cluster -> Proposed label -> Supporting evidence -> Confidence -> Verdict
+```
+
+The product should feel calm, premium, and evidence-first. The standard is Wealthsimple-level restraint and trust clarity, not a clone of Wealthsimple or any other brand. Do not copy another company's branding, exact layouts, copy, colors, iconography, illustrations, or screen compositions.
+
+This is not generic analytics and not a cyber dashboard. The UI should help analysts inspect AI-generated claims against evidence and record a judgment with visible uncertainty.
+
 ## Relationship To Toponymy
 
 [Toponymy](https://github.com/TutteInstitute/toponymy) is useful conceptual inspiration for Telemetry Court. Toponymy clusters information objects, extracts features such as keyphrases, exemplars, and subtopics, then uses LLMs to produce human-readable topic names.
@@ -67,7 +81,7 @@ Not implemented yet:
 - Synthetic data only: do not introduce real telemetry, secrets, customer data, or incident claims.
 - Frontend first: use TypeScript, Next.js App Router, Tailwind, and static/sample data until a backend is explicitly scoped.
 
-For UI and visual design guidance, see [docs/DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md).
+For UI and visual design guidance, see [docs/DESIGN_DIRECTION.md](./docs/DESIGN_DIRECTION.md), [docs/DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md), and [docs/DESIGN_REFERENCE_HIGH_TRUST_FINTECH.md](./docs/DESIGN_REFERENCE_HIGH_TRUST_FINTECH.md).
 
 ## Development
 
@@ -103,9 +117,9 @@ Workflow docs:
 
 ## For AI Agents
 
-Before editing, read [AGENTS.md](./AGENTS.md), [docs/PROJECT_CONTEXT.md](./docs/PROJECT_CONTEXT.md), and [docs/PRODUCT_DECISIONS.md](./docs/PRODUCT_DECISIONS.md). Before UI or styling work, also read [docs/DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md).
+Before editing, read [AGENTS.md](./AGENTS.md), [docs/PROJECT_CONTEXT.md](./docs/PROJECT_CONTEXT.md), and [docs/PRODUCT_DECISIONS.md](./docs/PRODUCT_DECISIONS.md). Before UI or styling work, also read [docs/DESIGN_DIRECTION.md](./docs/DESIGN_DIRECTION.md), [docs/DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md), and [docs/DESIGN_REFERENCE_HIGH_TRUST_FINTECH.md](./docs/DESIGN_REFERENCE_HIGH_TRUST_FINTECH.md).
 
-Agent work should preserve the product identity: Telemetry Court validates AI-generated telemetry cluster interpretations through inspectable claims and evidence. Do not turn it into a generic dashboard, chatbot, SIEM, or threat-intelligence product.
+Agent work should preserve the product identity: Telemetry Court validates AI-generated telemetry cluster interpretations through inspectable claims and evidence. Do not turn it into a generic analytics dashboard, chatbot, SIEM, threat-intelligence product, or noisy cyber review console.
 
 ## License
 
