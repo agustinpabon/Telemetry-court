@@ -88,9 +88,16 @@ Open [http://localhost:3000](http://localhost:3000).
 Run checks:
 
 ```bash
+npm test
 npm run lint
 npm run build
 ```
+
+Workflow docs:
+
+- [docs/DEVELOPMENT_WORKFLOW.md](./docs/DEVELOPMENT_WORKFLOW.md)
+- [docs/COMMIT_GUIDELINES.md](./docs/COMMIT_GUIDELINES.md)
+- [AGENTS.md](./AGENTS.md)
 
 ## For AI Agents
 

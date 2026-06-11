@@ -36,6 +36,7 @@ Expected output:
 - What changed
 - Checks run
 - Assumptions
+- Suggested commit message
 - Suggested next step
 ```
 
@@ -70,6 +71,15 @@ These are too broad, conflict with product direction, or risk introducing unsafe
 - Call out evidence model impact, even if the answer is "None."
 - Human review should check product fit, evidence traceability, visual discipline, and build health.
 
+## Commit And Handoff Workflow
+
+- Task prompts should require a suggested commit message.
+- Agents should not auto-commit unless explicitly asked.
+- Final answers should include a structured commit body, not only a one-line title.
+- `docs/CHANGELOG_AI.md` and the suggested commit message should agree on scope and terminology.
+- Commit messages should stay compact; `docs/CHANGELOG_AI.md` can hold more detail.
+- Human reviewers should reject vague commit titles such as "update files" or "fix stuff."
+
 ## When To Escalate To Stronger Models
 
 Escalate gradually when:
@@ -87,19 +97,32 @@ Do not use maximum reasoning by default.
 
 Agents should finish with:
 
-```txt
-Files changed:
+````md
+**Files changed**
 - <file>
 
-What changed:
-- <short summary>
+**Summary**
+<short summary>
 
-Checks run:
-- <commands or "Not run">
+**Decisions made**
+- <decision>
 
-Assumptions:
-- <assumptions>
+**Checks run**
+- `npm test` — passed / failed / not run
+- `npm run lint` — passed / failed / not run
+- `npm run build` — passed / failed / not run
 
-Risks / follow-ups:
-- <risks or suggested next step>
+**Assumptions**
+- <assumption>
+
+**Risks / follow-up**
+- <risk or suggested next step>
+
+**Suggested commit message**
+```text
+<full structured commit message>
 ```
+
+**Recommended next step**
+<next narrow task>
+````

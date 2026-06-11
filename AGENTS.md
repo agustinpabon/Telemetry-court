@@ -82,3 +82,13 @@ Visual changes must support evidence inspection. Avoid cyberpunk, neon, hacker, 
 2. Summarize changed files.
 3. Update `docs/CHANGELOG_AI.md`.
 4. Mention any assumptions or risks.
+
+## Commit And Handoff Discipline
+
+- AI-assisted work must produce a structured final summary.
+- Any suggested commit must follow `docs/COMMIT_GUIDELINES.md`.
+- Update `docs/CHANGELOG_AI.md` for product, model, architecture, design, workflow, test, or behavior changes.
+- Do not suggest vague commit messages like "update files" or "fix stuff."
+- Prefer narrow tasks and small diffs.
+- Do not rewrite git history unless the user explicitly asks.
+- Before UI or styling work, read `docs/DESIGN_SYSTEM.md`.

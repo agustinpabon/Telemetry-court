@@ -1,0 +1,19 @@
+<type>(<scope>): <short imperative summary>
+
+Why:
+- 
+
+What changed:
+- 
+
+Validation:
+- npm test: 
+- npm run lint: 
+- npm run build: 
+
+Risks / follow-ups:
+- 
+
+AI context:
+- Agent/model: 
+- Related changelog entry: 

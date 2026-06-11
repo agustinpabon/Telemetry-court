@@ -1,6 +1,10 @@
-# Summary
+## Summary
 
-<!-- What changed and why? -->
+<!-- What changed? -->
+
+## Why
+
+<!-- Why does this change exist? -->
 
 ## Files Changed
 
@@ -8,29 +12,36 @@
 
 ## Product Impact
 
-<!-- How does this affect the Telemetry Court evidence-review workflow? -->
+<!-- How does this affect the Telemetry Court evidence-review workflow? Write "None" if unchanged. -->
 
 ## Evidence Model Impact
 
 <!-- Note changes to clusters, labels, claims, evidence items, scoring, verdicts, or audit trail. Write "None" if unchanged. -->
 
-## Visual / Design Impact
+## Design System Impact
 
-<!-- Describe UI changes, if any. Confirm the calm Apple / Wealthsimple direction is preserved. -->
+<!-- Describe design-system or UI impact. Confirm the calm Apple / Wealthsimple direction is preserved, or write "None". -->
 
 ## Tests / Checks
 
+- [ ] `npm test`
 - [ ] `npm run lint`
 - [ ] `npm run build`
-- [ ] Other:
 
-## Screenshots
+## Screenshots / Recordings
 
-<!-- Required if UI changed. Add before/after images when useful. -->
+Required for UI changes.
 
-## AI Agent Notes
+## AI-Agent Notes
 
-<!-- If an AI agent contributed, describe the prompt scope, assumptions, files changed, checks run, and any risks. -->
+- Agent/model:
+- Prompt scope:
+- Changelog entry updated:
+- Suggested commit followed `docs/COMMIT_GUIDELINES.md`:
+
+## Risks / Follow-ups
+
+<!-- Call out known limitations, deferred work, or reviewer attention areas. -->
 
 ## Review Checklist
 

@@ -32,6 +32,7 @@ Cluster -> AI label / explanation -> Claims -> Evidence -> Support score -> Anal
 - Prefer TypeScript, Next.js App Router, and Tailwind.
 - Keep the frontend simple and static-data friendly.
 - Make the smallest safe change.
+- Keep changes narrow and reviewable.
 - Do not add backend/API dependencies unless explicitly scoped.
 - Do not add packages without a clear reason.
 - Use domain names from `docs/DATA_MODEL.md`.
@@ -42,3 +43,6 @@ Cluster -> AI label / explanation -> Claims -> Evidence -> Support score -> Anal
 - Distinguish supported, weakly supported, contradicted, unsupported, and insufficient-evidence states.
 - Run `npm run lint` and `npm run build` when applicable.
 - Update `docs/CHANGELOG_AI.md` after AI-assisted changes.
+- Follow `docs/COMMIT_GUIDELINES.md`.
+- PRs or summaries should include why, what changed, validation, and risks.
+- Update `docs/CHANGELOG_AI.md` for important changes.

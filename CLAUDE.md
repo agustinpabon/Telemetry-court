@@ -37,3 +37,12 @@ Telemetry Court is an evidence-checking interface for AI-generated telemetry clu
 - Run `npm run build` when applicable.
 - Update `docs/CHANGELOG_AI.md` for AI-assisted changes.
 - Summarize files changed, checks run, assumptions, and risks.
+- Provide a full structured suggested commit message after any non-trivial change.
+- Mention checks run and checks not run.
+
+## Commit And Workflow Discipline
+
+- Follow `docs/COMMIT_GUIDELINES.md` for any suggested commit message.
+- Update `docs/CHANGELOG_AI.md` when product, model, architecture, design, workflow, test, or behavior changes are involved.
+- Do not make broad mixed-scope edits.
+- Do not rewrite history unless explicitly instructed.

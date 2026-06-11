@@ -11,9 +11,12 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Prompt scope:
 - Files changed:
 - Summary:
+- Decisions made:
 - Checks run:
 - Assumptions:
 - Risks/follow-ups:
+- Next recommended step:
+- Suggested commit message:
 ```
 
 ## 2026-06-11: Repository Context And Agent Workflow Setup
@@ -79,3 +82,16 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Assumptions: The uploaded Wealthsimple-style research is source material for a concise repo-local design reference, not content to paste verbatim or a directive to reproduce Wealthsimple.
 - Risks/follow-ups: Future UI work should migrate existing styles toward the documented tokens incrementally without broad restyling or new dependencies.
 - Next recommended step: Audit existing CSS against `docs/DESIGN_SYSTEM.md` and propose a small tokenization-only follow-up before changing component styling.
+
+## 2026-06-11: Development Workflow And Commit Standards
+
+- Agent/model: Codex
+- Prompt scope: Improve the project workflow structure before more UI or feature work by adding durable commit standards, PR standards, branch guidance, changelog discipline, and agent handoff rules.
+- Files changed: `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `.github/pull_request_template.md`, `README.md`, `docs/AGENT_WORKFLOWS.md`, `docs/CHANGELOG_AI.md`, `docs/COMMIT_GUIDELINES.md`, `docs/DEVELOPMENT_WORKFLOW.md`, and `.gitmessage`.
+- Summary: Added a structured commit-message standard, a reusable Git commit template, a documented narrow-task development workflow, stronger PR requirements, and explicit agent handoff expectations for future AI-assisted work.
+- Decisions made: Treat commit history as part of the repo's agent-memory system; require structured final summaries and structured suggested commits for non-trivial AI work; keep changelog entries and commit messages aligned on scope and terminology; leave git history untouched unless a human explicitly asks otherwise.
+- Checks run: `npm test`; `npm run lint`; `npm run build`.
+- Assumptions: Documentation-only workflow standards are the right next step before additional UI or feature work; the current repo should keep human-controlled commits and PR merges rather than letting agents commit by default.
+- Risks/follow-ups: Historical weak commit messages remain in history; the new standards only improve future work unless a human later chooses to clean up unpublished local commits.
+- Next recommended step: Start the next narrow task on a focused branch and use the new structured summary plus suggested commit format end to end.
+- Suggested commit message: Optional. Suggested message for this change: `docs(agent-workflow): add development workflow and commit standards`
