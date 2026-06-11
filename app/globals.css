@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f6f4ef;
+  --foreground: #142033;
+  --color-canvas: #f6f4ef;
+  --color-surface: rgba(255, 255, 255, 0.9);
+  --color-panel: #eef3f4;
+  --color-panel-strong: #e4ecef;
+  --color-border: rgba(20, 32, 51, 0.09);
+  --color-border-strong: rgba(20, 32, 51, 0.16);
+  --color-border-soft: rgba(20, 32, 51, 0.05);
+  --color-ink: #142033;
+  --color-muted: #5d6b7e;
+  --color-muted-soft: #7b8796;
+  --color-accent: #7bc2ce;
+  --color-accent-soft: #e8f5f7;
+  --color-accent-strong: #1a6070;
+  --color-supported: #2f6b54;
+  --color-supported-soft: #edf7f0;
+  --color-uncertain: #8a6835;
+  --color-uncertain-soft: #fbf5e8;
+  --color-unsupported: #86525b;
+  --color-unsupported-soft: #f8ecee;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--color-canvas);
+}
+
+body {
+  background:
+    radial-gradient(circle at top left, rgba(123, 194, 206, 0.16), transparent 28%),
+    linear-gradient(180deg, #fbfaf6 0%, var(--background) 22%, #f3f0ea 100%);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+::selection {
+  background: rgba(123, 194, 206, 0.28);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
