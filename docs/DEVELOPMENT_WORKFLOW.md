@@ -46,6 +46,15 @@ Examples:
 - Avoid broad prompts like "improve the app."
 - Prefer prompts that name files, constraints, and checks.
 
+## Milestone And Issue Discipline
+
+- Tracks are labels.
+- Milestones are ordered deliverables.
+- Issues are small executable tasks.
+- Do not create huge multi-feature issues.
+- Do not use GitHub issues as vague notes.
+- Keep Milestone 1 focused on the polished static evidence review MVP.
+
 ## Documentation Update Rules
 
 Update `docs/CHANGELOG_AI.md` when a change affects:

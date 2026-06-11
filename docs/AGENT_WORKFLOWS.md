@@ -71,6 +71,16 @@ These are too broad, conflict with product direction, or risk introducing unsafe
 - Call out evidence model impact, even if the answer is "None."
 - Human review should check product fit, evidence traceability, visual discipline, and build health.
 
+## GitHub Issue Workflow
+
+- Issues should be created from `docs/ROADMAP.md`.
+- Only the active milestone should have detailed issues by default.
+- Every issue should have a clear goal, scope, out-of-scope list, acceptance criteria, checks, and agent notes.
+- Agents should work from one issue at a time.
+- Agents should not combine issues unless explicitly asked.
+- PRs should link issues using `Closes #<issue-number>` when appropriate.
+- Every non-trivial PR should include the structured context required by `.github/pull_request_template.md`.
+
 ## Commit And Handoff Workflow
 
 - Task prompts should require a suggested commit message.
