@@ -67,6 +67,8 @@ Not implemented yet:
 - Synthetic data only: do not introduce real telemetry, secrets, customer data, or incident claims.
 - Frontend first: use TypeScript, Next.js App Router, Tailwind, and static/sample data until a backend is explicitly scoped.
 
+For UI and visual design guidance, see [docs/DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md).
+
 ## Development
 
 Install dependencies:
@@ -92,7 +94,7 @@ npm run build
 
 ## For AI Agents
 
-Before editing, read [AGENTS.md](./AGENTS.md), [docs/PROJECT_CONTEXT.md](./docs/PROJECT_CONTEXT.md), and [docs/PRODUCT_DECISIONS.md](./docs/PRODUCT_DECISIONS.md).
+Before editing, read [AGENTS.md](./AGENTS.md), [docs/PROJECT_CONTEXT.md](./docs/PROJECT_CONTEXT.md), and [docs/PRODUCT_DECISIONS.md](./docs/PRODUCT_DECISIONS.md). Before UI or styling work, also read [docs/DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md).
 
 Agent work should preserve the product identity: Telemetry Court validates AI-generated telemetry cluster interpretations through inspectable claims and evidence. Do not turn it into a generic dashboard, chatbot, SIEM, or threat-intelligence product.
 

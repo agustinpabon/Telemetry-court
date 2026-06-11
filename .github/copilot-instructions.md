@@ -22,6 +22,10 @@ Cluster -> AI label / explanation -> Claims -> Evidence -> Support score -> Anal
 - Calm, minimal, spacious, premium, and trustworthy.
 - Evidence-first hierarchy.
 - No cyberpunk, neon, terminal theater, noisy SOC dashboard styling, or fake incident drama.
+- Follow `docs/DESIGN_SYSTEM.md` for UI and visual suggestions.
+- Preserve the calm, evidence-first hierarchy in visual changes.
+- Do not suggest cyberpunk dashboard patterns.
+- Do not suggest copying Wealthsimple directly or reproducing protected brand assets, exact layouts, icons, imagery, slogans, or proprietary visual identity.
 
 ## Coding Expectations
 

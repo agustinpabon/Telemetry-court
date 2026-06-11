@@ -43,3 +43,16 @@ Rationale: The audit flow depends on a clear path from generated claim to eviden
 Decision: `evidenceRelations` is the canonical source of truth for linking claims to evidence; `supportScores` should hold score information only.
 
 Rationale: Duplicating claim-evidence links inside `supportScores` creates avoidable drift between evidence chips, evidence filtering, and support logic. A single relationship path keeps the review workflow inspectable and consistent.
+
+## 2026-06-11: Use A High-Trust, Evidence-First Visual Language
+
+Decision: Telemetry Court will use a calm, premium, evidence-first visual language inspired by high-trust fintech/product design principles. Wealthsimple-style research may inform restraint, spacing, hierarchy, and tone, but Telemetry Court must not copy Wealthsimple's assets, copy, identity, icons, screenshots, or exact layouts.
+
+Rationale: The product asks analysts to judge whether AI-generated labels are supported by evidence. A calm, restrained interface supports trust and careful review better than a noisy cybersecurity dashboard.
+
+Consequences:
+
+- UI work must follow `docs/DESIGN_SYSTEM.md`.
+- Semantic color is reserved for support state and evidence polarity.
+- Visual changes should improve claim/evidence inspection.
+- Agents must not add decorative cyber styling.

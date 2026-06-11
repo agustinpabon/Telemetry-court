@@ -18,6 +18,10 @@ Telemetry Court is an evidence-checking interface for AI-generated telemetry clu
 - Keep all demo data synthetic and clearly marked.
 - Do not add dependencies unless the task requires them and the reason is explained.
 - Preserve the calm Apple / Wealthsimple visual direction when changing UI.
+- Before UI or styling work, read `docs/DESIGN_SYSTEM.md` and follow its evidence-first hierarchy.
+- Do not do broad redesigns unless explicitly requested.
+- Do not copy protected brand assets, slogans, exact layouts, icons, screenshots, imagery, or proprietary visual identity.
+- Prefer token-based, small, reviewable visual changes.
 - Keep claim, evidence, score, verdict, and audit concepts explicit.
 - Every AI-generated claim must connect to evidence IDs or explicitly show missing evidence.
 

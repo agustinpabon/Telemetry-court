@@ -36,6 +36,19 @@ Cluster -> AI-generated label/explanation -> Claims -> Evidence -> Support score
 - Prefer fewer elements with better hierarchy.
 - Show uncertainty clearly.
 
+## Design System
+
+Before UI or styling work, read:
+
+- `docs/DESIGN_SYSTEM.md`
+- `docs/DESIGN_REFERENCE_HIGH_TRUST_FINTECH.md`
+
+Telemetry Court uses a calm, premium, evidence-first visual language inspired by high-trust fintech/product design principles.
+
+Do not copy Wealthsimple or any other brand's protected assets, slogans, exact layouts, icons, imagery, or proprietary visual identity.
+
+Visual changes must support evidence inspection. Avoid cyberpunk, neon, hacker, terminal, and noisy SOC-dashboard aesthetics.
+
 ## Product Rules
 
 - Every generated claim must be inspectable.
