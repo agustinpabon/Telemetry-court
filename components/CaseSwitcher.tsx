@@ -1,22 +1,26 @@
-import type { Case } from "@/lib/types";
+import type { CaseFile, SupportStatus } from "@/lib/types";
 
 type CaseSwitcherProps = {
-  cases: Case[];
+  cases: CaseFile[];
   selectedCaseId: string;
   onSelect: (caseId: string) => void;
 };
 
-const verdictLabel = {
+const statusLabel: Record<SupportStatus, string> = {
   supported: "Supported",
-  uncertain: "Uncertain",
+  weakly_supported: "Weakly supported",
+  contradicted: "Contradicted",
   unsupported: "Unsupported",
-} as const;
+  insufficient_evidence: "Insufficient evidence",
+};
 
-const verdictClassName = {
+const statusClassName: Record<SupportStatus, string> = {
   supported: "bg-[var(--color-supported-soft)] text-[var(--color-supported)]",
-  uncertain: "bg-[var(--color-uncertain-soft)] text-[var(--color-uncertain)]",
+  weakly_supported: "bg-[var(--color-uncertain-soft)] text-[var(--color-uncertain)]",
+  contradicted: "bg-[var(--color-unsupported-soft)] text-[var(--color-unsupported)]",
   unsupported: "bg-[var(--color-unsupported-soft)] text-[var(--color-unsupported)]",
-} as const;
+  insufficient_evidence: "bg-[var(--color-uncertain-soft)] text-[var(--color-uncertain)]",
+};
 
 export function CaseSwitcher({
   cases,
@@ -44,6 +48,8 @@ export function CaseSwitcher({
       <div className="mt-6 grid gap-3 xl:grid-cols-3">
         {cases.map((currentCase) => {
           const isSelected = currentCase.id === selectedCaseId;
+          const caseStatus = getCaseStatus(currentCase);
+          const averageScore = getAverageSupportScore(currentCase);
 
           return (
             <button
@@ -61,20 +67,20 @@ export function CaseSwitcher({
                   {currentCase.cluster.id}
                 </span>
                 <span
-                  className={`rounded-full px-2.5 py-1 text-xs font-medium ${verdictClassName[currentCase.validation.verdict]}`}
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusClassName[caseStatus]}`}
                 >
-                  {verdictLabel[currentCase.validation.verdict]}
+                  {statusLabel[caseStatus]}
                 </span>
               </div>
               <h3 className="mt-4 text-lg font-semibold tracking-[-0.02em] text-[var(--color-ink)]">
-                {currentCase.generatedInterpretation.title}
+                {currentCase.topicLabel.name}
               </h3>
               <p className="mt-3 text-sm leading-7 text-[var(--color-muted-soft)]">
-                {currentCase.generatedInterpretation.description}
+                {currentCase.topicLabel.explanation}
               </p>
               <div className="mt-4 flex items-center justify-between gap-3 text-sm text-[var(--color-muted)]">
-                <span>Confidence {currentCase.validation.confidenceScore}%</span>
-                <span>{currentCase.evidence.length} evidence items</span>
+                <span>Support {averageScore}%</span>
+                <span>{currentCase.evidenceItems.length} evidence items</span>
               </div>
             </button>
           );
@@ -82,4 +88,37 @@ export function CaseSwitcher({
       </div>
     </section>
   );
+}
+
+function getCaseStatus(currentCase: CaseFile): SupportStatus {
+  if (currentCase.claims.some((claim) => claim.status === "contradicted")) {
+    return "contradicted";
+  }
+
+  if (currentCase.claims.some((claim) => claim.status === "unsupported")) {
+    return "unsupported";
+  }
+
+  if (
+    currentCase.claims.some((claim) =>
+      ["weakly_supported", "insufficient_evidence"].includes(claim.status),
+    )
+  ) {
+    return "weakly_supported";
+  }
+
+  return "supported";
+}
+
+function getAverageSupportScore(currentCase: CaseFile): number {
+  if (currentCase.supportScores.length === 0) {
+    return 0;
+  }
+
+  const total = currentCase.supportScores.reduce(
+    (sum, score) => sum + score.value,
+    0,
+  );
+
+  return Math.round((total / currentCase.supportScores.length) * 100);
 }

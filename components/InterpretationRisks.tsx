@@ -1,10 +1,18 @@
-import type { InterpretationRisk } from "@/lib/types";
+import type { Claim } from "@/lib/types";
 
 type InterpretationRisksProps = {
-  risks: InterpretationRisk[];
+  claims: Claim[];
 };
 
-export function InterpretationRisks({ risks }: InterpretationRisksProps) {
+const riskStatuses = new Set([
+  "contradicted",
+  "unsupported",
+  "insufficient_evidence",
+]);
+
+export function InterpretationRisks({ claims }: InterpretationRisksProps) {
+  const risks = claims.filter((claim) => riskStatuses.has(claim.status));
+
   return (
     <section className="rounded-[30px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[0_20px_50px_rgba(15,23,42,0.06)] sm:p-7">
       <p className="text-sm font-medium text-[var(--color-muted)]">Interpretation risks</p>
@@ -12,18 +20,20 @@ export function InterpretationRisks({ risks }: InterpretationRisksProps) {
 
       {risks.length > 0 ? (
         <div className="mt-5 space-y-3">
-          {risks.map((risk) => (
+          {risks.map((claim) => (
             <div
-              key={risk.id}
+              key={claim.id}
               className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-panel)]/55 px-5 py-4"
             >
               <div className="flex items-center gap-3">
-                <span className="font-mono text-xs text-[var(--color-muted)]">{risk.id}</span>
+                <span className="font-mono text-xs text-[var(--color-muted)]">{claim.id}</span>
                 <p className="text-sm font-semibold tracking-[-0.01em] text-[var(--color-ink)]">
-                  {risk.title}
+                  {claim.status.replaceAll("_", " ")}
                 </p>
               </div>
-              <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">{risk.detail}</p>
+              <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                {claim.rationale}
+              </p>
             </div>
           ))}
         </div>

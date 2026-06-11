@@ -1,71 +1,99 @@
-export type Verdict = "supported" | "uncertain" | "unsupported";
-export type ReviewDecision = "accept" | "revise" | "reject";
-export type ClaimStatus = "supported" | "weak" | "contradicted";
+export type SupportStatus =
+  | "supported"
+  | "weakly_supported"
+  | "contradicted"
+  | "unsupported"
+  | "insufficient_evidence";
+
 export type EvidenceStrength = "strong" | "moderate" | "weak";
 
-export type EvidenceKind = "feature" | "exemplar" | "metadata" | "contradiction";
+export type EvidencePolarity = "supports" | "contradicts" | "neutral";
 
-export type EvidenceRelevance = "high" | "medium" | "low";
+export type EvidenceSourceType =
+  | "telemetry_event"
+  | "session_feature"
+  | "exemplar"
+  | "keyphrase"
+  | "metadata"
+  | "analyst_note";
 
-export type EvidenceStance = "supports" | "partial" | "contradicts";
+export type AnalystDecision =
+  | "accept"
+  | "revise"
+  | "reject"
+  | "needs_more_review";
 
-export type EvidenceItem = {
-  id: string;
-  kind: EvidenceKind;
-  title: string;
-  summary: string;
-  relevance: EvidenceRelevance;
-  strength: EvidenceStrength;
-  stance: EvidenceStance;
-  linkedClaimIds: string[];
-};
-
-export type InterpretationRisk = {
-  id: string;
-  title: string;
-  detail: string;
-};
-
-export type GeneratedInterpretation = {
-  title: string;
-  description: string;
-  modelName: string;
-  generatedAt: string;
-  promptVersion: string;
-};
-
-export type ValidationClaim = {
-  id: string;
-  text: string;
-  status: ClaimStatus;
-  evidenceIds: string[];
-  rationale: string;
-};
+export type ClusterSource = "sample" | "toponymy" | "manual" | "other";
 
 export type Cluster = {
   id: string;
-  size: number;
-  density: string;
-  timeWindow: string;
-  embeddingSource: string;
-  topFeatures: string[];
-  representativeExamples: string[];
+  name: string;
+  description?: string;
+  source: ClusterSource;
+  size?: number;
 };
 
-export type Validation = {
-  verdict: Verdict;
-  confidenceScore: number;
-  supportedClaims: ValidationClaim[];
-  weakClaims: ValidationClaim[];
-  contradictedClaims: ValidationClaim[];
-  summary: string;
-};
-
-export type Case = {
+export type TopicLabel = {
   id: string;
-  generatedInterpretation: GeneratedInterpretation;
-  cluster: Cluster;
-  evidence: EvidenceItem[];
-  interpretationRisks: InterpretationRisk[];
-  validation: Validation;
+  clusterId: string;
+  name: string;
+  explanation: string;
+  generatedBy: string;
+  generatedAt: string;
 };
+
+export type Claim = {
+  id: string;
+  clusterId: string;
+  topicLabelId: string;
+  text: string;
+  status: SupportStatus;
+  supportScore: number;
+  rationale: string;
+};
+
+export type EvidenceItem = {
+  id: string;
+  clusterId: string;
+  title: string;
+  summary: string;
+  sourceType: EvidenceSourceType;
+  rawReference?: string;
+};
+
+export type EvidenceRelation = {
+  claimId: string;
+  evidenceId: string;
+  polarity: EvidencePolarity;
+  strength: EvidenceStrength;
+  explanation: string;
+};
+
+export type SupportScore = {
+  claimId: string;
+  value: number;
+  status: SupportStatus;
+  rationale: string;
+  evidenceIds: string[];
+};
+
+export type AnalystVerdict = {
+  decision: AnalystDecision;
+  summary: string;
+  reviewer?: string;
+  reviewedAt?: string;
+};
+
+export type CaseFile = {
+  id: string;
+  cluster: Cluster;
+  topicLabel: TopicLabel;
+  claims: Claim[];
+  evidenceItems: EvidenceItem[];
+  evidenceRelations: EvidenceRelation[];
+  supportScores: SupportScore[];
+  analystVerdict?: AnalystVerdict;
+};
+
+export type Case = CaseFile;
+export type ReviewDecision = AnalystDecision;

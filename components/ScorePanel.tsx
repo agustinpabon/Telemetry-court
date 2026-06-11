@@ -1,41 +1,62 @@
-import type { Validation, Verdict } from "@/lib/types";
+import type { CaseFile, SupportStatus } from "@/lib/types";
 
 type ScorePanelProps = {
-  validation: Validation;
-  evidenceCount: number;
+  caseFile: CaseFile;
 };
 
-const verdictMeta: Record<
-  Verdict,
+const statusMeta: Record<
+  SupportStatus,
   { label: string; className: string; note: string; plainLanguage: string }
 > = {
   supported: {
     label: "Supported",
     className: "text-[var(--color-supported)]",
-    note: "Evidence consistently reinforces the cluster interpretation.",
+    note: "Evidence consistently reinforces the generated interpretation.",
     plainLanguage:
-      "Plain-language readout: the generated meaning holds up because the strongest cluster features and examples tell the same story, with no material contradiction left unresolved.",
+      "Plain-language readout: the generated meaning holds up because the strongest evidence supports the reviewable claims.",
   },
-  uncertain: {
-    label: "Uncertain",
+  weakly_supported: {
+    label: "Weakly supported",
     className: "text-[var(--color-uncertain)]",
-    note: "Signals lean toward the interpretation, but a conflicting detail remains open.",
+    note: "Some evidence supports the interpretation, but confidence remains limited.",
     plainLanguage:
-      "Plain-language readout: the generated meaning is plausible, but one contradictory signal is still strong enough that the interpretation should remain under review.",
+      "Plain-language readout: the generated meaning is plausible, but the record needs clearer support before it should be accepted as stated.",
+  },
+  contradicted: {
+    label: "Contradicted",
+    className: "text-[var(--color-unsupported)]",
+    note: "At least one evidence item directly contradicts a generated claim.",
+    plainLanguage:
+      "Plain-language readout: the generated meaning conflicts with part of the record and should not be accepted without revision.",
   },
   unsupported: {
     label: "Unsupported",
     className: "text-[var(--color-unsupported)]",
     note: "The evidence does not adequately support the interpretation.",
     plainLanguage:
-      "Plain-language readout: the generated meaning does not stand because the substrate and evidence do not support the story the title and description are telling.",
+      "Plain-language readout: the generated meaning does not stand because the evidence does not support the story the label is telling.",
+  },
+  insufficient_evidence: {
+    label: "Insufficient evidence",
+    className: "text-[var(--color-uncertain)]",
+    note: "The record lacks enough evidence to judge the claim confidently.",
+    plainLanguage:
+      "Plain-language readout: the system should expose the gap instead of presenting the claim as proven.",
   },
 };
 
-const verdictStates: Verdict[] = ["supported", "uncertain", "unsupported"];
+const statusStates: SupportStatus[] = [
+  "supported",
+  "weakly_supported",
+  "contradicted",
+  "unsupported",
+  "insufficient_evidence",
+];
 
-export function ScorePanel({ validation, evidenceCount }: ScorePanelProps) {
-  const currentVerdict = verdictMeta[validation.verdict];
+export function ScorePanel({ caseFile }: ScorePanelProps) {
+  const caseStatus = getCaseStatus(caseFile);
+  const currentStatus = statusMeta[caseStatus];
+  const averageScore = getAverageSupportScore(caseFile);
 
   return (
     <section className="rounded-[30px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[0_24px_60px_rgba(15,23,42,0.07)] sm:p-7">
@@ -49,8 +70,8 @@ export function ScorePanel({ validation, evidenceCount }: ScorePanelProps) {
 
         <div className="rounded-[28px] border border-[var(--color-border-strong)] bg-[var(--color-panel)]/72 p-5">
           <div className="flex flex-wrap items-center gap-2">
-            {verdictStates.map((state) => {
-              const isActive = state === validation.verdict;
+            {statusStates.map((state) => {
+              const isActive = state === caseStatus;
               return (
                 <div
                   key={state}
@@ -60,30 +81,36 @@ export function ScorePanel({ validation, evidenceCount }: ScorePanelProps) {
                       : "border-[var(--color-border)] bg-transparent text-[var(--color-muted)]"
                   }`}
                 >
-                  {verdictMeta[state].label}
+                  {statusMeta[state].label}
                 </div>
               );
             })}
           </div>
 
-          <p className={`mt-5 text-5xl font-semibold tracking-[-0.06em] ${currentVerdict.className}`}>
-            {currentVerdict.label}
+          <p className={`mt-5 text-5xl font-semibold tracking-[-0.06em] ${currentStatus.className}`}>
+            {currentStatus.label}
           </p>
           <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-            {currentVerdict.plainLanguage}
+            {currentStatus.plainLanguage}
           </p>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <MetricTile label="Confidence" value={`${validation.confidenceScore}%`} />
-          <MetricTile label="Evidence items" value={`${evidenceCount}`} />
-          <MetricTile label="Supported claims" value={`${validation.supportedClaims.length}`} />
-          <MetricTile label="Weak claims" value={`${validation.weakClaims.length}`} />
+          <MetricTile label="Average support" value={`${averageScore}%`} />
+          <MetricTile label="Evidence items" value={`${caseFile.evidenceItems.length}`} />
+          <MetricTile
+            label="Supported claims"
+            value={`${countClaims(caseFile, "supported")}`}
+          />
+          <MetricTile
+            label="Weak claims"
+            value={`${countClaims(caseFile, "weakly_supported")}`}
+          />
           <MetricTile
             label="Contradicted claims"
-            value={`${validation.contradictedClaims.length}`}
+            value={`${countClaims(caseFile, "contradicted")}`}
           />
-          <MetricTile label="Record note" value={currentVerdict.note} longValue />
+          <MetricTile label="Record note" value={currentStatus.note} longValue />
         </div>
 
         <div className="rounded-[24px] border border-[var(--color-border)] bg-white/78 p-5">
@@ -91,12 +118,50 @@ export function ScorePanel({ validation, evidenceCount }: ScorePanelProps) {
             Summary
           </p>
           <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-            {validation.summary}
+            {caseFile.analystVerdict?.summary ??
+              "No analyst verdict has been recorded for this synthetic case."}
           </p>
         </div>
       </div>
     </section>
   );
+}
+
+function getCaseStatus(caseFile: CaseFile): SupportStatus {
+  if (caseFile.claims.some((claim) => claim.status === "contradicted")) {
+    return "contradicted";
+  }
+
+  if (caseFile.claims.some((claim) => claim.status === "unsupported")) {
+    return "unsupported";
+  }
+
+  if (caseFile.claims.some((claim) => claim.status === "insufficient_evidence")) {
+    return "insufficient_evidence";
+  }
+
+  if (caseFile.claims.some((claim) => claim.status === "weakly_supported")) {
+    return "weakly_supported";
+  }
+
+  return "supported";
+}
+
+function getAverageSupportScore(caseFile: CaseFile): number {
+  if (caseFile.supportScores.length === 0) {
+    return 0;
+  }
+
+  const total = caseFile.supportScores.reduce(
+    (sum, score) => sum + score.value,
+    0,
+  );
+
+  return Math.round((total / caseFile.supportScores.length) * 100);
+}
+
+function countClaims(caseFile: CaseFile, status: SupportStatus): number {
+  return caseFile.claims.filter((claim) => claim.status === status).length;
 }
 
 function MetricTile({

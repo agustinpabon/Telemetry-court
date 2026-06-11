@@ -1,6 +1,6 @@
-import type { EvidenceStance } from "@/lib/types";
+import type { EvidencePolarity } from "@/lib/types";
 
-export type EvidenceFilterValue = "all" | EvidenceStance;
+export type EvidenceFilterValue = "all" | EvidencePolarity;
 
 type EvidenceFiltersProps = {
   counts: Record<EvidenceFilterValue, number>;
@@ -11,7 +11,7 @@ type EvidenceFiltersProps = {
 const filterLabels: Record<EvidenceFilterValue, string> = {
   all: "All",
   supports: "Supports",
-  partial: "Partial",
+  neutral: "Neutral",
   contradicts: "Contradicts",
 };
 
@@ -20,7 +20,7 @@ export function EvidenceFilters({
   selectedFilter,
   onSelect,
 }: EvidenceFiltersProps) {
-  const filters: EvidenceFilterValue[] = ["all", "supports", "partial", "contradicts"];
+  const filters: EvidenceFilterValue[] = ["all", "supports", "neutral", "contradicts"];
 
   return (
     <div className="flex flex-wrap gap-2">

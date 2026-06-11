@@ -1,10 +1,10 @@
-import type { GeneratedInterpretation } from "@/lib/types";
+import type { TopicLabel } from "@/lib/types";
 
 type ClaimPanelProps = {
-  generatedInterpretation: GeneratedInterpretation;
+  topicLabel: TopicLabel;
 };
 
-export function ClaimPanel({ generatedInterpretation }: ClaimPanelProps) {
+export function ClaimPanel({ topicLabel }: ClaimPanelProps) {
   return (
     <section className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[0_24px_60px_rgba(15,23,42,0.07)] sm:p-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -13,7 +13,7 @@ export function ClaimPanel({ generatedInterpretation }: ClaimPanelProps) {
             Generated interpretation
           </p>
           <h2 className="mt-3 max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-balance sm:text-5xl">
-            {generatedInterpretation.title}
+            {topicLabel.name}
           </h2>
         </div>
         <span className="inline-flex w-fit rounded-full border border-[var(--color-border-strong)] bg-[var(--color-accent-soft)] px-3 py-1 text-sm font-medium text-[var(--color-accent-strong)]">
@@ -22,7 +22,7 @@ export function ClaimPanel({ generatedInterpretation }: ClaimPanelProps) {
       </div>
 
       <p className="mt-8 max-w-4xl text-lg leading-9 text-[var(--color-muted)]">
-        {generatedInterpretation.description}
+        {topicLabel.explanation}
       </p>
 
       <div className="mt-8 grid gap-3 md:grid-cols-[1.2fr_1fr]">

@@ -3,8 +3,8 @@
 import { useState } from "react";
 
 import { CaseSwitcher } from "@/components/CaseSwitcher";
-import { ClaimPanel } from "@/components/ClaimPanel";
 import { ClaimLedger } from "@/components/ClaimLedger";
+import { ClaimPanel } from "@/components/ClaimPanel";
 import { ClusterPanel } from "@/components/ClusterPanel";
 import { CourtRecord } from "@/components/CourtRecord";
 import { EvidenceCard } from "@/components/EvidenceCard";
@@ -16,18 +16,24 @@ import { InterpretationRisks } from "@/components/InterpretationRisks";
 import { ReviewActions } from "@/components/ReviewActions";
 import { ScorePanel } from "@/components/ScorePanel";
 import { sampleCases } from "@/data/sampleCases";
-import type { ReviewDecision, ValidationClaim } from "@/lib/types";
+import type { AnalystDecision, EvidencePolarity, EvidenceRelation } from "@/lib/types";
 
 export default function Home() {
-  const [selectedCaseId, setSelectedCaseId] = useState<string>(sampleCases[0]?.id ?? "");
-  const [selectedFilter, setSelectedFilter] = useState<EvidenceFilterValue>("all");
-  const [selectedClaimId, setSelectedClaimId] = useState<string | undefined>(undefined);
+  const [selectedCaseId, setSelectedCaseId] = useState<string>(
+    sampleCases[0]?.id ?? "",
+  );
+  const [selectedFilter, setSelectedFilter] =
+    useState<EvidenceFilterValue>("all");
+  const [selectedClaimId, setSelectedClaimId] = useState<string | undefined>(
+    undefined,
+  );
   const [decisionsByCase, setDecisionsByCase] = useState<
-    Partial<Record<string, { decision: ReviewDecision; timestamp: string }>>
+    Partial<Record<string, { decision: AnalystDecision; timestamp: string }>>
   >({});
 
   const selectedCase =
-    sampleCases.find((currentCase) => currentCase.id === selectedCaseId) ?? sampleCases[0];
+    sampleCases.find((currentCase) => currentCase.id === selectedCaseId) ??
+    sampleCases[0];
 
   if (!selectedCase) {
     return (
@@ -47,39 +53,53 @@ export default function Home() {
     );
   }
 
-  const allClaims: ValidationClaim[] = [
-    ...selectedCase.validation.supportedClaims,
-    ...selectedCase.validation.weakClaims,
-    ...selectedCase.validation.contradictedClaims,
-  ];
-
+  const allClaims = selectedCase.claims;
   const selectedClaim = allClaims.find((claim) => claim.id === selectedClaimId);
   const effectiveSelectedClaim =
     selectedClaim && allClaims.some((claim) => claim.id === selectedClaim.id)
       ? selectedClaim
       : undefined;
+  const selectedClaimEvidenceIds = new Set(
+    effectiveSelectedClaim
+      ? selectedCase.supportScores.find(
+          (score) => score.claimId === effectiveSelectedClaim.id,
+        )?.evidenceIds ?? []
+      : [],
+  );
 
   const evidenceCounts: Record<EvidenceFilterValue, number> = {
-    all: selectedCase.evidence.length,
-    supports: selectedCase.evidence.filter((item) => item.stance === "supports").length,
-    partial: selectedCase.evidence.filter((item) => item.stance === "partial").length,
-    contradicts: selectedCase.evidence.filter((item) => item.stance === "contradicts").length,
+    all: selectedCase.evidenceItems.length,
+    supports: selectedCase.evidenceItems.filter(
+      (item) => getEvidencePolarity(relationsForEvidence(item.id)) === "supports",
+    ).length,
+    neutral: selectedCase.evidenceItems.filter(
+      (item) => getEvidencePolarity(relationsForEvidence(item.id)) === "neutral",
+    ).length,
+    contradicts: selectedCase.evidenceItems.filter(
+      (item) => getEvidencePolarity(relationsForEvidence(item.id)) === "contradicts",
+    ).length,
   };
 
-  const stanceFilteredEvidence =
+  const polarityFilteredEvidence =
     selectedFilter === "all"
-      ? selectedCase.evidence
-      : selectedCase.evidence.filter((item) => item.stance === selectedFilter);
+      ? selectedCase.evidenceItems
+      : selectedCase.evidenceItems.filter(
+          (item) => getEvidencePolarity(relationsForEvidence(item.id)) === selectedFilter,
+        );
 
   const filteredEvidence = effectiveSelectedClaim
-    ? stanceFilteredEvidence.filter((item) =>
-        effectiveSelectedClaim.evidenceIds.includes(item.id),
-      )
-    : stanceFilteredEvidence;
+    ? polarityFilteredEvidence.filter((item) => selectedClaimEvidenceIds.has(item.id))
+    : polarityFilteredEvidence;
 
   const currentReviewRecord = decisionsByCase[selectedCase.id];
 
-  function handleDecision(decision: ReviewDecision) {
+  function relationsForEvidence(evidenceId: string): EvidenceRelation[] {
+    return selectedCase.evidenceRelations.filter(
+      (relation) => relation.evidenceId === evidenceId,
+    );
+  }
+
+  function handleDecision(decision: AnalystDecision) {
     setDecisionsByCase((currentState) => ({
       ...currentState,
       [selectedCase.id]: {
@@ -127,8 +147,8 @@ export default function Home() {
                 Workflow
               </p>
               <p className="mt-2 max-w-md text-sm leading-7 text-[var(--color-accent-strong)]">
-                Telemetry to embeddings to clusters to Toponymy to generated interpretation
-                to claim validation to verdict.
+                Cluster to AI label to claims to evidence to support score to analyst
+                verdict.
               </p>
             </div>
           </div>
@@ -144,19 +164,17 @@ export default function Home() {
           aria-label="Primary review workspace"
           className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_380px]"
         >
-          <ClaimPanel generatedInterpretation={selectedCase.generatedInterpretation} />
+          <ClaimPanel topicLabel={selectedCase.topicLabel} />
           <div className="flex flex-col gap-6">
-            <ScorePanel
-              validation={selectedCase.validation}
-              evidenceCount={selectedCase.evidence.length}
-            />
+            <ScorePanel caseFile={selectedCase} />
             <CourtRecord
-              generatedInterpretation={selectedCase.generatedInterpretation}
+              topicLabel={selectedCase.topicLabel}
               reviewDecision={currentReviewRecord?.decision}
               reviewTimestamp={currentReviewRecord?.timestamp}
-              validation={selectedCase.validation}
+              analystVerdict={selectedCase.analystVerdict}
+              supportScores={selectedCase.supportScores}
             />
-            <InterpretationRisks risks={selectedCase.interpretationRisks} />
+            <InterpretationRisks claims={selectedCase.claims} />
             <ReviewActions
               decision={currentReviewRecord?.decision}
               onDecision={handleDecision}
@@ -166,6 +184,7 @@ export default function Home() {
 
         <ClaimLedger
           claims={allClaims}
+          supportScores={selectedCase.supportScores}
           selectedClaimId={effectiveSelectedClaim?.id}
           onSelectClaim={handleSelectClaim}
           onClearClaim={() => setSelectedClaimId(undefined)}
@@ -211,9 +230,10 @@ export default function Home() {
                   <EvidenceCard
                     key={item.id}
                     evidence={item}
+                    relations={relationsForEvidence(item.id)}
                     highlighted={
                       effectiveSelectedClaim
-                        ? effectiveSelectedClaim.evidenceIds.includes(item.id)
+                        ? selectedClaimEvidenceIds.has(item.id)
                         : false
                     }
                   />
@@ -226,8 +246,8 @@ export default function Home() {
                 </p>
                 <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
                   {effectiveSelectedClaim
-                    ? "No evidence matches this claim under the current stance filter. Clear the claim focus or adjust the evidence filter to broaden the record."
-                    : "No evidence matches this filter. Try another stance view to inspect the rest of the record."}
+                    ? "No evidence matches this claim under the current polarity filter. Clear the claim focus or adjust the evidence filter to broaden the record."
+                    : "No evidence matches this filter. Try another polarity view to inspect the rest of the record."}
                 </p>
               </div>
             )}
@@ -238,4 +258,16 @@ export default function Home() {
       </div>
     </main>
   );
+}
+
+function getEvidencePolarity(relations: EvidenceRelation[]): EvidencePolarity {
+  if (relations.some((relation) => relation.polarity === "contradicts")) {
+    return "contradicts";
+  }
+
+  if (relations.some((relation) => relation.polarity === "supports")) {
+    return "supports";
+  }
+
+  return "neutral";
 }

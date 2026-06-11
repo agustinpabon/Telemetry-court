@@ -1,12 +1,12 @@
-import type { ReviewDecision } from "@/lib/types";
+import type { AnalystDecision } from "@/lib/types";
 
 type ReviewActionsProps = {
-  decision?: ReviewDecision;
-  onDecision: (decision: ReviewDecision) => void;
+  decision?: AnalystDecision;
+  onDecision: (decision: AnalystDecision) => void;
 };
 
 const actionMeta: Record<
-  ReviewDecision,
+  AnalystDecision,
   { label: string; className: string }
 > = {
   accept: {
@@ -24,10 +24,20 @@ const actionMeta: Record<
     className:
       "bg-white text-[var(--color-ink)] border-[var(--color-border-strong)] hover:bg-[var(--color-unsupported-soft)]",
   },
+  needs_more_review: {
+    label: "Needs more review",
+    className:
+      "bg-white text-[var(--color-ink)] border-[var(--color-border-strong)] hover:bg-[var(--color-uncertain-soft)]",
+  },
 };
 
 export function ReviewActions({ decision, onDecision }: ReviewActionsProps) {
-  const actions: ReviewDecision[] = ["accept", "revise", "reject"];
+  const actions: AnalystDecision[] = [
+    "accept",
+    "revise",
+    "reject",
+    "needs_more_review",
+  ];
 
   return (
     <section className="rounded-[30px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[0_20px_50px_rgba(15,23,42,0.06)] sm:p-7">

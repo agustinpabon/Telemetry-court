@@ -1,397 +1,345 @@
-import type { Case } from "@/lib/types";
+import type { CaseFile } from "@/lib/types";
 
-const sampleCasesData: Case[] = [
+const sampleCasesData: CaseFile[] = [
   {
-    id: "case-000",
-    generatedInterpretation: {
-      title: "Scheduled Access Certification Cycle",
-      description:
-        "This cluster appears to capture a recurring access certification workflow. The cluster substrate and examples consistently reflect review-oriented permission inspection with expected administrative follow-through.",
-      modelName: "Toponymy-style summarizer v0.4",
-      generatedAt: "2026-06-11 09:18 ET",
-      promptVersion: "prompt-review-03",
-    },
-    cluster: {
-      id: "cluster-011",
-      size: 132,
-      density: "0.88 cohesion score",
-      timeWindow: "7-day observation window",
-      embeddingSource: "Synthetic IAM activity embeddings",
-      topFeatures: [
-        "Repeated `ListUsers`, `GetPolicy`, and entitlement comparison reads",
-        "Stable weekday cadence aligned to a morning governance review block",
-        "Actor path consistently matches an internal identity governance role",
-      ],
-      representativeExamples: [
-        "Account review sweep across 31 identities with only read-oriented permission lookups",
-        "Role inspection paired with standard certification tagging and summary generation",
-        "Review bursts occur in the same daily window across the entire cluster",
-      ],
-    },
-    evidence: [
-      {
-        id: "E-001",
-        kind: "feature",
-        title: "Salient features are dominated by certification reads",
-        summary:
-          "The strongest cluster features are read-only entitlement inspection actions, which cleanly support a certification-style interpretation.",
-        relevance: "high",
-        strength: "strong",
-        stance: "supports",
-        linkedClaimIds: ["C-001", "C-002"],
-      },
-      {
-        id: "E-002",
-        kind: "exemplar",
-        title: "Representative sequences resemble governance review routines",
-        summary:
-          "Examples show inspection, comparison, and harmless administrative tagging without evidence of net-new access expansion.",
-        relevance: "high",
-        strength: "strong",
-        stance: "supports",
-        linkedClaimIds: ["C-002", "C-003"],
-      },
-      {
-        id: "E-003",
-        kind: "metadata",
-        title: "Origin and timing are highly consistent",
-        summary:
-          "The cluster stays within a normal weekday review window and maps to a known identity governance owner path, reinforcing the generated meaning.",
-        relevance: "medium",
-        strength: "moderate",
-        stance: "supports",
-        linkedClaimIds: ["C-003"],
-      },
-    ],
-    interpretationRisks: [],
-    validation: {
-      verdict: "supported",
-      confidenceScore: 92,
-      supportedClaims: [
-        {
-          id: "C-001",
-          text: "The substrate is anchored by read-oriented entitlement inspection rather than mutating behavior.",
-          status: "supported",
-          evidenceIds: ["E-001"],
-          rationale:
-            "The strongest feature cluster is made up of read-only entitlement inspection calls, with no matching pattern of mutating access changes.",
-        },
-        {
-          id: "C-002",
-          text: "Representative examples match a recurring certification workflow.",
-          status: "supported",
-          evidenceIds: ["E-001", "E-002"],
-          rationale:
-            "Examples show consistent review and tagging sequences that fit a certification cycle rather than an escalation path.",
-        },
-        {
-          id: "C-003",
-          text: "Timing and ownership metadata align with a normal governance process.",
-          status: "supported",
-          evidenceIds: ["E-002", "E-003"],
-          rationale:
-            "Origin metadata and review timing remain stable across the case, reinforcing the governance interpretation.",
-        },
-      ],
-      weakClaims: [],
-      contradictedClaims: [],
-      summary:
-        "The generated interpretation holds up well. Features, exemplars, and metadata all point toward a routine access certification cycle with no meaningful contradictory signal present.",
-    },
-  },
-  {
-    id: "case-001",
-    generatedInterpretation: {
-      title: "Repeated Cloud Permission Review",
-      description:
-        "This cluster appears to represent routine identity and access review activity. The pattern is dominated by read-heavy permission inspection with light administrative follow-through, rather than a clear intrusion sequence.",
-      modelName: "Toponymy-style summarizer v0.4",
-      generatedAt: "2026-06-11 10:42 ET",
-      promptVersion: "prompt-review-03",
-    },
+    id: "case-sample-001",
     cluster: {
       id: "cluster-017",
+      name: "Synthetic IAM Review Cluster",
+      description:
+        "Synthetic cluster of read-oriented identity review activity with one timing-origin outlier.",
+      source: "sample",
       size: 148,
-      density: "0.81 cohesion score",
-      timeWindow: "14-day observation window",
-      embeddingSource: "Synthetic IAM activity embeddings",
-      topFeatures: [
-        "Frequent `ListUsers`, `GetPolicy`, and `ListAttachedUserPolicies` lookups",
-        "Stable origin from an internal platform administration subnet",
-        "Recurring bursts line up with a weekly review cadence",
-      ],
-      representativeExamples: [
-        "Inventory sweep across 43 identities completed in 18 minutes with read-only IAM calls",
-        "Policy inspection sequence followed by routine role tagging and summary lookups",
-        "Single off-hours review burst arrived from an infrequent control-plane region",
-      ],
     },
-    evidence: [
+    topicLabel: {
+      id: "label-017-a",
+      clusterId: "cluster-017",
+      name: "Repeated Cloud Permission Review",
+      explanation:
+        "This cluster appears to represent routine identity and access review activity. The pattern is dominated by read-heavy permission inspection with light administrative follow-through.",
+      generatedBy: "Toponymy-style summarizer v0.4",
+      generatedAt: "2026-06-11T14:42:00Z",
+    },
+    claims: [
       {
-        id: "E-101",
-        kind: "feature",
-        title: "Read-heavy IAM inspection dominates the cluster",
-        summary:
-          "Salient features repeatedly center on account enumeration and policy reads, which is consistent with a permission review substrate rather than overt privilege escalation behavior.",
-        relevance: "high",
-        strength: "strong",
-        stance: "supports",
-        linkedClaimIds: ["C-1", "C-2"],
+        id: "claim-001",
+        clusterId: "cluster-017",
+        topicLabelId: "label-017-a",
+        text: "The cluster is anchored by read-oriented IAM inspection rather than mutating access changes.",
+        status: "supported",
+        supportScore: 0.91,
+        rationale:
+          "The strongest synthetic features are account enumeration and policy reads, with no matching grant or privilege-change pattern.",
       },
       {
-        id: "E-102",
-        kind: "exemplar",
-        title: "Representative examples look like administrative hygiene",
-        summary:
-          "Example sequences pair policy reads with standard role inspection and tagging actions, which partially supports the interpretation of a routine review workflow.",
-        relevance: "medium",
-        strength: "moderate",
-        stance: "partial",
-        linkedClaimIds: ["C-2", "C-3"],
+        id: "claim-002",
+        clusterId: "cluster-017",
+        topicLabelId: "label-017-a",
+        text: "Representative examples broadly resemble a recurring access review workflow.",
+        status: "weakly_supported",
+        supportScore: 0.63,
+        rationale:
+          "The synthetic exemplars look review-oriented, but the support is moderate because examples include administrative follow-through that could fit more than one workflow.",
       },
       {
-        id: "E-103",
-        kind: "metadata",
-        title: "Reviewer continuity matches known platform operations owners",
-        summary:
-          "Actor metadata aligns with a known operations owner set, adding support that the cluster may be tied to normal review activity rather than an unknown operator.",
-        relevance: "medium",
-        strength: "moderate",
-        stance: "supports",
-        linkedClaimIds: ["C-3"],
-      },
-      {
-        id: "E-104",
-        kind: "contradiction",
-        title: "One burst occurred at an unusual hour from a rare region",
-        summary:
-          "A single session arrived at 02:14 local time from a rarely seen control-plane region. That signal does not fully overturn the interpretation, but it weakens confidence in a clean routine-review label.",
-        relevance: "high",
-        strength: "strong",
-        stance: "contradicts",
-        linkedClaimIds: ["C-4"],
+        id: "claim-003",
+        clusterId: "cluster-017",
+        topicLabelId: "label-017-a",
+        text: "Nothing in the cluster departs from normal review timing and origin patterns.",
+        status: "contradicted",
+        supportScore: 0.24,
+        rationale:
+          "A synthetic off-hours session from a rarely seen control-plane region directly contradicts the clean normal-timing claim.",
       },
     ],
-    interpretationRisks: [
+    evidenceItems: [
       {
-        id: "R-101",
-        title: "Contradictory evidence exists",
-        detail:
-          "A meaningful timing-and-region outlier is present, so the model output should not be accepted at face value.",
+        id: "evidence-001",
+        clusterId: "cluster-017",
+        title: "Read-heavy IAM inspection features",
+        summary:
+          "Synthetic salient features center on ListUsers, GetPolicy, and ListAttachedUserPolicies style reads.",
+        sourceType: "session_feature",
+        rawReference: "sample/features/cluster-017",
       },
       {
-        id: "R-102",
-        title: "Geographic signal is underrepresented",
-        detail:
-          "The cluster looks stable overall, but regional coverage is thin enough that one outlier meaningfully changes confidence.",
+        id: "evidence-002",
+        clusterId: "cluster-017",
+        title: "Administrative review exemplars",
+        summary:
+          "Synthetic representative samples pair policy reads with role inspection, tagging, and summary-generation steps.",
+        sourceType: "exemplar",
+        rawReference: "sample/exemplars/cluster-017/review-sequences",
+      },
+      {
+        id: "evidence-003",
+        clusterId: "cluster-017",
+        title: "Known review-owner metadata",
+        summary:
+          "Synthetic metadata maps most sessions to an internal identity governance owner path.",
+        sourceType: "metadata",
+        rawReference: "sample/metadata/cluster-017/owner-path",
+      },
+      {
+        id: "evidence-004",
+        clusterId: "cluster-017",
+        title: "Off-hours rare-region exemplar",
+        summary:
+          "One synthetic session occurs at 02:14 local time from a rarely seen control-plane region.",
+        sourceType: "exemplar",
+        rawReference: "sample/exemplars/cluster-017/session-09",
       },
     ],
-    validation: {
-      verdict: "uncertain",
-      confidenceScore: 68,
-      supportedClaims: [
-        {
-          id: "C-1",
-          text: "The cluster substrate is anchored by read-oriented IAM inspection rather than a burst of mutating actions.",
-          status: "supported",
-          evidenceIds: ["E-101"],
-          rationale:
-            "The salient features are strongly read-heavy, which supports a review-oriented substrate instead of an active access-change sequence.",
-        },
-        {
-          id: "C-2",
-          text: "Representative examples broadly resemble a recurring access review workflow.",
-          status: "supported",
-          evidenceIds: ["E-101", "E-102"],
-          rationale:
-            "The examples mostly look routine, but that support depends partly on less conclusive admin-like follow-through.",
-        },
-      ],
-      weakClaims: [
-        {
-          id: "C-3",
-          text: "The activity likely belongs to a known administrative owner path.",
-          status: "weak",
-          evidenceIds: ["E-102", "E-103"],
-          rationale:
-            "Known-owner metadata helps, but it is not strong enough on its own to fully settle the interpretation.",
-        },
-      ],
-      contradictedClaims: [
-        {
-          id: "C-4",
-          text: "Nothing in the cluster meaningfully departs from normal review timing and origin patterns.",
-          status: "contradicted",
-          evidenceIds: ["E-104"],
-          rationale:
-            "The off-hours burst from a rare region creates a concrete contradiction to the clean routine-review narrative.",
-        },
-      ],
+    evidenceRelations: [
+      {
+        claimId: "claim-001",
+        evidenceId: "evidence-001",
+        polarity: "supports",
+        strength: "strong",
+        explanation:
+          "Read-oriented session features directly support the inspection-workflow claim.",
+      },
+      {
+        claimId: "claim-002",
+        evidenceId: "evidence-002",
+        polarity: "supports",
+        strength: "moderate",
+        explanation:
+          "The exemplars resemble review routines, but the match is not exclusive enough for strong support.",
+      },
+      {
+        claimId: "claim-002",
+        evidenceId: "evidence-003",
+        polarity: "neutral",
+        strength: "weak",
+        explanation:
+          "Known-owner metadata is useful context, but it does not prove the examples are specifically a recurring review workflow.",
+      },
+      {
+        claimId: "claim-003",
+        evidenceId: "evidence-004",
+        polarity: "contradicts",
+        strength: "strong",
+        explanation:
+          "The off-hours rare-region exemplar contradicts the claim that timing and origin are fully normal.",
+      },
+    ],
+    supportScores: [
+      {
+        claimId: "claim-001",
+        value: 0.91,
+        status: "supported",
+        rationale: "Strong direct support from synthetic session features.",
+        evidenceIds: ["evidence-001"],
+      },
+      {
+        claimId: "claim-002",
+        value: 0.63,
+        status: "weakly_supported",
+        rationale:
+          "Moderate support from exemplars, with metadata that adds context but not decisive proof.",
+        evidenceIds: ["evidence-002", "evidence-003"],
+      },
+      {
+        claimId: "claim-003",
+        value: 0.24,
+        status: "contradicted",
+        rationale:
+          "Strong contradictory evidence from one synthetic timing-origin outlier.",
+        evidenceIds: ["evidence-004"],
+      },
+    ],
+    analystVerdict: {
+      decision: "revise",
       summary:
-        "The interpretation is directionally plausible because the cluster is shaped by permission-inspection features and admin-like exemplars. Confidence remains limited because one timing-and-region outlier introduces a real contradiction to the 'routine review' story.",
+        "The generated label is directionally plausible, but the explanation should acknowledge the off-hours origin outlier instead of implying a fully routine pattern.",
+      reviewer: "Synthetic reviewer",
+      reviewedAt: "2026-06-11T15:10:00Z",
     },
   },
   {
-    id: "case-002",
-    generatedInterpretation: {
-      title: "Privilege Expansion Attempt",
-      description:
-        "This cluster appears to represent an active privilege expansion attempt. The generated description suggests that the examples and salient features indicate a coordinated effort to broaden access across cloud identities.",
-      modelName: "Toponymy-style summarizer v0.4",
-      generatedAt: "2026-06-11 11:07 ET",
-      promptVersion: "prompt-review-03",
-    },
+    id: "case-sample-002",
     cluster: {
       id: "cluster-029",
+      name: "Synthetic Connector Onboarding Cluster",
+      description:
+        "Synthetic cluster of inventory reads and integration setup checks during a daytime rollout window.",
+      source: "sample",
       size: 94,
-      density: "0.74 cohesion score",
-      timeWindow: "5-day observation window",
-      embeddingSource: "Synthetic cloud control-plane embeddings",
-      topFeatures: [
-        "High frequency of inventory reads and integration status checks",
-        "Examples cluster around onboarding-like API configuration sequences",
-        "Timing aligns to a daytime rollout window rather than a burst escalation pattern",
-      ],
-      representativeExamples: [
-        "Connector setup sequence checks account summaries, integration state, and existing role mappings",
-        "API inventory calls are followed by documentation-style tagging and environment naming updates",
-        "No exemplar shows a completed privilege grant or persistence-oriented step",
-      ],
     },
-    evidence: [
+    topicLabel: {
+      id: "label-029-a",
+      clusterId: "cluster-029",
+      name: "Privilege Expansion Attempt",
+      explanation:
+        "This cluster appears to represent an active privilege expansion attempt across cloud identities.",
+      generatedBy: "Toponymy-style summarizer v0.4",
+      generatedAt: "2026-06-11T15:07:00Z",
+    },
+    claims: [
       {
-        id: "E-201",
-        kind: "feature",
-        title: "Feature set does not show mutating privilege steps",
-        summary:
-          "The most salient features emphasize inventory and status checks rather than policy attachment, role assumption chaining, or persistent grant activity.",
-        relevance: "high",
-        strength: "strong",
-        stance: "contradicts",
-        linkedClaimIds: ["C-201", "C-202"],
+        id: "claim-101",
+        clusterId: "cluster-029",
+        topicLabelId: "label-029-a",
+        text: "The cluster contains concrete signs of active privilege expansion behavior.",
+        status: "unsupported",
+        supportScore: 0.12,
+        rationale:
+          "The synthetic record has no evidence of completed grants, durable privilege changes, or persistence-oriented follow-through.",
       },
       {
-        id: "E-202",
-        kind: "exemplar",
-        title: "Representative examples resemble integration onboarding",
-        summary:
-          "Examples consistently look like connector configuration and environment preparation, which conflicts with the generated escalation narrative.",
-        relevance: "high",
-        strength: "strong",
-        stance: "contradicts",
-        linkedClaimIds: ["C-202", "C-203"],
+        id: "claim-102",
+        clusterId: "cluster-029",
+        topicLabelId: "label-029-a",
+        text: "Representative examples support an escalation storyline rather than an onboarding workflow.",
+        status: "contradicted",
+        supportScore: 0.18,
+        rationale:
+          "The representative examples look like connector setup and environment preparation, which conflicts with the generated escalation narrative.",
       },
       {
-        id: "E-203",
-        kind: "metadata",
-        title: "Timing fits a controlled rollout window",
+        id: "claim-103",
+        clusterId: "cluster-029",
+        topicLabelId: "label-029-a",
+        text: "There is enough evidence to identify the operator's intent.",
+        status: "insufficient_evidence",
+        supportScore: 0.34,
+        rationale:
+          "Synthetic metadata provides rollout context, but there is not enough evidence to infer intent beyond configuration activity.",
+      },
+    ],
+    evidenceItems: [
+      {
+        id: "evidence-101",
+        clusterId: "cluster-029",
+        title: "Inventory and status-check features",
         summary:
-          "The cluster sits inside a standard daytime rollout period and maps to a known platform integration owner path, which weakens the privilege-expansion interpretation.",
-        relevance: "medium",
+          "Synthetic salient features emphasize inventory reads, integration status checks, and existing role mapping lookups.",
+        sourceType: "session_feature",
+        rawReference: "sample/features/cluster-029",
+      },
+      {
+        id: "evidence-102",
+        clusterId: "cluster-029",
+        title: "Connector setup exemplars",
+        summary:
+          "Synthetic examples show connector configuration, documentation-style tagging, and environment naming updates.",
+        sourceType: "exemplar",
+        rawReference: "sample/exemplars/cluster-029/setup-sequences",
+      },
+      {
+        id: "evidence-103",
+        clusterId: "cluster-029",
+        title: "Daytime rollout metadata",
+        summary:
+          "Synthetic timing metadata places the cluster inside a standard platform integration rollout window.",
+        sourceType: "metadata",
+        rawReference: "sample/metadata/cluster-029/rollout-window",
+      },
+    ],
+    evidenceRelations: [
+      {
+        claimId: "claim-102",
+        evidenceId: "evidence-101",
+        polarity: "contradicts",
+        strength: "strong",
+        explanation:
+          "The non-mutating feature shape contradicts the escalation storyline.",
+      },
+      {
+        claimId: "claim-102",
+        evidenceId: "evidence-102",
+        polarity: "contradicts",
+        strength: "strong",
+        explanation:
+          "Setup-oriented exemplars contradict the claim that examples show escalation.",
+      },
+      {
+        claimId: "claim-103",
+        evidenceId: "evidence-103",
+        polarity: "neutral",
         strength: "weak",
-        stance: "partial",
-        linkedClaimIds: ["C-203"],
-      },
-      {
-        id: "E-204",
-        kind: "contradiction",
-        title: "No exemplar completes a grant or persistence action",
-        summary:
-          "Across the cluster, there is no representative sequence showing a completed permission grant, backdoor creation, or durable follow-on step.",
-        relevance: "high",
-        strength: "strong",
-        stance: "contradicts",
-        linkedClaimIds: ["C-201"],
+        explanation:
+          "Rollout metadata gives context, but it is not enough to infer intent.",
       },
     ],
-    interpretationRisks: [
+    supportScores: [
       {
-        id: "R-201",
-        title: "Cluster density is low",
-        detail:
-          "This cluster is less cohesive than the others in the demo set, which raises the odds of an overly confident generated label.",
+        claimId: "claim-101",
+        value: 0.12,
+        status: "unsupported",
+        rationale:
+          "No synthetic evidence links support this claim; the missing evidence is the reason for the unsupported status.",
+        evidenceIds: [],
       },
       {
-        id: "R-202",
-        title: "Limited exemplar coverage",
-        detail:
-          "The examples are consistent, but they cover a narrower operating slice than the generated interpretation implies.",
+        claimId: "claim-102",
+        value: 0.18,
+        status: "contradicted",
+        rationale:
+          "Strong contradiction from setup-oriented exemplars and non-mutating feature shape.",
+        evidenceIds: ["evidence-101", "evidence-102"],
       },
       {
-        id: "R-203",
-        title: "Contradictory evidence exists",
-        detail:
-          "Multiple strong contradictions directly undermine the model's escalation story, which is why the verdict falls to unsupported.",
+        claimId: "claim-103",
+        value: 0.34,
+        status: "insufficient_evidence",
+        rationale:
+          "Rollout metadata is useful context, but it does not support an intent claim.",
+        evidenceIds: ["evidence-103"],
       },
     ],
-    validation: {
-      verdict: "unsupported",
-      confidenceScore: 24,
-      supportedClaims: [],
-      weakClaims: [
-        {
-          id: "C-203",
-          text: "Some surrounding metadata could be read as preparation for broader access changes.",
-          status: "weak",
-          evidenceIds: ["E-203"],
-          rationale:
-            "There is a faint preparation signal in the rollout metadata, but it does not carry the generated escalation story very far.",
-        },
-      ],
-      contradictedClaims: [
-        {
-          id: "C-201",
-          text: "The cluster contains concrete signs of active privilege expansion behavior.",
-          status: "contradicted",
-          evidenceIds: ["E-201", "E-204"],
-          rationale:
-            "Neither the feature set nor the exemplars show completed grants or persistence steps that would support active expansion.",
-        },
-        {
-          id: "C-202",
-          text: "Representative examples support an escalation storyline rather than an onboarding workflow.",
-          status: "contradicted",
-          evidenceIds: ["E-201", "E-202"],
-          rationale:
-            "The examples look much more like configuration and onboarding sequences than coordinated privilege growth.",
-        },
-      ],
+    analystVerdict: {
+      decision: "reject",
       summary:
-        "The generated interpretation does not hold up. The substrate and examples look much more like a controlled integration onboarding sequence than an active privilege expansion attempt.",
+        "The generated escalation label should not be accepted because the synthetic evidence points to connector onboarding, not active privilege expansion.",
+      reviewer: "Synthetic reviewer",
+      reviewedAt: "2026-06-11T15:34:00Z",
     },
   },
 ];
 
-function assertCaseIntegrity(cases: Case[]): Case[] {
+function assertCaseIntegrity(cases: CaseFile[]): CaseFile[] {
   for (const currentCase of cases) {
-    const evidenceIds = new Set(currentCase.evidence.map((item) => item.id));
-    const claimIds = new Set(
-      [
-        ...currentCase.validation.supportedClaims,
-        ...currentCase.validation.weakClaims,
-        ...currentCase.validation.contradictedClaims,
-      ].map((claim) => claim.id),
+    const claimIds = new Set(currentCase.claims.map((claim) => claim.id));
+    const evidenceIds = new Set(currentCase.evidenceItems.map((item) => item.id));
+    const scoreClaimIds = new Set(
+      currentCase.supportScores.map((score) => score.claimId),
     );
 
-    for (const claim of [
-      ...currentCase.validation.supportedClaims,
-      ...currentCase.validation.weakClaims,
-      ...currentCase.validation.contradictedClaims,
-    ]) {
-      for (const evidenceId of claim.evidenceIds) {
-        if (!evidenceIds.has(evidenceId)) {
-          throw new Error(
-            `Case ${currentCase.id} references missing evidence ID ${evidenceId} in claim ${claim.id}.`,
-          );
-        }
+    for (const claim of currentCase.claims) {
+      if (!scoreClaimIds.has(claim.id)) {
+        throw new Error(
+          `Case ${currentCase.id} is missing a support score for claim ${claim.id}.`,
+        );
       }
     }
 
-    for (const evidenceItem of currentCase.evidence) {
-      for (const linkedClaimId of evidenceItem.linkedClaimIds) {
-        if (!claimIds.has(linkedClaimId)) {
+    for (const relation of currentCase.evidenceRelations) {
+      if (!claimIds.has(relation.claimId)) {
+        throw new Error(
+          `Case ${currentCase.id} relation references missing claim ${relation.claimId}.`,
+        );
+      }
+
+      if (!evidenceIds.has(relation.evidenceId)) {
+        throw new Error(
+          `Case ${currentCase.id} relation references missing evidence ${relation.evidenceId}.`,
+        );
+      }
+    }
+
+    for (const score of currentCase.supportScores) {
+      if (!claimIds.has(score.claimId)) {
+        throw new Error(
+          `Case ${currentCase.id} score references missing claim ${score.claimId}.`,
+        );
+      }
+
+      for (const evidenceId of score.evidenceIds) {
+        if (!evidenceIds.has(evidenceId)) {
           throw new Error(
-            `Case ${currentCase.id} evidence ${evidenceItem.id} links to missing claim ${linkedClaimId}.`,
+            `Case ${currentCase.id} score references missing evidence ${evidenceId}.`,
           );
         }
       }
@@ -401,4 +349,4 @@ function assertCaseIntegrity(cases: Case[]): Case[] {
   return cases;
 }
 
-export const sampleCases: Case[] = assertCaseIntegrity(sampleCasesData);
+export const sampleCases: CaseFile[] = assertCaseIntegrity(sampleCasesData);

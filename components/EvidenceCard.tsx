@@ -1,18 +1,28 @@
-import type { EvidenceItem, EvidenceStrength } from "@/lib/types";
+import type {
+  EvidenceItem,
+  EvidencePolarity,
+  EvidenceRelation,
+  EvidenceSourceType,
+  EvidenceStrength,
+} from "@/lib/types";
 
 type EvidenceCardProps = {
   evidence: EvidenceItem;
+  relations: EvidenceRelation[];
   highlighted?: boolean;
 };
 
-const stanceTone = {
+const polarityTone: Record<
+  EvidencePolarity,
+  { label: string; className: string }
+> = {
   supports: {
     label: "Supports",
     className:
       "border-[color:rgba(47,107,84,0.16)] bg-[var(--color-supported-soft)] text-[var(--color-supported)]",
   },
-  partial: {
-    label: "Partial",
+  neutral: {
+    label: "Neutral",
     className:
       "border-[color:rgba(138,104,53,0.16)] bg-[var(--color-uncertain-soft)] text-[var(--color-uncertain)]",
   },
@@ -21,14 +31,16 @@ const stanceTone = {
     className:
       "border-[color:rgba(134,82,91,0.16)] bg-[var(--color-unsupported-soft)] text-[var(--color-unsupported)]",
   },
-} as const;
+};
 
-const kindLabel = {
-  feature: "Feature",
+const sourceTypeLabel: Record<EvidenceSourceType, string> = {
+  telemetry_event: "Telemetry event",
+  session_feature: "Session feature",
   exemplar: "Exemplar",
+  keyphrase: "Keyphrase",
   metadata: "Metadata",
-  contradiction: "Contradiction",
-} as const;
+  analyst_note: "Analyst note",
+};
 
 const strengthLabel: Record<EvidenceStrength, string> = {
   strong: "Strong",
@@ -36,14 +48,23 @@ const strengthLabel: Record<EvidenceStrength, string> = {
   weak: "Weak",
 };
 
-const relevanceWidth = {
-  high: "100%",
-  medium: "68%",
-  low: "40%",
-} as const;
+const strengthRank: Record<EvidenceStrength, number> = {
+  strong: 3,
+  moderate: 2,
+  weak: 1,
+};
 
-export function EvidenceCard({ evidence, highlighted = false }: EvidenceCardProps) {
-  const tone = stanceTone[evidence.stance];
+export function EvidenceCard({
+  evidence,
+  relations,
+  highlighted = false,
+}: EvidenceCardProps) {
+  const polarity = getPrimaryPolarity(relations);
+  const tone = polarityTone[polarity];
+  const strongestRelation = [...relations].sort(
+    (left, right) => strengthRank[right.strength] - strengthRank[left.strength],
+  )[0];
+  const linkedClaimIds = relations.map((relation) => relation.claimId);
 
   return (
     <article
@@ -55,26 +76,29 @@ export function EvidenceCard({ evidence, highlighted = false }: EvidenceCardProp
     >
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <div className="flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-[0.18em] text-[var(--color-muted)]">
-            <span>{evidence.id}</span>
-            <span>{kindLabel[evidence.kind]}</span>
+          <div>
+            <div className="flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-[0.18em] text-[var(--color-muted)]">
+              <span>{evidence.id}</span>
+              <span>{sourceTypeLabel[evidence.sourceType]}</span>
+            </div>
+            <h3 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[var(--color-ink)]">
+              {evidence.title}
+            </h3>
           </div>
-          <h3 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[var(--color-ink)]">
-            {evidence.title}
-          </h3>
-        </div>
-        <span
-          className={`inline-flex w-fit rounded-full border px-3 py-1 text-xs font-medium ${tone.className}`}
-        >
-          {tone.label}
-        </span>
+          <span
+            className={`inline-flex w-fit rounded-full border px-3 py-1 text-xs font-medium ${tone.className}`}
+          >
+            {tone.label}
+          </span>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <MetaChip label={`Strength ${strengthLabel[evidence.strength]}`} />
-          <MetaChip label={`Relevance ${evidence.relevance}`} />
-          <MetaChip label={kindLabel[evidence.kind]} />
+          <MetaChip
+            label={`Strength ${
+              strongestRelation ? strengthLabel[strongestRelation.strength] : "Not linked"
+            }`}
+          />
+          <MetaChip label={sourceTypeLabel[evidence.sourceType]} />
         </div>
       </div>
 
@@ -86,19 +110,18 @@ export function EvidenceCard({ evidence, highlighted = false }: EvidenceCardProp
 
       <p className="mt-5 text-base leading-8 text-[var(--color-muted)]">{evidence.summary}</p>
 
-      <div className="mt-5 flex items-center justify-between gap-3 rounded-[22px] border border-[var(--color-border)] bg-[var(--color-panel)]/68 px-4 py-4">
-        <div>
+      <div className="mt-5 rounded-[22px] border border-[var(--color-border)] bg-[var(--color-panel)]/68 px-4 py-4">
+        <div className="flex items-center justify-between gap-3">
           <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
-            Relevance
+            Relation note
           </p>
-          <p className="mt-1 text-sm font-semibold capitalize">{evidence.relevance}</p>
+          <span className="text-xs font-medium text-[var(--color-muted)]">
+            {relations.length} linked
+          </span>
         </div>
-        <div className="h-2 w-24 rounded-full bg-white/80">
-          <div
-            className="h-2 rounded-full bg-[var(--color-accent-strong)]"
-            style={{ width: relevanceWidth[evidence.relevance] }}
-          />
-        </div>
+        <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
+          {strongestRelation?.explanation ?? "No claim relation is recorded for this item."}
+        </p>
       </div>
 
       <div className="mt-5 rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4">
@@ -106,18 +129,36 @@ export function EvidenceCard({ evidence, highlighted = false }: EvidenceCardProp
           Linked validation claims
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
-          {evidence.linkedClaimIds.map((claimId) => (
-            <span
-              key={`${evidence.id}-${claimId}`}
-              className="rounded-full border border-[var(--color-border-strong)] bg-white/85 px-3 py-1.5 font-mono text-xs text-[var(--color-muted)]"
-            >
-              {claimId}
+          {linkedClaimIds.length > 0 ? (
+            linkedClaimIds.map((claimId) => (
+              <span
+                key={`${evidence.id}-${claimId}`}
+                className="rounded-full border border-[var(--color-border-strong)] bg-white/85 px-3 py-1.5 font-mono text-xs text-[var(--color-muted)]"
+              >
+                {claimId}
+              </span>
+            ))
+          ) : (
+            <span className="rounded-full border border-dashed border-[var(--color-border-strong)] bg-white/85 px-3 py-1.5 text-xs text-[var(--color-muted)]">
+              No linked claim
             </span>
-          ))}
+          )}
         </div>
       </div>
     </article>
   );
+}
+
+function getPrimaryPolarity(relations: EvidenceRelation[]): EvidencePolarity {
+  if (relations.some((relation) => relation.polarity === "contradicts")) {
+    return "contradicts";
+  }
+
+  if (relations.some((relation) => relation.polarity === "supports")) {
+    return "supports";
+  }
+
+  return "neutral";
 }
 
 function MetaChip({ label }: { label: string }) {

@@ -1,32 +1,42 @@
-import type { ClaimStatus, ValidationClaim } from "@/lib/types";
+import type { Claim, SupportScore, SupportStatus } from "@/lib/types";
 
 type ClaimLedgerProps = {
-  claims: ValidationClaim[];
+  claims: Claim[];
+  supportScores: SupportScore[];
   selectedClaimId?: string;
   onSelectClaim: (claimId: string) => void;
   onClearClaim: () => void;
 };
 
 const statusMeta: Record<
-  ClaimStatus,
+  SupportStatus,
   { label: string; className: string }
 > = {
   supported: {
     label: "Supported",
     className: "bg-[var(--color-supported-soft)] text-[var(--color-supported)]",
   },
-  weak: {
-    label: "Weak",
+  weakly_supported: {
+    label: "Weakly supported",
     className: "bg-[var(--color-uncertain-soft)] text-[var(--color-uncertain)]",
   },
   contradicted: {
     label: "Contradicted",
     className: "bg-[var(--color-unsupported-soft)] text-[var(--color-unsupported)]",
   },
+  unsupported: {
+    label: "Unsupported",
+    className: "bg-[var(--color-unsupported-soft)] text-[var(--color-unsupported)]",
+  },
+  insufficient_evidence: {
+    label: "Insufficient evidence",
+    className: "bg-[var(--color-uncertain-soft)] text-[var(--color-uncertain)]",
+  },
 };
 
 export function ClaimLedger({
   claims,
+  supportScores,
   selectedClaimId,
   onSelectClaim,
   onClearClaim,
@@ -60,18 +70,22 @@ export function ClaimLedger({
           {claims.map((claim) => {
             const isSelected = claim.id === selectedClaimId;
             const status = statusMeta[claim.status];
+            const supportScore = supportScores.find(
+              (score) => score.claimId === claim.id,
+            );
+            const evidenceIds = supportScore?.evidenceIds ?? [];
 
             return (
               <button
                 key={claim.id}
                 type="button"
                 onClick={() => onSelectClaim(claim.id)}
-              className={`w-full rounded-[28px] border px-5 py-5 text-left transition-colors ${
-                isSelected
-                  ? "border-[var(--color-border-strong)] bg-white shadow-[0_18px_36px_rgba(15,23,42,0.07)]"
-                  : "border-[var(--color-border)] bg-[var(--color-panel)]/45 hover:bg-white/75"
-              }`}
-            >
+                className={`w-full rounded-[28px] border px-5 py-5 text-left transition-colors ${
+                  isSelected
+                    ? "border-[var(--color-border-strong)] bg-white shadow-[0_18px_36px_rgba(15,23,42,0.07)]"
+                    : "border-[var(--color-border)] bg-[var(--color-panel)]/45 hover:bg-white/75"
+                }`}
+              >
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_220px]">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
@@ -107,15 +121,24 @@ export function ClaimLedger({
                       Evidence
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {claim.evidenceIds.map((evidenceId) => (
-                        <span
-                          key={`${claim.id}-${evidenceId}`}
-                          className="rounded-full border border-[var(--color-border-strong)] bg-white px-3 py-1.5 font-mono text-xs text-[var(--color-muted)]"
-                        >
-                          {evidenceId}
+                      {evidenceIds.length > 0 ? (
+                        evidenceIds.map((evidenceId) => (
+                          <span
+                            key={`${claim.id}-${evidenceId}`}
+                            className="rounded-full border border-[var(--color-border-strong)] bg-white px-3 py-1.5 font-mono text-xs text-[var(--color-muted)]"
+                          >
+                            {evidenceId}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="rounded-full border border-dashed border-[var(--color-border-strong)] bg-white px-3 py-1.5 text-xs text-[var(--color-muted)]">
+                          Evidence missing
                         </span>
-                      ))}
+                      )}
                     </div>
+                    <p className="mt-3 text-xs text-[var(--color-muted)]">
+                      Support score {Math.round(claim.supportScore * 100)}%
+                    </p>
                   </div>
                 </div>
               </button>
