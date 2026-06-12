@@ -24,7 +24,7 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Agent/model: Codex (GPT-5)
 - Prompt scope: Complete issue #10 by substantially redesigning the static review screen so a first-time viewer can understand the AI claim, linked evidence, support score, and analyst verdict in about 10 seconds.
 - Files changed: `app/page.tsx`, `app/globals.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
-- Summary: Rebuilt the home page around a focused product frame, compact case selector, primary review summary, four-part quick read, claim ledger, linked-evidence area, full evidence record, and prominent analyst verdict column.
+- Summary: Rebuilt the home page around a focused product frame, compact case selector, primary review summary, four-part quick read, claim ledger, linked-evidence area, full evidence record, and prominent analyst verdict column. Review follow-up fixed the hero question to use an intentional two-line structure so it does not clip at mobile-ish widths.
 - Decisions made: Defaulted each selected case to its first claim so the evidence review has an immediate focal point; kept all claim-to-evidence linkage derived from `evidenceRelations` through `lib/caseMetrics.ts`; kept unlinked evidence visible in the full record while highlighting linked evidence; avoided new dependencies, backend behavior, real telemetry, or product-scope expansion.
 - Checks run: `npm test` passed; `npm run lint` passed; `npm run build` passed.
 - Assumptions: A static default claim focus is appropriate for the MVP because it makes the review path legible immediately without introducing routing, persistence, or extra state complexity.

@@ -277,8 +277,9 @@ export default function Home() {
             <p className="text-sm font-semibold tracking-[-0.01em] text-[var(--color-muted)]">
               Telemetry Court
             </p>
-            <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-balance sm:text-5xl lg:text-[4rem] lg:leading-[1.02]">
-              Can AI prove what it claims?
+            <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-[-0.05em] sm:text-5xl lg:text-[4rem] lg:leading-[1.02]">
+              <span className="block">Can AI prove</span>
+              <span className="block">what it claims?</span>
             </h1>
             <p className="mt-4 max-w-2xl text-lg leading-8 text-[var(--color-muted)]">
               One cluster. One claim. One evidence check.

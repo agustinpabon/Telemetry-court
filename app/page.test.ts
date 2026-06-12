@@ -40,7 +40,7 @@ test("home page static review flow exposes the core Telemetry Court concepts", (
   const pageText = renderHomePageText();
 
   assert.match(pageText, /Telemetry Court/);
-  assert.match(pageText, /Can AI prove what it claims\?/);
+  assert.match(pageText, /Can AI prove.*what it claims\?/);
   assert.match(pageText, /One cluster\. One claim\. One evidence check\./);
   assert.match(pageText, /Generated interpretation/);
   assert.match(pageText, /Claim under review/);
