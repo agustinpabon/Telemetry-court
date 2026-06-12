@@ -29,6 +29,7 @@ Constraints:
 - Preserve Apple / Wealthsimple visual discipline.
 - Every claim must connect to evidence or explicitly show missing evidence.
 - Use existing domain model names.
+- Any factual Toponymy statement must be grounded in the official `TutteInstitute/toponymy` GitHub repository, not DeepWiki or generated summaries.
 - Update docs/CHANGELOG_AI.md after changes.
 
 Expected output:
@@ -80,6 +81,13 @@ These are too broad, conflict with product direction, or risk introducing unsafe
 - Agents should not combine issues unless explicitly asked.
 - PRs should link issues using `Closes #<issue-number>` when appropriate.
 - Every non-trivial PR should include the structured context required by `.github/pull_request_template.md`.
+
+## Toponymy Source Rule
+
+- The official source of truth for factual Toponymy information in this repo is <https://github.com/TutteInstitute/toponymy>.
+- DeepWiki, generated summaries, blog posts, and other third-party pages are non-authoritative and must not be used as proof of Toponymy capabilities or integration details.
+- Agents must not invent Toponymy APIs, workflows, capabilities, outputs, or supported models.
+- If an agent cannot confirm a Toponymy detail from the official repo README or source files, it should omit the detail or mark it explicitly as unknown.
 
 ## Commit And Handoff Workflow
 

@@ -36,14 +36,14 @@ Use this file to record AI-assisted changes that affect product context, archite
 
 - Agent/model: Codex
 - Prompt scope: Complete issue #11 by making repository docs explicit that factual Toponymy information must come from the official `TutteInstitute/toponymy` GitHub repository, while keeping Toponymy integration out of scope for the MVP.
-- Files changed: `AGENTS.md`, `README.md`, `docs/PROJECT_CONTEXT.md`, `docs/TOPONYMY_NOTES.md`, and `docs/CHANGELOG_AI.md`.
-- Summary: Reworked the Toponymy notes into a source-of-truth policy, added an explicit non-invention rule for agents, and tightened repository-facing Toponymy language so DeepWiki and other generated summaries are treated only as non-authoritative navigation aids.
-- Decisions made: Used the official Toponymy GitHub repository as the only authoritative source named in repo docs; kept the change documentation-only; reinforced that Telemetry Court remains a static downstream validation UI with no current Toponymy integration.
-- Checks run: `npm test`; `npm run lint`; `npm run build`.
+- Files changed: `AGENTS.md`, `docs/AGENT_WORKFLOWS.md`, `docs/TOPONYMY_NOTES.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Tightened the repo's Toponymy guardrails by making the official GitHub repository the only factual source, removing the explicit DeepWiki link from Toponymy notes, and adding a reusable agent workflow rule that says unverified Toponymy details must be omitted or marked unknown.
+- Decisions made: Kept the change documentation-only; treated official GitHub repo files and README sections as the only authoritative basis for Toponymy facts; preserved Telemetry Court's stance that Toponymy is conceptual upstream inspiration rather than a current implementation dependency.
+- Checks run: `npm test` passed; `npm run lint` passed; `npm run build` passed.
 - Assumptions: Existing Toponymy references elsewhere in the repo are conceptual unless they are explicitly tied to official upstream repo material.
-- Risks/follow-ups: If future docs add concrete Toponymy capabilities or examples, they should cite the exact upstream repo file or section they rely on.
+- Risks/follow-ups: If future docs add concrete Toponymy capabilities or examples, they should cite the exact upstream repo file or section they rely on; contributors may still need review reminders if they reference non-authoritative summaries outside these docs.
 - Next recommended step: If the team later wants richer Toponymy planning notes, add them only with file-level citations back to the official upstream repository.
-- Suggested commit message: `docs(toponymy): enforce official repo as source of truth`
+- Suggested commit message: `docs(toponymy): enforce official source-of-truth rule`
 
 ## 2026-06-12: Core Review Flow Smoke Coverage
 
