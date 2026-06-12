@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-12: Core Review Flow Smoke Coverage
+
+- Agent/model: Codex
+- Prompt scope: Implement issue #7 by adding lightweight smoke coverage for the static core case review flow without changing app behavior or adding a larger test framework.
+- Files changed: `app/page.test.ts` and `docs/CHANGELOG_AI.md`.
+- Summary: Added Node test coverage that statically renders the home page and confirms the MVP still exposes Telemetry Court, generated interpretation, claim ledger, evidence workspace, source-of-truth record, support score or verdict language, and a sample claim-to-evidence relationship.
+- Decisions made: Reused the existing Node built-in test runner with `tsx` and `react-dom/server`; kept coverage smoke-level rather than introducing Playwright, Cypress, Vitest, or Jest.
+- Checks run: `npm test`; `npm run lint`; `npm run build`.
+- Assumptions: Static render output is sufficient for this issue because the requested guard is about the current MVP concepts remaining present, not browser interactions.
+- Risks/follow-ups: This is lightweight smoke coverage, not full browser or end-to-end coverage; a later UI milestone may add richer render or interaction tests if the app gains more behavior.
+- Next recommended step: Keep future UI changes passing this smoke test, and add interaction-level coverage only when user behavior becomes complex enough to justify it.
+- Suggested commit message: `test(render): add core review flow smoke coverage`
+
 ## 2026-06-12: Global Design Token Reconciliation
 
 - Agent/model: Codex
