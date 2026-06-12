@@ -1,27 +1,58 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f6f4ef;
-  --foreground: #142033;
-  --color-canvas: #f6f4ef;
-  --color-surface: rgba(255, 255, 255, 0.9);
-  --color-panel: #eef3f4;
-  --color-panel-strong: #e4ecef;
-  --color-border: rgba(20, 32, 51, 0.09);
-  --color-border-strong: rgba(20, 32, 51, 0.16);
-  --color-border-soft: rgba(20, 32, 51, 0.05);
-  --color-ink: #142033;
-  --color-muted: #5d6b7e;
-  --color-muted-soft: #7b8796;
-  --color-accent: #7bc2ce;
-  --color-accent-soft: #e8f5f7;
-  --color-accent-strong: #1a6070;
-  --color-supported: #2f6b54;
-  --color-supported-soft: #edf7f0;
-  --color-uncertain: #8a6835;
-  --color-uncertain-soft: #fbf5e8;
-  --color-unsupported: #86525b;
-  --color-unsupported-soft: #f8ecee;
+  --tc-ink: #32302f;
+  --tc-bg: #f4f2ee;
+  --tc-surface: #fbfaf7;
+  --tc-surface-muted: #efede7;
+  --tc-border: rgba(50, 48, 47, 0.1);
+  --tc-muted: rgba(50, 48, 47, 0.62);
+  --tc-faint: rgba(50, 48, 47, 0.08);
+
+  --tc-supported: #3f7d55;
+  --tc-weak: #9a6a2f;
+  --tc-contradicted: #9b3d35;
+  --tc-unsupported: #6f625c;
+  --tc-insufficient: #6b6f7a;
+  --tc-focus: #5f6f52;
+
+  --tc-radius-sm: 12px;
+  --tc-radius-md: 18px;
+  --tc-radius-lg: 24px;
+  --tc-radius-xl: 32px;
+
+  --tc-space-1: 4px;
+  --tc-space-2: 8px;
+  --tc-space-3: 12px;
+  --tc-space-4: 16px;
+  --tc-space-5: 24px;
+  --tc-space-6: 32px;
+  --tc-space-7: 48px;
+  --tc-space-8: 64px;
+
+  --background: var(--tc-bg);
+  --foreground: var(--tc-ink);
+  --color-canvas: var(--tc-bg);
+  --color-surface: rgba(251, 250, 247, 0.92);
+  --color-panel: var(--tc-surface-muted);
+  --color-panel-strong: #e4e1d8;
+  --color-border: var(--tc-border);
+  --color-border-strong: rgba(50, 48, 47, 0.18);
+  --color-border-soft: var(--tc-faint);
+  --color-ink: var(--tc-ink);
+  --color-muted: var(--tc-muted);
+  --color-muted-soft: rgba(50, 48, 47, 0.5);
+  --color-accent: var(--tc-focus);
+  --color-accent-soft: #ecefe6;
+  --color-accent-strong: #48563d;
+  --color-supported: var(--tc-supported);
+  --color-supported-soft: #eef6f0;
+  --color-uncertain: var(--tc-weak);
+  --color-uncertain-soft: #f7efe2;
+  --color-unsupported: var(--tc-unsupported);
+  --color-unsupported-soft: #f3efeb;
+  --color-contradicted: var(--tc-contradicted);
+  --color-contradicted-soft: #f7ecea;
 }
 
 @theme inline {
@@ -41,15 +72,15 @@ html {
 
 body {
   background:
-    radial-gradient(circle at top left, rgba(123, 194, 206, 0.16), transparent 28%),
-    linear-gradient(180deg, #fbfaf6 0%, var(--background) 22%, #f3f0ea 100%);
+    radial-gradient(circle at top left, rgba(95, 111, 82, 0.1), transparent 28%),
+    linear-gradient(180deg, var(--tc-surface) 0%, var(--background) 22%, #eeebe4 100%);
   color: var(--foreground);
   font-family: var(--font-sans);
   min-height: 100vh;
 }
 
 ::selection {
-  background: rgba(123, 194, 206, 0.28);
+  background: rgba(95, 111, 82, 0.22);
 }
 
 a {
@@ -57,6 +88,31 @@ a {
   text-decoration: none;
 }
 
+button,
+a,
+input,
+select,
+textarea,
+[tabindex]:not([tabindex="-1"]) {
+  outline-color: transparent;
+}
+
+:focus-visible {
+  outline: 3px solid var(--tc-focus);
+  outline-offset: 3px;
+}
+
 .text-balance {
   text-wrap: balance;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

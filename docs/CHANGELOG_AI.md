@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-12: Global Design Token Reconciliation
+
+- Agent/model: Codex
+- Prompt scope: Finish Milestone 1 issue #1 by reconciling documented `--tc-*` design tokens with existing component-facing `--color-*` variables, adding explicit focus-visible styles, and adding reduced-motion handling without component rewrites or behavior changes.
+- Files changed: `app/globals.css` and `docs/CHANGELOG_AI.md`.
+- Summary: Added canonical Telemetry Court `--tc-*` tokens from the design system, mapped the existing global `--color-*` aliases to those tokens so current components continue to work, and added global accessibility defaults for keyboard focus and reduced motion.
+- Decisions made: Preserved existing component class names and runtime behavior by aliasing current variables instead of rewriting React components; kept `--color-unsupported` aligned to the canonical unsupported token and added explicit contradicted aliases for future gradual migration; kept the visual direction calm and evidence-first with muted semantic colors.
+- Checks run: `npm test`; `npm run lint`; `npm run build`.
+- Assumptions: Existing `--color-*` variables are still the practical component API for this small issue; future styling work can migrate component usage gradually only when it improves clarity.
+- Risks/follow-ups: The app still uses the current font setup; this issue intentionally did not address font changes because they were out of scope.
+- Next recommended step: Close or update issue #1 after checks pass, then proceed to lightweight render/smoke coverage for the core case review flow.
+- Suggested commit message: `style(tokens): reconcile global design tokens`
+
 ## 2026-06-11: GitHub Roadmap And Issue Structure
 
 - Agent/model: GPT-5.5
