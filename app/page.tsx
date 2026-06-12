@@ -21,6 +21,12 @@ import {
   getPrimaryEvidencePolarity,
   getRelationsForEvidence,
 } from "@/lib/caseMetrics";
+import {
+  buildReviewResultExport,
+  getReviewResultExportFilename,
+  serializeReviewResultExport,
+  type LocalAnalystVerdict,
+} from "@/lib/exportReview";
 import type {
   AnalystDecision,
   CaseFile,
@@ -160,8 +166,9 @@ export default function Home() {
     firstCase?.claims[0]?.id,
   );
   const [decisionsByCase, setDecisionsByCase] = useState<
-    Partial<Record<string, { decision: AnalystDecision; timestamp: string }>>
+    Partial<Record<string, LocalAnalystVerdict>>
   >({});
+  const [exportMessage, setExportMessage] = useState<string>();
 
   const selectedCase =
     sampleCases.find((currentCase) => currentCase.id === selectedCaseId) ??
@@ -241,10 +248,9 @@ export default function Home() {
         );
 
   const currentReviewRecord = decisionsByCase[selectedCase.id];
-  const displayedDecision =
-    currentReviewRecord?.decision ?? selectedCase.analystVerdict?.decision;
-  const displayedTimestamp =
-    currentReviewRecord?.timestamp ?? selectedCase.analystVerdict?.reviewedAt;
+  const displayedVerdict = currentReviewRecord ?? selectedCase.analystVerdict;
+  const displayedDecision = displayedVerdict?.decision;
+  const displayedTimestamp = displayedVerdict?.reviewedAt;
   const caseStatus = deriveCaseSupportStatus(selectedCase);
   const claimStatusCounts = getClaimStatusCounts(selectedCase);
 
@@ -253,12 +259,11 @@ export default function Home() {
       ...currentState,
       [selectedCase.id]: {
         decision,
-        timestamp: new Intl.DateTimeFormat("en-US", {
-          dateStyle: "medium",
-          timeStyle: "short",
-        }).format(new Date()),
+        summary: decisionHelp[decision],
+        reviewedAt: new Date().toISOString(),
       },
     }));
+    setExportMessage("Local verdict will be included in the JSON export.");
   }
 
   function handleSelectCase(caseId: string) {
@@ -267,6 +272,48 @@ export default function Home() {
     setSelectedCaseId(caseId);
     setSelectedClaimId(nextCase?.claims[0]?.id);
     setSelectedFilter("all");
+    setExportMessage(undefined);
+  }
+
+  function createReviewExportJson() {
+    return serializeReviewResultExport(
+      buildReviewResultExport({
+        caseFile: selectedCase,
+        exportTimestamp: new Date().toISOString(),
+        localVerdict: currentReviewRecord,
+      }),
+    );
+  }
+
+  async function handleCopyReviewJson() {
+    const exportJson = createReviewExportJson();
+
+    if (!navigator.clipboard?.writeText) {
+      setExportMessage("Clipboard is unavailable. Download JSON instead.");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(exportJson);
+      setExportMessage("Copied selected case review JSON.");
+    } catch {
+      setExportMessage("Clipboard copy failed. Download JSON instead.");
+    }
+  }
+
+  function handleDownloadReviewJson() {
+    const exportJson = createReviewExportJson();
+    const exportBlob = new Blob([exportJson], { type: "application/json" });
+    const exportUrl = URL.createObjectURL(exportBlob);
+    const downloadLink = document.createElement("a");
+
+    downloadLink.href = exportUrl;
+    downloadLink.download = getReviewResultExportFilename(selectedCase);
+    document.body.append(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
+    URL.revokeObjectURL(exportUrl);
+    setExportMessage("Downloaded selected case review JSON.");
   }
 
   return (
@@ -347,8 +394,7 @@ export default function Home() {
             title={displayedDecision ? decisionLabel[displayedDecision] : "Awaiting review"}
             detail={
               displayedDecision
-                ? selectedCase.analystVerdict?.summary ??
-                  "A local demo decision has been recorded."
+                ? displayedVerdict?.summary ?? "A local demo decision has been recorded."
                 : "No analyst verdict has been recorded for this case."
             }
           />
@@ -651,7 +697,7 @@ export default function Home() {
                   : "Awaiting review"}
               </h2>
               <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
-                {selectedCase.analystVerdict?.summary ??
+                {displayedVerdict?.summary ??
                   "No analyst verdict has been recorded for this synthetic case."}
               </p>
 
@@ -711,6 +757,40 @@ export default function Home() {
                     </button>
                   );
                 })}
+              </div>
+
+              <div className="mt-6 rounded-[24px] border border-[var(--color-border)] bg-white/58 p-4">
+                <p className="text-sm font-semibold tracking-[-0.01em]">
+                  Export review result
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
+                  JSON keeps the selected case, evidence relations, support scores, and
+                  local verdict together.
+                </p>
+                <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={handleCopyReviewJson}
+                    className="rounded-[16px] border border-[var(--color-border-strong)] bg-white px-4 py-3 text-left text-sm font-semibold text-[var(--color-ink)] transition-colors hover:bg-[var(--color-panel)]/70"
+                  >
+                    Copy JSON
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDownloadReviewJson}
+                    className="rounded-[16px] border border-[var(--color-border-strong)] bg-white px-4 py-3 text-left text-sm font-semibold text-[var(--color-ink)] transition-colors hover:bg-[var(--color-panel)]/70"
+                  >
+                    Download JSON
+                  </button>
+                </div>
+                {exportMessage ? (
+                  <p
+                    aria-live="polite"
+                    className="mt-3 text-xs leading-5 text-[var(--color-muted)]"
+                  >
+                    {exportMessage}
+                  </p>
+                ) : null}
               </div>
             </section>
           </aside>

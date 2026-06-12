@@ -50,6 +50,9 @@ test("home page static review flow exposes the core Telemetry Court concepts", (
   assert.match(pageText, /Source-of-truth record/);
   assert.match(pageText, /Support score/);
   assert.match(pageText, /analyst verdict/i);
+  assert.match(pageText, /Export review result/);
+  assert.match(pageText, /Copy JSON/);
+  assert.match(pageText, /Download JSON/);
 });
 
 test("home page smoke render includes a sample claim and linked evidence relationship", () => {

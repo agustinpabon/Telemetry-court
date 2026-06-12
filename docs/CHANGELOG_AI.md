@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-12: Static Review Result Export
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement issue #12 by adding a small frontend-only JSON export path for the currently selected static review result and opening a draft PR.
+- Files changed: `app/page.tsx`, `app/page.test.ts`, `lib/exportReview.ts`, `lib/exportReview.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added Copy JSON and Download JSON actions to the review panel. The export includes the selected case ID, cluster, topic label, generated explanation, claims, evidence items, canonical `evidenceRelations`, support scores, analyst verdict, and export timestamp.
+- Decisions made: Kept export static/frontend-only; used `evidenceRelations` as the only claim-to-evidence link; included local analyst verdict selections by replacing the exported verdict with the in-session decision and timestamp; avoided backend storage, persistence, Markdown export, new dependencies, and evidence invention.
+- Checks run: `npm test` passed; `npm run lint` passed; `npm run build` passed; browser verification was attempted but blocked by the in-app Browser URL policy before localhost loaded.
+- Assumptions: JSON is the most reliable MVP export format because it preserves the case model and evidence trail without inventing a human-readable report structure.
+- Risks/follow-ups: Exported local verdicts are not persisted after refresh; future backend storage, signed audit trails, or Markdown summaries remain out of scope.
+- Next recommended step: Have a reviewer inspect the draft PR and decide whether a future issue should add Markdown export for readable handoffs.
+- Suggested commit message: `feat(export): add static review result export`
+
 ## 2026-06-12: Evidence-First Review Screen Redesign
 
 - Agent/model: Codex (GPT-5)
