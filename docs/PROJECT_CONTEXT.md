@@ -46,9 +46,9 @@ The target user is an analyst, researcher, or reviewer evaluating AI-generated i
 
 ## Relationship To Toponymy
 
-Toponymy is a hierarchical topic naming system that clusters information objects, extracts contextual features, and generates human-readable topic names. Telemetry Court is inspired by that upstream shape, but it focuses on downstream validation.
+Telemetry Court is inspired by the upstream shape of systems like [Toponymy](https://github.com/TutteInstitute/toponymy), but it focuses on downstream validation. The official `TutteInstitute/toponymy` GitHub repository is the source of truth for factual Toponymy details used in this repo.
 
-Telemetry Court should understand concepts such as clusters, labels, keyphrases, exemplars, subtopics, and representative samples. It adds review concepts such as generated claims, evidence relations, support scores, analyst verdicts, and audit trails.
+Telemetry Court should stay compatible with Toponymy-style concepts without inventing unverified details about Toponymy itself. See `docs/TOPONYMY_NOTES.md` for source-of-truth and non-invention rules.
 
 ## Glossary
 

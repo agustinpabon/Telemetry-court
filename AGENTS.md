@@ -57,6 +57,7 @@ Visual changes must support evidence inspection. Avoid cyberpunk, neon, hacker, 
 - Do not hide uncertainty.
 - Do not invent evidence.
 - Do not invent telemetry fields unless using clearly marked sample data.
+- Do not invent Toponymy APIs, workflows, capabilities, function signatures, supported models, or outputs. Any factual Toponymy claim must be grounded in the official TutteInstitute/toponymy GitHub repository.
 
 ## Coding Rules
 

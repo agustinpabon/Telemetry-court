@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-12: Toponymy Source-Of-Truth Guardrails
+
+- Agent/model: Codex
+- Prompt scope: Complete issue #11 by making repository docs explicit that factual Toponymy information must come from the official `TutteInstitute/toponymy` GitHub repository, while keeping Toponymy integration out of scope for the MVP.
+- Files changed: `AGENTS.md`, `README.md`, `docs/PROJECT_CONTEXT.md`, `docs/TOPONYMY_NOTES.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Reworked the Toponymy notes into a source-of-truth policy, added an explicit non-invention rule for agents, and tightened repository-facing Toponymy language so DeepWiki and other generated summaries are treated only as non-authoritative navigation aids.
+- Decisions made: Used the official Toponymy GitHub repository as the only authoritative source named in repo docs; kept the change documentation-only; reinforced that Telemetry Court remains a static downstream validation UI with no current Toponymy integration.
+- Checks run: `npm test`; `npm run lint`; `npm run build`.
+- Assumptions: Existing Toponymy references elsewhere in the repo are conceptual unless they are explicitly tied to official upstream repo material.
+- Risks/follow-ups: If future docs add concrete Toponymy capabilities or examples, they should cite the exact upstream repo file or section they rely on.
+- Next recommended step: If the team later wants richer Toponymy planning notes, add them only with file-level citations back to the official upstream repository.
+- Suggested commit message: `docs(toponymy): enforce official repo as source of truth`
+
 ## 2026-06-12: Core Review Flow Smoke Coverage
 
 - Agent/model: Codex

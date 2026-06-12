@@ -34,11 +34,11 @@ The MVP should help a reviewer inspect:
 
 ## Relationship To Toponymy
 
-[Toponymy](https://github.com/TutteInstitute/toponymy) is useful conceptual inspiration for Telemetry Court. Toponymy clusters information objects, extracts features such as keyphrases, exemplars, and subtopics, then uses LLMs to produce human-readable topic names.
+[Toponymy](https://github.com/TutteInstitute/toponymy) is useful conceptual inspiration for Telemetry Court. The official `TutteInstitute/toponymy` GitHub repository is the source of truth for factual Toponymy details in this repo.
 
-Telemetry Court is framed as a downstream validation layer for that kind of topic-naming pipeline. It should stay compatible with Toponymy-style concepts, but the MVP does not depend on Toponymy, Python, or backend services.
+Telemetry Court is framed as a downstream validation layer for Toponymy-style topic-naming pipelines. It should stay compatible with that shape, but the MVP does not depend on Toponymy, Python, or backend services.
 
-See [docs/TOPONYMY_NOTES.md](./docs/TOPONYMY_NOTES.md) for careful project notes.
+Do not treat DeepWiki, generated summaries, or other third-party pages as authoritative. See [docs/TOPONYMY_NOTES.md](./docs/TOPONYMY_NOTES.md) for the repository's Toponymy source-of-truth rules.
 
 ## Current Status
 
