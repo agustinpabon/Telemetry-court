@@ -40,8 +40,12 @@ test("home page static review flow exposes the core Telemetry Court concepts", (
   const pageText = renderHomePageText();
 
   assert.match(pageText, /Telemetry Court/);
+  assert.match(pageText, /Can AI prove.*what it claims\?/);
+  assert.match(pageText, /One cluster\. One claim\. One evidence check\./);
   assert.match(pageText, /Generated interpretation/);
+  assert.match(pageText, /Claim under review/);
   assert.match(pageText, /Claim ledger/);
+  assert.match(pageText, /Linked evidence/);
   assert.match(pageText, /Evidence workspace/);
   assert.match(pageText, /Source-of-truth record/);
   assert.match(pageText, /Support score/);
@@ -62,4 +66,5 @@ test("home page smoke render includes a sample claim and linked evidence relatio
     /Read-oriented session features directly support the inspection-workflow claim\./,
   );
   assert.match(pageText, /claim-001/);
+  assert.match(pageText, /Linked through evidenceRelations/);
 });

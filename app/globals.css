@@ -71,9 +71,12 @@ html {
 }
 
 body {
-  background:
-    radial-gradient(circle at top left, rgba(95, 111, 82, 0.1), transparent 28%),
-    linear-gradient(180deg, var(--tc-surface) 0%, var(--background) 22%, #eeebe4 100%);
+  background: linear-gradient(
+    180deg,
+    var(--tc-surface) 0%,
+    var(--background) 28%,
+    #eeebe4 100%
+  );
   color: var(--foreground);
   font-family: var(--font-sans);
   min-height: 100vh;
