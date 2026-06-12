@@ -57,7 +57,10 @@ Visual changes must support evidence inspection. Avoid cyberpunk, neon, hacker, 
 - Do not hide uncertainty.
 - Do not invent evidence.
 - Do not invent telemetry fields unless using clearly marked sample data.
-- Do not invent Toponymy APIs, workflows, capabilities, function signatures, supported models, or outputs. Any factual Toponymy claim must be grounded in the official TutteInstitute/toponymy GitHub repository.
+- The official factual source for Toponymy in this repo is the `TutteInstitute/toponymy` GitHub repository: <https://github.com/TutteInstitute/toponymy>
+- Do not treat DeepWiki, generated summaries, or other third-party pages as authoritative for Toponymy facts.
+- Do not invent Toponymy APIs, workflows, capabilities, function signatures, supported models, or outputs.
+- If an official repo file or README section does not support a Toponymy statement, omit it or mark it unknown.
 
 ## Coding Rules
 
