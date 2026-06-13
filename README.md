@@ -22,17 +22,20 @@ The product treats an AI-generated label as a testable claim, not a finished ans
 
 ## Current Vertical Slice
 
-The app is a frontend prototype using local synthetic data. The current Evidence Arena slice includes:
+The app is a frontend prototype using local synthetic data. The current Evidence Arena slice now opens as an immersive Telemetry Galaxy and staged investigation cockpit rather than a long static review page.
 
-- A telemetry landscape with five behavioural regions.
-- Case files with cluster context, top features, risk flags, nearest neighbour, claims, and representative sessions.
+The slice includes:
+
+- A full-screen telemetry galaxy with five behavioural regions as the primary interaction.
+- Case files exposed through an investigation cockpit with cluster context, top features, risk flags, nearest neighbour, claims, and representative sessions.
+- A compact stage rail for Landscape, Case File, Blind Read, AI Reveal, Evidence Board, Label Duel, Impostor, and Verdict.
 - Blind investigation choices before the AI label is revealed.
 - AI label reveal with agreement/disagreement feedback.
-- Evidence cards classifiable as supports, weak support, irrelevant/noise, contradicts, or needs context.
+- An evidence board with live balance across supports, weak support, irrelevant/noise, contradicts, and needs context.
 - Label duel across baseline AI, evidence-constrained AI, human-style, and uncertainty-preserving labels.
-- Find-the-impostor session selection with seeded outlier explanations.
-- Structured verdict options and failure-mode chips.
-- Review JSON preview, copy, and download actions.
+- Find-the-impostor session selection with seeded outlier explanations and cluster purity context.
+- Structured verdict options, failure-mode chips, and a judgment receipt.
+- Review JSON preview, copy, and download actions from a drawer or receipt.
 
 No typed text is required for the happy path. Optional expert notes may be added later, but structured choices are the primary interaction model.
 

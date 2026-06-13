@@ -51,34 +51,44 @@ test("home page static review flow exposes the core Telemetry Court concepts", (
 
   assert.match(pageText, /Telemetry Court/);
   assert.match(pageText, /AI names the pattern\. Humans test the evidence\./);
-  assert.match(pageText, /Telemetry Landscape/);
-  assert.match(pageText, /Behavioural regions awaiting judgment/);
+  assert.match(pageText, /Telemetry Galaxy/);
+  assert.match(pageText, /Behavioural regions in semantic space/);
+  assert.match(pageText, /Investigation Cockpit/);
+  assert.match(pageText, /AI claim under test/);
+  assert.match(pageText, /Hidden until blind read/);
+  assert.match(pageText, /Review JSON/);
   assert.match(pageText, /Case File/);
-  assert.match(pageText, /Blind Investigation/);
-  assert.match(pageText, /AI Label Reveal/);
+  assert.match(pageText, /Blind Read/);
+  assert.match(pageText, /AI Reveal/);
   assert.match(pageText, /Evidence Board/);
   assert.match(pageText, /Label Duel/);
-  assert.match(pageText, /Find the Impostor/);
-  assert.match(pageText, /Structured Verdict/);
-  assert.match(pageText, /Review Summary/);
-  assert.match(pageText, /View JSON/);
-  assert.match(pageText, /Copy JSON/);
-  assert.match(pageText, /Download JSON/);
+  assert.match(pageText, /Impostor/);
+  assert.match(pageText, /Verdict/);
 });
 
-test("home page smoke render includes a sample claim and linked evidence relationship", () => {
+test("telemetry galaxy renders every synthetic behavioural region", () => {
   const pageText = renderHomePageText();
+  const compactMapLabels = [
+    "IAM roles",
+    "PowerShell",
+    "Service maint.",
+    "S3 enum.",
+    "Cred prep",
+  ];
 
-  assert.match(
-    pageText,
-    /The evidence proves suspicious or malicious privilege escalation\./,
-  );
-  assert.match(pageText, /iam-e-01/);
-  assert.match(pageText, /Role lifecycle feature stack/);
-  assert.match(pageText, /Routine IAM role provisioning/);
-  assert.match(pageText, /Suspicious IAM privilege escalation/);
-  assert.match(pageText, /Supports label/);
-  assert.match(pageText, /Contradicts label/);
+  for (const caseFile of sampleCases) {
+    assert.match(pageText, new RegExp(caseFile.cluster.name));
+  }
+
+  for (const label of compactMapLabels) {
+    assert.match(pageText, new RegExp(label.replace(".", "\\.")));
+  }
+
+  assert.match(pageText, /Overclaimed/);
+  assert.match(pageText, /Supported/);
+  assert.match(pageText, /Impure/);
+  assert.match(pageText, /Too broad/);
+  assert.match(pageText, /Uncertain/);
 });
 
 test("shared review UI keeps contradicted and unsupported styling distinct", () => {

@@ -19,6 +19,58 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-13: Focused Landscape Galaxy Refinement
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Improve only the Landscape / Telemetry Galaxy screen so it reads as a premium semantic telemetry space rather than a boxed dashboard chart.
+- Files changed: `components/arena/TelemetryGalaxy.tsx`, `components/arena/ClusterNode.tsx`, `components/arena/AppShell.tsx`, `app/globals.css`, and `docs/CHANGELOG_AI.md`.
+- Summary: Derived richer ambient session particles from existing synthetic case/session metadata, generated relationship arcs from semantic-map proximity and evidence/agreement/uncertainty similarity, added soft density regions and selected-region focus, reshaped cluster nodes into compact semantic islands with metric glyphs, and tuned explore-mode depth/focus states.
+- Decisions made: This is a focused Landscape visual refinement, not a product pivot. No dependencies, real data integrations, workflow changes, schema changes, or Toponymy API assumptions were added.
+- Checks run: `git diff --check` passed; `npm test` passed with 22 tests; `npm run lint` passed; `npm run build` passed. Browser verification passed against `next start --port 3010` at 1440x900, 1366x768, 1280x720, and 1024x768 with no horizontal overflow, no detected text-fit issues, all five cluster nodes inside the map field, 82 deterministic session particles, 5 density regions, and 7 relationship arcs. Zoom-equivalent viewport checks passed at 1600x900 and 1024x576, with the short-height check using vertical scroll rather than compressing the map.
+- Assumptions: Existing synthetic `mapPosition`, `modelAgreement`, `evidenceStrength`, `uncertainty`, `cluster.size`, and representative-session overlap/outlier values are sufficient for deterministic spatial ambience.
+- Risks/follow-ups: The in-app browser did not fire React hover events from synthetic pointer movement, but click/focus and keyboard selection were verified and the node uses mouse, pointer, and focus handlers for real interaction. Future work should keep later workflow stages scoped separately.
+- Next recommended step: Continue page-by-page refinement with the next Evidence Arena stage after reviewing the Galaxy in-browser.
+- Suggested commit message: `ux(galaxy): refine telemetry landscape visual system`
+
+## 2026-06-13: Cinematic Spatial Interface Pass
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Refine the immersive Evidence Arena into a more cinematic scientific interface with explicit Explore/Galaxy and Investigation modes, stronger spatial density, stage-specific compositions, and better viewport/zoom tolerance without changing the product direction or data model.
+- Files changed: `app/globals.css`, `components/arena/AppShell.tsx`, `components/arena/TelemetryGalaxy.tsx`, `components/arena/SemanticMiniMap.tsx`, `components/arena/CaseFilePanel.tsx`, `components/arena/BlindReadPanel.tsx`, `components/arena/AiRevealPanel.tsx`, `components/arena/EvidenceBoard.tsx`, `components/arena/LabelDuelPanel.tsx`, `components/arena/ImpostorPanel.tsx`, `components/arena/VerdictPanel.tsx`, `docs/DESIGN_DIRECTION.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added explicit explore/investigation shell modes, made Landscape a frameless galaxy environment with derived ambient session particles, region boundaries, and curved relationship arcs, added a semantic mini-map to investigation stages, introduced cinematic reveal/comparison elements, improved evidence balance and label duel composition, refined impostor and verdict layouts, and reduced reliance on fixed maximum shell widths.
+- Decisions made: Added no dependencies; used CSS/SVG/React state only. Decorative session particles are deterministically derived from existing synthetic case metadata and do not introduce real telemetry or new data-model requirements. The structured-choice happy path and JSON export remain intact.
+- Checks run: `npm test` passed with 22 tests; `npm run lint` passed; `npm run build` passed. Browser verification passed against `next start --port 3010` at 1440x900, 1366x768, 1280x720, and 1024x768 across Landscape, Case File, Blind Read, AI Reveal, Evidence Board, Label Duel, Impostor, Verdict, and Review Drawer with no console warnings/errors, no horizontal overflow, no detected text clipping, and no flagged accidental empty zones. Zoom-equivalent verification passed for 50%, 80%, 100%, 125%, and 150% based on a 1280x720 browser window.
+- Assumptions: Browser zoom was verified through equivalent CSS viewport sizes because the Browser viewport tool controls viewport dimensions rather than native browser zoom state.
+- Risks/follow-ups: A final human taste review on the target demo display is still useful; future browser-level regression tests could formalize these viewport/zoom checks if the project adds an E2E runner.
+- Next recommended step: Review the cinematic pass visually and decide whether the next increment should add a guided demo script or persist review state.
+- Suggested commit message: `ux(arena): refine cinematic spatial interface`
+
+## 2026-06-13: Telemetry Galaxy Visual Excellence Pass
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Polish the already-rebooted Evidence Arena UI so it feels cleaner, more premium, more spatial, and demo-ready without changing the product direction, workflow, sample data, or review export model.
+- Files changed: `app/globals.css`, `components/arena/AppShell.tsx`, `components/arena/ClusterNode.tsx`, `components/arena/ImpostorPanel.tsx`, `components/arena/InvestigationCockpit.tsx`, `components/arena/StageRail.tsx`, `docs/DESIGN_DIRECTION.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Tightened the command-center layout, reduced stage rail and inspector visual weight, converted map nodes into compact spatial islands, simplified the cockpit into a focused inspector, reduced repeated panel surfaces, tuned stage density for shorter desktop viewports, pulled impostor satellites inward, and preserved the structured-choice investigation flow and JSON drawer/export.
+- Decisions made: Added no dependencies; kept the polish CSS-first with React component trimming only where the existing UI was duplicating detail or overloading map nodes. Preserved the product concept, synthetic data model, workflow stages, and no-typing happy path.
+- Checks run: `npm test` passed with 22 tests; `npm run lint` passed; `npm run build` passed; browser verification passed against a clean `next start --port 3010` server at 1440x900, 1280x720, and 1024x768 across Landscape, Case File, Blind Read, AI Reveal, Evidence Board, Label Duel, Impostor, Verdict, and Review Drawer with no console warnings/errors, no horizontal overflow, and no detected text clipping. Narrow fallback smoke check at 390x844 passed for Landscape, Case File, and Blind Read with no horizontal overflow or detected text clipping.
+- Assumptions: Low-height desktop viewports can hide non-critical supporting paragraphs or session previews when necessary, as long as the active structured review action remains visible and the full review JSON remains available.
+- Risks/follow-ups: Human visual review on the actual demo display is still valuable because this pass optimizes the known screenshots and required viewport sizes rather than every possible monitor density.
+- Next recommended step: Use the polished shell for demo review, then decide whether to add browser-level regression tests in a future task.
+- Suggested commit message: `ux(arena): polish galaxy cockpit visual system`
+
+## 2026-06-13: Immersive Telemetry Galaxy UI Reboot
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Reboot the Evidence Arena UI/UX from a static vertical document into an immersive Telemetry Galaxy and staged investigation cockpit while preserving the current product workflow, sample data, and review export model.
+- Files changed: `app/page.tsx`, `app/globals.css`, `components/arena/*`, `lib/arenaReviewState.ts`, `lib/arenaReviewState.test.ts`, `app/page.test.ts`, `README.md`, `docs/PRODUCT_VISION.md`, `docs/DESIGN_DIRECTION.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Replaced the long homepage layout with a full-screen spatial app shell: primary telemetry galaxy, persistent stage rail, investigation cockpit, one active investigation stage at a time, evidence balance meter, label duel, orbit-style impostor selection, verdict receipt, and review JSON drawer/actions.
+- Decisions made: Added no dependencies; used React state, TypeScript helpers, CSS transforms, SVG lines, and existing fixture fields for agreement, evidence strength, uncertainty, map position, nearest neighbour, evidence ratings, and export JSON. Kept the Evidence Arena workflow and data model intact.
+- Checks run: `npm test` passed with 22 tests; `npm run lint` passed; `npm run build` passed; browser verification passed against a clean `next start --port 3010` server with no console warnings/errors and no horizontal overflow at 1280x720.
+- Assumptions: Node-level reducer tests are the right fit for interaction coverage in the current test stack because the repo does not have a browser DOM test framework installed.
+- Risks/follow-ups: Final polish may still benefit from human visual review across more viewport sizes; future work could add browser-level interaction tests if the project adopts a DOM or Playwright test runner.
+- Next recommended step: Review the local app visually and tune spacing/contrast based on demo feedback.
+- Suggested commit message: `ux(arena): introduce immersive telemetry galaxy interface`
+
 ## 2026-06-13: Publish Evidence Arena Handoff
 
 - Agent/model: Codex (GPT-5)

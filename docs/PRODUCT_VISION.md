@@ -65,6 +65,28 @@ Primary interactions:
 
 Free text may exist later as optional expert input, but it must not block the core review flow.
 
+## Experience Model
+
+The Evidence Arena should feel like entering a living telemetry map, opening a behavioural region as an investigation cockpit, interrogating evidence, and issuing a structured scientific verdict.
+
+This is a UI/UX reboot of the existing Evidence Arena concept, not a product pivot or data-model rewrite. The current workflow remains:
+
+```text
+Telemetry landscape
+-> behavioural region / case file
+-> blind investigation
+-> AI label reveal
+-> evidence classification
+-> label duel
+-> impostor / outlier selection
+-> structured verdict
+-> review JSON export
+```
+
+The telemetry landscape should be the primary interaction, not a decorative section. Behavioural regions should communicate agreement, evidence strength, uncertainty, impurity, and overclaim risk. Opening a region should reveal a cockpit-like case context with dataset metadata, top features, risk flags, nearest neighbour, representative sessions, and the next structured action.
+
+The investigation flow should present one active stage at a time, with compact progress navigation and review JSON available from a drawer or receipt rather than occupying the main vertical page.
+
 ## Product Flow
 
 ### 1. Telemetry Landscape
