@@ -30,7 +30,7 @@ const polarityTone: Record<
   contradicts: {
     label: "Contradicts",
     className:
-      "border-[color:rgba(134,82,91,0.16)] bg-[var(--color-unsupported-soft)] text-[var(--color-unsupported)]",
+      "border-[color:rgba(155,61,53,0.16)] bg-[var(--color-contradicted-soft)] text-[var(--color-contradicted)]",
   },
 };
 

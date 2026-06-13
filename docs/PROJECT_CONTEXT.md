@@ -2,7 +2,13 @@
 
 ## Product Summary
 
-Telemetry Court is a prototype for validating AI-generated interpretations of cyber telemetry clusters. It helps analysts inspect whether a generated cluster label or explanation is actually supported by underlying evidence.
+Telemetry Court is an interactive evidence arena for AI-generated interpretations of cyber telemetry clusters.
+
+Core line:
+
+```text
+AI names the pattern. Humans test the evidence.
+```
 
 Core question:
 
@@ -10,57 +16,91 @@ Core question:
 Can AI prove what it claims?
 ```
 
-## Problem Statement
-
-Topic-naming and cluster-labeling systems can produce labels that sound plausible. Plausibility is not the same as evidence. Analysts need a structured way to inspect generated claims, compare them with evidence, see uncertainty, and record a judgment.
-
-## Core Workflow
+Core evaluation workflow:
 
 ```text
-Cluster -> AI label / explanation -> Extracted claims -> Evidence -> Support score -> Analyst judgment
+Telemetry clusters
+-> AI-generated interpretation
+-> evidence-first investigation
+-> structured human verdict
+-> evaluation data for better prompts, labels, embeddings, and cluster quality
 ```
+
+## Current Source Of Truth
+
+The current source of truth is the Evidence Arena vision in [docs/PRODUCT_VISION.md](./PRODUCT_VISION.md).
+
+The older approve/reject label-validator framing is superseded. It can be discussed only as historical baseline:
+
+```text
+AI label -> evidence cards -> approve / reject
+```
+
+The active product direction is:
+
+```text
+Telemetry landscape
+-> behavioural region / case file
+-> blind investigation
+-> AI label reveal
+-> evidence classification
+-> label duel
+-> impostor session selection
+-> structured verdict
+-> review JSON export
+```
+
+## Problem Statement
+
+AI systems can generate cluster labels that sound plausible while being unsupported, overly broad, overly specific, mixed, or uncertain. Analysts and researchers need an evidence-first environment for testing whether generated interpretations are defensible.
+
+Telemetry Court should make unsupported certainty visible. It should also reward good uncertainty when evidence is suggestive but incomplete.
 
 ## Target User
 
-The target user is an analyst, researcher, or reviewer evaluating AI-generated interpretations of telemetry-like clusters. They need a calm workspace for reviewing evidence, not another alert queue or chat interface.
+The target user is a researcher, analyst, reviewer, or workshop participant evaluating whether an AI-generated telemetry interpretation is grounded in evidence.
+
+The user should not have to enjoy reading huge logs or writing labels from scratch. The workflow should be mostly selectable, visual, and structured.
 
 ## MVP Scope
 
-- Use synthetic sample data.
-- Display a generated cluster label and explanation.
-- Break the explanation into inspectable claims.
-- Link each claim to supporting, weakening, contradicting, or missing evidence.
-- Show support status and support score.
-- Capture or display an analyst verdict.
-- Keep data structures compatible with future Toponymy-style exports.
+- Use local synthetic fixture data.
+- Show a telemetry landscape with multiple behavioural regions.
+- Open a case file for a selected region.
+- Show evidence before revealing the AI label.
+- Let the user choose a blind interpretation from options.
+- Reveal the AI label and show agreement/disagreement.
+- Let the user classify evidence cards.
+- Let the user compare candidate labels.
+- Let the user choose an impostor / outlier session.
+- Let the user choose failure-mode chips and a structured verdict.
+- Export or view structured review JSON.
 
 ## Non-Goals
 
 - No live telemetry ingestion.
 - No real incident claims.
 - No SIEM replacement.
-- No generic threat-intel dashboard.
-- No generic AI chatbot.
+- No SOC-dashboard clone.
+- No generic chatbot wrapper.
+- No threat-intelligence dashboard.
 - No automated detection claims.
-- No Toponymy, Python, database, auth, or backend integration in the MVP unless explicitly scoped later.
+- No required Toponymy, Python, database, auth, or backend integration in the MVP.
 
 ## Relationship To Toponymy
 
-Telemetry Court is inspired by the upstream shape of systems like [Toponymy](https://github.com/TutteInstitute/toponymy), but it focuses on downstream validation. The official `TutteInstitute/toponymy` GitHub repository is the source of truth for factual Toponymy details used in this repo.
+Telemetry Court starts after a cluster has been embedded, clustered, characterized, and named. Its job is to ask what the AI is claiming, what evidence supports or weakens that claim, whether the cluster is coherent, and what a human reviewer should conclude.
 
-Telemetry Court should stay compatible with Toponymy-style concepts without inventing unverified details about Toponymy itself. See `docs/TOPONYMY_NOTES.md` for source-of-truth and non-invention rules.
+The official [`TutteInstitute/toponymy`](https://github.com/TutteInstitute/toponymy) GitHub repository is the source of truth for factual Toponymy details used in this repo. Do not invent Toponymy APIs, workflows, capabilities, function signatures, supported models, or outputs.
 
 ## Glossary
 
-- Information object: A document, event, session, exemplar, or other item that can be embedded and clustered.
-- Embedding: A vector representation of an information object.
-- Cluster: A group of related information objects or telemetry-like items.
-- Topic label: A generated human-readable name for a cluster.
-- Generated explanation: AI-written rationale describing what a cluster represents.
-- Claim: A reviewable assertion extracted from a generated label or explanation.
-- Evidence item: A sample, keyphrase, feature, metadata note, or analyst note used to evaluate a claim.
-- Evidence relation: A typed link between a claim and evidence, including polarity and strength.
-- Support score: A numeric estimate of how well evidence supports a claim.
-- Analyst verdict: Human judgment about whether the claim or case should be accepted, revised, rejected, or escalated.
-- Claim ledger: The auditable list of claims, evidence links, rationales, and statuses.
-- Audit trail: The record of how a judgment was reached.
+- Behavioural region: A visible cluster or region in the telemetry landscape.
+- Case file: One behavioural region plus candidate interpretations, evidence, sessions, reviewer interactions, and verdict.
+- Blind interpretation: The user's structured choice before seeing the AI label.
+- AI label: The generated interpretation under test.
+- Evidence card: A synthetic evidence item that can be classified by the reviewer.
+- Label duel: A structured comparison among candidate labels from different sources.
+- Impostor session: A representative session that least belongs in the cluster.
+- Failure mode: A structured reason such as overclaimed, too broad, missing evidence, or mixed cluster.
+- Structured verdict: The final review outcome exported as evaluation data.

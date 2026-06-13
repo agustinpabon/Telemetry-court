@@ -1,172 +1,180 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
-import { EvidenceCard } from "@/components/EvidenceCard";
-import {
-  EvidenceFilters,
-  type EvidenceFilterValue,
-} from "@/components/EvidenceFilters";
 import { sampleCases } from "@/data/sampleCases";
-import {
-  deriveCaseSupportStatus,
-  formatSupportScore,
-  getAverageSupportScore,
-  getClaimStatusCounts,
-  getClaimSupportScore,
-  getClaimsForCluster,
-  getEvidenceForClaim,
-  getEvidenceIdsForClaim,
-  getEvidenceRelationsForClaim,
-  getPrimaryEvidencePolarity,
-  getRelationsForEvidence,
-} from "@/lib/caseMetrics";
+import { formatSupportScore, getAverageSupportScore } from "@/lib/caseMetrics";
 import {
   buildReviewResultExport,
   getReviewResultExportFilename,
   serializeReviewResultExport,
-  type LocalAnalystVerdict,
+  type EvidenceArenaReview,
 } from "@/lib/exportReview";
 import type {
-  AnalystDecision,
+  CandidateLabelSource,
   CaseFile,
-  Claim,
-  EvidenceItem,
-  EvidencePolarity,
-  EvidenceRelation,
-  EvidenceSourceType,
-  EvidenceStrength,
-  SupportStatus,
+  DuelReason,
+  EvidenceRating,
+  FinalVerdict,
+  LandscapeStatus,
+  RepresentativeSession,
+  ReviewStatus,
 } from "@/lib/types";
 
-const statusMeta: Record<
-  SupportStatus,
-  {
-    label: string;
-    shortLabel: string;
-    chipClassName: string;
-    textClassName: string;
-    plainLanguage: string;
-  }
-> = {
-  supported: {
-    label: "Supported",
-    shortLabel: "Supported",
-    chipClassName:
-      "bg-[var(--color-supported-soft)] text-[var(--color-supported)] border-[color:rgba(63,125,85,0.2)]",
-    textClassName: "text-[var(--color-supported)]",
-    plainLanguage: "The record gives this claim direct support.",
-  },
-  weakly_supported: {
-    label: "Weakly supported",
-    shortLabel: "Weak",
-    chipClassName:
-      "bg-[var(--color-uncertain-soft)] text-[var(--color-uncertain)] border-[color:rgba(154,106,47,0.2)]",
-    textClassName: "text-[var(--color-uncertain)]",
-    plainLanguage: "The claim is plausible, but the evidence is not decisive.",
-  },
-  contradicted: {
-    label: "Contradicted",
-    shortLabel: "Contradicted",
-    chipClassName:
-      "bg-[var(--color-contradicted-soft)] text-[var(--color-contradicted)] border-[color:rgba(155,61,53,0.2)]",
-    textClassName: "text-[var(--color-contradicted)]",
-    plainLanguage: "The record contains evidence that conflicts with this claim.",
-  },
-  unsupported: {
-    label: "Unsupported",
-    shortLabel: "Unsupported",
-    chipClassName:
-      "bg-[var(--color-unsupported-soft)] text-[var(--color-unsupported)] border-[color:rgba(111,98,92,0.22)]",
-    textClassName: "text-[var(--color-unsupported)]",
-    plainLanguage: "The claim does not have enough supporting evidence.",
-  },
-  insufficient_evidence: {
-    label: "Insufficient evidence",
-    shortLabel: "Insufficient",
-    chipClassName:
-      "bg-[var(--color-uncertain-soft)] text-[var(--color-uncertain)] border-[color:rgba(154,106,47,0.2)]",
-    textClassName: "text-[var(--color-uncertain)]",
-    plainLanguage: "The record is too thin to treat this claim as proven.",
-  },
-};
-
-const decisionLabel: Record<AnalystDecision, string> = {
-  accept: "Accept interpretation",
-  revise: "Request revision",
-  reject: "Reject interpretation",
-  needs_more_review: "Needs more review",
-};
-
-const decisionHelp: Record<AnalystDecision, string> = {
-  accept: "The evidence is strong enough to keep the generated interpretation.",
-  revise: "The label is plausible, but the explanation needs a narrower claim.",
-  reject: "The evidence does not support the generated interpretation.",
-  needs_more_review: "The record needs more inspection before disposition.",
-};
-
-const polarityMeta: Record<
-  EvidencePolarity,
-  { label: string; className: string }
-> = {
-  supports: {
-    label: "Supports",
-    className:
-      "bg-[var(--color-supported-soft)] text-[var(--color-supported)] border-[color:rgba(63,125,85,0.2)]",
-  },
-  contradicts: {
-    label: "Contradicts",
-    className:
-      "bg-[var(--color-contradicted-soft)] text-[var(--color-contradicted)] border-[color:rgba(155,61,53,0.2)]",
-  },
-  neutral: {
-    label: "Neutral",
-    className:
-      "bg-[var(--color-uncertain-soft)] text-[var(--color-uncertain)] border-[color:rgba(154,106,47,0.2)]",
-  },
-};
-
-const sourceTypeLabel: Record<EvidenceSourceType, string> = {
-  telemetry_event: "Telemetry event",
-  session_feature: "Session feature",
-  exemplar: "Exemplar",
-  keyphrase: "Keyphrase",
-  metadata: "Metadata",
-  analyst_note: "Analyst note",
-};
-
-const strengthLabel: Record<EvidenceStrength, string> = {
-  strong: "Strong",
-  moderate: "Moderate",
-  weak: "Weak",
+type CaseReviewState = {
+  blindChoiceId?: string;
+  aiLabelRevealed?: boolean;
+  evidenceRatings?: Record<string, EvidenceRating>;
+  labelDuelWinnerId?: string;
+  duelReasons?: DuelReason[];
+  impostorSessionId?: string;
+  failureModes?: DuelReason[];
+  finalVerdict?: FinalVerdict;
+  showJson?: boolean;
 };
 
 const workflowSteps = [
-  "Cluster",
-  "AI label",
-  "Claims",
-  "Evidence",
-  "Support score",
-  "Analyst verdict",
+  "Landscape",
+  "Case file",
+  "Blind read",
+  "AI reveal",
+  "Evidence board",
+  "Label duel",
+  "Impostor",
+  "Verdict",
 ];
 
-const decisionActions: AnalystDecision[] = [
-  "accept",
-  "revise",
-  "reject",
-  "needs_more_review",
+const landscapeStatusMeta: Record<
+  LandscapeStatus,
+  { label: string; className: string; dotClassName: string }
+> = {
+  supported: {
+    label: "Supported",
+    className:
+      "border-[color:rgba(63,125,85,0.22)] bg-[var(--color-supported-soft)] text-[var(--color-supported)]",
+    dotClassName: "bg-[var(--color-supported)]",
+  },
+  overclaimed: {
+    label: "Overclaimed",
+    className:
+      "border-[color:rgba(155,61,53,0.2)] bg-[var(--color-contradicted-soft)] text-[var(--color-contradicted)]",
+    dotClassName: "bg-[var(--color-contradicted)]",
+  },
+  impure: {
+    label: "Impure",
+    className:
+      "border-[color:rgba(154,106,47,0.22)] bg-[var(--color-uncertain-soft)] text-[var(--color-uncertain)]",
+    dotClassName: "bg-[var(--color-uncertain)]",
+  },
+  too_broad: {
+    label: "Too broad",
+    className:
+      "border-[color:rgba(95,111,82,0.18)] bg-[var(--color-accent-soft)] text-[var(--color-accent-strong)]",
+    dotClassName: "bg-[var(--color-accent)]",
+  },
+  uncertain: {
+    label: "Uncertain",
+    className:
+      "border-[color:rgba(107,111,122,0.2)] bg-[var(--color-unsupported-soft)] text-[var(--color-unsupported)]",
+    dotClassName: "bg-[var(--color-unsupported)]",
+  },
+};
+
+const reviewStatusLabel: Record<ReviewStatus, string> = {
+  unreviewed: "Unreviewed",
+  in_review: "In review",
+  needs_split: "Needs split",
+  needs_evidence: "Needs evidence",
+  reviewed: "Reviewed",
+};
+
+const candidateSourceLabel: Record<CandidateLabelSource, string> = {
+  baseline_ai: "Baseline AI",
+  evidence_constrained_ai: "Evidence-constrained AI",
+  human_style: "Human-style label",
+  uncertain_label: "Uncertain label",
+};
+
+const evidenceRatingMeta: Record<
+  EvidenceRating,
+  { label: string; shortLabel: string; className: string }
+> = {
+  supports_label: {
+    label: "Supports label",
+    shortLabel: "Supports",
+    className:
+      "border-[color:rgba(63,125,85,0.2)] bg-[var(--color-supported-soft)] text-[var(--color-supported)]",
+  },
+  weak_support: {
+    label: "Weak support",
+    shortLabel: "Weak",
+    className:
+      "border-[color:rgba(154,106,47,0.22)] bg-[var(--color-uncertain-soft)] text-[var(--color-uncertain)]",
+  },
+  irrelevant_noise: {
+    label: "Irrelevant / noise",
+    shortLabel: "Noise",
+    className:
+      "border-[color:rgba(111,98,92,0.18)] bg-[var(--color-unsupported-soft)] text-[var(--color-unsupported)]",
+  },
+  contradicts_label: {
+    label: "Contradicts label",
+    shortLabel: "Contradicts",
+    className:
+      "border-[color:rgba(155,61,53,0.22)] bg-[var(--color-contradicted-soft)] text-[var(--color-contradicted)]",
+  },
+  needs_context: {
+    label: "Need more context",
+    shortLabel: "Context",
+    className:
+      "border-[color:rgba(107,111,122,0.2)] bg-white text-[var(--color-muted)]",
+  },
+};
+
+const evidenceRatingOptions: EvidenceRating[] = [
+  "supports_label",
+  "weak_support",
+  "irrelevant_noise",
+  "contradicts_label",
+  "needs_context",
+];
+
+const duelReasonLabel: Record<DuelReason, string> = {
+  better_supported: "Better supported",
+  less_overclaimed: "Less overclaimed",
+  more_specific: "More specific",
+  too_broad: "Too broad",
+  missing_evidence: "Missing evidence",
+  cluster_seems_mixed: "Cluster seems mixed",
+};
+
+const finalVerdictLabel: Record<FinalVerdict, string> = {
+  supported: "Supported",
+  partially_supported: "Partially supported",
+  unsupported_overclaimed: "Unsupported / overclaimed",
+  uncertain: "Uncertain",
+  cluster_impure: "Cluster is impure",
+  needs_split: "Needs split",
+  needs_merge: "Needs merge",
+  needs_better_evidence: "Needs better evidence",
+};
+
+const finalVerdicts: FinalVerdict[] = [
+  "supported",
+  "partially_supported",
+  "unsupported_overclaimed",
+  "uncertain",
+  "cluster_impure",
+  "needs_split",
+  "needs_merge",
+  "needs_better_evidence",
 ];
 
 export default function Home() {
   const firstCase = sampleCases[0];
-  const [selectedCaseId, setSelectedCaseId] = useState<string>(firstCase?.id ?? "");
-  const [selectedFilter, setSelectedFilter] =
-    useState<EvidenceFilterValue>("all");
-  const [selectedClaimId, setSelectedClaimId] = useState<string | undefined>(
-    firstCase?.claims[0]?.id,
-  );
-  const [decisionsByCase, setDecisionsByCase] = useState<
-    Partial<Record<string, LocalAnalystVerdict>>
+  const [selectedCaseId, setSelectedCaseId] = useState(firstCase?.id ?? "");
+  const [reviewsByCase, setReviewsByCase] = useState<
+    Partial<Record<string, CaseReviewState>>
   >({});
   const [exportMessage, setExportMessage] = useState<string>();
 
@@ -174,135 +182,97 @@ export default function Home() {
     sampleCases.find((currentCase) => currentCase.id === selectedCaseId) ??
     firstCase;
 
+  const reviewState = selectedCase ? reviewsByCase[selectedCase.id] ?? {} : {};
+  const selectedBlindChoice = selectedCase?.blindInterpretationOptions.find(
+    (option) => option.id === reviewState.blindChoiceId,
+  );
+  const selectedDuelWinner = selectedCase?.candidateLabels.find(
+    (label) => label.id === reviewState.labelDuelWinnerId,
+  );
+  const selectedImpostor = selectedCase?.representativeSessions.find(
+    (session) => session.id === reviewState.impostorSessionId,
+  );
+  const evidenceRatings = {
+    ...(selectedCase?.defaultEvidenceRatings ?? {}),
+    ...(reviewState.evidenceRatings ?? {}),
+  };
+
   if (!selectedCase) {
     return (
       <main className="min-h-screen bg-[var(--color-canvas)] text-[var(--color-ink)]">
-        <div className="mx-auto flex min-h-screen w-full max-w-[980px] items-center justify-center px-5 py-10 sm:px-8">
-          <section className="w-full rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center shadow-[0_20px_50px_rgba(50,48,47,0.06)]">
+        <div className="mx-auto flex min-h-screen max-w-[900px] items-center px-5">
+          <section className="w-full rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center">
             <p className="text-sm font-medium text-[var(--color-muted)]">
               Telemetry Court
             </p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">
-              No review cases are available
+            <h1 className="mt-2 text-2xl font-semibold">
+              No evidence arena cases are available
             </h1>
-            <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-              Add synthetic sample cases to begin reviewing AI-generated interpretations.
-            </p>
           </section>
         </div>
       </main>
     );
   }
 
-  const allClaims = getClaimsForCluster(selectedCase, selectedCase.cluster.id);
-  const selectedClaim = selectedClaimId
-    ? allClaims.find((claim) => claim.id === selectedClaimId)
-    : undefined;
-  const activeClaim = selectedClaim ?? allClaims[0];
-  const activeClaimEvidenceIds = new Set(
-    activeClaim ? getEvidenceIdsForClaim(selectedCase, activeClaim.id) : [],
+  const arenaReview = buildArenaReview(selectedCase, reviewState, evidenceRatings);
+  const exportJson = serializeReviewResultExport(
+    buildReviewResultExport({
+      caseFile: selectedCase,
+      exportTimestamp: new Date().toISOString(),
+      arenaReview,
+    }),
   );
-  const linkedEvidence = activeClaim
-    ? getEvidenceForClaim(selectedCase, activeClaim.id)
-    : [];
-  const activeClaimRelations = activeClaim
-    ? getEvidenceRelationsForClaim(selectedCase, activeClaim.id)
-    : [];
-  const activeClaimScore = activeClaim
-    ? getClaimSupportScore(selectedCase, activeClaim.id)
-    : null;
-  const activeSupportScore = activeClaim
-    ? selectedCase.supportScores.find((score) => score.claimId === activeClaim.id)
-    : undefined;
+  const reviewCompletion = getReviewCompletion(reviewState, evidenceRatings, selectedCase);
 
-  const evidenceCounts: Record<EvidenceFilterValue, number> = {
-    all: selectedCase.evidenceItems.length,
-    supports: selectedCase.evidenceItems.filter(
-      (item) =>
-        getPrimaryEvidencePolarity(
-          getRelationsForEvidence(selectedCase, item.id),
-        ) === "supports",
-    ).length,
-    neutral: selectedCase.evidenceItems.filter(
-      (item) =>
-        getPrimaryEvidencePolarity(
-          getRelationsForEvidence(selectedCase, item.id),
-        ) === "neutral",
-    ).length,
-    contradicts: selectedCase.evidenceItems.filter(
-      (item) =>
-        getPrimaryEvidencePolarity(
-          getRelationsForEvidence(selectedCase, item.id),
-        ) === "contradicts",
-    ).length,
-  };
-
-  const filteredEvidence =
-    selectedFilter === "all"
-      ? selectedCase.evidenceItems
-      : selectedCase.evidenceItems.filter(
-          (item) =>
-            getPrimaryEvidencePolarity(
-              getRelationsForEvidence(selectedCase, item.id),
-            ) === selectedFilter,
-        );
-
-  const currentReviewRecord = decisionsByCase[selectedCase.id];
-  const displayedVerdict = currentReviewRecord ?? selectedCase.analystVerdict;
-  const displayedDecision = displayedVerdict?.decision;
-  const displayedTimestamp = displayedVerdict?.reviewedAt;
-  const caseStatus = deriveCaseSupportStatus(selectedCase);
-  const claimStatusCounts = getClaimStatusCounts(selectedCase);
-
-  function handleDecision(decision: AnalystDecision) {
-    setDecisionsByCase((currentState) => ({
+  function updateCurrentReview(nextState: Partial<CaseReviewState>) {
+    setReviewsByCase((currentState) => ({
       ...currentState,
       [selectedCase.id]: {
-        decision,
-        summary: decisionHelp[decision],
-        reviewedAt: new Date().toISOString(),
+        ...currentState[selectedCase.id],
+        ...nextState,
       },
     }));
-    setExportMessage("Local verdict will be included in the JSON export.");
-  }
-
-  function handleSelectCase(caseId: string) {
-    const nextCase = sampleCases.find((currentCase) => currentCase.id === caseId);
-
-    setSelectedCaseId(caseId);
-    setSelectedClaimId(nextCase?.claims[0]?.id);
-    setSelectedFilter("all");
     setExportMessage(undefined);
   }
 
-  function createReviewExportJson() {
-    return serializeReviewResultExport(
-      buildReviewResultExport({
-        caseFile: selectedCase,
-        exportTimestamp: new Date().toISOString(),
-        localVerdict: currentReviewRecord,
-      }),
-    );
+  function toggleDuelReason(reason: DuelReason) {
+    const currentReasons = reviewState.duelReasons ?? [];
+    updateCurrentReview({
+      duelReasons: toggleArrayValue(currentReasons, reason),
+    });
+  }
+
+  function toggleFailureMode(reason: DuelReason) {
+    const currentModes = reviewState.failureModes ?? [];
+    updateCurrentReview({
+      failureModes: toggleArrayValue(currentModes, reason),
+    });
+  }
+
+  function rateEvidence(evidenceId: string, rating: EvidenceRating) {
+    updateCurrentReview({
+      evidenceRatings: {
+        ...(reviewState.evidenceRatings ?? {}),
+        [evidenceId]: rating,
+      },
+    });
   }
 
   async function handleCopyReviewJson() {
-    const exportJson = createReviewExportJson();
-
     if (!navigator.clipboard?.writeText) {
-      setExportMessage("Clipboard is unavailable. Download JSON instead.");
+      setExportMessage("Clipboard is unavailable. Use Download JSON.");
       return;
     }
 
     try {
       await navigator.clipboard.writeText(exportJson);
-      setExportMessage("Copied selected case review JSON.");
+      setExportMessage("Copied structured review JSON.");
     } catch {
-      setExportMessage("Clipboard copy failed. Download JSON instead.");
+      setExportMessage("Clipboard copy failed. Use Download JSON.");
     }
   }
 
   function handleDownloadReviewJson() {
-    const exportJson = createReviewExportJson();
     const exportBlob = new Blob([exportJson], { type: "application/json" });
     const exportUrl = URL.createObjectURL(exportBlob);
     const downloadLink = document.createElement("a");
@@ -313,27 +283,32 @@ export default function Home() {
     downloadLink.click();
     downloadLink.remove();
     URL.revokeObjectURL(exportUrl);
-    setExportMessage("Downloaded selected case review JSON.");
+    setExportMessage("Downloaded structured review JSON.");
+  }
+
+  function handleSelectCase(caseId: string) {
+    setSelectedCaseId(caseId);
+    setExportMessage(undefined);
   }
 
   return (
     <main className="min-h-screen bg-[var(--color-canvas)] text-[var(--color-ink)]">
-      <div className="mx-auto flex w-full max-w-[1380px] flex-col gap-8 px-5 py-6 sm:px-8 lg:px-10 lg:py-9">
-        <header className="grid gap-7 py-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] lg:items-end">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-5 py-6 sm:px-8 lg:px-10 lg:py-9">
+        <header className="grid gap-7 py-4 lg:grid-cols-[minmax(0,1fr)_minmax(360px,460px)] lg:items-end">
           <div>
-            <p className="text-sm font-semibold tracking-[-0.01em] text-[var(--color-muted)]">
+            <p className="text-sm font-semibold text-[var(--color-muted)]">
               Telemetry Court
             </p>
-            <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-[-0.05em] sm:text-5xl lg:text-[4rem] lg:leading-[1.02]">
-              <span className="block">Can AI prove</span>
-              <span className="block">what it claims?</span>
+            <h1 className="mt-3 max-w-5xl text-4xl font-semibold tracking-[-0.04em] sm:text-5xl lg:text-[4.25rem] lg:leading-[1.02]">
+              AI names the pattern. Humans test the evidence.
             </h1>
-            <p className="mt-4 max-w-2xl text-lg leading-8 text-[var(--color-muted)]">
-              One cluster. One claim. One evidence check.
+            <p className="mt-5 max-w-3xl text-lg leading-8 text-[var(--color-muted)]">
+              An interactive evidence arena for judging whether AI-generated
+              telemetry interpretations are grounded, overclaimed, mixed, or uncertain.
             </p>
           </div>
 
-          <ol className="grid gap-2 rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)]/78 p-3 shadow-[0_18px_45px_rgba(50,48,47,0.05)] sm:grid-cols-2">
+          <ol className="grid gap-2 rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)]/82 p-3 shadow-[0_18px_45px_rgba(50,48,47,0.05)] sm:grid-cols-2">
             {workflowSteps.map((step, index) => (
               <li
                 key={step}
@@ -349,450 +324,651 @@ export default function Home() {
         </header>
 
         <section
-          aria-label="Ten second review read"
-          className="grid gap-3 md:grid-cols-2 xl:grid-cols-4"
+          aria-label="Telemetry landscape"
+          className="grid gap-6 rounded-[34px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_24px_70px_rgba(50,48,47,0.07)] sm:p-7 lg:grid-cols-[minmax(0,1fr)_390px]"
         >
-          <QuickReadCard
-            eyebrow="1. AI claim"
-            title={activeClaim?.text ?? "No claim selected"}
-            detail={
-              activeClaim
-                ? `${activeClaim.id} from the generated interpretation.`
-                : "This case has no reviewable claims."
-            }
-          />
-          <QuickReadCard
-            eyebrow="2. Evidence"
-            title={
-              activeClaim
-                ? linkedEvidence.length > 0
-                  ? `${linkedEvidence.length} linked evidence item${
-                      linkedEvidence.length === 1 ? "" : "s"
-                    }`
-                  : "Evidence missing"
-                : "No claim selected"
-            }
-            detail={
-              activeClaim
-                ? linkedEvidence.length > 0
-                  ? summarizePolarity(activeClaimRelations)
-                  : "No evidence relation is recorded for this claim."
-                : "Select a claim to inspect its linked evidence."
-            }
-          />
-          <QuickReadCard
-            eyebrow="3. Support score"
-            title={formatSupportScore(activeClaimScore)}
-            detail={
-              activeClaim
-                ? statusMeta[activeClaim.status].label
-                : "No score can be calculated without a claim."
-            }
-          />
-          <QuickReadCard
-            eyebrow="4. Analyst verdict"
-            title={displayedDecision ? decisionLabel[displayedDecision] : "Awaiting review"}
-            detail={
-              displayedDecision
-                ? displayedVerdict?.summary ?? "A local demo decision has been recorded."
-                : "No analyst verdict has been recorded for this case."
-            }
-          />
-        </section>
-
-        <section aria-label="Case queue" className="grid gap-3 lg:grid-cols-2">
-          {sampleCases.map((currentCase) => {
-            const isSelected = currentCase.id === selectedCase.id;
-            const currentStatus = deriveCaseSupportStatus(currentCase);
-
-            return (
-              <button
-                key={currentCase.id}
-                type="button"
-                onClick={() => handleSelectCase(currentCase.id)}
-                aria-pressed={isSelected}
-                className={`rounded-[26px] border px-5 py-4 text-left transition-colors ${
-                  isSelected
-                    ? "border-[var(--color-border-strong)] bg-[var(--color-surface)] shadow-[0_18px_42px_rgba(50,48,47,0.07)]"
-                    : "border-[var(--color-border)] bg-[var(--color-surface)]/52 hover:bg-[var(--color-surface)]"
-                }`}
-              >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <span className="font-mono text-xs text-[var(--color-muted)]">
-                    {currentCase.cluster.id}
-                  </span>
-                  <StatusPill status={currentStatus} />
-                </div>
-                <h2 className="mt-3 text-xl font-semibold tracking-[-0.03em]">
-                  {currentCase.topicLabel.name}
-                </h2>
-                <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--color-muted)]">
-                  {currentCase.cluster.description}
+          <div>
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-sm font-medium text-[var(--color-muted)]">
+                  Telemetry Landscape
                 </p>
-              </button>
-            );
-          })}
+                <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">
+                  Behavioural regions awaiting judgment
+                </h2>
+              </div>
+              <span className="w-fit rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-1 text-xs font-medium text-[var(--color-muted)]">
+                {sampleCases.length} synthetic cases
+              </span>
+            </div>
+
+            <div className="relative mt-6 h-[420px] overflow-hidden rounded-[30px] border border-[var(--color-border)] bg-[linear-gradient(145deg,#fbfaf7_0%,#efede7_52%,#e7ece9_100%)]">
+              <div className="absolute inset-x-8 top-1/2 h-px bg-[rgba(50,48,47,0.08)]" />
+              <div className="absolute inset-y-8 left-1/2 w-px bg-[rgba(50,48,47,0.08)]" />
+              <span className="absolute left-6 top-5 text-xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
+                lower agreement
+              </span>
+              <span className="absolute bottom-5 right-6 text-xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
+                stronger evidence
+              </span>
+
+              {sampleCases.map((currentCase) => {
+                const isSelected = currentCase.id === selectedCase.id;
+                const status = landscapeStatusMeta[currentCase.landscapeStatus];
+
+                return (
+                  <button
+                    key={currentCase.id}
+                    type="button"
+                    onClick={() => handleSelectCase(currentCase.id)}
+                    aria-pressed={isSelected}
+                    className={`absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-start gap-2 rounded-[24px] border p-4 text-left transition ${
+                      isSelected
+                        ? "z-10 w-[230px] border-[var(--color-border-strong)] bg-white shadow-[0_18px_42px_rgba(50,48,47,0.12)]"
+                        : "w-[190px] border-[var(--color-border)] bg-white/70 hover:bg-white"
+                    }`}
+                    style={{
+                      left: `${currentCase.mapPosition.x}%`,
+                      top: `${currentCase.mapPosition.y}%`,
+                    }}
+                  >
+                    <span className="flex items-center gap-2 text-xs font-medium text-[var(--color-muted)]">
+                      <span
+                        className={`size-2 rounded-full ${status.dotClassName}`}
+                        aria-hidden="true"
+                      />
+                      {currentCase.cluster.id}
+                    </span>
+                    <span className="text-sm font-semibold leading-5">
+                      {currentCase.cluster.name}
+                    </span>
+                    <span
+                      className={`rounded-full border px-2.5 py-1 text-xs font-medium ${status.className}`}
+                    >
+                      {status.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <aside className="rounded-[30px] border border-[var(--color-border)] bg-white/62 p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span className="font-mono text-xs text-[var(--color-muted)]">
+                {selectedCase.cluster.id}
+              </span>
+              <StatusBadge status={selectedCase.landscapeStatus} />
+            </div>
+            <h3 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-balance">
+              {selectedCase.cluster.name}
+            </h3>
+            <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+              {selectedCase.cluster.description}
+            </p>
+            <div className="mt-5 grid grid-cols-3 gap-3">
+              <MetricTile
+                label="Agreement"
+                value={formatSupportScore(selectedCase.modelAgreement)}
+              />
+              <MetricTile
+                label="Evidence"
+                value={formatSupportScore(selectedCase.evidenceStrength)}
+              />
+              <MetricTile
+                label="Uncertainty"
+                value={formatSupportScore(selectedCase.uncertainty)}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                document.getElementById("case-file")?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                })
+              }
+              className="mt-5 w-full rounded-[18px] border border-[var(--color-border-strong)] bg-[var(--color-ink)] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#45413f]"
+            >
+              Open case file
+            </button>
+          </aside>
         </section>
 
         <section
-          aria-label="Primary review summary"
-          className="rounded-[34px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_24px_70px_rgba(50,48,47,0.07)] sm:p-7 lg:p-8"
+          id="case-file"
+          aria-label="Case file"
+          className="grid gap-6 lg:grid-cols-[minmax(0,1.12fr)_minmax(360px,0.88fr)]"
         >
-          <div className="grid gap-7 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.35fr)_280px]">
+          <article className="rounded-[34px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[0_22px_60px_rgba(50,48,47,0.06)] sm:p-7">
+            <p className="text-sm font-medium text-[var(--color-muted)]">Case File</p>
+            <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <h2 className="text-4xl font-semibold tracking-[-0.05em] text-balance">
+                  {selectedCase.topicLabel.name}
+                </h2>
+                <p className="mt-4 max-w-3xl text-sm leading-7 text-[var(--color-muted)]">
+                  {selectedCase.topicLabel.explanation}
+                </p>
+              </div>
+              <span className="w-fit rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-1 text-xs font-medium text-[var(--color-muted)]">
+                {reviewStatusLabel[selectedCase.reviewStatus]}
+              </span>
+            </div>
+
+            <dl className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <SummaryField label="Cluster ID" value={selectedCase.cluster.id} mono />
+              <SummaryField label="Dataset" value={selectedCase.dataset} />
+              <SummaryField
+                label="Sessions"
+                value={selectedCase.cluster.size?.toString() ?? "Unknown"}
+              />
+              <SummaryField
+                label="Average support"
+                value={formatSupportScore(getAverageSupportScore(selectedCase))}
+              />
+            </dl>
+
+            <div className="mt-6 grid gap-4 xl:grid-cols-2">
+              <InfoPanel title="Top features" items={selectedCase.topFeatures} />
+              <InfoPanel title="Risk flags" items={selectedCase.riskFlags} />
+            </div>
+
+            <div className="mt-6 rounded-[26px] border border-[var(--color-border)] bg-white/62 p-5">
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
+                Nearest neighbour
+              </p>
+              <h3 className="mt-3 text-xl font-semibold tracking-[-0.03em]">
+                {selectedCase.nearestNeighbor.label}
+              </h3>
+              <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
+                {selectedCase.nearestNeighbor.clusterId} · distance{" "}
+                {selectedCase.nearestNeighbor.distance.toFixed(2)}.{" "}
+                {selectedCase.nearestNeighbor.note}
+              </p>
+            </div>
+
+            <div className="mt-6 rounded-[26px] border border-[var(--color-border)] bg-white/62 p-5">
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
+                Claims under test
+              </p>
+              <div className="mt-4 grid gap-3">
+                {selectedCase.claims.map((claim) => (
+                  <div
+                    key={claim.id}
+                    className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-panel)]/46 p-4"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-mono text-xs text-[var(--color-muted)]">
+                        {claim.id}
+                      </span>
+                      <span className="text-xs font-medium text-[var(--color-muted)]">
+                        support {formatSupportScore(claim.supportScore)}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm font-semibold leading-6">
+                      {claim.text}
+                    </p>
+                    <p className="mt-2 text-xs leading-5 text-[var(--color-muted)]">
+                      {claim.rationale}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </article>
+
+          <aside className="rounded-[34px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[0_22px_60px_rgba(50,48,47,0.06)] sm:p-7">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-[var(--color-muted)]">
+                  Representative sessions
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">
+                  Cluster samples
+                </h2>
+              </div>
+              <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-1 text-xs font-medium text-[var(--color-muted)]">
+                {selectedCase.representativeSessions.length}
+              </span>
+            </div>
+            <div className="mt-5 grid gap-3">
+              {selectedCase.representativeSessions.slice(0, 4).map((session) => (
+                <SessionMiniCard key={session.id} session={session} />
+              ))}
+            </div>
+          </aside>
+        </section>
+
+        <section
+          aria-label="Blind investigation and AI reveal"
+          className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_390px]"
+        >
+          <article className="rounded-[34px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[0_22px_60px_rgba(50,48,47,0.06)] sm:p-7">
+            <p className="text-sm font-medium text-[var(--color-muted)]">
+              Blind Investigation
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-balance">
+              Before seeing the AI label, what does the evidence suggest?
+            </h2>
+            <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+              Choose from structured interpretations. No typed label is required.
+            </p>
+
+            <div className="mt-6 grid gap-3 lg:grid-cols-2">
+              {selectedCase.blindInterpretationOptions.map((option) => {
+                const isSelected = option.id === reviewState.blindChoiceId;
+
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() =>
+                      updateCurrentReview({
+                        blindChoiceId: option.id,
+                        aiLabelRevealed: false,
+                      })
+                    }
+                    aria-pressed={isSelected}
+                    className={`rounded-[24px] border p-4 text-left transition-colors ${
+                      isSelected
+                        ? "border-[var(--color-border-strong)] bg-[var(--color-accent-soft)] shadow-[0_14px_34px_rgba(50,48,47,0.07)]"
+                        : "border-[var(--color-border)] bg-white/64 hover:bg-white"
+                    }`}
+                  >
+                    <span className="text-base font-semibold">{option.label}</span>
+                    <span className="mt-2 block text-sm leading-6 text-[var(--color-muted)]">
+                      {option.helper}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </article>
+
+          <aside className="rounded-[34px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[0_22px_60px_rgba(50,48,47,0.06)] sm:p-7">
+            <p className="text-sm font-medium text-[var(--color-muted)]">
+              AI Label Reveal
+            </p>
+            {reviewState.aiLabelRevealed ? (
+              <>
+                <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-balance">
+                  {selectedCase.topicLabel.name}
+                </h2>
+                <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
+                  {getBlindAgreementCopy(selectedBlindChoice?.label, selectedCase)}
+                </p>
+                <div className="mt-5 rounded-[24px] border border-[var(--color-border)] bg-white/62 p-4">
+                  <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
+                    Blind choice
+                  </p>
+                  <p className="mt-2 text-sm font-semibold">
+                    {selectedBlindChoice?.label ?? "No blind choice selected"}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">
+                  Label hidden
+                </h2>
+                <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                  Make a blind interpretation first, then reveal the model claim.
+                </p>
+                <button
+                  type="button"
+                  disabled={!reviewState.blindChoiceId}
+                  onClick={() => updateCurrentReview({ aiLabelRevealed: true })}
+                  className="mt-5 w-full rounded-[18px] border border-[var(--color-border-strong)] bg-[var(--color-ink)] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#45413f] disabled:cursor-not-allowed disabled:border-[var(--color-border)] disabled:bg-[var(--color-panel)] disabled:text-[var(--color-muted)]"
+                >
+                  Reveal AI label
+                </button>
+              </>
+            )}
+          </aside>
+        </section>
+
+        <section
+          aria-label="Evidence board"
+          className="rounded-[34px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[0_22px_60px_rgba(50,48,47,0.06)] sm:p-7"
+        >
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-sm font-medium text-[var(--color-muted)]">
-                Selected cluster
+                Evidence Board
               </p>
-              <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-balance">
-                {selectedCase.cluster.name}
+              <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">
+                Classify each evidence card
               </h2>
-              <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
-                {selectedCase.cluster.description ??
-                  "Supporting context for the interpretation under review."}
-              </p>
-
-              <dl className="mt-6 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-                <SummaryField label="Cluster ID" value={selectedCase.cluster.id} mono />
-                <SummaryField
-                  label="Source"
-                  value={selectedCase.cluster.source}
-                  capitalize
-                />
-                <SummaryField
-                  label="Cluster size"
-                  value={selectedCase.cluster.size?.toString() ?? "Unknown"}
-                />
-              </dl>
             </div>
+            <span className="w-fit rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-1 text-xs font-medium text-[var(--color-muted)]">
+              {selectedCase.evidenceItems.length} cards
+            </span>
+          </div>
 
-            <div className="rounded-[28px] border border-[var(--color-border-strong)] bg-white/72 p-5 sm:p-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm font-medium text-[var(--color-muted)]">
-                  Generated interpretation
-                </p>
-                <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-1 text-xs font-medium text-[var(--color-muted)]">
-                  Model output
-                </span>
-              </div>
-              <h2 className="mt-4 text-4xl font-semibold tracking-[-0.05em] text-balance">
-                {selectedCase.topicLabel.name}
-              </h2>
-              <p className="mt-5 text-base leading-8 text-[var(--color-muted)]">
-                {selectedCase.topicLabel.explanation}
-              </p>
-              <dl className="mt-6 grid gap-3 sm:grid-cols-2">
-                <SummaryField
-                  label="Generated by"
-                  value={selectedCase.topicLabel.generatedBy}
-                />
-                <SummaryField
-                  label="Generated at"
-                  value={formatTimestamp(selectedCase.topicLabel.generatedAt)}
-                />
-              </dl>
-            </div>
+          <div className="mt-6 grid gap-4 lg:grid-cols-2">
+            {selectedCase.evidenceItems.map((evidence) => {
+              const rating = evidenceRatings[evidence.id] ?? "needs_context";
 
-            <div className="rounded-[28px] border border-[var(--color-border)] bg-[var(--color-panel)]/58 p-5">
-              <p className="text-sm font-medium text-[var(--color-muted)]">
-                Review state
-              </p>
-              <p
-                className={`mt-4 text-4xl font-semibold tracking-[-0.05em] ${statusMeta[caseStatus].textClassName}`}
-              >
-                {statusMeta[caseStatus].label}
-              </p>
-              <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-                {statusMeta[caseStatus].plainLanguage}
-              </p>
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                <MiniMetric
-                  label="Average support"
-                  value={formatSupportScore(getAverageSupportScore(selectedCase))}
-                />
-                <MiniMetric label="Claims" value={`${allClaims.length}`} />
-                <MiniMetric
-                  label="Contradicted"
-                  value={`${claimStatusCounts.contradicted}`}
-                />
-                <MiniMetric
-                  label="Evidence"
-                  value={`${selectedCase.evidenceItems.length}`}
-                />
-              </div>
-            </div>
+              return (
+                <article
+                  key={evidence.id}
+                  className="rounded-[28px] border border-[var(--color-border)] bg-white/72 p-5"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <span className="font-mono text-xs text-[var(--color-muted)]">
+                      {evidence.id}
+                    </span>
+                    <span
+                      className={`rounded-full border px-3 py-1 text-xs font-medium ${evidenceRatingMeta[rating].className}`}
+                    >
+                      {evidenceRatingMeta[rating].label}
+                    </span>
+                  </div>
+                  <h3 className="mt-4 text-xl font-semibold tracking-[-0.03em] text-balance">
+                    {evidence.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                    {evidence.summary}
+                  </p>
+                  <div className="mt-5 grid gap-2 sm:grid-cols-5">
+                    {evidenceRatingOptions.map((option) => (
+                      <button
+                        key={`${evidence.id}-${option}`}
+                        type="button"
+                        onClick={() => rateEvidence(evidence.id, option)}
+                        aria-pressed={rating === option}
+                        aria-label={`Classify ${evidence.id} as ${evidenceRatingMeta[option].label}`}
+                        className={`min-h-12 rounded-[16px] border px-2 py-2 text-xs font-semibold transition-colors ${
+                          rating === option
+                            ? evidenceRatingMeta[option].className
+                            : "border-[var(--color-border)] bg-[var(--color-panel)]/46 text-[var(--color-muted)] hover:bg-white"
+                        }`}
+                      >
+                        {evidenceRatingMeta[option].shortLabel}
+                      </button>
+                    ))}
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </section>
 
         <section
-          aria-label="Evidence-first review workspace"
-          className="grid gap-6 xl:grid-cols-[330px_minmax(0,1fr)_340px]"
+          aria-label="Label duel and impostor selection"
+          className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]"
         >
-          <aside className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_20px_55px_rgba(50,48,47,0.06)] sm:p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-medium text-[var(--color-muted)]">
-                  Claim ledger
-                </p>
-                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">
-                  Reviewable claims
-                </h2>
-              </div>
-              <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-1 text-xs font-medium text-[var(--color-muted)]">
-                {allClaims.length}
-              </span>
+          <article className="rounded-[34px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[0_22px_60px_rgba(50,48,47,0.06)] sm:p-7">
+            <p className="text-sm font-medium text-[var(--color-muted)]">
+              Label Duel
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">
+              Which label is best supported?
+            </h2>
+            <div className="mt-6 grid gap-3 lg:grid-cols-2">
+              {selectedCase.candidateLabels.map((candidate) => {
+                const isSelected = candidate.id === reviewState.labelDuelWinnerId;
+
+                return (
+                  <button
+                    key={candidate.id}
+                    type="button"
+                    onClick={() => updateCurrentReview({ labelDuelWinnerId: candidate.id })}
+                    aria-pressed={isSelected}
+                    className={`rounded-[26px] border p-5 text-left transition-colors ${
+                      isSelected
+                        ? "border-[var(--color-border-strong)] bg-white shadow-[0_14px_34px_rgba(50,48,47,0.08)]"
+                        : "border-[var(--color-border)] bg-white/58 hover:bg-white"
+                    }`}
+                  >
+                    <span className="text-xs font-medium uppercase tracking-[0.16em] text-[var(--color-muted)]">
+                      {candidateSourceLabel[candidate.source]}
+                    </span>
+                    <span className="mt-3 block text-xl font-semibold tracking-[-0.03em]">
+                      {candidate.label}
+                    </span>
+                    <span className="mt-3 block text-sm leading-7 text-[var(--color-muted)]">
+                      {candidate.rationale}
+                    </span>
+                    <span className="mt-4 inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-1 text-xs font-medium text-[var(--color-muted)]">
+                      Support {formatSupportScore(candidate.supportEstimate)}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="mt-5 grid gap-3">
-              {allClaims.length > 0 ? (
-                allClaims.map((claim) => (
-                  <ClaimButton
-                    key={claim.id}
-                    caseFile={selectedCase}
-                    claim={claim}
-                    isSelected={claim.id === activeClaim?.id}
-                    onSelect={() => setSelectedClaimId(claim.id)}
-                  />
-                ))
-              ) : (
-                <EmptyState
-                  title="No claims are available"
-                  body="Add validation claims to populate the ledger for this case."
-                />
-              )}
-            </div>
-          </aside>
-
-          <section className="flex min-w-0 flex-col gap-6">
-            <section className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_22px_60px_rgba(50,48,47,0.06)] sm:p-6">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                  <p className="text-sm font-medium text-[var(--color-muted)]">
-                    Claim under review
-                  </p>
-                  <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-balance">
-                    {activeClaim?.text ?? "No claim selected"}
-                  </h2>
-                </div>
-                {activeClaim ? <StatusPill status={activeClaim.status} /> : null}
-              </div>
-
-              {activeClaim ? (
-                <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_180px]">
-                  <p className="text-sm leading-7 text-[var(--color-muted)]">
-                    {activeClaim.rationale}
-                  </p>
-                  <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-panel)]/62 p-4">
-                    <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
-                      Support score
-                    </p>
-                    <p className="mt-2 text-4xl font-semibold tracking-[-0.05em]">
-                      {formatSupportScore(activeClaimScore)}
-                    </p>
-                    <p className="mt-2 text-xs leading-5 text-[var(--color-muted)]">
-                      {activeSupportScore?.rationale ?? "No score rationale is recorded."}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <p className="mt-5 text-sm leading-7 text-[var(--color-muted)]">
-                  Select a claim to inspect its evidence relation and score.
-                </p>
-              )}
-            </section>
-
-            <section className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_22px_60px_rgba(50,48,47,0.06)] sm:p-6">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                  <p className="text-sm font-medium text-[var(--color-muted)]">
-                    Linked evidence
-                  </p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">
-                    What supports or contradicts this claim
-                  </h2>
-                </div>
-                <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-1 text-xs font-medium text-[var(--color-muted)]">
-                  {linkedEvidence.length} linked
-                </span>
-              </div>
-
-              <div className="mt-5 grid gap-4 lg:grid-cols-2">
-                {linkedEvidence.length > 0 ? (
-                  linkedEvidence.map((evidence) => (
-                    <LinkedEvidenceCard
-                      key={evidence.id}
-                      evidence={evidence}
-                      relations={getRelationsForEvidence(selectedCase, evidence.id).filter(
-                        (relation) => relation.claimId === activeClaim?.id,
-                      )}
-                    />
-                  ))
-                ) : (
-                  <div className="lg:col-span-2">
-                    <EmptyState
-                      title="Evidence is missing for this claim"
-                      body="No evidence relation is recorded through evidenceRelations, so the claim should not be treated as proven."
-                    />
-                  </div>
-                )}
-              </div>
-            </section>
-
-            <section className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_22px_60px_rgba(50,48,47,0.06)] sm:p-6">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                  <p className="text-sm font-medium text-[var(--color-muted)]">
-                    Evidence workspace
-                  </p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">
-                    Source-of-truth record
-                  </h2>
-                  <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--color-muted)]">
-                    Linked evidence is highlighted, while unlinked evidence remains visible
-                    for context.
-                  </p>
-                </div>
-                <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-1 text-xs font-medium text-[var(--color-muted)]">
-                  {filteredEvidence.length} shown
-                </span>
-              </div>
-
-              <div className="mt-5">
-                <EvidenceFilters
-                  counts={evidenceCounts}
-                  selectedFilter={selectedFilter}
-                  onSelect={setSelectedFilter}
-                />
-              </div>
-
-              <div className="mt-5">
-                {filteredEvidence.length > 0 ? (
-                  <div className="grid gap-4 2xl:grid-cols-2">
-                    {filteredEvidence.map((item) => (
-                      <EvidenceCard
-                        key={item.id}
-                        evidence={item}
-                        relations={getRelationsForEvidence(selectedCase, item.id)}
-                        highlighted={activeClaimEvidenceIds.has(item.id)}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <EmptyState
-                    title="No evidence matches the current view"
-                    body="Choose another polarity filter to inspect the rest of the record."
-                  />
-                )}
-              </div>
-            </section>
-          </section>
-
-          <aside className="flex flex-col gap-6">
-            <section className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_20px_55px_rgba(50,48,47,0.06)] sm:p-6 xl:sticky xl:top-6">
-              <p className="text-sm font-medium text-[var(--color-muted)]">
-                Analyst verdict
-              </p>
-              <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-balance">
-                {displayedDecision
-                  ? decisionLabel[displayedDecision]
-                  : "Awaiting review"}
-              </h2>
-              <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
-                {displayedVerdict?.summary ??
-                  "No analyst verdict has been recorded for this synthetic case."}
-              </p>
-
-              <div className="mt-6 rounded-[24px] border border-[var(--color-border)] bg-[var(--color-panel)]/62 p-4">
-                <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
-                  Conclusion
-                </p>
-                <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-                  {activeClaim
-                    ? `${statusMeta[activeClaim.status].plainLanguage} The case verdict should account for this evidence state before accepting the generated label.`
-                    : "No active claim is available to support a verdict."}
-                </p>
-              </div>
-
-              <dl className="mt-5 grid gap-3">
-                <SummaryField
-                  label="Current decision"
-                  value={
-                    displayedDecision
-                      ? decisionLabel[displayedDecision]
-                      : "Awaiting review"
-                  }
-                />
-                <SummaryField
-                  label="Review timestamp"
-                  value={displayedTimestamp ? formatTimestamp(displayedTimestamp) : undefined}
-                  empty="Awaiting local review action."
-                />
-                <SummaryField
-                  label="Selected claim score"
-                  value={formatSupportScore(activeClaimScore)}
-                />
-              </dl>
-
-              <div className="mt-6 grid gap-2">
-                {decisionActions.map((decision) => {
-                  const isActive = currentReviewRecord?.decision === decision;
+            <div className="mt-6">
+              <p className="text-sm font-semibold">Reason chips</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {selectedCase.failureModes.map((reason) => {
+                  const isSelected = (reviewState.duelReasons ?? []).includes(reason);
 
                   return (
-                    <button
-                      key={decision}
-                      type="button"
-                      onClick={() => handleDecision(decision)}
-                      aria-pressed={isActive}
-                      className={`rounded-[18px] border px-4 py-3 text-left transition-colors ${
-                        isActive
-                          ? "border-[var(--color-border-strong)] bg-[var(--color-accent-soft)] text-[var(--color-accent-strong)]"
-                          : "border-[var(--color-border)] bg-white/72 text-[var(--color-ink)] hover:bg-[var(--color-panel)]/70"
-                      }`}
+                    <ChipButton
+                      key={`duel-${reason}`}
+                      selected={isSelected}
+                      onClick={() => toggleDuelReason(reason)}
                     >
-                      <span className="block text-sm font-semibold">
-                        {decisionLabel[decision]}
-                      </span>
-                      <span className="mt-1 block text-xs leading-5 text-[var(--color-muted)]">
-                        {decisionHelp[decision]}
-                      </span>
-                    </button>
+                      {duelReasonLabel[reason]}
+                    </ChipButton>
                   );
                 })}
               </div>
+            </div>
+          </article>
 
-              <div className="mt-6 rounded-[24px] border border-[var(--color-border)] bg-white/58 p-4">
-                <p className="text-sm font-semibold tracking-[-0.01em]">
-                  Export review result
-                </p>
-                <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
-                  JSON keeps the selected case, evidence relations, support scores, and
-                  local verdict together.
-                </p>
-                <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+          <aside className="rounded-[34px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[0_22px_60px_rgba(50,48,47,0.06)] sm:p-7">
+            <p className="text-sm font-medium text-[var(--color-muted)]">
+              Find the Impostor
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">
+              Which session least belongs?
+            </h2>
+            <div className="mt-5 grid gap-3">
+              {selectedCase.representativeSessions.map((session) => {
+                const isSelected = session.id === reviewState.impostorSessionId;
+
+                return (
                   <button
+                    key={session.id}
                     type="button"
-                    onClick={handleCopyReviewJson}
-                    className="rounded-[16px] border border-[var(--color-border-strong)] bg-white px-4 py-3 text-left text-sm font-semibold text-[var(--color-ink)] transition-colors hover:bg-[var(--color-panel)]/70"
+                    onClick={() => updateCurrentReview({ impostorSessionId: session.id })}
+                    aria-pressed={isSelected}
+                    className={`rounded-[24px] border p-4 text-left transition-colors ${
+                      isSelected
+                        ? "border-[var(--color-border-strong)] bg-[var(--color-accent-soft)]"
+                        : "border-[var(--color-border)] bg-white/62 hover:bg-white"
+                    }`}
                   >
-                    Copy JSON
+                    <span className="flex items-center justify-between gap-3">
+                      <span className="font-mono text-xs text-[var(--color-muted)]">
+                        {session.id}
+                      </span>
+                      <span className="text-xs text-[var(--color-muted)]">
+                        outlier {formatSupportScore(session.outlierScore)}
+                      </span>
+                    </span>
+                    <span className="mt-2 block text-sm font-semibold">
+                      {session.title}
+                    </span>
+                    <span className="mt-1 block text-xs leading-5 text-[var(--color-muted)]">
+                      overlap {formatSupportScore(session.featureOverlap)} ·{" "}
+                      {session.summary}
+                    </span>
                   </button>
-                  <button
-                    type="button"
-                    onClick={handleDownloadReviewJson}
-                    className="rounded-[16px] border border-[var(--color-border-strong)] bg-white px-4 py-3 text-left text-sm font-semibold text-[var(--color-ink)] transition-colors hover:bg-[var(--color-panel)]/70"
-                  >
-                    Download JSON
-                  </button>
-                </div>
-                {exportMessage ? (
-                  <p
-                    aria-live="polite"
-                    className="mt-3 text-xs leading-5 text-[var(--color-muted)]"
-                  >
-                    {exportMessage}
-                  </p>
-                ) : null}
+                );
+              })}
+            </div>
+
+            {selectedImpostor ? (
+              <div className="mt-5 rounded-[24px] border border-[var(--color-border)] bg-white/62 p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
+                  Seeded explanation
+                </p>
+                <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
+                  {selectedImpostor.outlierReason ??
+                    "This session is not the seeded outlier, but your choice is recorded in the review JSON."}
+                </p>
               </div>
-            </section>
+            ) : null}
+          </aside>
+        </section>
+
+        <section
+          aria-label="Structured verdict"
+          className="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]"
+        >
+          <article className="rounded-[34px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[0_22px_60px_rgba(50,48,47,0.06)] sm:p-7">
+            <p className="text-sm font-medium text-[var(--color-muted)]">
+              Structured Verdict
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">
+              Issue a defensible judgment
+            </h2>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {finalVerdicts.map((verdict) => {
+                const isSelected = reviewState.finalVerdict === verdict;
+
+                return (
+                  <button
+                    key={verdict}
+                    type="button"
+                    onClick={() => updateCurrentReview({ finalVerdict: verdict })}
+                    aria-pressed={isSelected}
+                    className={`rounded-[20px] border px-4 py-3 text-left text-sm font-semibold transition-colors ${
+                      isSelected
+                        ? "border-[var(--color-border-strong)] bg-[var(--color-accent-soft)] text-[var(--color-accent-strong)]"
+                        : "border-[var(--color-border)] bg-white/62 hover:bg-white"
+                    }`}
+                  >
+                    {finalVerdictLabel[verdict]}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-6">
+              <p className="text-sm font-semibold">Failure-mode chips</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {selectedCase.failureModes.map((reason) => {
+                  const isSelected = (reviewState.failureModes ?? []).includes(reason);
+
+                  return (
+                    <ChipButton
+                      key={`failure-${reason}`}
+                      selected={isSelected}
+                      onClick={() => toggleFailureMode(reason)}
+                    >
+                      {duelReasonLabel[reason]}
+                    </ChipButton>
+                  );
+                })}
+              </div>
+            </div>
+          </article>
+
+          <aside className="rounded-[34px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[0_22px_60px_rgba(50,48,47,0.06)] sm:p-7">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-sm font-medium text-[var(--color-muted)]">
+                  Review Summary
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">
+                  Structured review JSON
+                </h2>
+              </div>
+              <span className="w-fit rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-1 text-xs font-medium text-[var(--color-muted)]">
+                {reviewCompletion}/6 complete
+              </span>
+            </div>
+
+            <dl className="mt-6 grid gap-3">
+              <SummaryField
+                label="Blind choice"
+                value={selectedBlindChoice?.label}
+                empty="Awaiting choice."
+              />
+              <SummaryField label="AI label" value={selectedCase.topicLabel.name} />
+              <SummaryField
+                label="Label duel winner"
+                value={selectedDuelWinner?.label}
+                empty="Awaiting duel selection."
+              />
+              <SummaryField
+                label="Impostor choice"
+                value={selectedImpostor?.title}
+                empty="Awaiting impostor selection."
+              />
+              <SummaryField
+                label="Failure modes"
+                value={formatReasonList(reviewState.failureModes)}
+                empty="No failure modes selected."
+              />
+              <SummaryField
+                label="Final verdict"
+                value={
+                  reviewState.finalVerdict
+                    ? finalVerdictLabel[reviewState.finalVerdict]
+                    : undefined
+                }
+                empty="Awaiting verdict."
+              />
+            </dl>
+
+            <div className="mt-5 rounded-[24px] border border-[var(--color-border)] bg-white/62 p-4">
+              <p className="text-sm font-semibold">Evidence ratings</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {selectedCase.evidenceItems.map((evidence) => (
+                  <span
+                    key={`summary-${evidence.id}`}
+                    className={`rounded-full border px-3 py-1 text-xs font-medium ${evidenceRatingMeta[evidenceRatings[evidence.id] ?? "needs_context"].className}`}
+                  >
+                    {evidence.id}:{" "}
+                    {
+                      evidenceRatingMeta[evidenceRatings[evidence.id] ?? "needs_context"]
+                        .shortLabel
+                    }
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-2 sm:grid-cols-3">
+              <button
+                type="button"
+                onClick={() => updateCurrentReview({ showJson: !reviewState.showJson })}
+                className="rounded-[16px] border border-[var(--color-border-strong)] bg-white px-4 py-3 text-sm font-semibold transition-colors hover:bg-[var(--color-panel)]/70"
+              >
+                {reviewState.showJson ? "Hide JSON" : "View JSON"}
+              </button>
+              <button
+                type="button"
+                onClick={handleCopyReviewJson}
+                className="rounded-[16px] border border-[var(--color-border-strong)] bg-white px-4 py-3 text-sm font-semibold transition-colors hover:bg-[var(--color-panel)]/70"
+              >
+                Copy JSON
+              </button>
+              <button
+                type="button"
+                onClick={handleDownloadReviewJson}
+                className="rounded-[16px] border border-[var(--color-border-strong)] bg-white px-4 py-3 text-sm font-semibold transition-colors hover:bg-[var(--color-panel)]/70"
+              >
+                Download JSON
+              </button>
+            </div>
+            {exportMessage ? (
+              <p aria-live="polite" className="mt-3 text-xs text-[var(--color-muted)]">
+                {exportMessage}
+              </p>
+            ) : null}
+            {reviewState.showJson ? (
+              <pre className="mt-5 max-h-[420px] overflow-auto rounded-[22px] border border-[var(--color-border)] bg-[var(--color-panel)]/72 p-4 text-xs leading-6 text-[var(--color-ink)]">
+                {exportJson}
+              </pre>
+            ) : null}
           </aside>
         </section>
       </div>
@@ -800,25 +976,72 @@ export default function Home() {
   );
 }
 
-function StatusPill({ status }: { status: SupportStatus }) {
-  const meta = statusMeta[status];
-
-  return (
-    <span
-      className={`inline-flex w-fit rounded-full border px-3 py-1 text-xs font-semibold ${meta.chipClassName}`}
-    >
-      {meta.label}
-    </span>
+function buildArenaReview(
+  caseFile: CaseFile,
+  reviewState: CaseReviewState,
+  evidenceRatings: Record<string, EvidenceRating>,
+): EvidenceArenaReview {
+  const blindChoice = caseFile.blindInterpretationOptions.find(
+    (option) => option.id === reviewState.blindChoiceId,
   );
+  const duelWinner = caseFile.candidateLabels.find(
+    (label) => label.id === reviewState.labelDuelWinnerId,
+  );
+  const impostor = caseFile.representativeSessions.find(
+    (session) => session.id === reviewState.impostorSessionId,
+  );
+
+  return {
+    ...(blindChoice
+      ? {
+          blindChoiceId: blindChoice.id,
+          blindChoiceLabel: blindChoice.label,
+          blindChoiceAgreesWithAi: labelsMatch(blindChoice.label, caseFile.topicLabel.name),
+        }
+      : {}),
+    aiLabel: caseFile.topicLabel.name,
+    ...(duelWinner
+      ? {
+          labelDuelWinnerId: duelWinner.id,
+          labelDuelWinnerLabel: duelWinner.label,
+        }
+      : {}),
+    duelReasons: reviewState.duelReasons ?? [],
+    evidenceRatings,
+    ...(impostor
+      ? {
+          impostorSessionId: impostor.id,
+          impostorSessionTitle: impostor.title,
+          impostorExplanation:
+            impostor.outlierReason ??
+            "Reviewer-selected session recorded; no seeded outlier explanation is attached.",
+        }
+      : {}),
+    failureModes: reviewState.failureModes ?? [],
+    ...(reviewState.finalVerdict ? { finalVerdict: reviewState.finalVerdict } : {}),
+  };
 }
 
-function PolarityPill({ polarity }: { polarity: EvidencePolarity }) {
-  const meta = polarityMeta[polarity];
+function getReviewCompletion(
+  reviewState: CaseReviewState,
+  evidenceRatings: Record<string, EvidenceRating>,
+  caseFile: CaseFile,
+) {
+  return [
+    reviewState.blindChoiceId,
+    reviewState.aiLabelRevealed,
+    reviewState.labelDuelWinnerId,
+    Object.keys(evidenceRatings).length >= caseFile.evidenceItems.length,
+    reviewState.impostorSessionId,
+    reviewState.finalVerdict,
+  ].filter(Boolean).length;
+}
+
+function StatusBadge({ status }: { status: LandscapeStatus }) {
+  const meta = landscapeStatusMeta[status];
 
   return (
-    <span
-      className={`inline-flex w-fit rounded-full border px-3 py-1 text-xs font-semibold ${meta.className}`}
-    >
+    <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${meta.className}`}>
       {meta.label}
     </span>
   );
@@ -829,13 +1052,11 @@ function SummaryField({
   value,
   empty = "Not available.",
   mono = false,
-  capitalize = false,
 }: {
   label: string;
   value?: string;
   empty?: string;
   mono?: boolean;
-  capitalize?: boolean;
 }) {
   return (
     <div className="rounded-[20px] border border-[var(--color-border)] bg-white/58 px-4 py-3">
@@ -845,7 +1066,7 @@ function SummaryField({
       <dd
         className={`mt-2 text-sm font-semibold leading-6 text-[var(--color-ink)] ${
           mono ? "font-mono" : ""
-        } ${capitalize ? "capitalize" : ""}`}
+        }`}
       >
         {value ?? empty}
       </dd>
@@ -853,7 +1074,7 @@ function SummaryField({
   );
 }
 
-function MiniMetric({ label, value }: { label: string; value: string }) {
+function MetricTile({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-[18px] border border-[var(--color-border)] bg-white/58 px-3 py-3">
       <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-muted)]">
@@ -864,159 +1085,100 @@ function MiniMetric({ label, value }: { label: string; value: string }) {
   );
 }
 
-function QuickReadCard({
-  eyebrow,
-  title,
-  detail,
-}: {
-  eyebrow: string;
-  title: string;
-  detail: string;
-}) {
+function InfoPanel({ title, items }: { title: string; items: string[] }) {
   return (
-    <article className="rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_16px_40px_rgba(50,48,47,0.05)]">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-muted)]">
-        {eyebrow}
-      </p>
-      <h2 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-balance">
-        {title}
-      </h2>
-      <p className="mt-3 text-sm leading-6 text-[var(--color-muted)]">{detail}</p>
-    </article>
-  );
-}
-
-function ClaimButton({
-  caseFile,
-  claim,
-  isSelected,
-  onSelect,
-}: {
-  caseFile: CaseFile;
-  claim: Claim;
-  isSelected: boolean;
-  onSelect: () => void;
-}) {
-  const evidenceIds = getEvidenceIdsForClaim(caseFile, claim.id);
-  const score = getClaimSupportScore(caseFile, claim.id);
-
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-pressed={isSelected}
-      className={`rounded-[24px] border p-4 text-left transition-colors ${
-        isSelected
-          ? "border-[var(--color-border-strong)] bg-white shadow-[0_14px_30px_rgba(50,48,47,0.07)]"
-          : "border-[var(--color-border)] bg-[var(--color-panel)]/44 hover:bg-white/72"
-      }`}
-    >
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="font-mono text-xs text-[var(--color-muted)]">{claim.id}</span>
-        <StatusPill status={claim.status} />
-      </div>
-      <p className="mt-3 text-sm font-semibold leading-6 text-[var(--color-ink)]">
-        {claim.text}
-      </p>
-      <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-medium text-[var(--color-muted)]">
-        <span className="rounded-full border border-[var(--color-border)] bg-white/65 px-3 py-1">
-          Score {formatSupportScore(score)}
-        </span>
-        <span className="rounded-full border border-[var(--color-border)] bg-white/65 px-3 py-1">
-          {evidenceIds.length > 0
-            ? `${evidenceIds.length} evidence link${
-                evidenceIds.length === 1 ? "" : "s"
-              }`
-            : "Evidence missing"}
-        </span>
-      </div>
-    </button>
-  );
-}
-
-function LinkedEvidenceCard({
-  evidence,
-  relations,
-}: {
-  evidence: EvidenceItem;
-  relations: EvidenceRelation[];
-}) {
-  const relation = pickStrongestRelation(relations);
-  const polarity = relation?.polarity ?? "neutral";
-
-  return (
-    <article className="rounded-[24px] border border-[var(--color-border-strong)] bg-white/74 p-5 shadow-[0_14px_34px_rgba(50,48,47,0.06)]">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-[var(--color-muted)]">
-          <span className="font-mono">{evidence.id}</span>
-          <span>{sourceTypeLabel[evidence.sourceType]}</span>
-        </div>
-        <PolarityPill polarity={polarity} />
-      </div>
-      <h3 className="mt-4 text-xl font-semibold tracking-[-0.03em] text-balance">
-        {evidence.title}
-      </h3>
-      <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-        {evidence.summary}
-      </p>
-      <div className="mt-4 rounded-[20px] border border-[var(--color-border)] bg-[var(--color-panel)]/62 p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full border border-[var(--color-border)] bg-white/72 px-3 py-1 text-xs font-medium text-[var(--color-muted)]">
-            Strength {relation ? strengthLabel[relation.strength] : "Not linked"}
-          </span>
-          <span className="rounded-full border border-[var(--color-border)] bg-white/72 px-3 py-1 text-xs font-medium text-[var(--color-muted)]">
-            Linked through evidenceRelations
-          </span>
-        </div>
-        <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-          {relation?.explanation ?? "No claim relation is recorded for this item."}
-        </p>
-      </div>
-    </article>
-  );
-}
-
-function EmptyState({ title, body }: { title: string; body: string }) {
-  return (
-    <div className="rounded-[24px] border border-dashed border-[var(--color-border)] bg-white/58 px-5 py-8 text-center">
-      <p className="text-sm font-semibold tracking-[-0.01em] text-[var(--color-ink)]">
+    <div className="rounded-[26px] border border-[var(--color-border)] bg-white/62 p-5">
+      <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
         {title}
       </p>
-      <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">{body}</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {items.map((item) => (
+          <span
+            key={item}
+            className="rounded-full border border-[var(--color-border)] bg-[var(--color-panel)]/62 px-3 py-1.5 text-xs font-medium text-[var(--color-muted)]"
+          >
+            {item}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
 
-function pickStrongestRelation(relations: EvidenceRelation[]) {
-  const strengthRank: Record<EvidenceStrength, number> = {
-    strong: 3,
-    moderate: 2,
-    weak: 1,
-  };
-
-  return [...relations].sort(
-    (left, right) => strengthRank[right.strength] - strengthRank[left.strength],
-  )[0];
-}
-
-function summarizePolarity(relations: EvidenceRelation[]) {
-  const counts = relations.reduce<Record<EvidencePolarity, number>>(
-    (currentCounts, relation) => {
-      currentCounts[relation.polarity] += 1;
-      return currentCounts;
-    },
-    { supports: 0, contradicts: 0, neutral: 0 },
+function SessionMiniCard({ session }: { session: RepresentativeSession }) {
+  return (
+    <article className="rounded-[22px] border border-[var(--color-border)] bg-white/62 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <span className="font-mono text-xs text-[var(--color-muted)]">{session.id}</span>
+        <span className="text-xs text-[var(--color-muted)]">
+          overlap {formatSupportScore(session.featureOverlap)}
+        </span>
+      </div>
+      <h3 className="mt-2 text-sm font-semibold">{session.title}</h3>
+      <p className="mt-1 text-xs leading-5 text-[var(--color-muted)]">{session.summary}</p>
+    </article>
   );
-
-  return [
-    counts.supports > 0 ? `${counts.supports} supports` : undefined,
-    counts.contradicts > 0 ? `${counts.contradicts} contradicts` : undefined,
-    counts.neutral > 0 ? `${counts.neutral} neutral` : undefined,
-  ]
-    .filter(Boolean)
-    .join(", ");
 }
 
-function formatTimestamp(value: string) {
-  return value.replace("T", " ").replace("Z", " UTC");
+function ChipButton({
+  selected,
+  onClick,
+  children,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={selected}
+      className={`rounded-full border px-3 py-2 text-xs font-semibold transition-colors ${
+        selected
+          ? "border-[var(--color-border-strong)] bg-[var(--color-accent-soft)] text-[var(--color-accent-strong)]"
+          : "border-[var(--color-border)] bg-white/62 text-[var(--color-muted)] hover:bg-white"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function toggleArrayValue<T>(values: T[], value: T): T[] {
+  return values.includes(value)
+    ? values.filter((currentValue) => currentValue !== value)
+    : [...values, value];
+}
+
+function labelsMatch(left?: string, right?: string) {
+  if (!left || !right) {
+    return false;
+  }
+
+  return normalizeLabel(left) === normalizeLabel(right);
+}
+
+function normalizeLabel(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function getBlindAgreementCopy(blindChoiceLabel: string | undefined, caseFile: CaseFile) {
+  if (!blindChoiceLabel) {
+    return "No blind choice was recorded before reveal.";
+  }
+
+  if (labelsMatch(blindChoiceLabel, caseFile.topicLabel.name)) {
+    return "Your blind interpretation agrees with the AI label. The next question is whether the evidence is strong enough.";
+  }
+
+  return "Your blind interpretation differs from the AI label. Use the evidence board and label duel to judge which interpretation is better grounded.";
+}
+
+function formatReasonList(reasons?: DuelReason[]) {
+  if (!reasons || reasons.length === 0) {
+    return undefined;
+  }
+
+  return reasons.map((reason) => duelReasonLabel[reason]).join(", ");
 }

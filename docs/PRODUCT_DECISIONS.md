@@ -2,6 +2,20 @@
 
 This is the initial decision log for Telemetry Court. Add new entries when product direction, architecture, or evidence-model assumptions change.
 
+## 2026-06-13: Telemetry Court Pivots To Evidence Arena
+
+Decision: Telemetry Court is now an interactive evidence arena, not a passive approve/reject label validator.
+
+Rationale: The old static validation flow was useful but too form-like. The product should help users explore behavioural regions, inspect evidence before anchoring on the AI label, compare candidate interpretations, identify weak evidence or outlier sessions, and produce structured review data.
+
+Consequences:
+
+- `docs/PRODUCT_VISION.md` is the current product source of truth.
+- The main workflow must be structured-choice first and must not require typed text.
+- The vertical slice should include telemetry landscape, case file, blind investigation, AI reveal, evidence board, label duel, impostor selection, structured verdict, and JSON export.
+- Old language that frames the product as only "one cluster, one claim, one evidence check" is superseded.
+- The existing claim/evidence model remains useful but now sits inside a broader investigation workflow.
+
 ## 2026-06-11: Telemetry Court Validates Labels
 
 Decision: Telemetry Court validates labels; it does not primarily generate labels.
