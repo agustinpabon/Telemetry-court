@@ -2,6 +2,48 @@
 
 This document defines how Telemetry Court uses GitHub labels, milestones, issues, PRs, and structured commits.
 
+## Current Planning Source
+
+`docs/ROADMAP.md` is the canonical roadmap. GitHub milestones should mirror that milestone structure, and GitHub issues should remain a small executable batch rather than a giant future backlog.
+
+Current Evidence Arena milestones:
+
+| Milestone | Goal |
+|---|---|
+| Milestone 0 — Evidence Arena Pivot Stabilization | Stabilize the pivot, remove outdated framing, ensure docs/tests/agents agree on the new direction. |
+| Milestone 1 — Polished Static Evidence Arena MVP | Make the synthetic vertical slice demo-ready and credible. |
+| Milestone 2 — Scientific Review Data Model | Make human review output useful as evaluation data, not just UI state. |
+| Milestone 3 — Telemetry Map + Case Exploration | Make the landscape, clusters, uncertainty, neighboring regions, and case navigation more informative. |
+| Milestone 4 — Pipeline Integration Readiness | Prepare import/export boundaries for Toponymy, DataMapPlot, generated cluster labels, and real telemetry-derived artifacts without requiring restricted data. |
+| Milestone 5 — Advanced Evidence Arena | Model debate, cross-examination, counterfactual map lab, live jury/demo mode, and research-grade interaction experiments. |
+
+Historical pre-pivot milestones should be preserved for context, not deleted. If they no longer contain open work, close them as historical planning containers and move future work into the Evidence Arena milestone structure.
+
+## Current Immediate Issue Batch
+
+Do not create issues for every future idea. The current small batch is:
+
+### Milestone 0 — Evidence Arena Pivot Stabilization
+
+- `docs: remove superseded label-validator framing`
+- `test: cover evidence arena happy path`
+- `chore: commit and document evidence arena pivot`
+
+### Milestone 1 — Polished Static Evidence Arena MVP
+
+- `ux: polish telemetry landscape as primary entry point`
+- `ux: improve case file investigation hierarchy`
+- `ux: refine blind investigation and AI reveal flow`
+- `ux: make evidence classification feel active and clear`
+- `ux: refine label duel and impostor interactions`
+- `feat: add review progress and reset/navigation controls`
+- `a11y: improve keyboard and screen reader support for structured choices`
+
+### Milestone 2 — Scientific Review Data Model
+
+- `schema: formalize structured review export`
+- `docs: define evaluation meaning of each verdict and failure mode`
+
 ## Label Taxonomy
 
 Use labels as routing metadata. Tracks are labels, not milestones.
@@ -57,23 +99,25 @@ Use labels as routing metadata. Tracks are labels, not milestones.
 
 ## Issue Title Format
 
-Use:
+Use simple, imperative titles. Prefer this current format:
+
+```text
+<type>: <short imperative task>
+```
+
+Use a scoped title only when it improves scanability:
 
 ```text
 <type>(<scope>): <short imperative task>
 ```
 
-Examples:
+Current examples:
 
-```text
-style(tokens): add global Telemetry Court design tokens
-style(app-shell): align app canvas and panel surfaces
-style(claim-ledger): improve claim scanning hierarchy
-style(evidence-cards): clarify source, polarity, and strength
-feat(claim-selection): select a claim and highlight linked evidence
-feat(evidence-filtering): filter evidence through canonical relations
-test(render): add smoke coverage for core case review flow
-```
+- `docs: remove superseded label-validator framing`
+- `test: cover evidence arena happy path`
+- `ux: polish telemetry landscape as primary entry point`
+- `ux: refine blind investigation and AI reveal flow`
+- `schema: formalize structured review export`
 
 ## Issue Body Template
 
@@ -125,7 +169,7 @@ Read:
 - Do not combine styling, model changes, tests, backend work, and documentation unless the issue explicitly requires that combination.
 - Avoid vague notes such as "improve UI" or "make evidence better".
 - Split an issue when it has multiple independent acceptance paths.
-- Keep Milestone 1 focused on the polished static evidence review MVP.
+- Keep Milestone 1 focused on the polished static Evidence Arena MVP.
 
 ## How To Close Issues
 

@@ -53,7 +53,9 @@ Examples:
 - Issues are small executable tasks.
 - Do not create huge multi-feature issues.
 - Do not use GitHub issues as vague notes.
-- Keep Milestone 1 focused on the polished static evidence review MVP.
+- Keep Milestone 0 focused on pivot stabilization.
+- Keep Milestone 1 focused on the polished static Evidence Arena MVP.
+- Keep future milestone ideas in the roadmap until they are close enough to execute.
 
 ## Documentation Update Rules
 
@@ -76,6 +78,8 @@ Update `docs/ARCHITECTURE.md` when a change affects structure, data flow, depend
 Update `docs/DATA_MODEL.md` when types, sample data shape, evidence relations, scoring, or verdicts change.
 
 Update `docs/DESIGN_SYSTEM.md` when visual rules, tokens, hierarchy, accessibility, or interaction guidance changes.
+
+Update `docs/GITHUB_PLANNING.md` when milestones, issue strategy, or GitHub planning rules change.
 
 ## Required Checks
 
