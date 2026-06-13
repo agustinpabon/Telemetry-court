@@ -19,6 +19,75 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-13: Publish Evidence Arena Handoff
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Prepare the full Evidence Arena pivot branch for GitHub by aligning untracked root agent context docs, running checks, and committing/pushing with structured context.
+- Files changed: `MODEL_SELECTION.md`, `PRODUCT_DIRECTION.md`, `PROJECT_CONTEXT.md`, `PROMPTING_GUIDE.md`, `START_HERE_FOR_AGENTS.md`, `TECHNICAL_CONTEXT.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Replaced stale top-level context files that still described the old simple label-validator MVP with Evidence Arena guidance, canonical doc links, structured-choice workflow rules, and current prompt templates.
+- Decisions made: Kept the root context files because they are useful handoff surfaces, but made tracked docs such as `docs/PRODUCT_VISION.md`, `docs/PROJECT_CONTEXT.md`, and `docs/ROADMAP.md` the authoritative sources.
+- Checks run: `git diff --check` passed; `npm test` passed with 21 tests; `npm run lint` passed; `npm run build` passed.
+- Assumptions: The full dirty worktree belongs in the outgoing pivot PR because the user explicitly asked to push everything properly.
+- Risks/follow-ups: The PR is intentionally broad because it packages a major product pivot; future work should resume from the smaller Milestone 0 and Milestone 1 issues created during planning alignment.
+- Next recommended step: Open a draft PR and use the PR body to orient reviewers and future agents around the Evidence Arena pivot.
+- Suggested commit message: `docs(agent-context): align root handoff docs with evidence arena`
+
+## 2026-06-13: Evidence Arena Planning Alignment
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Align repository planning docs, GitHub milestones, and immediate issues with the Evidence Arena product pivot without implementing new UI features.
+- Files changed: `README.md`, `.github/copilot-instructions.md`, `docs/PRODUCT_VISION.md`, `docs/PROJECT_CONTEXT.md`, `docs/ROADMAP.md`, `docs/GITHUB_PLANNING.md`, `docs/AGENT_WORKFLOWS.md`, `docs/DEVELOPMENT_WORKFLOW.md`, and `docs/CHANGELOG_AI.md`.
+- GitHub milestones updated: `Milestone 0 — Evidence Arena Pivot Stabilization`, `Milestone 1 — Polished Static Evidence Arena MVP`, `Milestone 2 — Scientific Review Data Model`, `Milestone 3 — Telemetry Map + Case Exploration`, `Milestone 4 — Pipeline Integration Readiness`, and `Milestone 5 — Advanced Evidence Arena`.
+- GitHub milestones closed as historical: `Historical — Security, Governance, And v0.1 Release` and `Historical — Review Clarity And Export`.
+- GitHub issues created: #17 `docs: remove superseded label-validator framing`; #18 `test: cover evidence arena happy path`; #19 `chore: commit and document evidence arena pivot`; #20 `ux: polish telemetry landscape as primary entry point`; #21 `ux: improve case file investigation hierarchy`; #22 `ux: refine blind investigation and AI reveal flow`; #23 `ux: make evidence classification feel active and clear`; #24 `ux: refine label duel and impostor interactions`; #25 `feat: add review progress and reset/navigation controls`; #26 `a11y: improve keyboard and screen reader support for structured choices`; #27 `schema: formalize structured review export`; #28 `docs: define evaluation meaning of each verdict and failure mode`.
+- Summary: Replaced the older roadmap sequence with the six Evidence Arena milestones, documented the current small issue batch, refreshed agent/Copilot guidance, and added the evaluation workflow framing from telemetry clusters to structured review data.
+- Decisions made: Created 12 immediate issues rather than a large backlog; kept optional persistence and demo walkthrough ideas out of the live issue batch; preserved old completed issues and closed surplus old milestones as historical containers rather than deleting them.
+- Commands run: `git status --short`; `git branch --show-current`; `find . -maxdepth 3 -type f | sort | sed 's#^\./##' | head -200`; targeted `sed`/`rg` inspection of docs, app, data, types, tests, and GitHub planning files; `gh repo view --json nameWithOwner,url`; `gh issue list --limit 100 --state open`; `gh issue list --limit 100 --state closed`; `gh api repos/:owner/:repo/milestones --paginate`; `gh label list --limit 200`; `gh api -X PATCH repos/:owner/:repo/milestones/...` to update/close milestones; `gh issue create` for issues #17-#28; `git diff --check`.
+- Checks run: `git diff --check` passed; no code or config changes were made by this planning task, and the repo has no markdown/docs lint script.
+- Assumptions: The untracked top-level context docs are imported/staging material and should be reported for manual triage instead of edited as part of this tracked-doc planning pass.
+- Risks/follow-ups: Closed historical issues remain attached to renamed milestones where GitHub preserves their history; untracked top-level context docs still contain pre-pivot wording and should either be removed, ignored, or intentionally folded into tracked docs.
+- Next recommended step: Work through Milestone 0 issues #17-#19 before starting MVP polish.
+- Suggested commit message: `docs(planning): align roadmap with evidence arena pivot`
+
+## 2026-06-13: Evidence Arena Product Pivot
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Pivot Telemetry Court from a passive label-validation prototype into an interactive Evidence Arena vertical slice with five synthetic cases, structured-choice interactions, and updated documentation.
+- Files changed: `app/page.tsx`, `data/sampleCases.ts`, `lib/types.ts`, `lib/exportReview.ts`, `app/page.test.ts`, `lib/caseMetrics.test.ts`, `lib/exportReview.test.ts`, `README.md`, `AGENTS.md`, `CLAUDE.md`, `docs/PRODUCT_VISION.md`, `docs/PROJECT_CONTEXT.md`, `docs/PRODUCT_DECISIONS.md`, `docs/ROADMAP.md`, `docs/DESIGN_DIRECTION.md`, `docs/ARCHITECTURE.md`, `docs/DATA_MODEL.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Rebuilt the homepage as a complete Evidence Arena flow: telemetry landscape, case file, blind investigation, AI label reveal, evidence classification, label duel, impostor selection, structured verdict, and review JSON view/copy/download. Replaced the old two-case sample data with five rich synthetic arena cases covering overclaiming, supported suspicious behavior, impure clusters, too-broad labels, and correct uncertainty.
+- Decisions made: Kept the implementation frontend-only and synthetic-data-only; preserved canonical `evidenceRelations` for claim-to-evidence links; made no typing required for the happy path; extended exports with `arenaReview` rather than removing the existing claim/evidence export trail.
+- Checks run: `npm test` passed; `npm run lint` passed; `npm run build` passed.
+- Assumptions: The first vertical slice can be a single-page app with local React state and synthetic seeded metadata; persistence, import, backend storage, optional notes, and live AI are out of scope for this pivot.
+- Risks/follow-ups: The arena page is substantial and may benefit from component extraction after visual review; browser-based responsive verification should be added when polishing the flow; docs outside the required source-of-truth path may still contain historical phrasing and should be reviewed opportunistically.
+- Next recommended step: Run lint/build, visually inspect the page locally, then extract page sections into focused components if the slice is accepted.
+- Suggested commit message: `feat(arena): pivot to evidence investigation workflow`
+
+## 2026-06-13: Shared Support Status Metadata Helper
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Extract duplicated support-status labels, semantic styling, and descriptions into one reusable frontend helper while preserving the contradicted/unsupported distinction.
+- Files changed: `lib/supportStatusMeta.ts`, `lib/supportStatusMeta.test.ts`, `app/page.tsx`, `components/CaseSwitcher.tsx`, `components/ClaimLedger.tsx`, `components/ScorePanel.tsx`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a shared `supportStatusMeta` source of truth for labels, short labels, chip/badge/text classes, plain-language descriptions, and score-panel notes. Reused it across the review page, case switcher, claim ledger, and score panel.
+- Decisions made: Kept evidence polarity styling in `EvidenceCard` separate because it represents evidence relation polarity rather than support status; kept the change frontend-only with no new dependencies.
+- Checks run: `npm test` passed; `npm run lint` passed; `npm run build` passed.
+- Assumptions: The concise support-status descriptions from the current review page are the canonical plain-language explanations across the shared review UI.
+- Risks/follow-ups: Some legacy components still have their own non-status copy and layout choices; this change only centralizes support-status semantics.
+- Next recommended step: Visually confirm status labels remain calm and distinct in the review UI.
+- Suggested commit message: `refactor(status): centralize support status metadata`
+
+## 2026-06-13: Distinct Contradicted Support Styling
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Fix inconsistent shared review UI semantics so `contradicted` and `unsupported` are visually distinct without broad redesign or unrelated refactors.
+- Files changed: `components/CaseSwitcher.tsx`, `components/ClaimLedger.tsx`, `components/EvidenceCard.tsx`, `components/ScorePanel.tsx`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Updated shared status and evidence polarity styling so contradicted states use the dedicated `--color-contradicted*` tokens, while unsupported states continue to use `--color-unsupported*` tokens.
+- Decisions made: Kept the existing calm semantic palette and component structure; added a lightweight static render regression test over shared review UI surfaces rather than introducing new test tooling.
+- Checks run: `npm test` passed; `npm run lint` passed; `npm run build` passed.
+- Assumptions: The documented contradicted token is the intended visual treatment for both contradicted support status and contradicting evidence polarity.
+- Risks/follow-ups: Status metadata is still duplicated across page-level and shared components, so a future small extraction could reduce drift if these surfaces become active together again.
+- Next recommended step: Visually review the affected status pills in the review UI.
+- Suggested commit message: `fix(status): distinguish contradicted support styling`
+
 ## 2026-06-12: Static Review Result Export
 
 - Agent/model: Codex (GPT-5)
