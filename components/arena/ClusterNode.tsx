@@ -58,6 +58,8 @@ export function ClusterNode({
   const position = displayPosition ?? caseFile.mapPosition;
   const nodeAccent = accent ?? status.accent;
   const densityPoints = getDensityPoints(caseFile);
+  const evidenceLabel = formatSupportScore(caseFile.evidenceStrength);
+  const uncertaintyLabel = formatSupportScore(caseFile.uncertainty);
   const style: ClusterNodeStyle = {
     "--node-x": `${position.x}%`,
     "--node-y": `${position.y}%`,
@@ -88,13 +90,13 @@ export function ClusterNode({
       onFocus={() => onPreview(caseFile.id)}
       onBlur={onClearPreview}
       aria-pressed={selected}
+      aria-current={selected ? "true" : undefined}
+      title={`${caseFile.cluster.name} — ${status.label}`}
       aria-label={`Open case: ${
         caseFile.cluster.name
       }, status ${status.label.toLowerCase()}, ${
         caseFile.cluster.size ?? "unknown"
-      } sessions, evidence ${formatSupportScore(
-        caseFile.evidenceStrength,
-      )}. Uncertainty ${formatSupportScore(caseFile.uncertainty)}.`}
+      } sessions, evidence ${evidenceLabel}. Uncertainty ${uncertaintyLabel}.`}
     >
       <span className="cluster-node-halo" aria-hidden="true" />
       <span className="cluster-node-density" aria-hidden="true">
@@ -119,7 +121,7 @@ export function ClusterNode({
         <span className="cluster-node-title">{shortName}</span>
         <span className={status.className}>{status.label}</span>
         {selected ? (
-          <span className="cluster-node-selected-label">Selected</span>
+          <span className="cluster-node-selected-label">Current</span>
         ) : null}
       </span>
     </button>

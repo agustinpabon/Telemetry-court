@@ -1,4 +1,4 @@
-import { useMemo, type CSSProperties, type KeyboardEvent } from "react";
+import { useId, useMemo, type CSSProperties, type KeyboardEvent } from "react";
 
 import { landscapeStatusMeta } from "@/components/arena/arenaMeta";
 import { ClusterNode } from "@/components/arena/ClusterNode";
@@ -20,8 +20,6 @@ type AtlasMapStyle = CSSProperties & {
   "--camera-x": string;
   "--camera-y": string;
   "--selected-accent": string;
-  "--summary-x": string;
-  "--summary-y": string;
 };
 
 type RegionFieldStyle = CSSProperties & {
@@ -53,6 +51,8 @@ export function EvidenceGalaxyAtlas({
   onPreviewCase,
   onClearPreview,
 }: EvidenceGalaxyAtlasProps) {
+  const atlasDescriptionId = useId();
+  const atlasKeyTitleId = useId();
   const selectedIndex = Math.max(
     cases.findIndex((caseFile) => caseFile.id === selectedCase.id),
     0,
@@ -70,7 +70,6 @@ export function EvidenceGalaxyAtlas({
   const selectedAccent = getGalaxyStatusAccent(selectedCase);
   const selectedStatus = landscapeStatusMeta[selectedCase.landscapeStatus];
   const sessionRange = useMemo(() => getSessionRange(cases), [cases]);
-  const summaryPosition = getSummaryPosition(selectedPosition);
   const cameraOffsetX = (52 - selectedPosition.x) * 0.08;
   const cameraOffsetY = (48 - selectedPosition.y) * 0.08;
   const mapStyle: AtlasMapStyle = {
@@ -79,8 +78,6 @@ export function EvidenceGalaxyAtlas({
     "--camera-x": `${cameraOffsetX.toFixed(2)}%`,
     "--camera-y": `${cameraOffsetY.toFixed(2)}%`,
     "--selected-accent": selectedAccent,
-    "--summary-x": `${summaryPosition.x}%`,
-    "--summary-y": `${summaryPosition.y}%`,
   };
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -106,7 +103,9 @@ export function EvidenceGalaxyAtlas({
       tabIndex={0}
       onKeyDown={handleKeyDown}
       style={mapStyle}
-      aria-label="Semantic evidence galaxy. Select a behavioural region to open its case preview."
+      aria-describedby={atlasDescriptionId}
+      aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
+      aria-label="Semantic evidence galaxy. Select a behavioural region to open its case preview. Use arrow keys to move between regions."
     >
       <div className="atlas-space-surface" aria-hidden="true">
         <span className="galaxy-depth-haze galaxy-depth-haze-a" />
@@ -129,10 +128,14 @@ export function EvidenceGalaxyAtlas({
         <span className="galaxy-orbit galaxy-orbit-four" />
       </div>
 
-      <aside className="atlas-key" aria-label="Map key">
-        <p className="atlas-key-note">
-          Proximity shows neighbourhoods. Brightness reflects evidence support.
-          Ring instability reflects uncertainty.
+      <aside className="atlas-key" aria-labelledby={atlasKeyTitleId}>
+        <div className="atlas-key-header">
+          <span id={atlasKeyTitleId}>Map encodings</span>
+          <span>{cases.length} regions</span>
+        </div>
+        <p className="atlas-key-note" id={atlasDescriptionId}>
+          Proximity groups related behaviour. Brightness, ring, and tint show
+          support, uncertainty, and review state.
         </p>
         <dl className="atlas-key-encodings">
           <div className="atlas-key-row atlas-key-row-size">
@@ -187,10 +190,14 @@ export function EvidenceGalaxyAtlas({
       <aside
         className="atlas-evidence-summary"
         aria-label={`Selected evidence summary for ${selectedCase.cluster.name}`}
+        aria-live="polite"
+        aria-atomic="true"
       >
-        <span className="atlas-summary-kicker">Selected evidence</span>
-        <strong>{getShortAtlasName(selectedCase)}</strong>
-        <dl>
+        <div className="atlas-selection-copy">
+          <span className="atlas-summary-kicker">Selected region</span>
+          <strong>{getShortAtlasName(selectedCase)}</strong>
+        </div>
+        <dl className="atlas-selection-metrics">
           <div>
             <dt>Sessions</dt>
             <dd>{selectedCase.cluster.size ?? "—"}</dd>
@@ -494,13 +501,6 @@ function getSessionWeight(caseFile: CaseFile, range: SessionRange): number {
   const spread = Math.max(range.max - range.min, 1);
 
   return clamp((size - range.min) / spread, 0, 1);
-}
-
-function getSummaryPosition(position: CaseFile["mapPosition"]): CaseFile["mapPosition"] {
-  return {
-    x: clamp(position.x > 68 ? position.x - 14 : position.x + 14, 17, 82),
-    y: clamp(position.y > 58 ? position.y - 17 : position.y + 17, 24, 80),
-  };
 }
 
 function getRegionStatusClassName(caseFile: CaseFile): string {

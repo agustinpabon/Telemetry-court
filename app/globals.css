@@ -8018,3 +8018,1208 @@ textarea,
     animation: none !important;
   }
 }
+
+/* Impeccable quieter pass: premium evidence atlas, less decorative space/HUD noise. */
+.evidence-galaxy-atlas {
+  background:
+    radial-gradient(
+      circle at var(--focus-x) var(--focus-y),
+      color-mix(in srgb, var(--selected-accent) 10%, transparent),
+      transparent 13.5rem
+    ),
+    radial-gradient(ellipse at 47% 46%, rgba(238, 250, 255, 0.055), transparent 24rem),
+    linear-gradient(145deg, #050915 0%, #09111d 48%, #0e1622 100%);
+  border-color: rgba(238, 250, 255, 0.14);
+  border-radius: 28px;
+  box-shadow:
+    inset 0 0 0 1px rgba(238, 250, 255, 0.055),
+    inset 0 -52px 96px rgba(0, 0, 0, 0.32),
+    0 18px 52px rgba(5, 8, 20, 0.18);
+}
+
+.evidence-galaxy-atlas::before {
+  background:
+    linear-gradient(180deg, rgba(238, 250, 255, 0.09), transparent 18%),
+    linear-gradient(
+      90deg,
+      rgba(238, 250, 255, 0.065),
+      transparent 18%,
+      transparent 84%,
+      rgba(238, 250, 255, 0.045)
+    );
+  box-shadow: inset 0 0 0 1px rgba(238, 250, 255, 0.052);
+}
+
+.evidence-galaxy-atlas::after {
+  background:
+    radial-gradient(ellipse at 50% -8%, rgba(238, 250, 255, 0.09), transparent 32%),
+    radial-gradient(circle at 50% 52%, transparent 58%, rgba(0, 0, 0, 0.24) 100%);
+}
+
+.galaxy-depth-haze,
+.galaxy-core,
+.galaxy-core-ring,
+.galaxy-nebula,
+.galaxy-starfield,
+.galaxy-orbit {
+  animation: none;
+}
+
+.galaxy-depth-haze {
+  opacity: 0.18;
+}
+
+.galaxy-depth-haze-a {
+  background:
+    radial-gradient(ellipse at 31% 42%, rgba(142, 232, 255, 0.065), transparent 29%),
+    radial-gradient(ellipse at 58% 56%, rgba(115, 224, 210, 0.045), transparent 35%);
+}
+
+.galaxy-depth-haze-b {
+  background:
+    radial-gradient(ellipse at 67% 35%, rgba(155, 140, 255, 0.05), transparent 27%),
+    radial-gradient(ellipse at 48% 65%, rgba(242, 200, 121, 0.035), transparent 28%);
+  opacity: 0.14;
+}
+
+.galaxy-core {
+  background:
+    radial-gradient(ellipse at 42% 45%, rgba(238, 250, 255, 0.075), transparent 11%),
+    radial-gradient(ellipse at 51% 52%, rgba(115, 224, 210, 0.07), transparent 24%),
+    radial-gradient(ellipse at 62% 54%, rgba(155, 140, 255, 0.052), transparent 34%);
+  opacity: 0.34;
+}
+
+.galaxy-core-ring,
+.galaxy-nebula-tertiary,
+.galaxy-nebula-quaternary,
+.galaxy-starfield-far,
+.galaxy-orbit-three,
+.galaxy-orbit-four {
+  display: none;
+}
+
+.galaxy-nebula-primary {
+  background:
+    radial-gradient(ellipse at 43% 50%, rgba(115, 224, 210, 0.075), transparent 22%),
+    radial-gradient(ellipse at 59% 45%, rgba(155, 140, 255, 0.058), transparent 29%);
+  opacity: 0.32;
+}
+
+.galaxy-nebula-secondary {
+  background:
+    radial-gradient(ellipse at 22% 31%, rgba(142, 232, 255, 0.052), transparent 24%),
+    radial-gradient(ellipse at 77% 78%, rgba(215, 127, 118, 0.035), transparent 28%);
+  opacity: 0.24;
+}
+
+.galaxy-starfield {
+  background-image:
+    radial-gradient(circle, rgba(238, 250, 255, 0.24) 0 0.8px, transparent 1.3px),
+    radial-gradient(circle, rgba(142, 232, 255, 0.12) 0 0.8px, transparent 1.25px);
+  opacity: 0.075;
+}
+
+.galaxy-vignette {
+  background:
+    radial-gradient(circle at 52% 49%, transparent 0 55%, rgba(0, 0, 0, 0.36) 100%),
+    linear-gradient(180deg, rgba(5, 8, 20, 0.02), rgba(0, 0, 0, 0.2));
+}
+
+.galaxy-orbit {
+  border-color: rgba(238, 250, 255, 0.04);
+  opacity: 0.42;
+}
+
+.galaxy-orbit-one {
+  border-color: rgba(142, 232, 255, 0.045);
+}
+
+.galaxy-orbit-two {
+  border-color: rgba(238, 250, 255, 0.035);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-grid {
+  background-image:
+    linear-gradient(rgba(238, 250, 255, 0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(238, 250, 255, 0.012) 1px, transparent 1px);
+  background-size: 132px 132px;
+  opacity: 0.1;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-region-boundary {
+  background:
+    radial-gradient(
+      ellipse at 46% 43%,
+      color-mix(in srgb, rgba(238, 250, 255, var(--region-support)) 52%, transparent),
+      transparent 20%
+    ),
+    radial-gradient(
+      ellipse at 44% 45%,
+      color-mix(in srgb, var(--region-accent) 10%, transparent),
+      transparent 46%
+    ),
+    radial-gradient(ellipse at 57% 59%, rgba(238, 250, 255, 0.02), transparent 52%);
+  border-color: color-mix(in srgb, var(--region-accent) 16%, rgba(238, 250, 255, 0.06));
+  box-shadow:
+    inset 0 0 0 1px rgba(238, 250, 255, 0.018),
+    inset 0 0 26px color-mix(in srgb, var(--region-accent) 3%, transparent),
+    0 0 32px color-mix(in srgb, var(--region-accent) 5%, transparent);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-region-boundary.is-overclaimed,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-region-boundary.is-uncertain,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-region-boundary.is-impure,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-region-boundary.is-too-broad {
+  box-shadow:
+    inset 0 0 28px color-mix(in srgb, var(--region-accent) 5%, transparent),
+    0 0 36px color-mix(in srgb, var(--region-accent) 7%, transparent);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-region-boundary.is-selected {
+  border-color: color-mix(in srgb, var(--region-accent) 42%, rgba(238, 250, 255, 0.2));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--region-accent) 13%, transparent),
+    0 0 52px color-mix(in srgb, var(--region-accent) 12%, transparent),
+    inset 0 0 38px color-mix(in srgb, var(--region-accent) 8%, transparent);
+  opacity: 0.48;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-region-boundary.is-distant {
+  filter: blur(0.7px);
+  opacity: 0.075;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-link {
+  animation: none;
+  opacity: 0.68;
+  stroke-opacity: var(--link-opacity);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-link-shadow {
+  opacity: 0.12;
+  stroke-opacity: var(--link-glow-opacity);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-link.is-active {
+  stroke: color-mix(in srgb, var(--link-accent) 58%, rgba(238, 250, 255, 0.28));
+  stroke-opacity: 0.58;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node::before {
+  animation: none;
+  background:
+    radial-gradient(ellipse at 50% 50%, transparent 51%, color-mix(in srgb, var(--node-accent) 22%, transparent) 53%, transparent 67%),
+    radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--node-accent) 5%, transparent), transparent 69%);
+  border-color: color-mix(in srgb, var(--node-accent) 18%, rgba(238, 250, 255, 0.11));
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected::before {
+  opacity: 0.58;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-halo {
+  background:
+    radial-gradient(
+      circle at 37% 30%,
+      color-mix(in srgb, rgba(238, 250, 255, var(--node-inner-opacity)) 74%, transparent),
+      transparent var(--node-evidence-core)
+    ),
+    radial-gradient(
+      ellipse at 49% 51%,
+      color-mix(in srgb, var(--node-accent) 23%, rgba(238, 250, 255, 0.1)),
+      color-mix(in srgb, var(--node-accent) 7%, rgba(8, 17, 31, 0.12)) 56%,
+      transparent 74%
+    );
+  border-color: color-mix(in srgb, var(--node-accent) 25%, rgba(238, 250, 255, 0.1));
+  box-shadow:
+    inset 0 0 20px rgba(238, 250, 255, 0.035),
+    0 0 20px color-mix(in srgb, var(--node-accent) 8%, transparent),
+    0 0 50px color-mix(in srgb, var(--node-accent) 4%, transparent);
+  opacity: 0.78;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-halo::before {
+  opacity: 0.48;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-halo::after {
+  border-color: color-mix(in srgb, var(--node-accent) 13%, rgba(238, 250, 255, 0.06));
+  box-shadow: inset 0 0 18px color-mix(in srgb, var(--node-accent) 4%, transparent);
+  opacity: 0.54;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-orbit,
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-overclaimed .cluster-node-orbit,
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-impure .cluster-node-orbit,
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected .cluster-node-orbit {
+  box-shadow:
+    0 0 0 7px color-mix(in srgb, var(--node-accent) 3%, transparent),
+    inset 0 0 14px color-mix(in srgb, var(--node-accent) 4%, transparent);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-overclaimed .cluster-node-orbit {
+  animation: none;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-density span {
+  background: color-mix(in srgb, var(--node-accent) 38%, #eefaff);
+  box-shadow:
+    0 0 5px color-mix(in srgb, var(--node-accent) 16%, transparent),
+    0 0 0 1px rgba(238, 250, 255, 0.1);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected .cluster-node-density span {
+  background: color-mix(in srgb, var(--node-accent) 34%, #eefaff);
+  box-shadow:
+    0 0 7px color-mix(in srgb, var(--node-accent) 22%, transparent),
+    0 0 0 1px rgba(238, 250, 255, 0.14);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-body {
+  background:
+    linear-gradient(180deg, rgba(238, 250, 255, 0.055), rgba(238, 250, 255, 0.018)),
+    rgba(8, 17, 31, 0.4);
+  border-color: rgba(238, 250, 255, 0.095);
+  border-radius: 10px;
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(238, 250, 255, 0.07);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node:hover .cluster-node-body,
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-previewed .cluster-node-body {
+  background:
+    linear-gradient(180deg, rgba(238, 250, 255, 0.082), rgba(238, 250, 255, 0.026)),
+    rgba(8, 17, 31, 0.48);
+  border-color: color-mix(in srgb, var(--node-accent) 24%, rgba(238, 250, 255, 0.17));
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected .cluster-node-body {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--node-accent) 7%, rgba(238, 250, 255, 0.072)), rgba(238, 250, 255, 0.026)),
+    rgba(8, 17, 31, 0.54);
+  border-color: color-mix(in srgb, var(--node-accent) 34%, rgba(238, 250, 255, 0.18));
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(238, 250, 255, 0.052),
+    0 0 22px color-mix(in srgb, var(--node-accent) 9%, transparent);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected .cluster-node-halo {
+  border-color: color-mix(in srgb, var(--node-accent) 46%, rgba(238, 250, 255, 0.2));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--node-accent) 11%, transparent),
+    0 0 30px color-mix(in srgb, var(--node-accent) 18%, transparent),
+    0 0 76px color-mix(in srgb, var(--node-accent) 8%, transparent);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-title,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node-title,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node:hover .cluster-node-title,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node.is-previewed .cluster-node-title,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node.is-selected .cluster-node-title {
+  color: rgba(238, 250, 255, 0.88);
+  font-size: 11px;
+  font-weight: 720;
+  text-shadow: 0 1px 9px rgba(0, 0, 0, 0.46);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node .status-chip {
+  background: color-mix(in srgb, var(--node-accent) 9%, rgba(238, 250, 255, 0.042));
+  border-color: color-mix(in srgb, var(--node-accent) 22%, rgba(238, 250, 255, 0.088));
+  color: rgba(238, 250, 255, 0.72);
+  font-size: 8.5px;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-selected-label {
+  color: color-mix(in srgb, var(--node-accent) 42%, rgba(238, 250, 255, 0.8));
+  display: inline;
+  font-size: 8.5px;
+  font-weight: 760;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key {
+  background:
+    linear-gradient(180deg, rgba(238, 250, 255, 0.062), rgba(238, 250, 255, 0.026)),
+    rgba(8, 17, 31, 0.56);
+  border-color: rgba(238, 250, 255, 0.1);
+  border-radius: 12px;
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(238, 250, 255, 0.045);
+  opacity: 0.76;
+  padding: 9px;
+  width: min(244px, calc(100% - 32px));
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key:hover,
+.arena-shell-explore .evidence-galaxy-atlas:focus-within .atlas-key {
+  opacity: 0.9;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-note {
+  color: rgba(238, 250, 255, 0.62);
+  font-size: 10px;
+  line-height: 1.35;
+  margin-bottom: 9px;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings {
+  gap: 5px;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings div {
+  gap: 8px;
+  grid-template-columns: 18px 78px minmax(0, 1fr);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-row-size .atlas-key-sample,
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-row-brightness .atlas-key-sample,
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-row-ring .atlas-key-sample,
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-row-tint .atlas-key-sample {
+  box-shadow: none;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-row-size .atlas-key-sample {
+  background: rgba(142, 232, 255, 0.1);
+  border-color: rgba(142, 232, 255, 0.3);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-row-density .atlas-key-sample {
+  background:
+    radial-gradient(circle at 30% 35%, rgba(238, 250, 255, 0.84) 0 1.2px, transparent 1.6px),
+    radial-gradient(circle at 66% 34%, rgba(142, 232, 255, 0.66) 0 1.1px, transparent 1.5px),
+    radial-gradient(circle at 55% 72%, rgba(115, 224, 210, 0.58) 0 1px, transparent 1.4px);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-row-brightness .atlas-key-sample {
+  background: radial-gradient(circle, rgba(238, 250, 255, 0.78), rgba(115, 224, 210, 0.1) 62%, transparent 70%);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-row-ring .atlas-key-sample {
+  border-color: rgba(155, 140, 255, 0.42);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-row-tint .atlas-key-sample {
+  background: linear-gradient(135deg, rgba(115, 224, 210, 0.48), rgba(215, 127, 118, 0.38));
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-row-path .atlas-key-sample {
+  background: linear-gradient(90deg, transparent, rgba(142, 232, 255, 0.46) 18% 28%, transparent 32% 44%, rgba(155, 140, 255, 0.38) 48% 58%, transparent 62%);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dt,
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dd {
+  font-size: 9.5px;
+  line-height: 1.22;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dt {
+  color: rgba(238, 250, 255, 0.76);
+  font-weight: 720;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dd {
+  color: rgba(238, 250, 255, 0.58);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-status-legend span {
+  background: rgba(238, 250, 255, 0.032);
+  border-color: rgba(238, 250, 255, 0.055);
+  color: rgba(238, 250, 255, 0.62);
+  font-size: 8.5px;
+  font-weight: 700;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary {
+  background:
+    linear-gradient(180deg, rgba(238, 250, 255, 0.078), rgba(238, 250, 255, 0.03)),
+    rgba(8, 17, 31, 0.68);
+  border-color: color-mix(in srgb, var(--selected-accent) 18%, rgba(238, 250, 255, 0.1));
+  border-radius: 12px;
+  box-shadow:
+    0 14px 32px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(238, 250, 255, 0.052);
+  color: rgba(238, 250, 255, 0.9);
+  opacity: 0.86;
+  padding: 9px 10px;
+  width: 182px;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-summary-kicker {
+  color: rgba(238, 250, 255, 0.48);
+  font-size: 8.5px;
+  font-weight: 720;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary strong {
+  color: rgba(238, 250, 255, 0.9);
+  font-size: 11.5px;
+  font-weight: 740;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary dt,
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary dd {
+  font-size: 9.5px;
+  line-height: 1.18;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary dt {
+  color: rgba(238, 250, 255, 0.52);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary dd {
+  color: rgba(238, 250, 255, 0.78);
+  font-weight: 720;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .status-chip {
+  background: color-mix(in srgb, var(--selected-accent) 8%, rgba(238, 250, 255, 0.044));
+  border-color: color-mix(in srgb, var(--selected-accent) 22%, rgba(238, 250, 255, 0.09));
+  color: rgba(238, 250, 255, 0.74);
+}
+
+@media (max-width: 620px) {
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key {
+    opacity: 0.82;
+    width: min(242px, calc(100% - 24px));
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dt,
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dd,
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key-note {
+    font-size: 9px;
+  }
+}
+
+/* Impeccable layout pass: stable atlas zones for map, key, and selected context. */
+.evidence-galaxy-atlas {
+  --atlas-edge: clamp(12px, 1.4vw, 18px);
+  --atlas-edge-2: clamp(24px, 2.8vw, 36px);
+  --atlas-edge-3: clamp(36px, 4.2vw, 54px);
+  --atlas-rail-height: clamp(72px, 7.2vw, 86px);
+  min-height: clamp(560px, calc(100svh - 164px), 700px);
+}
+
+.arena-shell-explore .galaxy-map {
+  align-items: stretch;
+  gap: clamp(10px, 1.1vw, 14px);
+  grid-template-columns: minmax(0, 1fr) minmax(324px, 380px);
+  padding: clamp(8px, 1vw, 12px);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-camera {
+  inset: 0 0 calc(var(--atlas-edge) + var(--atlas-rail-height)) 0;
+  transform: translate(var(--camera-x), var(--camera-y)) scale(0.985);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key {
+  left: var(--atlas-edge);
+  max-height: calc(100% - var(--atlas-rail-height) - var(--atlas-edge-3));
+  max-width: min(232px, calc(100% - var(--atlas-edge-2)));
+  overflow: clip;
+  padding: 10px;
+  top: var(--atlas-edge);
+  width: auto;
+  z-index: 24;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-header {
+  align-items: center;
+  border-bottom: 1px solid rgba(238, 250, 255, 0.07);
+  color: rgba(238, 250, 255, 0.76);
+  display: flex;
+  font-size: 9.5px;
+  font-weight: 760;
+  gap: 10px;
+  justify-content: space-between;
+  line-height: 1.2;
+  margin-bottom: 8px;
+  padding-bottom: 7px;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-header span + span {
+  color: rgba(238, 250, 255, 0.46);
+  font-weight: 680;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-note {
+  margin-bottom: 8px;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-status-legend {
+  margin-top: 7px;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary {
+  align-items: center;
+  bottom: var(--atlas-edge);
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(150px, 0.82fr) minmax(0, 2.2fr);
+  left: var(--atlas-edge);
+  min-height: var(--atlas-rail-height);
+  opacity: 0.92;
+  padding: 10px 12px;
+  right: var(--atlas-edge);
+  top: auto;
+  transform: none;
+  width: auto;
+  z-index: 24;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .atlas-selection-copy {
+  display: grid;
+  gap: 3px;
+  justify-content: stretch;
+  min-width: 0;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary strong {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .atlas-selection-metrics {
+  display: grid;
+  gap: 0;
+  grid-template-columns: repeat(4, minmax(70px, 1fr));
+  margin: 0;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .atlas-selection-metrics div {
+  align-items: start;
+  border-left: 1px solid rgba(238, 250, 255, 0.075);
+  display: grid;
+  gap: 3px;
+  justify-content: stretch;
+  min-width: 0;
+  padding-left: 12px;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .atlas-selection-metrics dt,
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .atlas-selection-metrics dd {
+  text-align: left;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .atlas-selection-metrics dd {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-height: 760px) and (min-width: 981px) {
+  .evidence-galaxy-atlas {
+    --atlas-rail-height: 68px;
+    min-height: 520px;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key-note {
+    display: none;
+  }
+}
+
+@media (max-width: 980px) {
+  .arena-shell-explore .galaxy-map {
+    grid-template-columns: 1fr;
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .arena-shell-explore .galaxy-map > *,
+  .arena-shell-explore .evidence-galaxy-atlas,
+  .arena-shell-explore .selected-region-card {
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .evidence-galaxy-atlas {
+    --atlas-rail-height: 112px;
+    min-height: 620px;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary {
+    align-items: start;
+    gap: 8px;
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .arena-shell-explore,
+  .arena-shell-explore .arena-layout,
+  .arena-shell-explore .arena-workspace,
+  .arena-shell-explore .stage-surface.galaxy-stage,
+  .arena-shell-explore .galaxy-map {
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  .arena-shell-explore .arena-topbar {
+    flex-wrap: wrap;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .arena-shell-explore .arena-brand {
+    flex: 1 1 min(100%, 260px);
+    min-width: 0;
+  }
+
+  .arena-shell-explore .arena-brand > div {
+    max-width: calc(100vw - 72px);
+    min-width: 0;
+    overflow: hidden;
+    width: min(280px, calc(100vw - 72px));
+  }
+
+  .arena-shell-explore .arena-brand h1 {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  .arena-shell-explore .arena-topbar-actions {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .arena-shell-explore .arena-layout,
+  .arena-shell-explore .arena-workspace,
+  .arena-shell-explore .stage-surface.galaxy-stage,
+  .arena-shell-explore .galaxy-map {
+    justify-self: stretch;
+    width: calc(100vw - 20px);
+  }
+
+  .evidence-galaxy-atlas {
+    --atlas-edge: 12px;
+    --atlas-rail-height: 142px;
+    min-height: 650px;
+    width: 100%;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key {
+    max-width: min(232px, calc(100% - 24px));
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .galaxy-camera {
+    transform: translate(var(--camera-x), var(--camera-y)) scale(0.72);
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key-note {
+    display: none;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .atlas-selection-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 8px;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .atlas-selection-metrics div:nth-child(odd) {
+    border-left: 0;
+    padding-left: 0;
+  }
+}
+
+/* Impeccable polish pass: cluster nodes as evidence controls, not mini cards. */
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node {
+  -webkit-tap-highlight-color: transparent;
+  min-height: 130px;
+  touch-action: manipulation;
+  width: clamp(108px, calc(var(--node-size) + 34px), 168px);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node:active .cluster-node-body {
+  transform: translateY(1px);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-body {
+  align-items: center;
+  border-color: color-mix(in srgb, var(--node-accent) 18%, rgba(238, 250, 255, 0.12));
+  border-radius: 9px;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(238, 250, 255, 0.06);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  justify-content: center;
+  max-width: min(138px, 100%);
+  min-width: 86px;
+  padding: 6px 8px 7px;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 120ms ease;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node:hover .cluster-node-body,
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-previewed .cluster-node-body {
+  border-color: color-mix(in srgb, var(--node-accent) 30%, rgba(238, 250, 255, 0.18));
+  box-shadow:
+    0 5px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(238, 250, 255, 0.07);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected .cluster-node-body {
+  border-color: color-mix(in srgb, var(--node-accent) 42%, rgba(238, 250, 255, 0.2));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--node-accent) 15%, transparent),
+    0 6px 10px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(238, 250, 255, 0.075);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node:focus-visible {
+  outline: none;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node:focus-visible .cluster-node-body {
+  border-color: color-mix(in srgb, var(--node-accent) 48%, rgba(238, 250, 255, 0.22));
+  box-shadow:
+    0 0 0 2px rgba(238, 250, 255, 0.16),
+    0 0 0 4px color-mix(in srgb, var(--node-accent) 18%, transparent),
+    0 4px 8px rgba(0, 0, 0, 0.22);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-title,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node-title,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node:hover .cluster-node-title,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node.is-previewed .cluster-node-title,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node.is-selected .cluster-node-title {
+  flex: 1 0 100%;
+  font-size: 10.5px;
+  font-weight: 740;
+  line-height: 1.12;
+  max-width: 12ch;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node .status-chip {
+  align-items: center;
+  border-color: color-mix(in srgb, var(--node-accent) 20%, rgba(238, 250, 255, 0.09));
+  display: inline-flex;
+  font-size: 8px;
+  font-weight: 720;
+  line-height: 1;
+  max-width: 100%;
+  min-height: 16px;
+  padding: 0 6px;
+  white-space: nowrap;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-selected-label {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: color-mix(in srgb, var(--node-accent) 36%, rgba(238, 250, 255, 0.72));
+  display: inline-flex;
+  font-size: 8px;
+  font-weight: 720;
+  gap: 4px;
+  letter-spacing: 0;
+  line-height: 1;
+  padding: 0;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-selected-label::before {
+  background: currentColor;
+  border-radius: 999px;
+  content: "";
+  height: 4px;
+  opacity: 0.82;
+  width: 4px;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-halo {
+  opacity: 0.74;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected .cluster-node-halo {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--node-accent) 10%, transparent),
+    0 0 28px color-mix(in srgb, var(--node-accent) 15%, transparent),
+    0 0 64px color-mix(in srgb, var(--node-accent) 7%, transparent);
+}
+
+@media (max-width: 620px) {
+  .arena-shell-explore .evidence-galaxy-atlas .cluster-node {
+    min-height: 112px;
+    width: 104px;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .cluster-node-body {
+    max-width: 104px;
+    min-width: 72px;
+    padding: 5px 7px 6px;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .cluster-node-title,
+  .arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node-title,
+  .arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node:hover .cluster-node-title,
+  .arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node.is-previewed .cluster-node-title,
+  .arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node.is-selected .cluster-node-title {
+    font-size: 9.5px;
+    max-width: 10ch;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .cluster-node .status-chip {
+    font-size: 7.5px;
+    min-height: 15px;
+    padding: 0 5px;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .cluster-node-selected-label {
+    display: none;
+  }
+}
+
+/* Impeccable typeset pass: atlas hierarchy through type roles, not more chrome. */
+.arena-shell-explore {
+  font-kerning: normal;
+  font-optical-sizing: auto;
+}
+
+.arena-shell-explore .galaxy-stage .stage-heading {
+  max-width: min(31rem, 46vw);
+}
+
+.arena-shell-explore .galaxy-stage .stage-heading .eyebrow {
+  color: var(--atlas-muted);
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0;
+  line-height: 1.25;
+  text-transform: none;
+}
+
+.arena-shell-explore .galaxy-stage .stage-heading h2 {
+  color: var(--atlas-ink);
+  font-size: 2rem;
+  font-weight: 720;
+  letter-spacing: -0.015em;
+  line-height: 1.08;
+  max-width: 15ch;
+  text-wrap: balance;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas {
+  --atlas-type-micro: 0.625rem;
+  --atlas-type-caption: 0.6875rem;
+  --atlas-type-body: 0.75rem;
+  --atlas-type-emphasis: 0.875rem;
+  font-family: var(--font-sans);
+  font-feature-settings: "kern" 1;
+  font-kerning: normal;
+  font-optical-sizing: auto;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key {
+  font-size: var(--atlas-type-caption);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-header {
+  color: rgba(238, 250, 255, 0.78);
+  font-size: var(--atlas-type-caption);
+  font-weight: 720;
+  letter-spacing: 0;
+  line-height: 1.2;
+  text-transform: none;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-header span + span {
+  color: rgba(238, 250, 255, 0.52);
+  font-size: var(--atlas-type-caption);
+  font-weight: 650;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-note {
+  color: rgba(238, 250, 255, 0.68);
+  font-size: var(--atlas-type-body);
+  line-height: 1.45;
+  margin-bottom: 0.625rem;
+  max-width: 29ch;
+  text-wrap: pretty;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings {
+  gap: 0.375rem;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings div {
+  align-items: center;
+  gap: 0.5rem;
+  grid-template-columns: 1.125rem minmax(5rem, 0.8fr) minmax(5.9rem, 1fr);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dt,
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dd {
+  font-size: var(--atlas-type-caption);
+  letter-spacing: 0;
+  line-height: 1.24;
+  text-wrap: pretty;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dt {
+  color: rgba(238, 250, 255, 0.78);
+  font-weight: 720;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dd {
+  color: rgba(238, 250, 255, 0.62);
+  font-weight: 560;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-status-legend span {
+  font-size: var(--atlas-type-micro);
+  font-weight: 680;
+  letter-spacing: 0;
+  line-height: 1;
+  min-height: 1.25rem;
+  text-transform: none;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-summary-kicker {
+  color: rgba(238, 250, 255, 0.56);
+  font-size: var(--atlas-type-caption);
+  font-weight: 660;
+  letter-spacing: 0;
+  line-height: 1.18;
+  text-transform: none;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary strong {
+  color: rgba(238, 250, 255, 0.93);
+  font-size: var(--atlas-type-emphasis);
+  font-weight: 720;
+  letter-spacing: -0.005em;
+  line-height: 1.18;
+  text-wrap: balance;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .atlas-selection-metrics dt,
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .atlas-selection-metrics dd {
+  font-size: var(--atlas-type-caption);
+  letter-spacing: 0;
+  line-height: 1.22;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .atlas-selection-metrics dt {
+  color: rgba(238, 250, 255, 0.58);
+  font-weight: 560;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .atlas-selection-metrics dd {
+  color: rgba(238, 250, 255, 0.84);
+  font-variant-numeric: tabular-nums;
+  font-weight: 720;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .status-chip {
+  font-size: var(--atlas-type-caption);
+  font-weight: 680;
+  letter-spacing: 0;
+  line-height: 1;
+  min-height: 1.125rem;
+  text-transform: none;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-title,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node-title,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node:hover .cluster-node-title,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node.is-previewed .cluster-node-title,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node.is-selected .cluster-node-title {
+  font-size: var(--atlas-type-caption);
+  font-weight: 720;
+  letter-spacing: -0.005em;
+  line-height: 1.16;
+  text-transform: none;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node .status-chip,
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-selected-label {
+  font-size: var(--atlas-type-micro);
+  font-weight: 680;
+  letter-spacing: 0;
+  line-height: 1;
+  text-transform: none;
+}
+
+@media (max-width: 980px) {
+  .arena-shell-explore .galaxy-stage .stage-heading {
+    max-width: min(28rem, calc(100% - 3rem));
+  }
+
+  .arena-shell-explore .galaxy-stage .stage-heading h2 {
+    font-size: 1.875rem;
+    max-width: 14ch;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key-note {
+    max-width: 27ch;
+  }
+}
+
+@media (max-width: 620px) {
+  .arena-shell-explore .galaxy-stage .stage-heading .eyebrow {
+    font-size: 0.6875rem;
+  }
+
+  .arena-shell-explore .galaxy-stage .stage-heading h2 {
+    font-size: 1.625rem;
+    line-height: 1.1;
+    max-width: 13ch;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas {
+    --atlas-type-caption: 0.625rem;
+    --atlas-type-body: 0.6875rem;
+    --atlas-type-emphasis: 0.8125rem;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings div {
+    grid-template-columns: 1.125rem minmax(4.45rem, 0.78fr) minmax(4.7rem, 1fr);
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .cluster-node .status-chip,
+  .arena-shell-explore .evidence-galaxy-atlas .cluster-node-selected-label {
+    font-size: 0.5625rem;
+  }
+}
+
+/* Impeccable final atlas polish: quieter surfaces, stronger focus, tighter mobile fit. */
+.arena-shell-explore .evidence-galaxy-atlas {
+  border-color: rgba(238, 250, 255, 0.13);
+  border-radius: 26px;
+  box-shadow:
+    inset 0 0 0 1px rgba(238, 250, 255, 0.045),
+    inset 0 -44px 72px rgba(0, 0, 0, 0.3);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas:focus-visible {
+  outline: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(238, 250, 255, 0.055),
+    inset 0 -44px 72px rgba(0, 0, 0, 0.3),
+    0 0 0 3px rgba(95, 111, 82, 0.38),
+    0 0 0 6px rgba(238, 250, 255, 0.3);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key {
+  background:
+    linear-gradient(180deg, rgba(238, 250, 255, 0.07), rgba(238, 250, 255, 0.026)),
+    rgba(8, 17, 31, 0.6);
+  border-color: rgba(238, 250, 255, 0.105);
+  box-shadow:
+    inset 0 1px 0 rgba(238, 250, 255, 0.052),
+    0 4px 8px rgba(0, 0, 0, 0.16);
+  opacity: 0.84;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key:hover,
+.arena-shell-explore .evidence-galaxy-atlas:focus-within .atlas-key {
+  opacity: 0.94;
+  transform: none;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key:focus-within {
+  border-color: rgba(238, 250, 255, 0.2);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-status-legend span,
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node .status-chip,
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .status-chip {
+  box-shadow: none;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary {
+  border-color: color-mix(in srgb, var(--selected-accent) 14%, rgba(238, 250, 255, 0.12));
+  box-shadow:
+    inset 0 1px 0 rgba(238, 250, 255, 0.052),
+    0 4px 8px rgba(0, 0, 0, 0.18);
+  opacity: 0.92;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .atlas-selection-metrics div {
+  border-left-color: rgba(238, 250, 255, 0.09);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-link.is-active {
+  stroke-opacity: 0.62;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-region-boundary.is-selected {
+  opacity: 0.52;
+}
+
+@media (max-width: 620px) {
+  .evidence-galaxy-atlas {
+    --atlas-rail-height: 132px;
+    min-height: clamp(560px, calc(100svh - 220px), 620px);
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .galaxy-camera {
+    transform: translate(var(--camera-x), var(--camera-y)) scale(0.7);
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key {
+    max-width: min(232px, calc(100% - 24px));
+    padding: 8px;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-status-legend {
+    gap: 4px;
+    margin-top: 7px;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-status-legend span {
+    min-height: 1.125rem;
+    padding-inline: 0.375rem;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .cluster-node-title,
+  .arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node-title,
+  .arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node:hover .cluster-node-title,
+  .arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node.is-previewed .cluster-node-title,
+  .arena-shell-explore .evidence-galaxy-atlas .galaxy-camera .cluster-node.is-selected .cluster-node-title {
+    font-size: 0.8125rem;
+    max-width: 11ch;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .cluster-node .status-chip {
+    font-size: 0.6875rem;
+    min-height: 1rem;
+    padding-inline: 0.3125rem;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary {
+    min-height: var(--atlas-rail-height);
+    padding: 10px 12px;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .atlas-selection-metrics {
+    row-gap: 6px;
+  }
+}

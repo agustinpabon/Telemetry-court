@@ -19,6 +19,84 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-15: Evidence Galaxy Atlas Final Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Run `$impeccable polish components/arena/EvidenceGalaxyAtlas.tsx` as the final atlas polish pass after quieter, layout, node, and typeset refinements.
+- Files changed: `components/arena/EvidenceGalaxyAtlas.tsx`, `app/globals.css`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added accessible atlas/key relationships, arrow-key shortcut metadata, polite selected-summary announcements, a stronger but restrained focus treatment, quieter atlas/key/summary surface shadows, and a tighter mobile atlas fit so the selected rail remains connected to the main map interaction.
+- Decisions made: Kept the evidence encodings, region positions, node data, and workflow semantics intact. Used a final scoped CSS layer instead of consolidating older accumulated atlas overrides, preserving the current dirty-tree history.
+- Checks run: `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/EvidenceGalaxyAtlas.tsx app/globals.css` reported only the existing `layout-transition` warnings in `app/globals.css`; `git diff --check` passed; `npm test` passed with 22 tests; `npm run lint` passed with existing warnings in `.agents/skills/impeccable`; `npm run build` passed; `next start --port 3029` served the production build; local HTTP check returned `200 OK`; Brave headless desktop and mobile screenshots saved `/private/tmp/evidence-atlas-final-polish.png` and `/private/tmp/evidence-atlas-final-polish-mobile.png`.
+- Assumptions: The quality bar is flagship demo polish based on the current Impeccable sequence and the user's prior "Full Atlas polish" direction.
+- Risks/follow-ups: `app/globals.css` still contains older overridden atlas blocks; a separate cleanup-only pass should consolidate those once the visual direction is accepted.
+- Next recommended step: Review the final atlas in the intended demo viewport and then run a CSS consolidation pass if approved.
+- Suggested commit message: `ux(galaxy): polish evidence atlas`
+
+## 2026-06-15: Evidence Galaxy Atlas Typeset Pass
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Run `$impeccable typeset components/arena/EvidenceGalaxyAtlas.tsx` to refine the atlas typography after the quieter, layout, and node polish passes.
+- Files changed: `components/arena/EvidenceGalaxyAtlas.tsx`, `app/globals.css`, and `docs/CHANGELOG_AI.md`.
+- Summary: Tightened the atlas legend note, added a scoped fixed-rem type layer for the atlas title, key, selected-region rail, node labels, status chips, and numeric metrics, and made the visible atlas typography rely on role consistency rather than tiny uppercase/tracked microcopy.
+- Decisions made: Kept the existing Geist/system sans stack and added no font dependency. Preserved tested product vocabulary and evidence semantics while normalizing the visible type roles in a final override layer.
+- Checks run: `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/EvidenceGalaxyAtlas.tsx app/globals.css` reported only the existing `layout-transition` warnings in `app/globals.css`; `git diff --check` passed; `npm test` passed with 22 tests; `npm run lint` passed with existing warnings in `.agents/skills/impeccable`; `npm run build` passed; `next start --port 3027` served the production build; local HTTP check returned `200 OK`; Brave headless desktop and mobile screenshots saved `/private/tmp/evidence-atlas-typeset.png` and `/private/tmp/evidence-atlas-typeset-mobile.png`.
+- Assumptions: The atlas is product UI, so fixed rem sizing and a single familiar sans stack are more appropriate than fluid display typography or a decorative type pairing.
+- Risks/follow-ups: Older overridden atlas typography rules remain earlier in `app/globals.css`; a cleanup-only consolidation is still separate from this scoped pass.
+- Next recommended step: Run `$impeccable polish components/arena/EvidenceGalaxyAtlas.tsx` once the typeset hierarchy is reviewed in the browser.
+- Suggested commit message: `ux(galaxy): typeset evidence atlas`
+
+## 2026-06-15: Cluster Node Polish Pass
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Run `$impeccable polish components/arena/ClusterNode.tsx` to refine the atlas node affordances after the quieter and layout passes.
+- Files changed: `components/arena/ClusterNode.tsx`, `app/globals.css`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a proper selected-region accessibility signal, shortened the selected node marker, refined node label/status wrapping, tightened selected/focus/active states, reduced card-like shadow treatment, and improved mobile node fit.
+- Decisions made: Kept the node semantics and evidence encodings intact. Used a final scoped CSS layer rather than deleting older overridden atlas passes, preserving the current dirty-tree history.
+- Checks run: `git diff --check` passed; `npm test` passed with 22 tests; `npm run lint` passed with existing warnings in `.agents/skills/impeccable`; `npm run build` passed; `next start --port 3025` served the production build; local HTTP check returned `200 OK`; Brave headless desktop and mobile screenshots saved `/private/tmp/cluster-node-polish.png` and `/private/tmp/cluster-node-polish-mobile.png`.
+- Assumptions: The selected-region rail now carries the detailed selected context, so the node itself should stay compact and only signal identity, status, and current selection.
+- Risks/follow-ups: Older overridden node styles still exist earlier in `app/globals.css`; a cleanup-only CSS consolidation remains separate.
+- Next recommended step: Run `$impeccable polish components/arena/EvidenceGalaxyAtlas.tsx` for a final whole-atlas pass.
+- Suggested commit message: `ux(galaxy): polish cluster node states`
+
+## 2026-06-15: Evidence Galaxy Atlas Layout Pass
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Run `$impeccable layout components/arena/EvidenceGalaxyAtlas.tsx` to improve spacing, rhythm, and hierarchy after the quieter visual pass.
+- Files changed: `components/arena/EvidenceGalaxyAtlas.tsx`, `app/globals.css`, and `docs/CHANGELOG_AI.md`.
+- Summary: Reworked the selected evidence snapshot from a node-following floating card into a stable bottom selection rail, added a clear map key header, removed summary-position CSS variables and helper code, and reserved atlas layout zones for key, map field, and selected context across desktop and mobile.
+- Decisions made: Kept the right-side case dossier as the deeper inspection surface while preserving a compact selected-region rail inside the atlas for orientation. Added no dependencies and changed no fixture data or workflow state.
+- Checks run: `git diff --check` passed; `npm test` passed with 22 tests; `npm run lint` passed with existing warnings in `.agents/skills/impeccable`; `npm run build` passed; `next start --port 3025` served the production build; local HTTP check returned `200 OK`; Brave headless desktop and mobile screenshots saved `/private/tmp/evidence-atlas-layout.png` and `/private/tmp/evidence-atlas-layout-mobile.png`.
+- Assumptions: The atlas should prioritize the spatial evidence field, with selected metrics available but not competing with the map or right dossier.
+- Risks/follow-ups: The CSS still contains older overridden atlas passes; a cleanup-only consolidation remains separate from this layout task.
+- Next recommended step: Run `$impeccable polish components/arena/EvidenceGalaxyAtlas.tsx` after reviewing the new hierarchy.
+- Suggested commit message: `ux(galaxy): improve atlas layout hierarchy`
+
+## 2026-06-15: Quieter Evidence Galaxy Atlas
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Run `$impeccable quieter components/arena/EvidenceGalaxyAtlas.tsx` after the atlas critique, focusing on a calmer premium cyber-analytics tone and full atlas polish without changing the workflow.
+- Files changed: `app/globals.css` and `docs/CHANGELOG_AI.md`.
+- Summary: Added a scoped final atlas quieting pass that reduces decorative galaxy motion, hides excess background/orbit layers, lowers glow and chroma, softens region fields and semantic links, refines node/selection states, and makes the map key plus selected evidence summary read more like restrained product UI.
+- Decisions made: Kept the implementation CSS-only to avoid changing evidence data, interactions, or component contracts. Preserved the dark premium atlas direction while removing the more generic space/HUD intensity.
+- Checks run: `git diff --check` passed; `npm test` passed with 22 tests; `npm run lint` passed with existing warnings in `.agents/skills/impeccable`; `npm run build` passed; `next start --port 3025` served the production build; local HTTP check returned `200 OK`; Brave headless screenshot verification saved `/private/tmp/evidence-atlas-quiet.png`.
+- Assumptions: Existing atlas DOM hooks remain useful for later art-direction passes even when some decorative layers are visually hidden. Older overridden atlas CSS remains in place for a future cleanup-only task.
+- Risks/follow-ups: The selected evidence summary is still a floating element inside the map; a later layout pass should decide whether it belongs in the right-side dossier instead.
+- Next recommended step: Run the planned atlas layout/polish pass if the quieter direction is approved.
+- Suggested commit message: `ux(galaxy): quiet evidence atlas visuals`
+
+## 2026-06-15: Impeccable Project Context Initialization
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Run `$impeccable init` for Telemetry Court so future design work has explicit product, visual-system, and live-mode context.
+- Files changed: `PRODUCT.md`, `DESIGN.md`, `.impeccable/design.json`, `.impeccable/live/config.json`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a root `PRODUCT.md` derived from the current Evidence Arena source-of-truth docs, generated a Stitch-format `DESIGN.md` from existing tokens/components, added the Impeccable design sidecar, and configured live mode for the Next.js App Router entry at `app/layout.tsx`.
+- Decisions made: Treated the repo as a product/tool register. Preserved the existing Telemetry Court design language instead of seeding a new palette. Marked live CSP as checked because `detect-csp.mjs` returned no CSP.
+- Checks run: `node -e` JSON parse check for `.impeccable/design.json` and `.impeccable/live/config.json` passed; `node .agents/skills/impeccable/scripts/context.mjs` now loads `PRODUCT.md` and `DESIGN.md`; `npm test` passed with 22 tests; `npm run lint` passed with warnings in `.agents/skills/impeccable` scripts; `npm run build` passed; `git diff --check` passed.
+- Assumptions: Existing docs fully answered the init interview requirements for register, users, purpose, brand personality, anti-references, and accessibility. Existing dirty UI files were not reverted or normalized.
+- Risks/follow-ups: The current CSS contains historical visual overrides and at least one side-accent treatment that future polish could consolidate; this init only documents the active system.
+- Next recommended step: Run `$impeccable critique /` or `$impeccable polish components/arena/EvidenceGalaxyAtlas.tsx` after reviewing the current surface.
+- Suggested commit message: `docs(design): initialize impeccable project context`
+
 ## 2026-06-15: Semantic Evidence Encoding Pass
 
 - Agent/model: Codex (GPT-5)

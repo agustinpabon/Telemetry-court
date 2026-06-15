@@ -1,0 +1,244 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-15T13:49:09Z",
+  "title": "Design System: Telemetry Court",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "neutral",
+        "displayName": "Court Ink",
+        "canonical": "#32302f",
+        "tonalRamp": ["oklch(18% 0.01 80)", "oklch(28% 0.012 80)", "oklch(40% 0.012 80)", "oklch(52% 0.01 80)", "oklch(64% 0.009 80)", "oklch(76% 0.008 80)", "oklch(88% 0.006 80)", "oklch(96% 0.004 80)"]
+      },
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Canvas",
+        "canonical": "#f4f2ee",
+        "tonalRamp": ["oklch(18% 0.012 85)", "oklch(30% 0.012 85)", "oklch(43% 0.012 85)", "oklch(57% 0.01 85)", "oklch(70% 0.009 85)", "oklch(82% 0.008 85)", "oklch(91% 0.006 85)", "oklch(97% 0.004 85)"]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Focus Olive",
+        "canonical": "#5f6f52",
+        "tonalRamp": ["oklch(20% 0.05 130)", "oklch(30% 0.06 130)", "oklch(42% 0.07 130)", "oklch(54% 0.07 130)", "oklch(66% 0.06 130)", "oklch(78% 0.045 130)", "oklch(88% 0.03 130)", "oklch(96% 0.015 130)"]
+      },
+      "arena-bg": {
+        "role": "secondary",
+        "displayName": "Arena Night",
+        "canonical": "#111723",
+        "tonalRamp": ["oklch(12% 0.025 255)", "oklch(20% 0.03 255)", "oklch(30% 0.035 255)", "oklch(42% 0.035 255)", "oklch(55% 0.03 255)", "oklch(68% 0.024 255)", "oklch(82% 0.016 255)", "oklch(94% 0.008 255)"]
+      },
+      "arena-ink": {
+        "role": "neutral",
+        "displayName": "Arena Parchment Ink",
+        "canonical": "#f7f3ea",
+        "tonalRamp": ["oklch(18% 0.012 85)", "oklch(30% 0.012 85)", "oklch(43% 0.012 85)", "oklch(57% 0.01 85)", "oklch(70% 0.009 85)", "oklch(82% 0.008 85)", "oklch(91% 0.006 85)", "oklch(97% 0.004 85)"]
+      },
+      "supported": {
+        "role": "semantic",
+        "displayName": "Supported Green",
+        "canonical": "#3f7d55",
+        "tonalRamp": ["oklch(18% 0.05 150)", "oklch(28% 0.07 150)", "oklch(40% 0.09 150)", "oklch(52% 0.1 150)", "oklch(64% 0.08 150)", "oklch(76% 0.055 150)", "oklch(88% 0.032 150)", "oklch(96% 0.016 150)"]
+      },
+      "weak": {
+        "role": "semantic",
+        "displayName": "Weak Amber",
+        "canonical": "#9a6a2f",
+        "tonalRamp": ["oklch(18% 0.05 75)", "oklch(28% 0.07 75)", "oklch(40% 0.09 75)", "oklch(52% 0.1 75)", "oklch(64% 0.08 75)", "oklch(76% 0.055 75)", "oklch(88% 0.032 75)", "oklch(96% 0.016 75)"]
+      },
+      "contradicted": {
+        "role": "semantic",
+        "displayName": "Contradiction Red",
+        "canonical": "#9b3d35",
+        "tonalRamp": ["oklch(18% 0.05 25)", "oklch(28% 0.07 25)", "oklch(40% 0.09 25)", "oklch(52% 0.1 25)", "oklch(64% 0.08 25)", "oklch(76% 0.055 25)", "oklch(88% 0.032 25)", "oklch(96% 0.016 25)"]
+      },
+      "atlas-ink": {
+        "role": "primary",
+        "displayName": "Atlas Ink",
+        "canonical": "#2e302d",
+        "tonalRamp": ["oklch(17% 0.012 130)", "oklch(27% 0.012 130)", "oklch(39% 0.012 130)", "oklch(52% 0.01 130)", "oklch(64% 0.009 130)", "oklch(76% 0.008 130)", "oklch(88% 0.006 130)", "oklch(96% 0.004 130)"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Stage headings, drawer titles, and cockpit titles."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Case-file and major panel headings."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Selected claims, card titles, and important structured choices."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Evidence summaries, explanations, and helper text."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Chips, metadata, and compact UI labels."
+      },
+      "mono": {
+        "displayName": "Mono Label",
+        "purpose": "Metrics, IDs, JSON preview, and small instrument labels."
+      }
+    },
+    "shadows": [
+      {
+        "name": "arena-shell",
+        "value": "0 26px 70px rgba(0, 0, 0, 0.32)",
+        "purpose": "Large dark-mode stage shell depth."
+      },
+      {
+        "name": "drawer",
+        "value": "-28px 0 80px rgba(0, 0, 0, 0.32)",
+        "purpose": "Review drawer separation over the arena."
+      },
+      {
+        "name": "dossier-inset",
+        "value": "inset 0 1px 0 rgba(255, 255, 255, 0.78)",
+        "purpose": "Light selected-region dossier highlight."
+      },
+      {
+        "name": "cta-lift",
+        "value": "0 14px 30px rgba(70, 61, 47, 0.13)",
+        "purpose": "Rare light-atlas primary action lift."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-fast",
+        "value": "180ms ease",
+        "purpose": "Hover, border, background, and small transform transitions."
+      },
+      {
+        "name": "drawer-enter",
+        "value": "260ms ease",
+        "purpose": "Review drawer entry."
+      },
+      {
+        "name": "selected-region-enter",
+        "value": "240ms cubic-bezier(0.2, 0.8, 0.2, 1)",
+        "purpose": "Selected-region card replacement."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "mobile",
+        "value": "390px"
+      },
+      {
+        "name": "tablet",
+        "value": "768px"
+      },
+      {
+        "name": "desktop",
+        "value": "1280px"
+      },
+      {
+        "name": "wide",
+        "value": "1680px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button On Dark",
+      "kind": "button",
+      "refersTo": "button-primary-dark-surface",
+      "description": "Primary action for dark investigation surfaces.",
+      "html": "<button class=\"ds-btn-primary-dark\">Open case file</button>",
+      "css": ".ds-btn-primary-dark { background: var(--tc-surface, #f7f3ea); border: 1px solid rgba(247, 243, 234, 0.56); border-radius: 16px; color: #141a25; cursor: pointer; font: 850 14px/1 var(--font-sans, ui-sans-serif, system-ui); min-height: 46px; padding: 0 16px; transition: background 180ms ease, transform 180ms ease, opacity 180ms ease; } .ds-btn-primary-dark:hover { background: #fffaf0; transform: translateY(-1px); } .ds-btn-primary-dark:focus-visible { outline: 3px solid var(--tc-focus, #5f6f52); outline-offset: 3px; } .ds-btn-primary-dark:disabled { cursor: not-allowed; opacity: 0.45; transform: none; }"
+    },
+    {
+      "name": "Primary Button On Light",
+      "kind": "button",
+      "refersTo": "button-primary-light-surface",
+      "description": "Primary action for the light semantic atlas.",
+      "html": "<button class=\"ds-btn-primary-light\">Open case file</button>",
+      "css": ".ds-btn-primary-light { background: #2e302d; border: 1px solid #2e302d; border-radius: 999px; box-shadow: 0 14px 30px rgba(70, 61, 47, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.15); color: #fbfaf7; cursor: pointer; font: 850 14px/1 var(--font-sans, ui-sans-serif, system-ui); min-height: 44px; padding: 0 18px; transition: background 180ms ease, transform 180ms ease; } .ds-btn-primary-light:hover { background: #1f211f; transform: translateY(-1px); } .ds-btn-primary-light:focus-visible { outline: 3px solid var(--tc-focus, #5f6f52); outline-offset: 3px; }"
+    },
+    {
+      "name": "Status Chip",
+      "kind": "chip",
+      "refersTo": "chip-status-supported",
+      "description": "Compact semantic status label with text and color.",
+      "html": "<span class=\"ds-status-chip\">Supported</span>",
+      "css": ".ds-status-chip { align-items: center; background: rgba(130, 178, 139, 0.16); border: 1px solid rgba(130, 178, 139, 0.36); border-radius: 999px; color: #bfe4c6; display: inline-flex; font: 800 12px/1 var(--font-sans, ui-sans-serif, system-ui); min-height: 30px; padding: 0 11px; }"
+    },
+    {
+      "name": "Dark Evidence Card",
+      "kind": "card",
+      "refersTo": "card-dark-panel",
+      "description": "Dark arena card for evidence, claims, or structured choices.",
+      "html": "<article class=\"ds-card-dark\"><span>Evidence</span><strong>Role lifecycle feature stack</strong><p>Synthetic salient features include CreateRole, AttachRolePolicy, and TagRole.</p></article>",
+      "css": ".ds-card-dark { background: rgba(247, 243, 234, 0.08); border: 1px solid rgba(247, 243, 234, 0.12); border-radius: 18px; color: #f7f3ea; display: grid; gap: 9px; padding: 15px; } .ds-card-dark span { color: rgba(247, 243, 234, 0.66); font: 800 11px/1.25 var(--font-mono, ui-monospace, monospace); } .ds-card-dark strong { color: #f7f3ea; font: 820 15px/1.35 var(--font-sans, ui-sans-serif, system-ui); } .ds-card-dark p { color: rgba(247, 243, 234, 0.66); font: 400 14px/1.55 var(--font-sans, ui-sans-serif, system-ui); margin: 0; }"
+    },
+    {
+      "name": "Light Region Dossier",
+      "kind": "card",
+      "refersTo": "card-light-dossier",
+      "description": "Light selected-region dossier in the semantic atlas.",
+      "html": "<article class=\"ds-region-dossier\"><span>Selected region</span><h3>IAM role provisioning</h3><p>The AI claim is under test; evidence support and uncertainty drive the next action.</p></article>",
+      "css": ".ds-region-dossier { background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(251, 250, 246, 0.78)), #fbfaf6; border: 1px solid rgba(255, 255, 255, 0.76); border-radius: 28px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78); color: #2e302d; display: grid; gap: 10px; padding: 22px; } .ds-region-dossier span { color: rgba(46, 48, 45, 0.56); font: 800 12px/1.2 var(--font-sans, ui-sans-serif, system-ui); } .ds-region-dossier h3 { color: #2e302d; font: 740 25px/1.08 var(--font-sans, ui-sans-serif, system-ui); letter-spacing: 0; margin: 0; overflow-wrap: anywhere; } .ds-region-dossier p { color: rgba(47, 48, 45, 0.74); font: 400 15px/1.45 var(--font-sans, ui-sans-serif, system-ui); margin: 0; }"
+    },
+    {
+      "name": "Stage Rail Button",
+      "kind": "nav",
+      "refersTo": "stage-rail-button",
+      "description": "Compact persistent workflow navigation item.",
+      "html": "<button class=\"ds-stage-rail-button\"><span class=\"ds-stage-index\">03</span><span class=\"ds-stage-label\">Evidence</span></button>",
+      "css": ".ds-stage-rail-button { align-items: center; background: transparent; border: 1px solid transparent; border-radius: 16px; color: rgba(247, 243, 234, 0.66); cursor: pointer; display: grid; gap: 5px; justify-items: center; min-height: 68px; padding: 8px 4px; text-align: center; transition: background 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease; } .ds-stage-rail-button:hover { background: rgba(247, 243, 234, 0.1); border-color: rgba(247, 243, 234, 0.18); color: #f7f3ea; } .ds-stage-rail-button:focus-visible { outline: 3px solid var(--tc-focus, #5f6f52); outline-offset: 3px; } .ds-stage-index { align-items: center; border: 1px solid rgba(247, 243, 234, 0.16); border-radius: 999px; display: flex; font: 12px/1 var(--font-mono, ui-monospace, monospace); height: 30px; justify-content: center; width: 30px; } .ds-stage-label { font: 800 11px/1.1 var(--font-sans, ui-sans-serif, system-ui); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Evidence Dossier Arena",
+    "overview": "Telemetry Court combines a calm high-trust product shell with a spatial investigation arena. The system should feel like a scientific review instrument: restrained, precise, and quiet enough for careful judgment, while still making the telemetry landscape feel alive and interactive.\n\nThe design has two coordinated surface modes. The global product context uses warm neutral canvas, soft surfaces, muted borders, and system sans typography. The Evidence Arena uses a darker spatial cockpit for staged review work, while the Explore / Galaxy mode can return to a lighter semantic atlas when readability and evidence inspection need priority.\n\nIt rejects threat-wall drama, fake terminal styling, neon cyber aesthetics, generic AI decoration, and dense dashboard grids. Semantic color exists to clarify evidence status, uncertainty, contradiction, impurity, and overclaim risk.",
+    "keyCharacteristics": [
+      "Restrained neutral product UI with semantic color used sparingly.",
+      "Spatial evidence maps that behave as primary interaction, not wallpaper.",
+      "Structured-choice controls with clear selected, hover, disabled, and focus states.",
+      "Claim, evidence, score, and verdict hierarchy before ornament.",
+      "Plainspoken copy that names uncertainty and missing evidence directly."
+    ],
+    "rules": [
+      {
+        "name": "The Semantic Color Rule",
+        "body": "Status colors are reserved for evidence support, contradiction, uncertainty, impurity, and verdict meaning. They are not decorative accents.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Surface Rule",
+        "body": "Light atlas surfaces and dark investigation surfaces may coexist, but each screen must make one mode dominant so the product does not feel patched together.",
+        "section": "colors"
+      },
+      {
+        "name": "The No Drama Type Rule",
+        "body": "Product labels, buttons, metrics, and evidence summaries stay in Geist or Geist Mono. Do not introduce display fonts for functional UI.",
+        "section": "typography"
+      },
+      {
+        "name": "The Surface First Rule",
+        "body": "Use background tone, border, and spacing before shadow. Shadows are for shell depth, drawers, and active interaction feedback, not default card decoration.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep evidence hierarchy explicit: case context, AI claim reveal state, claims, evidence, support score, verdict, and risks.",
+      "Do use structured choices for blind interpretation, evidence classification, label duel, impostor selection, failure modes, and verdict.",
+      "Do use semantic status text with every color-coded status.",
+      "Do preserve the warm neutral product shell (`#f4f2ee`, `#fbfaf7`) and the dark arena shell (`#111723`, `#f7f3ea`) as deliberate surface modes.",
+      "Do keep motion subtle, state-driven, and compatible with `prefers-reduced-motion`."
+    ],
+    "donts": [
+      "Don't make Telemetry Court look like a SIEM, SOC dashboard, threat-intelligence dashboard, chatbot, cyberpunk wall, fake terminal, or neon security tool.",
+      "Don't use Matrix green, decorative cyber gradients, generic AI sparkle visuals, alarmist red, dense dashboard grids, or required free-text fields in the main workflow.",
+      "Don't invent evidence, telemetry fields, Toponymy APIs, real incident claims, customer data, or restricted telemetry.",
+      "Don't copy Wealthsimple, Apple, Linear, or any other brand's protected assets, slogans, exact layouts, icons, imagery, screenshots, or proprietary visual identity.",
+      "Don't use color alone to communicate support, contradiction, uncertainty, impurity, or verdict state.",
+      "Don't add decorative side-stripe borders, gradient text, glassmorphism by default, or repeated identical card grids."
+    ]
+  }
+}
