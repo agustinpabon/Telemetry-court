@@ -19,6 +19,118 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-15: Semantic Evidence Encoding Pass
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Refine the existing galactic atlas into a clearer semantic evidence atlas, preserving the current architecture and product workflow while making visual encodings more evidence-driven.
+- Files changed: `components/arena/EvidenceGalaxyAtlas.tsx`, `components/arena/ClusterNode.tsx`, `app/globals.css`, and `docs/CHANGELOG_AI.md`.
+- Summary: Remapped region field size to session count, particle density to representative sessions, inner node brightness to evidence support, ring behavior to uncertainty/status, and path styling to derived semantic relationship type. Added a compact selected evidence snapshot inside the atlas and restored a more readable map key with tiny encoding samples and contextual evidence microcopy.
+- Decisions made: Added no dependencies and did not change the fixture/data model. Semantic relationship types are derived locally from existing status, evidence-strength, uncertainty, and distance fields.
+- Checks run: `npx tsc --noEmit` passed; `npm run lint` passed; `npm test` passed with 22 tests; `npm run build` passed; `git diff --check` passed. Browser verification against `next start --port 3013` covered desktop 1280x720 and mobile 390x844 layout metrics, cluster click selection, keyboard arrow selection, Open case file handoff, no horizontal overflow, all five regions inside the atlas, selected evidence summary updates, and no browser console warnings/errors.
+- Assumptions: In-app browser screenshot capture timed out even for a small clip, so browser verification used DOM/layout metrics and real interactions instead of saved screenshot artifacts. Remaining visual styling avoids additional effects and trims blur/drop-shadow work in the semantic layer.
+- Risks/follow-ups: `app/globals.css` still contains earlier overridden atlas sections from prior passes; a separate cleanup-only pass could collapse those once the design direction is approved.
+- Next recommended step: Review the semantic encodings on the intended demo display and decide whether relationship typing should later come from explicit fixture data instead of local derivation.
+- Suggested commit message: `ux(galaxy): clarify semantic evidence encodings`
+
+## 2026-06-15: Semantic Galaxy Atlas Art Direction Refinement
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Refine the existing Semantic evidence galaxy atlas so the viewport feels more like a premium spatial evidence map and less like a dark dashboard, without changing the product workflow or right-side case panel behavior.
+- Files changed: `components/arena/EvidenceGalaxyAtlas.tsx`, `components/arena/ClusterNode.tsx`, `app/globals.css`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added layered galaxy depth hooks, a central semantic density field, a softer observation-window rim, quieter atmospheric adjacency paths, explicit selected-neighbour state, more organic region clouds, refined floating glass labels, smaller translucent legend styling, and a stronger selected evidence-lens treatment.
+- Decisions made: Added no dependencies and kept the implementation in CSS/SVG/React. The existing case fixture fields remain the source for selection, status tint, evidence support, uncertainty, session density, and selected-panel accent color.
+- Checks run: `npx tsc --noEmit` passed; `npm run lint` passed; `npm test` passed with 22 tests; `npm run build` passed; `git diff --check` passed. Browser verification against `next start --port 3012` covered 1280x720 and 390x844 screenshots, cluster click selection, keyboard arrow selection, Open case file handoff, no horizontal overflow, all five regions inside the atlas at mobile width, and no browser console warnings/errors.
+- Assumptions: Broad blur/blend layers were trimmed after an initial browser screenshot timeout; final browser screenshot capture and interaction checks succeeded on the fresh production build.
+- Risks/follow-ups: `app/globals.css` still contains older overridden atlas rules from prior passes; this pass deliberately appends scoped refinements to avoid disturbing unrelated dirty-tree work.
+- Next recommended step: Review the refined atlas on the intended demo display and, if approved, do a separate cleanup-only CSS pass to collapse superseded galaxy rules.
+- Suggested commit message: `ux(galaxy): refine atlas art direction`
+
+## 2026-06-15: Semantic Evidence Galaxy Atlas
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Redesign only the main Semantic evidence atlas / telemetry landscape visualization into a premium, calm, galactic evidence map while preserving the evidence-first case flow.
+- Files changed: `components/arena/EvidenceGalaxyAtlas.tsx`, `components/arena/TelemetryGalaxy.tsx`, `components/arena/ClusterNode.tsx`, `app/globals.css`, and `docs/CHANGELOG_AI.md`.
+- Summary: Split the atlas viewport into a dedicated `EvidenceGalaxyAtlas` component, added a deep-space atlas surface with nebula gradients, subtle starfields, orbital rings, semantic adjacency lines, glass legend, and data-driven glowing region bubbles. Updated cluster buttons with richer session particles, selected-state halo/status reveal, and clearer accessible labels while keeping the selected-region dossier and case-opening flow intact.
+- Decisions made: Added no dependencies and no data-model changes. Existing fixture fields remain the source for region position, status tint, evidence support, uncertainty pressure, model agreement, session count, selected claim copy, and review metrics. The rest of the app remains light and unchanged.
+- Checks run: `npx tsc --noEmit` passed; `npm run lint` passed; `npm test` passed with 22 tests; `npm run build` passed. Browser verification against `next start --port 3010` passed at 1280x720 and 390x844 with no horizontal overflow, all five regions visible/selectable, click selection updating the panel, arrow-key selection, Open case file handoff, and no production-tab console warnings/errors.
+- Assumptions: The current synthetic fixture fields are sufficient for a maintainable CSS/SVG/React MVP; the galaxy palette is scoped to the atlas so global status semantics do not drift.
+- Risks/follow-ups: A pre-existing dev server on port 3000 served stale CSS during verification, so final browser verification used the freshly built production server on port 3010. A future cleanup pass could remove older overridden galaxy CSS blocks from `app/globals.css`.
+- Next recommended step: Review the atlas on the intended demo display and keep any additional workflow-stage polish as a separate scoped task.
+- Suggested commit message: `ux(galaxy): redesign atlas as galactic evidence map`
+
+## 2026-06-14: Landscape Premium Atlas Refinement
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Refine only the Landscape / Telemetry Galaxy screen to keep the light readable redesign while making it more premium, spatial, scientific, and workshop-demo polished.
+- Files changed: `components/arena/ClusterNode.tsx`, `app/globals.css`, and `docs/CHANGELOG_AI.md`.
+- Summary: Upgraded the atlas canvas from a flat framed map to a lighter scientific surface with subtle grid, contour, and focus gradients. Reworked behavioural regions with density points, softer fields, contour pressure, anchored labels, and selected/focused status reveal. Quieted the stage rail and map key, removed the heavy grey rim, and made the selected-region inspector feel more like an integrated evidence dossier with a shared tint connector.
+- Decisions made: Added no dependencies, data fields, or workflow changes. The selected-region copy, metrics, AI-claim-under-test framing, region selection state, keyboard navigation, and Open case file flow remain intact.
+- Checks run: `npm test` passed with 22 tests; `npm run lint` passed; `git diff --check` passed; `npm run build` passed. Browser verification covered 1280x720, 1152x720, and 2560x1440 viewports, screenshot review, real coordinate clicks for all five regions, arrow-key selection, and the Open case file CTA flow.
+- Assumptions: Browser viewport sizes were used as practical equivalents for 100%, 125%, and 50% zoom checks because the in-app browser exposes viewport control rather than native browser zoom.
+- Risks/follow-ups: `app/globals.css` still contains older overridden Landscape rules from earlier visual passes. This refinement adds explicit final overrides where needed instead of deleting prior dirty-tree work.
+- Next recommended step: Review on the intended demo display and, if approved, follow with a separate CSS cleanup pass to remove dead overridden Landscape styles.
+- Suggested commit message: `ux(galaxy): refine landscape into premium semantic atlas`
+
+## 2026-06-14: Landscape Semantic Evidence Atlas Redesign
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Redesign only the Landscape / Telemetry Galaxy screen for readability, product polish, interaction reliability, selected-region clarity, and controlled motion.
+- Files changed: `components/arena/TelemetryGalaxy.tsx`, `components/arena/ClusterNode.tsx`, `app/globals.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Rebuilt the Landscape composition as a light, premium semantic evidence atlas with a dedicated selected-region module, readable AI-claim-under-test copy, why-investigate rationale from fixture data, three clear signal metrics, a compact useful map key, clearer selected-region states, and a calmer map with no particle field or terrain wallpaper.
+- Decisions made: Added no dependencies, no data fields, and no changes to downstream workflow stages. Existing fixture values remain the source for session count, evidence support, uncertainty, status tint, region size, and claim rationale. The five sample regions now use explicit atlas display positions to keep semantic proximity while preventing hitbox overlap.
+- Checks run: `npm test` passed with 22 tests; `npm run lint` passed; `git diff --check` passed; `npm run build` passed. Browser verification checked 1280x720, 1152x720, and 2560x1440 viewports, real coordinate clicks for all five regions, arrow-key selection, and the Open case file CTA flow.
+- Assumptions: The selected-region module may reveal the AI label as a claim under test on the Landscape screen because this task explicitly requires that preview copy.
+- Risks/follow-ups: The file still contains older overridden Landscape CSS from earlier passes; this pass adds the canonical final override block instead of deleting user/previous-agent work in the dirty tree.
+- Next recommended step: Review the visual result at the requested zoom levels, then keep later-stage polish as separate scoped work.
+- Suggested commit message: `ux(galaxy): redesign landscape as readable evidence atlas`
+
+## 2026-06-14: Landscape Visual & Interaction Quality Upgrade
+
+- Agent/model: Claude (Gemini Antigravity)
+- Prompt scope: Major design-engineering upgrade of the Landscape / Telemetry Galaxy screen. Fix interaction bugs (region selection blocking), reduce visual noise, consolidate CSS, upgrade motion system, simplify component structure.
+- Files changed: `components/arena/TelemetryGalaxy.tsx`, `components/arena/ClusterNode.tsx`, `app/globals.css`, `app/page.test.ts`, `docs/CHANGELOG_AI.md`.
+- Summary:
+  - **Interaction fix**: Command rail and overlays now use `pointer-events: none` with `pointer-events: auto` only on interactive children, fixing the critical bug where selecting a region blocked access to other regions.
+  - **Visual noise removal**: Removed 12 categories of clutter — floating annotations (4 callouts), focus label, count pill, subtitle, signal ring, metric bars, second contour ring. Legend is now minimal and hover-revealable (opacity 0.36 → 1 on hover).
+  - **CSS consolidation**: Replaced ~1100 lines of cascade-override CSS (4+ passes at different points in globals.css) with one clean canonical section. Net file size similar but zero duplication.
+  - **Command rail → strip**: Multi-row grid command rail replaced with slim horizontal flex strip. Pointer-events passthrough ensures map clicks work through the strip.
+  - **Motion system**: New entrance animations (`galaxyMapEnter`, `nodeEnter` with stagger, `commandStripEnter`), upgraded camera transition (900ms cinematic cubic-bezier), improved terrain entrance, gentler ambient drift.
+  - **Node simplification**: Cluster nodes reduced to dot + title in galaxy view. Signal ring, metric bars, and detail row removed. Nodes now read as scientific map points.
+  - **Particle/connection reduction**: Particles reduced ~60% (max 14 per cluster). Connections reduced to max 4.
+  - **Typography**: Title weight 700, tracking -0.02em. Eyebrow smaller/more spaced. Node titles consistent monospace.
+- Decisions made: No new dependencies. No changes to other stages. No data model changes. Legend encodings simplified (4 entries instead of 5, shorter labels).
+- Checks run: `npm run build` ✓, `npm run lint` ✓, `npm test` 22/22 pass ✓.
+- Assumptions: Removed text (subtitle, annotations, investigation thesis) contained information already available in the command strip or was redundant. The investigation thesis was the primary loss — it showed a rationale sentence that is not available elsewhere in the landscape view.
+- Risks/follow-ups: The earlier CSS sections (lines 428-3500) still contain some galaxy-related base styles that are overridden by the new section. These are dead weight but harmless. A future cleanup pass could remove them.
+- Next recommended step: Manual visual testing at 50%, 100%, 125% zoom. Verify all 5 regions are selectable. Verify case-opening flow works.
+- Suggested commit message: `feat(landscape): upgrade visual quality, fix interaction blocking, consolidate galaxy CSS`
+
+## 2026-06-14: Cinematic Evidence Atlas Rebuild
+
+- Agent/model: Codex (GPT-5.5)
+- Prompt scope: Rebuild only the Landscape / Telemetry Galaxy first screen using the supplied cinematic motion references as design-language inspiration while preserving Telemetry Court's evidence-first scientific workflow.
+- Files changed: `components/arena/TelemetryGalaxy.tsx`, `components/arena/ClusterNode.tsx`, `components/arena/AppShell.tsx`, `app/globals.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Reframed the Landscape as a cinematic semantic evidence atlas with a dominant selected-region terrain body, camera-style focus variables, subtle pointer parallax, session-particle density, contour/ring pressure, precise annotations, a compact map key, and a selected-region command rail that frames the AI label as a claim under test.
+- Decisions made: Added no dependencies and no new telemetry fields. Visual encodings still map to existing fixture data: semantic proximity, region weight, evidence support, uncertainty pressure, status tint, nearest-neighbour adjacency, and selected AI claim. The rest of the investigation workflow was not redesigned.
+- Checks run: `npm test` passed with 22 tests; `npm run lint` passed; `git diff --check` passed; `npm run build` passed. Safari/Computer Use visual checks covered default desktop zoom, enlarged zoom, reduced/50-ish zoom, tablet-width bottom-sheet behavior, and mobile-width bottom-sheet behavior. The `Open case file` CTA was clicked and confirmed to enter the Case File stage with `Start blind investigation` available.
+- Assumptions: The supplied videos were treated as composition/motion references only, not literal subject references. Existing fixture fields remain the source for all atlas encodings and copy.
+- Risks/follow-ups: The in-app Browser bridge became unavailable during verification, so the final visual pass used Safari/Computer Use against the existing local dev server at `localhost:3000`. A final human taste pass on the intended demo display is still useful.
+- Next recommended step: Review the atlas in the intended demo environment and keep any later workflow-stage polish as separate scoped tasks.
+- Suggested commit message: `ux(galaxy): rebuild landscape as cinematic evidence atlas`
+
+## 2026-06-14: Semantic Atlas Landscape Refinement
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Improve only the Landscape / Telemetry Galaxy screen so the first impression reads as a premium semantic investigation atlas rather than a dashboard with a decorative chart.
+- Files changed: `components/arena/TelemetryGalaxy.tsx`, `components/arena/ClusterNode.tsx`, `components/arena/AppShell.tsx`, `app/globals.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Moved the Landscape out of the three-column cockpit layout, kept the Galaxy as the hero, added an integrated selected-region inspector with AI-claim-under-test copy, added a scientific map legend and axis annotations, quieted the stage rail into a flow marker, projected existing map coordinates into a display field so all regions remain visible around the inspector, and kept later investigation stages unchanged.
+- Decisions made: Added no dependencies and no new telemetry fields. The visual map still uses existing fixture fields for status, uncertainty, evidence strength, model agreement, session count, nearest neighbour, features, and evidence items. The AI label is presented as a claim to investigate, not as an accepted truth.
+- Checks run: `npm test` passed with 22 tests; `npm run lint` passed; `git diff --check` passed; `npm run build` passed. Browser verification passed against `next start --port 3010` at 1440x900, 1280x720, 1024x576, 2560x1440, 768x1024, and 390x844 with no horizontal overflow, all five regions visible, the map immediately visible, readable inspector placement, no console warnings/errors, and a working `Open case file` click-through.
+- Assumptions: Viewport dimensions were used as practical browser-zoom equivalents for 125% and 50% checks because this browser surface controls viewport size rather than native browser zoom.
+- Risks/follow-ups: The Landscape now intentionally reveals the AI claim as a claim under test before opening the case file, matching this task's preview requirement. If strict blind-label concealment is later required on the entry screen, that product decision should be revisited explicitly.
+- Next recommended step: Review the first screenshot in the intended demo environment, then continue with a separate scoped pass for the Case File stage if desired.
+- Suggested commit message: `ux(galaxy): refine landscape as semantic atlas`
+
 ## 2026-06-13: Focused Landscape Galaxy Refinement
 
 - Agent/model: Codex (GPT-5)

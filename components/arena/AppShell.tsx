@@ -136,6 +136,9 @@ export function AppShell({ cases }: AppShellProps) {
   }
 
   const isExploreMode = arenaState.activeStage === "landscape";
+  const stageTransitionKey = isExploreMode
+    ? arenaState.activeStage
+    : `${selectedCase.id}-${arenaState.activeStage}`;
 
   return (
     <main
@@ -154,7 +157,11 @@ export function AppShell({ cases }: AppShellProps) {
           </div>
         </div>
         <div className="arena-topbar-actions">
-          <span>{reviewCompletion}/6 review steps</span>
+          <span>
+            {isExploreMode
+              ? "Semantic evidence atlas"
+              : `${reviewCompletion}/6 review steps`}
+          </span>
           <button type="button" onClick={openReviewDrawer}>
             Review JSON
           </button>
@@ -170,7 +177,7 @@ export function AppShell({ cases }: AppShellProps) {
 
         <section className="arena-workspace" aria-live="polite">
           <div
-            key={`${selectedCase.id}-${arenaState.activeStage}`}
+            key={stageTransitionKey}
             className="stage-transition"
           >
             {renderStage({
@@ -189,35 +196,39 @@ export function AppShell({ cases }: AppShellProps) {
             })}
           </div>
 
-          <div className="stage-controls">
-            <button
-              type="button"
-              onClick={() => dispatchArena({ type: "goToPreviousStage" })}
-              disabled={arenaState.activeStage === "landscape"}
-            >
-              Back
-            </button>
-            <button
-              type="button"
-              onClick={() => dispatchArena({ type: "goToNextStage" })}
-              disabled={arenaState.activeStage === "verdict"}
-            >
-              Next
-            </button>
-          </div>
+          {isExploreMode ? null : (
+            <div className="stage-controls">
+              <button
+                type="button"
+                onClick={() => dispatchArena({ type: "goToPreviousStage" })}
+                disabled={arenaState.activeStage === "landscape"}
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={() => dispatchArena({ type: "goToNextStage" })}
+                disabled={arenaState.activeStage === "verdict"}
+              >
+                Next
+              </button>
+            </div>
+          )}
         </section>
 
-        <InvestigationCockpit
-          key={selectedCase.id}
-          caseFile={selectedCase}
-          activeStage={arenaState.activeStage}
-          reviewState={reviewState}
-          reviewCompletion={reviewCompletion}
-          onOpenCaseFile={() => dispatchArena({ type: "openCaseFile" })}
-          onStartInvestigation={() => dispatchArena({ type: "startInvestigation" })}
-          onRevealAiLabel={() => dispatchArena({ type: "revealAiLabel" })}
-          onOpenReviewDrawer={openReviewDrawer}
-        />
+        {isExploreMode ? null : (
+          <InvestigationCockpit
+            key={selectedCase.id}
+            caseFile={selectedCase}
+            activeStage={arenaState.activeStage}
+            reviewState={reviewState}
+            reviewCompletion={reviewCompletion}
+            onOpenCaseFile={() => dispatchArena({ type: "openCaseFile" })}
+            onStartInvestigation={() => dispatchArena({ type: "startInvestigation" })}
+            onRevealAiLabel={() => dispatchArena({ type: "revealAiLabel" })}
+            onOpenReviewDrawer={openReviewDrawer}
+          />
+        )}
       </div>
 
       {arenaState.reviewDrawerOpen ? (
@@ -358,6 +369,7 @@ function renderStage({
           onSelectCase={(caseId) => dispatchArena({ type: "selectCase", caseId })}
           onPreviewCase={setPreviewCaseId}
           onClearPreview={() => setPreviewCaseId(undefined)}
+          onOpenCaseFile={() => dispatchArena({ type: "openCaseFile" })}
         />
       );
   }
