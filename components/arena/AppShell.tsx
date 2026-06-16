@@ -148,20 +148,12 @@ export function AppShell({ cases }: AppShellProps) {
     >
       <header className="arena-topbar">
         <div className="arena-brand">
-          <span className="brand-mark" aria-hidden="true">
-            TC
-          </span>
           <div>
-            <p>Telemetry Court</p>
-            <h1>AI names the pattern. Humans test the evidence.</h1>
+            <h1>Telemetry Court</h1>
+            <p>Evidence review for AI-named telemetry clusters.</p>
           </div>
         </div>
         <div className="arena-topbar-actions">
-          <span>
-            {isExploreMode
-              ? "Semantic evidence atlas"
-              : `${reviewCompletion}/6 review steps`}
-          </span>
           <button type="button" onClick={openReviewDrawer}>
             Review JSON
           </button>

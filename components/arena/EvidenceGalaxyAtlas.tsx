@@ -1,6 +1,9 @@
 import { useId, useMemo, type CSSProperties, type KeyboardEvent } from "react";
 
-import { landscapeStatusMeta } from "@/components/arena/arenaMeta";
+import {
+  getEvidenceStrengthTaxonomyLabel,
+  landscapeStatusMeta,
+} from "@/components/arena/arenaMeta";
 import { ClusterNode } from "@/components/arena/ClusterNode";
 import { formatSupportScore } from "@/lib/caseMetrics";
 import type { CaseFile } from "@/lib/types";
@@ -69,6 +72,10 @@ export function EvidenceGalaxyAtlas({
   const selectedPosition = getAtlasPosition(selectedCase);
   const selectedAccent = getGalaxyStatusAccent(selectedCase);
   const selectedStatus = landscapeStatusMeta[selectedCase.landscapeStatus];
+  const selectedEvidenceStrength = getEvidenceStrengthTaxonomyLabel(
+    selectedCase.evidenceStrength,
+    selectedCase.landscapeStatus,
+  );
   const sessionRange = useMemo(() => getSessionRange(cases), [cases]);
   const cameraOffsetX = (52 - selectedPosition.x) * 0.08;
   const cameraOffsetY = (48 - selectedPosition.y) * 0.08;
@@ -105,7 +112,7 @@ export function EvidenceGalaxyAtlas({
       style={mapStyle}
       aria-describedby={atlasDescriptionId}
       aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
-      aria-label="Semantic evidence galaxy. Select a behavioural region to open its case preview. Use arrow keys to move between regions."
+      aria-label="Evidence landscape. Select a behavioural region to open its case preview. Use arrow keys to move between regions."
     >
       <div className="atlas-space-surface" aria-hidden="true">
         <span className="galaxy-depth-haze galaxy-depth-haze-a" />
@@ -135,7 +142,7 @@ export function EvidenceGalaxyAtlas({
         </div>
         <p className="atlas-key-note" id={atlasDescriptionId}>
           Proximity groups related behaviour. Brightness, ring, and tint show
-          support, uncertainty, and review state.
+          evidence strength, uncertainty, and verdict.
         </p>
         <dl className="atlas-key-encodings">
           <div className="atlas-key-row atlas-key-row-size">
@@ -161,7 +168,7 @@ export function EvidenceGalaxyAtlas({
           <div className="atlas-key-row atlas-key-row-tint">
             <span className="atlas-key-sample" aria-hidden="true" />
             <dt>Tint</dt>
-            <dd>Review state</dd>
+            <dd>Verdict</dd>
           </div>
           <div className="atlas-key-row atlas-key-row-path">
             <span className="atlas-key-sample" aria-hidden="true" />
@@ -169,7 +176,7 @@ export function EvidenceGalaxyAtlas({
             <dd>Semantic adjacency</dd>
           </div>
         </dl>
-        <div className="atlas-status-legend" aria-label="Status tint legend">
+        <div className="atlas-status-legend" aria-label="Verdict taxonomy">
           {landscapeStatusOrder.map((statusKey) => {
             const status = landscapeStatusMeta[statusKey];
 
@@ -203,18 +210,18 @@ export function EvidenceGalaxyAtlas({
             <dd>{selectedCase.cluster.size ?? "—"}</dd>
           </div>
           <div>
-            <dt>Support</dt>
-            <dd>{formatSupportScore(selectedCase.evidenceStrength)}</dd>
+            <dt>Verdict</dt>
+            <dd>
+              <span className={selectedStatus.className}>{selectedStatus.label}</span>
+            </dd>
+          </div>
+          <div>
+            <dt>Evidence</dt>
+            <dd>{selectedEvidenceStrength}</dd>
           </div>
           <div>
             <dt>Uncertainty</dt>
             <dd>{formatSupportScore(selectedCase.uncertainty)}</dd>
-          </div>
-          <div>
-            <dt>Status</dt>
-            <dd>
-              <span className={selectedStatus.className}>{selectedStatus.label}</span>
-            </dd>
           </div>
         </dl>
       </aside>

@@ -1,6 +1,10 @@
 import type { CSSProperties } from "react";
 
-import { landscapeStatusMeta } from "@/components/arena/arenaMeta";
+import {
+  getEvidenceStrengthTaxonomyLabel,
+  landscapeStatusMeta,
+  reviewStateTaxonomyLabel,
+} from "@/components/arena/arenaMeta";
 import {
   EvidenceGalaxyAtlas,
   getGalaxyStatusAccent,
@@ -32,11 +36,14 @@ export function TelemetryGalaxy({
   onOpenCaseFile,
 }: TelemetryGalaxyProps) {
   return (
-    <section className="galaxy-stage stage-surface" aria-label="Telemetry Galaxy">
+    <section className="galaxy-stage stage-surface" aria-label="Evidence landscape">
       <div className="stage-heading">
         <div>
-          <p className="eyebrow">Telemetry Galaxy</p>
-          <h2>Semantic evidence atlas</h2>
+          <h2>Evidence landscape</h2>
+          <p className="stage-heading-copy">
+            Open a region to test whether the model&apos;s label is supported by
+            evidence.
+          </p>
         </div>
       </div>
 
@@ -72,6 +79,10 @@ function SelectedRegionPanel({
   onOpenCaseFile: () => void;
 }) {
   const status = landscapeStatusMeta[caseFile.landscapeStatus];
+  const evidenceStrength = getEvidenceStrengthTaxonomyLabel(
+    caseFile.evidenceStrength,
+    caseFile.landscapeStatus,
+  );
   const regionName = getDisplayRegionName(caseFile.cluster.name);
 
   return (
@@ -86,13 +97,15 @@ function SelectedRegionPanel({
           <h3>{regionName}</h3>
         </div>
         <div className="selected-region-status">
-          <span className="selected-region-eyebrow">Status</span>
-          <span className={status.className}>{status.label}</span>
+          <span className="selected-region-eyebrow">Review state</span>
+          <span className="review-taxonomy-label">
+            {reviewStateTaxonomyLabel[caseFile.reviewStatus]}
+          </span>
         </div>
       </div>
 
       <div className="selected-region-section">
-        <span className="selected-region-eyebrow">AI claim under test</span>
+        <span className="selected-region-eyebrow">Claim under test</span>
         <p className="selected-region-claim">{caseFile.topicLabel.name}</p>
       </div>
 
@@ -102,18 +115,23 @@ function SelectedRegionPanel({
       </div>
 
       <div className="selected-region-section" aria-label="Core signals">
-        <span className="selected-region-eyebrow">Signals</span>
-        <div className="selected-region-metrics">
-          <span>
-            <strong>{`${caseFile.cluster.size ?? "—"} sessions`}</strong>
-          </span>
-          <span>
-            <strong>{`${formatSupportScore(caseFile.evidenceStrength)} evidence support`}</strong>
-          </span>
-          <span>
-            <strong>{`${formatSupportScore(caseFile.uncertainty)} uncertainty`}</strong>
-          </span>
-        </div>
+        <span className="selected-region-eyebrow">Review metadata</span>
+        <dl className="selected-region-metrics">
+          <div>
+            <dt>Verdict</dt>
+            <dd>
+              <span className={status.className}>{status.label}</span>
+            </dd>
+          </div>
+          <div>
+            <dt>Evidence</dt>
+            <dd>{evidenceStrength}</dd>
+          </div>
+          <div>
+            <dt>Uncertainty</dt>
+            <dd>{formatSupportScore(caseFile.uncertainty)}</dd>
+          </div>
+        </dl>
       </div>
 
       <button

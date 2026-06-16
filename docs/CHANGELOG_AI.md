@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-15: First Screen Evidence Review Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Run `$impeccable polish first screen` to make the Telemetry Court landing state read as a serious evidence-review tool rather than an AI landing-page mockup.
+- Files changed: `components/arena/AppShell.tsx`, `components/arena/TelemetryGalaxy.tsx`, `components/arena/EvidenceGalaxyAtlas.tsx`, `components/arena/arenaMeta.ts`, `app/globals.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Replaced the stacked tagline header with a quiet utility header, renamed the first stage to `Evidence landscape`, added one restrained instruction line, recast map and inspector statuses as review taxonomy metadata, and made the selected-region inspector separate review state, verdict, evidence strength, and uncertainty.
+- Decisions made: Preserved the existing atlas geometry, synthetic case data, evidence workflow, and map-inspector layout. Added a small evidence-strength taxonomy helper rather than changing fixture values. Used scoped CSS overrides because the current stylesheet still contains accumulated atlas polish layers.
+- Checks run: `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/AppShell.tsx components/arena/TelemetryGalaxy.tsx components/arena/EvidenceGalaxyAtlas.tsx components/arena/ClusterNode.tsx components/arena/arenaMeta.ts app/globals.css app/page.test.ts` reported only the existing `layout-transition` warnings in `app/globals.css`; `git diff --check` passed; `npm test` passed with 22 tests; `npm run lint` passed with existing warnings in `.agents/skills/impeccable`; `npm run build` passed; `next start --port 3030` served the production build; local HTTP check returned `200 OK`; Brave headless desktop and narrow verification screenshots saved `/private/tmp/telemetry-first-screen-polish-desktop.png` and `/private/tmp/telemetry-first-screen-polish-narrow.png`.
+- Assumptions: First-screen status wording can use compact uppercase taxonomy labels because those labels are review metadata, not prose.
+- Risks/follow-ups: Brave's bare 390px CLI screenshot path appears to crop a wider headless layout viewport, so the visual mobile check used the 500px narrow render plus the compiled CSS bundle evidence. `app/globals.css` still needs a separate consolidation pass to remove older overridden atlas/header layers.
+- Next recommended step: Review the first screen in the target demo browser, then consolidate the repeated atlas CSS layers if the direction is accepted.
+- Suggested commit message: `ux(arena): quiet first screen taxonomy`
+
 ## 2026-06-15: Evidence Galaxy Atlas Final Polish
 
 - Agent/model: Codex (GPT-5)

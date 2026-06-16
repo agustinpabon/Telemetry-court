@@ -50,22 +50,33 @@ test("home page static review flow exposes the core Telemetry Court concepts", (
   const pageText = renderHomePageText();
 
   assert.match(pageText, /Telemetry Court/);
-  assert.match(pageText, /AI names the pattern\. Humans test the evidence\./);
-  assert.match(pageText, /Telemetry Galaxy/);
-  assert.match(pageText, /Semantic evidence atlas/);
+  assert.match(pageText, /Evidence review for AI-named telemetry clusters\./);
+  assert.match(pageText, /Evidence landscape/);
+  assert.match(
+    pageText,
+    /Open a region to test whether the model&#x27;s label is supported by evidence\./,
+  );
+  assert.doesNotMatch(pageText, /AI names the pattern\. Humans test the evidence\./);
+  assert.doesNotMatch(pageText, /Telemetry Galaxy/);
+  assert.doesNotMatch(pageText, /Semantic evidence atlas/);
   assert.match(pageText, /Proximity/);
   assert.match(pageText, /Region size/);
   assert.match(pageText, /Ring/);
   assert.match(pageText, /Tint/);
   assert.match(pageText, /Dashed line/);
   assert.match(pageText, /Selected region/);
-  assert.match(pageText, /Status/);
-  assert.match(pageText, /AI claim under test/);
+  assert.match(pageText, /Review state/);
+  assert.match(pageText, /IN REVIEW/);
+  assert.match(pageText, /Claim under test/);
   assert.match(pageText, /Why investigate/);
-  assert.match(pageText, /Signals/);
+  assert.match(pageText, /Review metadata/);
+  assert.match(pageText, /Verdict/);
+  assert.match(pageText, /Evidence/);
+  assert.match(pageText, /Uncertainty/);
   assert.match(pageText, /126 sessions/);
-  assert.match(pageText, /38% evidence support/);
-  assert.match(pageText, /72% uncertainty/);
+  assert.match(pageText, /OVERCLAIM/);
+  assert.match(pageText, /THIN/);
+  assert.match(pageText, /72%/);
   assert.match(pageText, /Open case file/);
   assert.doesNotMatch(pageText, /Investigation Cockpit/);
   assert.doesNotMatch(pageText, /Hidden until blind read/);
@@ -97,11 +108,11 @@ test("telemetry galaxy renders every synthetic behavioural region", () => {
     assert.match(pageText, new RegExp(label.replace(".", "\\.")));
   }
 
-  assert.match(pageText, /Overclaimed/);
-  assert.match(pageText, /Supported/);
-  assert.match(pageText, /Impure/);
-  assert.match(pageText, /Too broad/);
-  assert.match(pageText, /Uncertain/);
+  assert.match(pageText, /OVERCLAIM/);
+  assert.match(pageText, /SUPPORTED/);
+  assert.match(pageText, /MIXED/);
+  assert.match(pageText, /TOO BROAD/);
+  assert.match(pageText, /UNCERTAIN/);
 });
 
 test("shared review UI keeps contradicted and unsupported styling distinct", () => {

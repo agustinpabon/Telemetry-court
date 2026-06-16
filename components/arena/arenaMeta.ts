@@ -18,35 +18,35 @@ export const landscapeStatusMeta: Record<
   }
 > = {
   supported: {
-    label: "Supported",
+    label: "SUPPORTED",
     tone: "supported",
     className: "status-chip status-chip-supported",
     nodeClassName: "cluster-node-supported",
     accent: "#7fb18b",
   },
   overclaimed: {
-    label: "Overclaimed",
+    label: "OVERCLAIM",
     tone: "overclaimed",
     className: "status-chip status-chip-overclaimed",
     nodeClassName: "cluster-node-overclaimed",
     accent: "#d18a7e",
   },
   impure: {
-    label: "Impure",
+    label: "MIXED",
     tone: "impure",
     className: "status-chip status-chip-impure",
     nodeClassName: "cluster-node-impure",
     accent: "#d5ad63",
   },
   too_broad: {
-    label: "Too broad",
+    label: "TOO BROAD",
     tone: "broad",
     className: "status-chip status-chip-broad",
     nodeClassName: "cluster-node-broad",
     accent: "#8fa8d5",
   },
   uncertain: {
-    label: "Uncertain",
+    label: "UNCERTAIN",
     tone: "uncertain",
     className: "status-chip status-chip-uncertain",
     nodeClassName: "cluster-node-uncertain",
@@ -61,6 +61,36 @@ export const reviewStatusLabel: Record<ReviewStatus, string> = {
   needs_evidence: "Needs evidence",
   reviewed: "Reviewed",
 };
+
+export const reviewStateTaxonomyLabel: Record<ReviewStatus, string> = {
+  unreviewed: "UNREVIEWED",
+  in_review: "IN REVIEW",
+  needs_split: "IN REVIEW",
+  needs_evidence: "IN REVIEW",
+  reviewed: "REVIEWED",
+};
+
+export function getEvidenceStrengthTaxonomyLabel(
+  evidenceStrength: number,
+  landscapeStatus?: LandscapeStatus,
+): "STRONG" | "THIN" | "CONFLICTING" {
+  if (
+    landscapeStatus === "impure" ||
+    (landscapeStatus === "overclaimed" && evidenceStrength >= 0.56)
+  ) {
+    return "CONFLICTING";
+  }
+
+  if (evidenceStrength >= 0.72) {
+    return "STRONG";
+  }
+
+  if (evidenceStrength <= 0.55) {
+    return "THIN";
+  }
+
+  return "CONFLICTING";
+}
 
 export const candidateSourceLabel: Record<CandidateLabelSource, string> = {
   baseline_ai: "Baseline AI",
