@@ -9607,3 +9607,1488 @@ textarea,
 .arena-shell-explore .galaxy-stage .stage-heading .stage-heading-copy {
   max-width: min(34rem, calc(100vw - 4.5rem));
 }
+
+/* Impeccable evidence landscape workspace polish: compact first-screen tool surface. */
+.arena-shell-explore {
+  padding-top: clamp(8px, 0.9vw, 14px);
+}
+
+.arena-shell-explore .arena-topbar {
+  align-items: center;
+  background: rgba(255, 253, 248, 0.58);
+  border: 1px solid rgba(47, 48, 45, 0.075);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin: 0 auto 10px;
+  max-width: min(1680px, calc(100vw - 24px));
+  padding: 10px 12px;
+  padding-right: 12px;
+  width: 100%;
+}
+
+.arena-shell-explore .arena-brand h1 {
+  font-size: 0.9375rem;
+  letter-spacing: 0;
+  line-height: 1.15;
+}
+
+.arena-shell-explore .arena-brand p {
+  display: none;
+}
+
+.arena-shell-explore .arena-topbar-actions {
+  justify-self: end;
+  padding-top: 0;
+  position: static;
+}
+
+.arena-shell-explore .arena-topbar button {
+  background: rgba(255, 255, 255, 0.76);
+  border-color: rgba(47, 48, 45, 0.13);
+  border-radius: 10px;
+  color: rgba(47, 48, 45, 0.82);
+  font-size: 0.78125rem;
+  font-weight: 720;
+  min-height: 2.125rem;
+  padding-inline: 0.75rem;
+}
+
+.arena-shell-explore .arena-layout {
+  gap: clamp(10px, 1vw, 14px);
+}
+
+.arena-shell-explore .arena-workspace {
+  padding-top: 0;
+}
+
+.arena-shell-explore .stage-surface.galaxy-stage {
+  padding: clamp(12px, 1.1vw, 16px);
+}
+
+.arena-shell-explore .galaxy-stage .stage-heading {
+  margin: 0 2px 10px;
+  max-width: none;
+}
+
+.arena-shell-explore .galaxy-stage .stage-heading > div {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+
+.arena-shell-explore .galaxy-stage .stage-heading h2 {
+  color: rgba(47, 48, 45, 0.88);
+  font-size: 1rem;
+  font-weight: 740;
+  letter-spacing: 0;
+  line-height: 1.2;
+  margin: 0;
+  max-width: none;
+}
+
+.arena-shell-explore .galaxy-stage .stage-heading h2::after {
+  color: rgba(47, 48, 45, 0.26);
+  content: "/";
+  font-weight: 520;
+  margin-left: 14px;
+}
+
+.arena-shell-explore .galaxy-stage .stage-heading .stage-heading-copy {
+  color: rgba(47, 48, 45, 0.58);
+  font-size: 0.875rem;
+  font-weight: 560;
+  line-height: 1.35;
+  margin: 0;
+  max-width: min(42rem, calc(100vw - 7rem));
+}
+
+.arena-shell-explore .galaxy-map {
+  background:
+    linear-gradient(180deg, rgba(255, 253, 248, 0.78), rgba(244, 240, 230, 0.6)),
+    rgba(248, 245, 237, 0.76);
+  border: 1px solid rgba(47, 48, 45, 0.075);
+  border-radius: 22px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.76),
+    0 16px 42px rgba(47, 48, 45, 0.08);
+  gap: clamp(10px, 1vw, 12px);
+  padding: clamp(8px, 0.9vw, 10px);
+}
+
+.arena-shell-explore .galaxy-map::before {
+  opacity: 0.18;
+}
+
+.arena-shell-explore .galaxy-map::after {
+  opacity: 0.08;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas {
+  border-color: rgba(238, 250, 255, 0.105);
+  border-radius: 20px;
+  box-shadow:
+    inset 0 0 0 1px rgba(238, 250, 255, 0.035),
+    inset 0 -34px 58px rgba(0, 0, 0, 0.24);
+  min-height: clamp(540px, calc(100svh - 152px), 680px);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-depth-haze,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-core,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-core-ring,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-nebula {
+  opacity: 0.18;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-starfield {
+  opacity: 0.08;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-orbits {
+  opacity: 0.2;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-grid {
+  opacity: 0.3;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-region-boundary {
+  mix-blend-mode: normal;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-region-boundary.is-selected {
+  opacity: 0.58;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-link {
+  stroke-opacity: calc(var(--link-opacity) * 0.82);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-link.is-active {
+  stroke-opacity: 0.56;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key {
+  background:
+    linear-gradient(180deg, rgba(238, 250, 255, 0.052), rgba(238, 250, 255, 0.018)),
+    rgba(8, 17, 31, 0.5);
+  border-color: rgba(238, 250, 255, 0.085);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(238, 250, 255, 0.04);
+  left: 12px;
+  max-width: 196px;
+  opacity: 0.62;
+  padding: 8px;
+  top: 12px;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key:hover,
+.arena-shell-explore .evidence-galaxy-atlas:focus-within .atlas-key {
+  opacity: 0.82;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-header {
+  border-bottom-color: rgba(238, 250, 255, 0.055);
+  color: rgba(238, 250, 255, 0.72);
+  font-size: 0.625rem;
+  font-weight: 760;
+  letter-spacing: 0.025em;
+  margin-bottom: 6px;
+  padding-bottom: 5px;
+  text-transform: uppercase;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-header span + span {
+  color: rgba(238, 250, 255, 0.42);
+  font-size: 0.59375rem;
+  letter-spacing: 0.02em;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-note {
+  color: rgba(238, 250, 255, 0.54);
+  font-size: 0.625rem;
+  line-height: 1.32;
+  margin-bottom: 6px;
+  max-width: 23ch;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings {
+  gap: 4px;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings div {
+  gap: 6px;
+  grid-template-columns: 0.875rem minmax(4.3rem, 0.86fr) minmax(4.2rem, 1fr);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dt,
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dd {
+  font-size: 0.59375rem;
+  line-height: 1.18;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dt {
+  color: rgba(238, 250, 255, 0.7);
+  font-weight: 700;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dd {
+  color: rgba(238, 250, 255, 0.48);
+  font-weight: 560;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-status-legend {
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.arena-shell-explore .review-taxonomy-label,
+.arena-shell-explore .status-chip,
+.arena-shell-explore .evidence-galaxy-atlas .atlas-status-legend span,
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-selected-label {
+  border-radius: 4px;
+  font-size: 0.625rem;
+  font-weight: 760;
+  letter-spacing: 0.04em;
+  min-height: 1.125rem;
+  padding: 0 0.4375rem;
+  text-transform: uppercase;
+}
+
+.arena-shell-explore .selected-region-card .review-taxonomy-label,
+.arena-shell-explore .selected-region-card .status-chip {
+  background: rgba(47, 48, 45, 0.025);
+  border-color: rgba(47, 48, 45, 0.13);
+  color: rgba(47, 48, 45, 0.74);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-status-legend span,
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node .status-chip,
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .status-chip,
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-selected-label {
+  background: rgba(238, 250, 255, 0.026);
+  border: 1px solid rgba(238, 250, 255, 0.09);
+  color: rgba(238, 250, 255, 0.68);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-status-legend span::before {
+  background: color-mix(in srgb, var(--legend-accent) 48%, rgba(238, 250, 255, 0.6));
+  opacity: 0.58;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node {
+  filter: none;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-halo {
+  opacity: 0.46;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected .cluster-node-halo {
+  opacity: 0.78;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected .cluster-node-body {
+  border-color: color-mix(in srgb, var(--node-accent) 48%, rgba(238, 250, 255, 0.24));
+  box-shadow:
+    inset 0 0 0 1px rgba(238, 250, 255, 0.12),
+    0 0 0 2px rgba(238, 250, 255, 0.06),
+    0 12px 24px rgba(0, 0, 0, 0.28);
+}
+
+.arena-shell-explore .selected-region-card {
+  border-color: rgba(47, 48, 45, 0.09);
+  border-radius: 20px;
+  gap: 13px;
+  padding: 20px;
+}
+
+.arena-shell-explore .selected-region-card::after {
+  opacity: 0.5;
+}
+
+.arena-shell-explore .selected-region-header {
+  align-items: start;
+  gap: 14px;
+}
+
+.arena-shell-explore .selected-region-header h3 {
+  font-size: 1.375rem;
+  letter-spacing: 0;
+  line-height: 1.12;
+}
+
+.arena-shell-explore .selected-region-section {
+  gap: 6px;
+}
+
+.arena-shell-explore .selected-region-claim {
+  color: rgba(47, 48, 45, 0.86);
+  font-size: 0.96875rem;
+  line-height: 1.28;
+}
+
+.arena-shell-explore .selected-region-review-note {
+  display: grid;
+  gap: 5px;
+}
+
+.arena-shell-explore .selected-region-review-note p {
+  color: rgba(47, 48, 45, 0.72);
+  font-size: 0.90625rem;
+  line-height: 1.42;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.arena-shell-explore .selected-region-review-note span {
+  color: rgba(47, 48, 45, 0.5);
+  font-size: 0.75rem;
+  font-weight: 620;
+  line-height: 1.28;
+}
+
+.arena-shell-explore .selected-region-metrics {
+  padding: 9px 0;
+}
+
+.arena-shell-explore .selected-region-metrics dt {
+  color: rgba(47, 48, 45, 0.5);
+  font-size: 0.625rem;
+  font-weight: 680;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.arena-shell-explore .selected-region-metrics dd {
+  color: rgba(47, 48, 45, 0.82);
+  font-size: 0.71875rem;
+  letter-spacing: 0.035em;
+}
+
+.arena-shell-explore .selected-region-cta {
+  margin-top: 4px;
+}
+
+@media (max-width: 980px) {
+  .arena-shell-explore .galaxy-stage .stage-heading .stage-heading-copy {
+    max-width: min(34rem, calc(100vw - 5rem));
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas {
+    min-height: 600px;
+  }
+}
+
+@media (max-width: 620px) {
+  .arena-shell-explore {
+    padding-top: 8px;
+  }
+
+  .arena-shell-explore .arena-topbar {
+    gap: 8px;
+    max-width: calc(100vw - 20px);
+    padding: 9px 10px;
+    padding-right: 10px;
+    width: calc(100vw - 20px);
+  }
+
+  .arena-shell-explore .arena-topbar-actions {
+    position: static;
+  }
+
+  .arena-shell-explore .arena-topbar button {
+    font-size: 0.71875rem;
+    min-height: 2rem;
+    padding-inline: 0.625rem;
+  }
+
+  .arena-shell-explore .stage-surface.galaxy-stage {
+    padding: 10px;
+  }
+
+  .arena-shell-explore .galaxy-stage .stage-heading {
+    margin-bottom: 8px;
+  }
+
+  .arena-shell-explore .galaxy-stage .stage-heading > div {
+    align-items: start;
+    display: grid;
+    gap: 4px;
+  }
+
+  .arena-shell-explore .galaxy-stage .stage-heading h2::after {
+    content: "";
+    margin-left: 0;
+  }
+
+  .arena-shell-explore .galaxy-stage .stage-heading .stage-heading-copy {
+    font-size: 0.8125rem;
+    max-width: calc(100vw - 48px);
+    width: auto;
+  }
+
+  .arena-shell-explore .galaxy-map {
+    border-radius: 18px;
+    padding: 6px;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas {
+    border-radius: 16px;
+    min-height: clamp(548px, calc(100svh - 190px), 620px);
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key {
+    left: 10px;
+    max-width: min(188px, calc(100% - 20px));
+    opacity: 0.64;
+    padding: 7px;
+    top: 10px;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key-note {
+    display: none;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings {
+    gap: 3px;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings div {
+    grid-template-columns: 0.75rem minmax(3.8rem, 0.82fr) minmax(3.9rem, 1fr);
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-status-legend span {
+    font-size: 0.5rem;
+    min-height: 1rem;
+    padding-inline: 0.3125rem;
+  }
+
+  .arena-shell-explore .selected-region-card {
+    border-radius: 16px;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .arena-shell-explore .selected-region-header h3 {
+    font-size: 1.1875rem;
+  }
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key {
+  max-width: 184px;
+  opacity: 0.54;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key:hover,
+.arena-shell-explore .evidence-galaxy-atlas:focus-within .atlas-key {
+  opacity: 0.78;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-note {
+  block-size: 1px;
+  clip-path: inset(50%);
+  inline-size: 1px;
+  margin: 0;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+}
+
+.arena-shell-explore .arena-layout {
+  margin-top: -20px;
+}
+
+@media (max-width: 620px) {
+  .arena-shell-explore .arena-layout {
+    margin-top: -14px;
+  }
+}
+
+/* Impeccable motion pass: restrained state motion for the evidence landscape. */
+.arena-shell-explore {
+  --tc-motion-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --tc-motion-snap: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.arena-shell-explore .arena-topbar {
+  animation: tcToolbarSettle 340ms var(--tc-motion-out);
+}
+
+.arena-shell-explore .galaxy-stage .stage-heading {
+  animation: tcViewTitleSettle 300ms var(--tc-motion-out) 60ms backwards;
+}
+
+.arena-shell-explore .galaxy-map {
+  animation: tcWorkspaceSettle 560ms var(--tc-motion-out) 90ms backwards;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-ambient,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-link,
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-halo,
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-orbit,
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-density span {
+  animation: none;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-region-boundary {
+  animation: tcRegionResolve 390ms var(--tc-motion-out)
+    var(--region-delay, 140ms) backwards;
+  transition:
+    border-color 220ms var(--tc-motion-snap),
+    box-shadow 220ms var(--tc-motion-snap),
+    filter 220ms var(--tc-motion-snap),
+    opacity 220ms var(--tc-motion-snap);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-region-boundary.is-selected {
+  animation: tcSelectedContourConfirm 620ms var(--tc-motion-out) 1;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-link.is-active {
+  animation: tcActiveMapLink 260ms var(--tc-motion-snap);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node {
+  animation: tcNodeResolve 320ms var(--tc-motion-out);
+  transition:
+    filter 180ms var(--tc-motion-snap),
+    opacity 180ms var(--tc-motion-snap),
+    transform 190ms var(--tc-motion-snap);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node:hover,
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-previewed {
+  filter: brightness(1.035);
+  transform: translate(-50%, -50%) translateY(-2px) scale(1.01);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected {
+  transform: translate(-50%, -50%) translateY(-2px) scale(1.025);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node:active {
+  transform: translate(-50%, -50%) translateY(0) scale(1);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-body {
+  transition:
+    background 180ms var(--tc-motion-snap),
+    border-color 180ms var(--tc-motion-snap),
+    box-shadow 180ms var(--tc-motion-snap),
+    transform 160ms var(--tc-motion-snap);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node:hover .cluster-node-body,
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-previewed .cluster-node-body,
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected .cluster-node-body {
+  transform: translateY(-1px);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected .cluster-node-halo {
+  animation: tcSelectedHaloConfirm 620ms var(--tc-motion-out) 1;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected .cluster-node-density span {
+  animation: tcEvidenceParticleConfirm 520ms var(--tc-motion-snap) 1;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary {
+  animation: tcSelectionSummarySettle 240ms var(--tc-motion-snap);
+}
+
+.arena-shell-explore .selected-region-card {
+  animation: tcInspectorSettle 280ms var(--tc-motion-out) 70ms backwards;
+}
+
+.arena-shell-explore .selected-region-card::after {
+  animation: tcInspectorConnectorDraw 280ms var(--tc-motion-snap) 120ms both;
+  transform-origin: left center;
+}
+
+.arena-shell-explore .selected-region-header,
+.arena-shell-explore .selected-region-section,
+.arena-shell-explore .selected-region-metrics,
+.arena-shell-explore .selected-region-cta {
+  animation: tcInspectorContentSettle 230ms var(--tc-motion-snap) backwards;
+}
+
+.arena-shell-explore .selected-region-section:nth-of-type(2) {
+  animation-delay: 35ms;
+}
+
+.arena-shell-explore .selected-region-section:nth-of-type(3) {
+  animation-delay: 70ms;
+}
+
+.arena-shell-explore .selected-region-section:nth-of-type(4),
+.arena-shell-explore .selected-region-metrics {
+  animation-delay: 105ms;
+}
+
+.arena-shell-explore .selected-region-cta {
+  transition:
+    background 170ms var(--tc-motion-snap),
+    border-color 170ms var(--tc-motion-snap),
+    box-shadow 170ms var(--tc-motion-snap),
+    color 170ms var(--tc-motion-snap),
+    opacity 170ms var(--tc-motion-snap),
+    transform 150ms var(--tc-motion-snap);
+}
+
+.arena-shell-explore .selected-region-cta:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -10px 18px rgba(255, 255, 255, 0.035);
+  transform: translateY(-1px);
+}
+
+.arena-shell-explore .arena-topbar button:focus-visible,
+.arena-shell-explore .selected-region-cta:focus-visible {
+  outline: 2px solid rgba(95, 111, 82, 0.42);
+  outline-offset: 3px;
+}
+
+@keyframes tcToolbarSettle {
+  0% {
+    opacity: 0.78;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes tcViewTitleSettle {
+  0% {
+    opacity: 0.76;
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes tcWorkspaceSettle {
+  0% {
+    opacity: 0.82;
+    transform: translateY(7px);
+  }
+}
+
+@keyframes tcRegionResolve {
+  0% {
+    filter: blur(1.2px);
+    opacity: 0;
+  }
+}
+
+@keyframes tcSelectedContourConfirm {
+  0% {
+    box-shadow:
+      0 0 0 0 color-mix(in srgb, var(--region-accent) 0%, transparent),
+      inset 0 0 18px color-mix(in srgb, var(--region-accent) 3%, transparent);
+    opacity: 0.28;
+  }
+
+  48% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--region-accent) 18%, transparent),
+      0 0 64px color-mix(in srgb, var(--region-accent) 16%, transparent),
+      inset 0 0 42px color-mix(in srgb, var(--region-accent) 10%, transparent);
+    opacity: 0.66;
+  }
+}
+
+@keyframes tcActiveMapLink {
+  0% {
+    opacity: 0.28;
+  }
+}
+
+@keyframes tcNodeResolve {
+  0% {
+    opacity: 0.58;
+  }
+}
+
+@keyframes tcSelectedHaloConfirm {
+  0% {
+    filter: brightness(0.96);
+    opacity: 0.58;
+  }
+
+  46% {
+    filter: brightness(1.08);
+    opacity: 0.88;
+  }
+}
+
+@keyframes tcEvidenceParticleConfirm {
+  0% {
+    filter: brightness(0.95);
+    opacity: 0.68;
+  }
+
+  50% {
+    filter: brightness(1.22);
+    opacity: 1;
+  }
+}
+
+@keyframes tcSelectionSummarySettle {
+  0% {
+    opacity: 0.66;
+    transform: translateY(4px);
+  }
+}
+
+@keyframes tcInspectorSettle {
+  0% {
+    opacity: 0.82;
+    transform: translateX(6px);
+  }
+}
+
+@keyframes tcInspectorConnectorDraw {
+  0% {
+    opacity: 0;
+    transform: scaleX(0.22);
+  }
+
+  100% {
+    opacity: 0.5;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes tcInspectorContentSettle {
+  0% {
+    opacity: 0.68;
+    transform: translateY(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arena-shell-explore .arena-topbar,
+  .arena-shell-explore .galaxy-stage .stage-heading,
+  .arena-shell-explore .galaxy-map,
+  .arena-shell-explore .evidence-galaxy-atlas .galaxy-region-boundary,
+  .arena-shell-explore .evidence-galaxy-atlas .galaxy-link.is-active,
+  .arena-shell-explore .evidence-galaxy-atlas .cluster-node,
+  .arena-shell-explore .evidence-galaxy-atlas .cluster-node-halo,
+  .arena-shell-explore .evidence-galaxy-atlas .cluster-node-density span,
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary,
+  .arena-shell-explore .selected-region-card,
+  .arena-shell-explore .selected-region-card::after,
+  .arena-shell-explore .selected-region-header,
+  .arena-shell-explore .selected-region-section,
+  .arena-shell-explore .selected-region-metrics,
+  .arena-shell-explore .selected-region-cta {
+    animation: none !important;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .cluster-node:hover,
+  .arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-previewed,
+  .arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected,
+  .arena-shell-explore .evidence-galaxy-atlas .cluster-node:active {
+    transform: translate(-50%, -50%) !important;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .cluster-node:hover .cluster-node-body,
+  .arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-previewed .cluster-node-body,
+  .arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected .cluster-node-body,
+  .arena-shell-explore .selected-region-cta:hover {
+    transform: none !important;
+  }
+
+  .arena-shell-explore .selected-region-card::after {
+    opacity: 0.5;
+    transform: none;
+  }
+}
+
+/* Impeccable audit pass: first-screen accessibility and stability fixes. */
+.arena-shell-explore .galaxy-stage .stage-heading .stage-heading-copy {
+  color: rgba(47, 48, 45, 0.72);
+}
+
+.arena-shell-explore .selected-region-eyebrow,
+.arena-shell-explore .selected-region-metrics dt,
+.arena-shell-explore .selected-region-review-note span {
+  color: rgba(47, 48, 45, 0.68);
+}
+
+.arena-shell-explore .selected-region-claim,
+.arena-shell-explore .selected-region-review-note p,
+.arena-shell-explore .selected-region-header h3 {
+  overflow-wrap: anywhere;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key,
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key:hover,
+.arena-shell-explore .evidence-galaxy-atlas:focus-within .atlas-key {
+  opacity: 1;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-header span + span,
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dd {
+  color: rgba(238, 250, 255, 0.58);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dt,
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-header {
+  color: rgba(238, 250, 255, 0.76);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-summary-kicker,
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .atlas-selection-metrics dt {
+  color: rgba(238, 250, 255, 0.64);
+}
+
+.arena-shell-explore .stage-rail-button:focus-visible {
+  background: rgba(47, 48, 45, 0.075);
+  border-color: rgba(47, 48, 45, 0.2);
+  color: var(--atlas-ink);
+  outline: 2px solid rgba(95, 111, 82, 0.72);
+  outline-offset: 3px;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-status-legend span,
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node .status-chip,
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .status-chip,
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-selected-label,
+.arena-shell-explore .selected-region-card .review-taxonomy-label,
+.arena-shell-explore .selected-region-card .status-chip {
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arena-shell-explore .arena-topbar button,
+  .arena-shell-explore .stage-rail,
+  .arena-shell-explore .stage-rail-button,
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key {
+    transition: none !important;
+  }
+
+  .arena-shell-explore .arena-topbar button:hover,
+  .arena-shell-explore .stage-rail-button:hover,
+  .arena-shell-explore .stage-rail-button.is-active {
+    transform: none !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .arena-shell-explore .stage-rail-button {
+    flex-basis: 44px;
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+@media (max-width: 620px) {
+  .arena-shell-explore .arena-topbar button {
+    min-height: 2.75rem;
+    padding-inline: 0.875rem;
+  }
+}
+
+/* Impeccable presence polish: restore evidence-instrument depth without changing first-screen structure. */
+.arena-shell-explore .arena-topbar {
+  background:
+    linear-gradient(180deg, rgba(255, 253, 248, 0.86), rgba(248, 245, 238, 0.74)),
+    rgba(251, 250, 246, 0.82);
+  border-color: rgba(47, 48, 45, 0.11);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.76),
+    inset 0 -1px 0 rgba(95, 111, 82, 0.045);
+}
+
+.arena-shell-explore .arena-brand {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.arena-shell-explore .arena-brand::before {
+  background:
+    linear-gradient(180deg, rgba(95, 111, 82, 0.88), rgba(154, 106, 47, 0.34));
+  border-radius: 999px;
+  content: "";
+  flex: 0 0 auto;
+  height: 28px;
+  width: 4px;
+}
+
+.arena-shell-explore .arena-brand p {
+  color: rgba(47, 48, 45, 0.66);
+  display: block;
+  font-size: 0.8125rem;
+}
+
+.arena-shell-explore .arena-topbar button {
+  background: #fffdf8;
+  border-color: rgba(47, 48, 45, 0.16);
+  color: rgba(47, 48, 45, 0.88);
+}
+
+.arena-shell-explore .arena-topbar button:hover {
+  background: color-mix(in srgb, #fffdf8 88%, rgba(95, 111, 82, 0.12));
+  border-color: rgba(95, 111, 82, 0.28);
+}
+
+.arena-shell-explore .galaxy-stage .stage-heading {
+  margin-bottom: 12px;
+}
+
+.arena-shell-explore .galaxy-stage .stage-heading h2 {
+  color: rgba(47, 48, 45, 0.94);
+  font-weight: 780;
+}
+
+.arena-shell-explore .galaxy-stage .stage-heading h2::after {
+  color: rgba(95, 111, 82, 0.34);
+}
+
+.arena-shell-explore .galaxy-stage .stage-heading .stage-heading-copy {
+  color: rgba(47, 48, 45, 0.7);
+}
+
+.arena-shell-explore .galaxy-map {
+  background:
+    radial-gradient(circle at 34% 18%, rgba(95, 111, 82, 0.09), transparent 21rem),
+    radial-gradient(circle at 90% 12%, color-mix(in srgb, var(--selected-accent) 12%, transparent), transparent 22rem),
+    linear-gradient(180deg, rgba(255, 253, 248, 0.86), rgba(244, 240, 230, 0.66)),
+    rgba(248, 245, 237, 0.82);
+  border-color: rgba(47, 48, 45, 0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 8px 14px rgba(47, 48, 45, 0.055);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas {
+  background:
+    radial-gradient(circle at var(--focus-x) var(--focus-y), color-mix(in srgb, var(--selected-accent) 36%, transparent), transparent 19rem),
+    radial-gradient(ellipse at 24% 18%, rgba(132, 172, 165, 0.18), transparent 25rem),
+    radial-gradient(ellipse at 80% 30%, rgba(201, 149, 141, 0.13), transparent 24rem),
+    radial-gradient(ellipse at 58% 82%, rgba(198, 173, 120, 0.12), transparent 25rem),
+    linear-gradient(145deg, #07111f 0%, #0b1724 48%, #121f2c 100%);
+  border-color: rgba(238, 250, 255, 0.14);
+  box-shadow:
+    inset 0 0 0 1px rgba(238, 250, 255, 0.045),
+    inset 0 -8px 14px rgba(0, 0, 0, 0.28);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-depth-haze,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-core,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-core-ring,
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-nebula {
+  opacity: 0.32;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-starfield {
+  opacity: 0.14;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-orbits {
+  opacity: 0.26;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-grid {
+  opacity: 0.24;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-region-boundary {
+  background:
+    radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--region-accent) 36%, transparent), transparent 56%),
+    radial-gradient(ellipse at 44% 38%, rgba(238, 250, 255, 0.08), transparent 54%);
+  border-color: color-mix(in srgb, var(--region-accent) 48%, rgba(238, 250, 255, 0.1));
+  box-shadow:
+    inset 0 0 0 1px rgba(238, 250, 255, 0.05),
+    0 0 10px color-mix(in srgb, var(--region-accent) 24%, transparent);
+  opacity: calc(var(--region-opacity) + 0.08);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-region-boundary.is-nearby {
+  opacity: calc(var(--region-opacity) + 0.22);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-region-boundary.is-distant {
+  filter: saturate(0.86);
+  opacity: 0.24;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-region-boundary.is-selected {
+  border-color: color-mix(in srgb, var(--region-accent) 76%, rgba(238, 250, 255, 0.28));
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--region-accent) 24%, transparent),
+    0 0 12px color-mix(in srgb, var(--region-accent) 34%, transparent),
+    inset 0 0 0 1px rgba(238, 250, 255, 0.12);
+  opacity: 0.88;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-link {
+  stroke-opacity: calc(var(--link-opacity) * 1.08);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .galaxy-link.is-active {
+  filter: none;
+  stroke: color-mix(in srgb, var(--selected-accent) 72%, rgba(238, 250, 255, 0.62));
+  stroke-opacity: 0.78;
+  stroke-width: calc(var(--link-width) + 0.16);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node {
+  filter: saturate(1.08);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-distant:not(.is-selected):not(.is-previewed) {
+  opacity: 0.5;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-nearby:not(.is-selected):not(.is-previewed) {
+  opacity: 0.78;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-halo {
+  background:
+    radial-gradient(circle at 38% 31%, rgba(238, 250, 255, 0.66), transparent 15%),
+    radial-gradient(ellipse at 50% 52%, color-mix(in srgb, var(--node-accent) 48%, rgba(238, 250, 255, 0.1)), color-mix(in srgb, var(--node-accent) 18%, rgba(8, 17, 31, 0.24)) 58%, transparent 73%);
+  opacity: 0.94;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-density {
+  opacity: 0.82;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node-density span {
+  background:
+    radial-gradient(circle, #f7fbf8 0 18%, color-mix(in srgb, var(--node-accent) 76%, #eefaff) 19% 100%);
+  box-shadow:
+    0 0 6px color-mix(in srgb, var(--node-accent) 42%, transparent),
+    0 0 0 1px rgba(238, 250, 255, 0.18);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected {
+  filter: saturate(1.16) brightness(1.04);
+  transform: translate(-50%, -50%) translateY(-4px) scale(1.09);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected .cluster-node-halo {
+  border-color: color-mix(in srgb, var(--node-accent) 82%, rgba(238, 250, 255, 0.34));
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--node-accent) 18%, transparent),
+    0 0 12px color-mix(in srgb, var(--node-accent) 44%, transparent),
+    inset 0 0 0 1px rgba(238, 250, 255, 0.1);
+  opacity: 1;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected .cluster-node-density {
+  opacity: 1;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected .cluster-node-density span {
+  filter: brightness(1.12);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected .cluster-node-orbit {
+  border-color: color-mix(in srgb, var(--node-accent) 82%, rgba(238, 250, 255, 0.36));
+  opacity: 1;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected .cluster-node-body {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--node-accent) 24%, rgba(8, 17, 31, 0.9)), rgba(5, 8, 20, 0.82));
+  border-color: color-mix(in srgb, var(--node-accent) 68%, rgba(238, 250, 255, 0.28));
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--node-accent) 16%, transparent),
+    0 7px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(238, 250, 255, 0.08);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected .cluster-node-title {
+  color: #fbfffc;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node.is-selected .cluster-node-selected-label {
+  background: color-mix(in srgb, var(--node-accent) 30%, rgba(8, 17, 31, 0.78));
+  border: 1px solid color-mix(in srgb, var(--node-accent) 58%, rgba(238, 250, 255, 0.18));
+  border-radius: 4px;
+  color: rgba(238, 250, 255, 0.92);
+  display: inline-flex;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.045em;
+  min-height: 1rem;
+  padding: 0 0.375rem;
+  text-transform: uppercase;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .cluster-node .status-chip {
+  background: color-mix(in srgb, var(--node-accent) 24%, rgba(8, 17, 31, 0.78));
+  border-color: color-mix(in srgb, var(--node-accent) 52%, rgba(238, 250, 255, 0.12));
+  color: rgba(238, 250, 255, 0.9);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary .status-chip {
+  background: color-mix(in srgb, var(--selected-accent) 20%, rgba(8, 17, 31, 0.76));
+  border-color: color-mix(in srgb, var(--selected-accent) 46%, rgba(238, 250, 255, 0.12));
+  color: rgba(238, 250, 255, 0.88);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key {
+  background:
+    linear-gradient(180deg, rgba(238, 250, 255, 0.07), rgba(238, 250, 255, 0.028)),
+    rgba(7, 17, 31, 0.62);
+  border-color: rgba(238, 250, 255, 0.1);
+  box-shadow: none;
+  max-width: 168px;
+  opacity: 0.84;
+  padding: 7px 8px;
+  top: 10px;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key:hover,
+.arena-shell-explore .evidence-galaxy-atlas:focus-within .atlas-key {
+  opacity: 0.96;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-header {
+  color: rgba(238, 250, 255, 0.78);
+  margin-bottom: 5px;
+  padding-bottom: 4px;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-header span + span {
+  color: rgba(238, 250, 255, 0.56);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings {
+  gap: 3px;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings div {
+  gap: 5px;
+  grid-template-columns: 0.75rem minmax(3.65rem, 0.9fr) minmax(3.7rem, 1fr);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dt {
+  color: rgba(238, 250, 255, 0.76);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dd {
+  color: rgba(238, 250, 255, 0.58);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-status-legend {
+  gap: 3px;
+  margin-top: 5px;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-status-legend span {
+  background: rgba(238, 250, 255, 0.04);
+  border-color: rgba(238, 250, 255, 0.11);
+  color: rgba(238, 250, 255, 0.74);
+  min-height: 0.9375rem;
+  padding-inline: 0.3125rem;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-status-legend span::before {
+  opacity: 0.9;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary {
+  background:
+    linear-gradient(180deg, rgba(238, 250, 255, 0.09), rgba(238, 250, 255, 0.038)),
+    rgba(7, 17, 31, 0.68);
+  border-color: rgba(238, 250, 255, 0.14);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .atlas-evidence-summary strong {
+  color: rgba(238, 250, 255, 0.96);
+}
+
+.arena-shell-explore .selected-region-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(251, 250, 246, 0.84)),
+    color-mix(in srgb, var(--selected-accent) 7%, #fffdf8);
+  border-color: color-mix(in srgb, var(--selected-accent) 18%, rgba(47, 48, 45, 0.12));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 8px 14px rgba(47, 48, 45, 0.055);
+  gap: 14px;
+}
+
+.arena-shell-explore .selected-region-card::before {
+  background:
+    radial-gradient(circle at 82% 8%, color-mix(in srgb, var(--selected-accent) 16%, transparent), transparent 12rem),
+    linear-gradient(180deg, color-mix(in srgb, var(--selected-accent) 8%, transparent), transparent 42%);
+  border-radius: inherit;
+  bottom: auto;
+  content: "";
+  display: block;
+  inset: 0;
+  left: 0;
+  opacity: 0.74;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  width: auto;
+}
+
+.arena-shell-explore .selected-region-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.arena-shell-explore .selected-region-card::after {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--selected-accent) 62%, transparent), rgba(47, 48, 45, 0.18));
+  left: -40px;
+  opacity: 0.72;
+  width: 40px;
+}
+
+.arena-shell-explore .selected-region-header h3 {
+  color: rgba(35, 37, 34, 0.96);
+  font-weight: 780;
+}
+
+.arena-shell-explore .selected-region-eyebrow {
+  color: rgba(47, 48, 45, 0.66);
+  font-weight: 720;
+}
+
+.arena-shell-explore .selected-region-claim {
+  color: rgba(35, 37, 34, 0.92);
+}
+
+.arena-shell-explore .selected-region-review-note p {
+  color: rgba(47, 48, 45, 0.76);
+}
+
+.arena-shell-explore .selected-region-metrics {
+  border-bottom-color: rgba(47, 48, 45, 0.1);
+  border-top-color: rgba(47, 48, 45, 0.1);
+  padding: 10px 0;
+}
+
+.arena-shell-explore .selected-region-metrics dd {
+  color: rgba(35, 37, 34, 0.9);
+}
+
+.arena-shell-explore .selected-region-evidence-packet {
+  border-top: 1px solid rgba(47, 48, 45, 0.09);
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.arena-shell-explore .selected-region-evidence-heading {
+  align-items: baseline;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.arena-shell-explore .selected-region-evidence-heading > span:last-child {
+  color: rgba(47, 48, 45, 0.58);
+  font-size: 0.71875rem;
+  font-weight: 660;
+  line-height: 1.2;
+  text-align: right;
+}
+
+.arena-shell-explore .selected-region-feature-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.arena-shell-explore .selected-region-feature-list span {
+  background: color-mix(in srgb, var(--selected-accent) 10%, rgba(255, 255, 255, 0.72));
+  border: 1px solid color-mix(in srgb, var(--selected-accent) 20%, rgba(47, 48, 45, 0.1));
+  border-radius: 6px;
+  color: rgba(35, 37, 34, 0.82);
+  font-size: 0.6875rem;
+  font-weight: 680;
+  line-height: 1.2;
+  padding: 0.25rem 0.375rem;
+}
+
+.arena-shell-explore .selected-region-cta {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent),
+    #262925;
+  border-color: rgba(35, 37, 34, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 7px 12px rgba(47, 48, 45, 0.15);
+}
+
+.arena-shell-explore .selected-region-cta:hover {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--selected-accent) 12%, rgba(255, 255, 255, 0.08)), transparent),
+    #1f211f;
+}
+
+.arena-shell-explore .selected-region-card .review-taxonomy-label {
+  background: rgba(47, 48, 45, 0.055);
+  border-color: rgba(47, 48, 45, 0.15);
+  color: rgba(35, 37, 34, 0.78);
+}
+
+.arena-shell-explore .selected-region-card .status-chip-supported {
+  background: rgba(63, 125, 85, 0.12);
+  border-color: rgba(63, 125, 85, 0.26);
+  color: #315f41;
+}
+
+.arena-shell-explore .selected-region-card .status-chip-overclaimed {
+  background: rgba(155, 61, 53, 0.12);
+  border-color: rgba(155, 61, 53, 0.26);
+  color: #75352f;
+}
+
+.arena-shell-explore .selected-region-card .status-chip-impure {
+  background: rgba(154, 106, 47, 0.12);
+  border-color: rgba(154, 106, 47, 0.26);
+  color: #725026;
+}
+
+.arena-shell-explore .selected-region-card .status-chip-broad {
+  background: rgba(77, 99, 137, 0.12);
+  border-color: rgba(77, 99, 137, 0.24);
+  color: #405679;
+}
+
+.arena-shell-explore .selected-region-card .status-chip-uncertain {
+  background: rgba(107, 111, 122, 0.12);
+  border-color: rgba(107, 111, 122, 0.24);
+  color: #4f535d;
+}
+
+.evidence-taxonomy-label {
+  align-items: center;
+  border: 1px solid rgba(47, 48, 45, 0.14);
+  border-radius: 4px;
+  display: inline-flex;
+  font-size: 0.625rem;
+  font-weight: 780;
+  justify-content: center;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  min-height: 1.125rem;
+  padding: 0 0.4375rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.evidence-taxonomy-strong {
+  background: rgba(63, 125, 85, 0.11);
+  border-color: rgba(63, 125, 85, 0.24);
+  color: #315f41;
+}
+
+.evidence-taxonomy-thin {
+  background: rgba(154, 106, 47, 0.13);
+  border-color: rgba(154, 106, 47, 0.28);
+  color: #735126;
+}
+
+.evidence-taxonomy-conflicting {
+  background: rgba(155, 61, 53, 0.1);
+  border-color: rgba(155, 61, 53, 0.22);
+  color: #75352f;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .evidence-taxonomy-label {
+  background: rgba(238, 250, 255, 0.045);
+  border-color: rgba(238, 250, 255, 0.12);
+  color: rgba(238, 250, 255, 0.84);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .evidence-taxonomy-thin {
+  background: rgba(198, 173, 120, 0.13);
+  border-color: rgba(198, 173, 120, 0.26);
+  color: rgba(255, 239, 202, 0.92);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .evidence-taxonomy-conflicting {
+  background: rgba(201, 149, 141, 0.13);
+  border-color: rgba(201, 149, 141, 0.28);
+  color: rgba(255, 222, 216, 0.92);
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .evidence-taxonomy-strong {
+  background: rgba(143, 182, 160, 0.13);
+  border-color: rgba(143, 182, 160, 0.28);
+  color: rgba(218, 246, 226, 0.92);
+}
+
+@media (max-width: 900px) {
+  .arena-shell-explore .arena-brand p {
+    display: none;
+  }
+
+  .arena-shell-explore .selected-region-evidence-heading {
+    align-items: start;
+    display: grid;
+    gap: 3px;
+  }
+
+  .arena-shell-explore .selected-region-evidence-heading > span:last-child {
+    text-align: left;
+  }
+}
+
+@media (max-width: 620px) {
+  .arena-shell-explore .arena-brand::before {
+    height: 24px;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key {
+    max-width: 138px;
+    opacity: 0.82;
+    padding: 6px;
+    transform: scale(0.86);
+    transform-origin: top left;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key:hover,
+  .arena-shell-explore .evidence-galaxy-atlas:focus-within .atlas-key {
+    opacity: 0.94;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key-header {
+    font-size: 0.5625rem;
+    margin-bottom: 4px;
+    padding-bottom: 4px;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key-header span + span {
+    font-size: 0.53125rem;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings {
+    gap: 3px 6px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings div {
+    display: grid;
+    gap: 4px;
+    grid-template-columns: 0.6875rem minmax(0, 1fr);
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dt {
+    font-size: 0.5625rem;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-key-encodings dd {
+    display: none;
+  }
+
+  .arena-shell-explore .evidence-galaxy-atlas .atlas-status-legend {
+    display: none;
+  }
+
+  .arena-shell-explore .selected-region-feature-list span {
+    font-size: 0.65625rem;
+  }
+}

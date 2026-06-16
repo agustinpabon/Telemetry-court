@@ -19,6 +19,71 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-16: Investigation Workflow Light Dossier Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Run `$impeccable polish` to bring Screens 2-8, from Case File through Structured Verdict, into the same calm evidence-first product system as the redesigned Evidence Landscape screen without redesigning Screen 1.
+- Files changed: `app/investigation-workflow.css`, `app/layout.tsx`, `components/arena/AppShell.tsx`, `components/arena/WorkflowPrimitives.tsx`, `components/arena/CaseFilePanel.tsx`, `components/arena/BlindReadPanel.tsx`, `components/arena/AiRevealPanel.tsx`, `components/arena/EvidenceBoard.tsx`, `components/arena/LabelDuelPanel.tsx`, `components/arena/ImpostorPanel.tsx`, `components/arena/VerdictPanel.tsx`, `components/arena/InvestigationCockpit.tsx`, `lib/arenaReviewState.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a light investigation-only stylesheet imported from the root layout, introduced shared workflow primitives for stage headings, section headers, metrics, and sealed-claim blocks, redesigned Screens 2-8 as a warm dossier workflow, lightened the stage rail and review cockpit, compacted investigation mini-maps, made evidence rating controls roomy, attached label-duel reasons to the selected judgment area, strengthened the impostor and verdict hierarchy, and kept Review JSON export available.
+- Decisions made: Avoided modifying the already-dirty first-screen files and `app/globals.css`; used a new global investigation stylesheet rather than a component CSS module because Node static-render tests do not handle CSS imports from React components; preserved the existing reducer, fixture data, structured-choice handlers, and export schema; added a stage-change scroll reset so every screen opens at its title after lower-page CTAs.
+- Checks run: `npm test` passed with 22 tests; `npm run lint` passed with 134 existing `.agents/skills/impeccable` warnings and no errors; `npm run build` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json app/investigation-workflow.css app/layout.tsx components/arena/AppShell.tsx components/arena/WorkflowPrimitives.tsx components/arena/CaseFilePanel.tsx components/arena/BlindReadPanel.tsx components/arena/AiRevealPanel.tsx components/arena/EvidenceBoard.tsx components/arena/LabelDuelPanel.tsx components/arena/ImpostorPanel.tsx components/arena/VerdictPanel.tsx components/arena/InvestigationCockpit.tsx lib/arenaReviewState.ts` returned `[]`; production server on port 3036 returned `200 OK`; in-app Browser was unavailable, so headless Brave DevTools verified Screens 1-8 at 1440x900 with no horizontal overflow, top-of-stage scroll reset, structured interactions through verdict, and JSON drawer export containing `finalVerdict`.
+- Assumptions: The investigation stages should now use the light dossier surface as the dominant mode, while Screen 1 remains governed by the existing Evidence Landscape implementation and dirty first-screen changes.
+- Risks/follow-ups: Existing pre-work dirty files remain in `app/globals.css`, `components/arena/TelemetryGalaxy.tsx`, `components/arena/EvidenceGalaxyAtlas.tsx`, `components/arena/ClusterNode.tsx`, `components/arena/arenaMeta.ts`, `AGENTS.md`, and earlier changelog entries. A later CSS consolidation pass should reconcile the new investigation stylesheet with the accumulated global layers once the direction is accepted.
+- Next recommended step: Review the final screenshots in the target demo viewport, especially `/private/tmp/tc-polish-final-ai-reveal-visible-cta.png`, `/private/tmp/tc-polish-final-05-evidence-board.png`, and `/private/tmp/tc-polish-final-08-verdict-selected.png`.
+- Suggested commit message: `ux(arena): align investigation stages with evidence landscape`
+
+## 2026-06-16: Evidence Landscape Presence Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Run `$impeccable polish the Telemetry Court evidence landscape screen`, restoring presence after the previous muted pass while keeping the first-screen map, inspector, header structure, typography direction, static data, and workflow scope intact.
+- Files changed: `components/arena/TelemetryGalaxy.tsx`, `components/arena/EvidenceGalaxyAtlas.tsx`, `components/arena/arenaMeta.ts`, `app/globals.css`, and `docs/CHANGELOG_AI.md`.
+- Summary: Restored subtle map color separation, strengthened selected-region contour/halo/label treatment, made `OVERCLAIM` and `THIN` read as operational status metadata instead of disabled UI, reduced the mobile legend footprint, restored a more premium utility-header presence, and balanced the selected-region inspector with a compact evidence packet summary built from existing synthetic case data.
+- Decisions made: Added a reusable evidence-taxonomy class helper rather than one-off label styling; used restrained warm/rose/amber/graphite accents for review metadata; kept the legend readable but visually secondary; added no dependencies, no new screens, and no new sample data.
+- Checks run: `git diff --check`; `npm test`; `npm run lint`; `npm run build`; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/TelemetryGalaxy.tsx components/arena/EvidenceGalaxyAtlas.tsx components/arena/ClusterNode.tsx components/arena/arenaMeta.ts app/globals.css app/page.test.ts`; production server on port 3034; local Brave DevTools screenshots saved to `/private/tmp/tc-presence-desktop.png` and `/private/tmp/tc-presence-mobile-reduced.png`.
+- Assumptions: The first screen should keep a serious research-tool posture, but selected verdict/evidence state can carry restrained semantic warmth so the map feels like the primary evidence instrument again.
+- Risks/follow-ups: `app/globals.css` still contains accumulated historical atlas override layers and two older non-first-screen detector warnings at lines 827 and 1109. A cleanup-only CSS consolidation pass remains useful once the direction is accepted.
+- Next recommended step: Review the final screenshots in the intended demo viewport, then consolidate the first-screen CSS layers without changing behavior.
+- Suggested commit message: `ux(arena): restore evidence landscape presence`
+
+## 2026-06-16: Evidence Landscape Implementation Audit
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Run `$impeccable audit the Telemetry Court evidence landscape screen`, focusing on first-screen accessibility, keyboard navigation, reduced motion, responsive behavior, text overflow, contrast, performance, CSS hygiene, layout stability, and status-label consistency.
+- Files changed: `components/arena/EvidenceGalaxyAtlas.tsx`, `components/arena/ClusterNode.tsx`, `app/globals.css`, and `docs/CHANGELOG_AI.md`.
+- Summary: Fixed arrow-key focus handoff so focus follows the newly selected cluster, added a semantic group role for the atlas, restored readable legend/helper-text contrast without redesigning the screen, strengthened the compact stage-rail focus state, preserved uppercase review taxonomy labels, added overflow guards for selected-region copy, disabled remaining first-screen hover transitions in reduced-motion mode, and raised narrow-viewport header/stage controls to 44px touch targets.
+- Decisions made: Kept the existing layout, typography, colors, motion direction, static data, and product scope. Left old non-first-screen width-transition warnings untouched because this audit was first-screen scoped.
+- Checks run: `git diff --check` passed; `npm test` passed with 22 tests; `npm run lint` passed with 134 existing warnings in `.agents/skills/impeccable` scripts and no errors; `npm run build` passed; detector still reports the two existing non-first-screen `transition: width` warnings at `app/globals.css:827` and `app/globals.css:1109`; production server on port 3033 returned `200 OK`; in-app Browser was unavailable, so local Brave DevTools fallback verified desktop/mobile screenshots, no horizontal overflow, keyboard focus handoff, 44px mobile hit areas, and reduced-motion disabling selected animations.
+- Assumptions: The atlas legend should remain visible and readable at rest; visual quietness is now carried by scale and placement rather than parent opacity on text.
+- Risks/follow-ups: `app/globals.css` still contains accumulated historical atlas/header override layers and two older width transitions outside the first screen. A cleanup-only consolidation pass remains useful once this visual direction is locked.
+- Next recommended step: Consolidate the accumulated first-screen CSS layers without changing behavior.
+- Suggested commit message: `fix(arena): audit evidence landscape accessibility`
+
+## 2026-06-16: Evidence Landscape Motion Pass
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Run `$impeccable animate the Telemetry Court evidence landscape screen`, adding restrained, purposeful motion only to the first-screen Evidence landscape map and selected-region inspector.
+- Files changed: `components/arena/EvidenceGalaxyAtlas.tsx`, `app/globals.css`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a scoped motion layer for subtle first-screen entrance, staggered region contour reveal, one-shot selected-region contour/halo confirmation, selected-summary and inspector content settling, connector-line draw-in, quieter hover/active states, CTA feedback, and explicit reduced-motion overrides.
+- Decisions made: Kept layout, typography, colors, static sample data, and product scope unchanged. Replaced older ambient loops in the first-screen cascade with state-based one-shot motion, and used a computed `--region-delay` style variable for reliable region staggering without animation dependencies.
+- Checks run: `git diff --check` passed; `npm test` passed with 22 tests; `npm run lint` passed with the existing `.agents/skills/impeccable` warnings; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/EvidenceGalaxyAtlas.tsx components/arena/ClusterNode.tsx app/globals.css app/page.test.ts` reported only the existing `transition: width` warnings in `app/globals.css`; `npm run build` passed; `next start --port 3032` served the production build; local HTTP check returned `200 OK`; in-app Browser was unavailable, so a local Brave DevTools screenshot check saved `/private/tmp/telemetry-motion-desktop.png` and `/private/tmp/telemetry-motion-reduced.png`; a CDP interaction check confirmed selecting PowerShell updates the inspector and that reduced-motion disables the selected halo/region animations.
+- Assumptions: One-shot selection confirmation and crossfade/settle transitions are enough to clarify state without adding ongoing decorative motion.
+- Risks/follow-ups: Headless Brave's direct `--screenshot` path hung twice, so visual verification used DevTools protocol screenshots instead. `app/globals.css` still contains older overridden atlas layers from prior passes; a later cleanup-only consolidation remains useful.
+- Next recommended step: Review the motion in the intended demo browser, especially selection changes, before consolidating the accumulated CSS layers.
+- Suggested commit message: `ux(arena): animate evidence landscape states`
+
+## 2026-06-16: Evidence Landscape Workspace Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Run `$impeccable polish the Telemetry Court evidence landscape screen`, focusing only on the first-screen Evidence landscape map and selected-region inspector.
+- Files changed: `components/arena/TelemetryGalaxy.tsx`, `components/arena/EvidenceGalaxyAtlas.tsx`, `app/globals.css`, and `docs/CHANGELOG_AI.md`.
+- Summary: Tightened the product toolbar and view-title rhythm, brought the map/inspector workspace higher, reduced decorative atlas glow/chroma, made the map key smaller and quieter, recast status labels as rectangular review metadata, and replaced the heavy inspector rationale paragraph with a concise status-derived review note.
+- Decisions made: Kept the map plus inspector structure, static synthetic data, `Review JSON` action, `Open case file` CTA, and review taxonomy unchanged. Used a final scoped CSS layer instead of consolidating older accumulated atlas overrides.
+- Checks run: `git diff --check` passed; `npm test` passed with 22 tests; `npm run lint` passed with existing warnings in `.agents/skills/impeccable`; `npm run build` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/TelemetryGalaxy.tsx components/arena/EvidenceGalaxyAtlas.tsx app/globals.css app/page.test.ts` reported only the existing `transition: width` warnings in `app/globals.css`; `next start --port 3031` served the production build; local HTTP check returned `200 OK`; Brave headless desktop and narrow screenshots saved `/private/tmp/telemetry-landscape-polish-final2-desktop.png` and `/private/tmp/telemetry-landscape-polish-final2-narrow.png`.
+- Assumptions: The first-screen header can visually suppress the optional product subtitle because the view title and single support sentence now carry the intended orientation.
+- Risks/follow-ups: `app/globals.css` still contains older overridden atlas/header layers; a separate cleanup-only pass should consolidate them once this first-screen direction is accepted.
+- Next recommended step: Review the final first-screen screenshots in the intended demo viewport, then do a CSS consolidation pass if the direction is locked.
+- Suggested commit message: `ux(arena): polish evidence landscape workspace`
+
 ## 2026-06-15: First Screen Evidence Review Polish
 
 - Agent/model: Codex (GPT-5)

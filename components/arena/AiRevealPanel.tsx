@@ -1,4 +1,5 @@
 import { SemanticMiniMap } from "@/components/arena/SemanticMiniMap";
+import { StageHeader } from "@/components/arena/WorkflowPrimitives";
 import {
   getBlindAgreementCopy,
   labelsMatch,
@@ -27,17 +28,44 @@ export function AiRevealPanel({
 
   return (
     <section className="ai-reveal-stage stage-surface" aria-label="AI Reveal">
-      <div className="stage-heading">
-        <div>
-          <p className="eyebrow">AI Reveal</p>
-          <h2>Compare blind interpretation with the model claim</h2>
-        </div>
-        <span className={`agreement-chip ${revealed && agrees ? "is-agree" : ""}`}>
-          {revealed ? (agrees ? "Agreement" : "Disagreement") : "Sealed"}
-        </span>
-      </div>
+      <StageHeader
+        kicker="AI Reveal"
+        title="Compare blind interpretation with the model claim"
+        description="The reveal is not a verdict; it identifies where the model claim agrees with the evidence-first read."
+        meta={
+          <span
+            className={`agreement-chip ${
+              revealed && agrees ? "is-agree" : ""
+            } ${revealed && !agrees ? "is-disagree" : ""}`}
+          >
+            {revealed ? (agrees ? "Agreement" : "Disagreement") : "Sealed"}
+          </span>
+        }
+      />
 
-      <SemanticMiniMap caseFile={caseFile} label="Reveal context" />
+      <div className="reveal-context-row">
+        <SemanticMiniMap caseFile={caseFile} label="Reveal context" />
+        <div className="reveal-context-note">
+          <span>Reveal checkpoint</span>
+          <strong>
+            {revealed
+              ? agrees
+                ? "Blind read aligns with the model."
+                : "Blind read and model claim diverge."
+              : "AI claim remains sealed."}
+          </strong>
+          <p>{getBlindAgreementCopy(blindChoice?.label, caseFile)}</p>
+          {revealed ? (
+            <button
+              type="button"
+              className="primary-action reveal-context-action"
+              onClick={onContinue}
+            >
+              Open evidence board
+            </button>
+          ) : null}
+        </div>
+      </div>
 
       <div className={`reveal-vault ${revealed ? "is-revealed" : ""}`}>
         <article className="reveal-card blind-card">
@@ -66,15 +94,7 @@ export function AiRevealPanel({
         </article>
       </div>
 
-      {revealed ? (
-        <div className="reveal-result">
-          <h3>{agrees ? "The interpretations align." : "The interpretations diverge."}</h3>
-          <p>{getBlindAgreementCopy(blindChoice?.label, caseFile)}</p>
-          <button type="button" className="primary-action" onClick={onContinue}>
-            Open evidence board
-          </button>
-        </div>
-      ) : (
+      {revealed ? null : (
         <button
           type="button"
           className="primary-action"

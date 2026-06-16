@@ -1,5 +1,10 @@
 import { landscapeStatusMeta, reviewStatusLabel } from "@/components/arena/arenaMeta";
 import { SemanticMiniMap } from "@/components/arena/SemanticMiniMap";
+import {
+  MetricCard,
+  SectionHeader,
+  StageHeader,
+} from "@/components/arena/WorkflowPrimitives";
 import { formatSupportScore, getAverageSupportScore } from "@/lib/caseMetrics";
 import type { CaseFile } from "@/lib/types";
 
@@ -13,35 +18,42 @@ export function CaseFilePanel({ caseFile, onStartInvestigation }: CaseFilePanelP
 
   return (
     <section className="case-file-stage stage-surface" aria-label="Case File">
-      <div className="stage-heading">
-        <div>
-          <p className="eyebrow">Case File</p>
-          <h2>{caseFile.cluster.name}</h2>
-        </div>
-        <span className={status.className}>{status.label}</span>
-      </div>
+      <StageHeader
+        kicker="Case File"
+        title={caseFile.cluster.name}
+        description="Open the behavioural region as an investigation file before any blind interpretation."
+        meta={<span className={status.className}>{status.label}</span>}
+      />
 
-      <SemanticMiniMap caseFile={caseFile} label="Case position" />
+      <div className="case-file-context-row">
+        <SemanticMiniMap caseFile={caseFile} label="Case position" />
+        <div className="case-file-context-note">
+          <span className="mono-value">{caseFile.cluster.id}</span>
+          <strong>{reviewStatusLabel[caseFile.reviewStatus]}</strong>
+          <p>
+            {caseFile.dataset} · {caseFile.cluster.size ?? "Unknown"} synthetic sessions
+          </p>
+        </div>
+      </div>
 
       <div className="case-file-grid">
         <article className="case-file-brief">
-          <span className="case-file-kicker">{caseFile.cluster.id}</span>
+          <span className="case-file-kicker">Investigation summary</span>
           <h3>{caseFile.cluster.description}</h3>
-          <p>
-            {reviewStatusLabel[caseFile.reviewStatus]} - {caseFile.dataset} -{" "}
-            {caseFile.cluster.size ?? "Unknown"} sessions
-          </p>
           <div className="case-file-metrics">
-            <Metric label="Agreement" value={formatSupportScore(caseFile.modelAgreement)} />
-            <Metric
+            <MetricCard
+              label="Agreement"
+              value={formatSupportScore(caseFile.modelAgreement)}
+            />
+            <MetricCard
               label="Evidence strength"
               value={formatSupportScore(caseFile.evidenceStrength)}
             />
-            <Metric
+            <MetricCard
               label="Uncertainty"
               value={formatSupportScore(caseFile.uncertainty)}
             />
-            <Metric
+            <MetricCard
               label="Average support"
               value={formatSupportScore(getAverageSupportScore(caseFile))}
             />
@@ -52,7 +64,10 @@ export function CaseFilePanel({ caseFile, onStartInvestigation }: CaseFilePanelP
         </article>
 
         <article className="case-file-panel">
-          <h3>Feature stack</h3>
+          <SectionHeader
+            title="Feature stack"
+            description="The strongest behavioural signals attached to this region."
+          />
           <div className="chip-row">
             {caseFile.topFeatures.map((feature) => (
               <span className="soft-chip" key={feature}>
@@ -60,7 +75,10 @@ export function CaseFilePanel({ caseFile, onStartInvestigation }: CaseFilePanelP
               </span>
             ))}
           </div>
-          <h3>Risk flags</h3>
+          <SectionHeader
+            title="Risk flags"
+            description="Known review risks before the blind read begins."
+          />
           <div className="chip-row">
             {caseFile.riskFlags.map((flag) => (
               <span className="risk-chip" key={flag}>
@@ -80,39 +98,49 @@ export function CaseFilePanel({ caseFile, onStartInvestigation }: CaseFilePanelP
         </article>
       </div>
 
-      <div className="claims-strip" aria-label="Claims under test">
-        {caseFile.claims.map((claim) => (
-          <article key={claim.id} className="claim-tile">
-            <div>
-              <span>{claim.id}</span>
-              <strong>{formatSupportScore(claim.supportScore)}</strong>
-            </div>
-            <h3>{claim.text}</h3>
-            <p>{claim.rationale}</p>
-          </article>
-        ))}
-      </div>
+      <section className="case-file-section" aria-label="Claims under test">
+        <SectionHeader
+          title="Claims under test"
+          description="Each generated claim will need evidence support or an explicit gap."
+        />
+        <div className="claims-strip">
+          {caseFile.claims.map((claim) => (
+            <article key={claim.id} className="claim-tile">
+              <div>
+                <span>{claim.id}</span>
+                <strong>{formatSupportScore(claim.supportScore)}</strong>
+              </div>
+              <h3>{claim.text}</h3>
+              <p>{claim.rationale}</p>
+            </article>
+          ))}
+        </div>
+      </section>
 
-      <div className="session-preview-row" aria-label="Representative sessions">
-        {caseFile.representativeSessions.slice(0, 4).map((session) => (
-          <article key={session.id} className="session-preview">
-            <span>{session.id}</span>
-            <strong>{session.title}</strong>
-            <p>
-              overlap {formatSupportScore(session.featureOverlap)} - {session.summary}
-            </p>
-          </article>
-        ))}
-      </div>
+      <section className="case-file-section" aria-label="Evidence packet preview">
+        <SectionHeader
+          title="Evidence packet preview"
+          description="Representative evidence and sessions that will be classified later."
+        />
+        <div className="case-file-evidence-row">
+          {caseFile.evidenceItems.slice(0, 3).map((evidence) => (
+            <article key={evidence.id} className="session-preview">
+              <span>{evidence.id}</span>
+              <strong>{evidence.title}</strong>
+              <p>{evidence.summary}</p>
+            </article>
+          ))}
+          {caseFile.representativeSessions.slice(0, 2).map((session) => (
+            <article key={session.id} className="session-preview">
+              <span>{session.id}</span>
+              <strong>{session.title}</strong>
+              <p>
+                overlap {formatSupportScore(session.featureOverlap)} · {session.summary}
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
     </section>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
   );
 }

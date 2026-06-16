@@ -3,6 +3,7 @@ import {
   duelReasonLabel,
 } from "@/components/arena/arenaMeta";
 import { SemanticMiniMap } from "@/components/arena/SemanticMiniMap";
+import { SectionHeader, StageHeader } from "@/components/arena/WorkflowPrimitives";
 import { formatSupportScore } from "@/lib/caseMetrics";
 import type { CaseReviewState } from "@/lib/arenaReviewState";
 import type { CaseFile, DuelReason } from "@/lib/types";
@@ -22,17 +23,30 @@ export function LabelDuelPanel({
   onToggleReason,
   onContinue,
 }: LabelDuelPanelProps) {
+  const selectedCandidate = caseFile.candidateLabels.find(
+    (candidate) => candidate.id === reviewState.labelDuelWinnerId,
+  );
+
   return (
     <section className="label-duel-stage stage-surface" aria-label="Label Duel">
-      <div className="stage-heading">
-        <div>
-          <p className="eyebrow">Label Duel</p>
-          <h2>Judge competing interpretations</h2>
-        </div>
-        <span className="count-pill">{caseFile.candidateLabels.length} candidate labels</span>
-      </div>
+      <StageHeader
+        kicker="Label Duel"
+        title="Judge competing interpretations"
+        description="Choose the label that is best supported by the evidence, not the one that sounds most confident."
+        meta={
+          <span className="count-pill">
+            {caseFile.candidateLabels.length} candidate labels
+          </span>
+        }
+      />
 
-      <SemanticMiniMap caseFile={caseFile} label="Duel context" />
+      <div className="duel-context-row">
+        <SemanticMiniMap caseFile={caseFile} label="Duel context" />
+        <SectionHeader
+          title="Candidate labels"
+          description="Support estimates are cues, not verdicts. Select the strongest interpretation and record why."
+        />
+      </div>
 
       <div className="duel-grid">
         {caseFile.candidateLabels.map((candidate) => {
@@ -46,17 +60,26 @@ export function LabelDuelPanel({
               onClick={() => onSelectWinner(candidate.id)}
               aria-pressed={isSelected}
             >
-              <span>{candidateSourceLabel[candidate.source]}</span>
+              <div className="duel-card-meta">
+                <span>{candidateSourceLabel[candidate.source]}</span>
+                <em>Support {formatSupportScore(candidate.supportEstimate)}</em>
+              </div>
               <strong>{candidate.label}</strong>
               <p>{candidate.rationale}</p>
-              <em>Support {formatSupportScore(candidate.supportEstimate)}</em>
             </button>
           );
         })}
       </div>
 
       <div className="reason-panel">
-        <h3>Reason chips</h3>
+        <SectionHeader
+          title="Reason chips"
+          description={
+            selectedCandidate
+              ? `Why "${selectedCandidate.label}" is the defensible choice.`
+              : "Select a candidate label, then record the evidence reason."
+          }
+        />
         <div className="chip-row">
           {caseFile.failureModes.map((reason) => {
             const isSelected = (reviewState.duelReasons ?? []).includes(reason);

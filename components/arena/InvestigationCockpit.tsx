@@ -41,10 +41,10 @@ export function InvestigationCockpit({
   });
 
   return (
-    <aside className="investigation-cockpit" aria-label="Investigation cockpit">
+    <aside className="investigation-cockpit" aria-label="Review cockpit">
       <div className="cockpit-header">
         <div>
-          <p className="eyebrow">Investigation Cockpit</p>
+          <p className="eyebrow">Review cockpit</p>
           <h2>{caseFile.cluster.name}</h2>
         </div>
         <span className={status.className}>{status.label}</span>

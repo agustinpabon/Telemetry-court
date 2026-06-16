@@ -1,4 +1,9 @@
 import { SemanticMiniMap } from "@/components/arena/SemanticMiniMap";
+import {
+  SealedClaimBlock,
+  SectionHeader,
+  StageHeader,
+} from "@/components/arena/WorkflowPrimitives";
 import type { CaseReviewState } from "@/lib/arenaReviewState";
 import type { CaseFile } from "@/lib/types";
 
@@ -17,24 +22,24 @@ export function BlindReadPanel({
 }: BlindReadPanelProps) {
   return (
     <section className="blind-stage stage-surface" aria-label="Blind Read">
-      <div className="stage-heading">
-        <div>
-          <p className="eyebrow">Blind Read</p>
-          <h2>What does the behaviour suggest before the AI claim?</h2>
-        </div>
-        <span className="sealed-chip">AI label sealed</span>
-      </div>
+      <StageHeader
+        kicker="Blind Read"
+        title="What does the behaviour suggest before the AI claim?"
+        description="Classify the visible evidence first, then reveal whether the model made the same interpretation."
+        meta={<span className="sealed-chip">AI label sealed</span>}
+      />
 
-      <div className="sealed-vault" aria-hidden="true">
-        <span />
-        <strong>AI claim sealed</strong>
+      <div className="blind-context-row">
+        <SealedClaimBlock description="The generated label is intentionally unavailable until a structured blind interpretation is recorded." />
+        <SemanticMiniMap caseFile={caseFile} label="Blind context" />
       </div>
-
-      <SemanticMiniMap caseFile={caseFile} label="Blind context" />
 
       <div className="blind-layout">
         <article className="evidence-preview-panel">
-          <h3>Evidence packet</h3>
+          <SectionHeader
+            title="Evidence packet"
+            description="Read the packet as behavioural evidence, not as confirmation of a known label."
+          />
           <div className="evidence-preview-list">
             {caseFile.evidenceItems.map((evidence) => (
               <div key={evidence.id} className="evidence-preview-item">
@@ -47,7 +52,10 @@ export function BlindReadPanel({
         </article>
 
         <article className="blind-choice-panel">
-          <h3>Structured interpretation</h3>
+          <SectionHeader
+            title="Structured interpretation"
+            description="Choose the best evidence-first reading. No typed label is required."
+          />
           <div className="blind-choice-grid">
             {caseFile.blindInterpretationOptions.map((option) => {
               const isSelected = reviewState.blindChoiceId === option.id;

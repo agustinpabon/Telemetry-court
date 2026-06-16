@@ -1,6 +1,7 @@
 import { EvidenceBalance } from "@/components/arena/EvidenceBalance";
 import { SemanticMiniMap } from "@/components/arena/SemanticMiniMap";
 import { evidenceRatingMeta, evidenceRatingOptions } from "@/components/arena/arenaMeta";
+import { SectionHeader, StageHeader } from "@/components/arena/WorkflowPrimitives";
 import { getRelationsForEvidence } from "@/lib/caseMetrics";
 import type { EvidenceBalance as EvidenceBalanceValue } from "@/lib/arenaReviewState";
 import type { CaseFile, EvidenceRating } from "@/lib/types";
@@ -20,17 +21,22 @@ export function EvidenceBoard({
 }: EvidenceBoardProps) {
   return (
     <section className="evidence-board-stage stage-surface" aria-label="Evidence Board">
-      <div className="stage-heading">
-        <div>
-          <p className="eyebrow">Evidence Board</p>
-          <h2>Classify the evidence against the claim</h2>
-        </div>
-        <span className="count-pill">{caseFile.evidenceItems.length} evidence cards</span>
+      <StageHeader
+        kicker="Evidence Board"
+        title="Classify the evidence against the claim"
+        description="Each evidence card receives one structured classification so support, contradiction, and context gaps stay inspectable."
+        meta={<span className="count-pill">{caseFile.evidenceItems.length} evidence cards</span>}
+      />
+
+      <div className="evidence-board-summary-row">
+        <SemanticMiniMap caseFile={caseFile} label="Evidence context" />
+        <EvidenceBalance balance={balance} />
       </div>
 
-      <SemanticMiniMap caseFile={caseFile} label="Evidence context" />
-
-      <EvidenceBalance balance={balance} />
+      <SectionHeader
+        title="Evidence cards"
+        description="Use one classification per item. Ratings can be changed before the final verdict."
+      />
 
       <div className="evidence-board-grid">
         {caseFile.evidenceItems.map((evidence) => {
@@ -48,7 +54,10 @@ export function EvidenceBoard({
                   {evidenceRatingMeta[rating].label}
                 </span>
               </div>
-              <h3>{evidence.title}</h3>
+              <div className="evidence-card-title-row">
+                <h3>{evidence.title}</h3>
+                <span>{evidence.sourceType.replaceAll("_", " ")}</span>
+              </div>
               <p>{evidence.summary}</p>
               <div className="relation-list">
                 {relations.map((relation) => (
@@ -57,6 +66,7 @@ export function EvidenceBoard({
                   </span>
                 ))}
               </div>
+              <span className="rating-control-label">Classify this evidence</span>
               <div className="rating-control" role="group" aria-label={`${evidence.id} classification`}>
                 {evidenceRatingOptions.map((option) => (
                   <button

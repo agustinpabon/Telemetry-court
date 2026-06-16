@@ -12,6 +12,7 @@ type ClusterNodeProps = {
   connected?: boolean;
   displayPosition?: CaseFile["mapPosition"];
   accent?: string;
+  nodeId?: string;
   onSelect: (caseId: string) => void;
   onPreview: (caseId: string) => void;
   onClearPreview: () => void;
@@ -49,6 +50,7 @@ export function ClusterNode({
   connected = false,
   displayPosition,
   accent,
+  nodeId,
   onSelect,
   onPreview,
   onClearPreview,
@@ -77,6 +79,7 @@ export function ClusterNode({
 
   return (
     <button
+      id={nodeId}
       type="button"
       className={`cluster-node ${status.nodeClassName} ${
         selected ? "is-selected" : ""

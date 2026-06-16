@@ -7,7 +7,7 @@ import type {
 import type { EvidenceArenaReview } from "@/lib/exportReview";
 
 export const arenaStages = [
-  { id: "landscape", label: "Landscape" },
+  { id: "landscape", label: "Evidence landscape" },
   { id: "case_file", label: "Case File" },
   { id: "blind_read", label: "Blind Read" },
   { id: "ai_reveal", label: "AI Reveal" },

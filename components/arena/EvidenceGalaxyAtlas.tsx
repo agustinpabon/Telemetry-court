@@ -1,6 +1,7 @@
 import { useId, useMemo, type CSSProperties, type KeyboardEvent } from "react";
 
 import {
+  getEvidenceStrengthTaxonomyClassName,
   getEvidenceStrengthTaxonomyLabel,
   landscapeStatusMeta,
 } from "@/components/arena/arenaMeta";
@@ -34,6 +35,7 @@ type RegionFieldStyle = CSSProperties & {
   "--region-opacity": string;
   "--region-support": string;
   "--region-pressure": string;
+  "--region-delay": string;
 };
 
 type LinkStyle = CSSProperties & {
@@ -76,6 +78,9 @@ export function EvidenceGalaxyAtlas({
     selectedCase.evidenceStrength,
     selectedCase.landscapeStatus,
   );
+  const selectedEvidenceStrengthClassName = getEvidenceStrengthTaxonomyClassName(
+    selectedEvidenceStrength,
+  );
   const sessionRange = useMemo(() => getSessionRange(cases), [cases]);
   const cameraOffsetX = (52 - selectedPosition.x) * 0.08;
   const cameraOffsetY = (48 - selectedPosition.y) * 0.08;
@@ -101,12 +106,18 @@ export function EvidenceGalaxyAtlas({
     if (nextCase) {
       onSelectCase(nextCase.id);
       onPreviewCase(nextCase.id);
+      requestAnimationFrame(() => {
+        document.getElementById(getAtlasNodeId(nextCase.id))?.focus({
+          preventScroll: true,
+        });
+      });
     }
   }
 
   return (
     <div
       className="evidence-galaxy-atlas"
+      role="group"
       tabIndex={0}
       onKeyDown={handleKeyDown}
       style={mapStyle}
@@ -137,12 +148,12 @@ export function EvidenceGalaxyAtlas({
 
       <aside className="atlas-key" aria-labelledby={atlasKeyTitleId}>
         <div className="atlas-key-header">
-          <span id={atlasKeyTitleId}>Map encodings</span>
+          <span id={atlasKeyTitleId}>Key</span>
           <span>{cases.length} regions</span>
         </div>
         <p className="atlas-key-note" id={atlasDescriptionId}>
-          Proximity groups related behaviour. Brightness, ring, and tint show
-          evidence strength, uncertainty, and verdict.
+          Proximity groups related behaviour; size, ring, and tint encode review
+          signals.
         </p>
         <dl className="atlas-key-encodings">
           <div className="atlas-key-row atlas-key-row-size">
@@ -195,6 +206,7 @@ export function EvidenceGalaxyAtlas({
       </aside>
 
       <aside
+        key={selectedCase.id}
         className="atlas-evidence-summary"
         aria-label={`Selected evidence summary for ${selectedCase.cluster.name}`}
         aria-live="polite"
@@ -217,7 +229,11 @@ export function EvidenceGalaxyAtlas({
           </div>
           <div>
             <dt>Evidence</dt>
-            <dd>{selectedEvidenceStrength}</dd>
+            <dd>
+              <span className={selectedEvidenceStrengthClassName}>
+                {selectedEvidenceStrength}
+              </span>
+            </dd>
           </div>
           <div>
             <dt>Uncertainty</dt>
@@ -261,6 +277,7 @@ export function EvidenceGalaxyAtlas({
                     "--region-opacity": `${0.18 + caseFile.modelAgreement * 0.2}`,
                     "--region-support": `${(0.07 + caseFile.evidenceStrength * 0.2).toFixed(2)}`,
                     "--region-pressure": `${(0.1 + caseFile.uncertainty * 0.32).toFixed(2)}`,
+                    "--region-delay": `${140 + index * 42}ms`,
                     transform: `translate(-50%, -50%) rotate(${
                       index % 2 === 0 ? -8 : 6
                     }deg)`,
@@ -319,6 +336,7 @@ export function EvidenceGalaxyAtlas({
             connected={linkedCaseIds.has(caseFile.id)}
             displayPosition={getAtlasPosition(caseFile)}
             accent={getGalaxyStatusAccent(caseFile)}
+            nodeId={getAtlasNodeId(caseFile.id)}
             onSelect={onSelectCase}
             onPreview={onPreviewCase}
             onClearPreview={onClearPreview}
@@ -338,11 +356,11 @@ export const landscapeStatusOrder = [
 ] as const;
 
 const galaxyStatusAccents: Record<CaseFile["landscapeStatus"], string> = {
-  supported: "#73e0d2",
-  overclaimed: "#d77f76",
-  impure: "#f2c879",
-  too_broad: "#8ee8ff",
-  uncertain: "#9b8cff",
+  supported: "#8fb6a0",
+  overclaimed: "#c9958d",
+  impure: "#c6ad78",
+  too_broad: "#91abc3",
+  uncertain: "#afa0bf",
 };
 
 const atlasDisplayPositions: Record<string, CaseFile["mapPosition"]> = {
@@ -483,9 +501,9 @@ function getConnectionType(
 }
 
 const galaxyConnectionAccents: Record<GalaxyConnectionType, string> = {
-  similarity: "rgba(142, 232, 255, 0.72)",
-  uncertain: "rgba(155, 140, 255, 0.64)",
-  overclaim: "rgba(215, 127, 118, 0.66)",
+  similarity: "rgba(145, 171, 195, 0.56)",
+  uncertain: "rgba(175, 160, 191, 0.52)",
+  overclaim: "rgba(201, 149, 141, 0.54)",
 };
 
 const galaxyConnectionDashArrays: Record<GalaxyConnectionType, string> = {
@@ -512,6 +530,10 @@ function getSessionWeight(caseFile: CaseFile, range: SessionRange): number {
 
 function getRegionStatusClassName(caseFile: CaseFile): string {
   return `is-${caseFile.landscapeStatus.replace("_", "-")}`;
+}
+
+function getAtlasNodeId(caseId: string): string {
+  return `atlas-node-${caseId}`;
 }
 
 function getShortAtlasName(caseFile: CaseFile): string {

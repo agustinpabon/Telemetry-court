@@ -1,5 +1,6 @@
 import { JudgmentReceipt } from "@/components/arena/JudgmentReceipt";
 import { SemanticMiniMap } from "@/components/arena/SemanticMiniMap";
+import { SectionHeader, StageHeader } from "@/components/arena/WorkflowPrimitives";
 import {
   duelReasonLabel,
   finalVerdictLabel,
@@ -38,21 +39,38 @@ export function VerdictPanel({
   const impostor = caseFile.representativeSessions.find(
     (session) => session.id === reviewState.impostorSessionId,
   );
+  const selectedVerdictLabel = reviewState.finalVerdict
+    ? finalVerdictLabel[reviewState.finalVerdict]
+    : undefined;
 
   return (
     <section className="verdict-stage stage-surface" aria-label="Structured Verdict">
-      <div className="stage-heading">
-        <div>
-          <p className="eyebrow">Structured Verdict</p>
-          <h2>Issue a defensible judgment</h2>
-        </div>
-        <span className="count-pill">8 verdict paths</span>
-      </div>
+      <StageHeader
+        kicker="Structured Verdict"
+        title="Issue a defensible judgment"
+        description="Resolve the investigation into a structured outcome that can be exported as review data."
+        meta={<span className="count-pill">8 verdict paths</span>}
+      />
 
-      <SemanticMiniMap caseFile={caseFile} label="Verdict context" />
+      <div className="verdict-context-row">
+        <SemanticMiniMap caseFile={caseFile} label="Verdict context" />
+        <div className="verdict-judgment-banner">
+          <span>Final judgment</span>
+          <strong>{selectedVerdictLabel ?? "Awaiting verdict"}</strong>
+          <p>
+            {selectedVerdictLabel
+              ? "The receipt now reflects the selected verdict, evidence balance, and structured review choices."
+              : "Choose the outcome that best matches the evidence classification and cluster purity review."}
+          </p>
+        </div>
+      </div>
 
       <div className="verdict-layout">
         <article className="verdict-choice-panel">
+          <SectionHeader
+            title="Verdict options"
+            description="Pick one final review path. Failure modes can add detail without replacing the verdict."
+          />
           <div className="verdict-grid">
             {finalVerdicts.map((verdict) => {
               const isSelected = reviewState.finalVerdict === verdict;
@@ -65,14 +83,17 @@ export function VerdictPanel({
                   onClick={() => onSelectVerdict(verdict)}
                   aria-pressed={isSelected}
                 >
-                  {finalVerdictLabel[verdict]}
+                  <span>{finalVerdictLabel[verdict]}</span>
                 </button>
               );
             })}
           </div>
 
           <div className="reason-panel">
-            <h3>Failure-mode chips</h3>
+            <SectionHeader
+              title="Failure-mode chips"
+              description="Add the main reasons the label or cluster did not fully hold up."
+            />
             <div className="chip-row">
               {caseFile.failureModes.map((reason) => {
                 const isSelected = (reviewState.failureModes ?? []).includes(reason);

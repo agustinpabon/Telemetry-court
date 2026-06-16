@@ -1,6 +1,6 @@
 "use client";
 
-import { useReducer, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 
 import { AiRevealPanel } from "@/components/arena/AiRevealPanel";
 import { BlindReadPanel } from "@/components/arena/BlindReadPanel";
@@ -47,6 +47,10 @@ export function AppShell({ cases }: AppShellProps) {
   const [exportMessage, setExportMessage] = useState<string>();
 
   const selectedCase = getSelectedCase(cases, arenaState);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0 });
+  }, [arenaState.activeStage, selectedCase?.id]);
 
   if (!selectedCase) {
     return (
@@ -139,13 +143,16 @@ export function AppShell({ cases }: AppShellProps) {
   const stageTransitionKey = isExploreMode
     ? arenaState.activeStage
     : `${selectedCase.id}-${arenaState.activeStage}`;
+  const shellClassName = [
+    "arena-shell",
+    isExploreMode ? "arena-shell-explore" : "arena-shell-investigate",
+    `arena-stage-${arenaState.activeStage}`,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <main
-      className={`arena-shell ${
-        isExploreMode ? "arena-shell-explore" : "arena-shell-investigate"
-      } arena-stage-${arenaState.activeStage}`}
-    >
+    <main className={shellClassName}>
       <header className="arena-topbar">
         <div className="arena-brand">
           <div>

@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 
 import {
+  getEvidenceStrengthTaxonomyClassName,
   getEvidenceStrengthTaxonomyLabel,
   landscapeStatusMeta,
   reviewStateTaxonomyLabel,
@@ -83,7 +84,10 @@ function SelectedRegionPanel({
     caseFile.evidenceStrength,
     caseFile.landscapeStatus,
   );
+  const evidenceStrengthClassName =
+    getEvidenceStrengthTaxonomyClassName(evidenceStrength);
   const regionName = getDisplayRegionName(caseFile.cluster.name);
+  const evidencePacketSummary = getEvidencePacketSummary(caseFile);
 
   return (
     <aside
@@ -111,7 +115,10 @@ function SelectedRegionPanel({
 
       <div className="selected-region-section">
         <span className="selected-region-eyebrow">Why investigate</span>
-        <p className="selected-region-copy">{caseFile.topicLabel.explanation}</p>
+        <div className="selected-region-review-note">
+          <p>{getSelectedRegionReviewNote(caseFile)}</p>
+          <span>Open the case file before accepting or revising the label.</span>
+        </div>
       </div>
 
       <div className="selected-region-section" aria-label="Core signals">
@@ -125,13 +132,27 @@ function SelectedRegionPanel({
           </div>
           <div>
             <dt>Evidence</dt>
-            <dd>{evidenceStrength}</dd>
+            <dd>
+              <span className={evidenceStrengthClassName}>{evidenceStrength}</span>
+            </dd>
           </div>
           <div>
             <dt>Uncertainty</dt>
             <dd>{formatSupportScore(caseFile.uncertainty)}</dd>
           </div>
         </dl>
+      </div>
+
+      <div className="selected-region-section selected-region-evidence-packet">
+        <div className="selected-region-evidence-heading">
+          <span className="selected-region-eyebrow">Evidence packet</span>
+          <span>{evidencePacketSummary}</span>
+        </div>
+        <div className="selected-region-feature-list" aria-label="Top evidence signals">
+          {caseFile.topFeatures.slice(0, 3).map((feature) => (
+            <span key={feature}>{feature}</span>
+          ))}
+        </div>
       </div>
 
       <button
@@ -147,4 +168,23 @@ function SelectedRegionPanel({
 
 function getDisplayRegionName(name: string): string {
   return name.replace(/\s+region$/i, "");
+}
+
+function getSelectedRegionReviewNote(caseFile: CaseFile): string {
+  switch (caseFile.landscapeStatus) {
+    case "supported":
+      return "Observed evidence directly matches the model label; verify the linked sessions before accepting it.";
+    case "overclaimed":
+      return "Administrative changes are present, but intent and abuse remain unproven.";
+    case "impure":
+      return "The region contains mixed behaviours, so one label may not cover the whole cluster.";
+    case "too_broad":
+      return "The evidence supports the activity pattern, but the label may be broader than the sessions justify.";
+    case "uncertain":
+      return "The evidence is suggestive but incomplete; preserve uncertainty unless the case file supports a stronger label.";
+  }
+}
+
+function getEvidencePacketSummary(caseFile: CaseFile): string {
+  return `${caseFile.evidenceItems.length} evidence items / ${caseFile.riskFlags.length} risk flags`;
 }

@@ -1,0 +1,1433 @@
+.arena-shell-investigate {
+  --workflow-canvas: #f4f2ee;
+  --workflow-surface: #fbfaf7;
+  --workflow-surface-muted: #efede7;
+  --workflow-panel: #f7f5ef;
+  --workflow-panel-strong: #e7e3d8;
+  --workflow-ink: #32302f;
+  --workflow-muted: rgba(50, 48, 47, 0.7);
+  --workflow-soft: rgba(50, 48, 47, 0.55);
+  --workflow-border: rgba(50, 48, 47, 0.12);
+  --workflow-border-strong: rgba(50, 48, 47, 0.2);
+  --workflow-focus: #5f6f52;
+  --workflow-supported: #3f7d55;
+  --workflow-supported-soft: #e8f2ea;
+  --workflow-weak: #9a6a2f;
+  --workflow-weak-soft: #f4ead8;
+  --workflow-contradicted: #9b3d35;
+  --workflow-contradicted-soft: #f3e5e2;
+  --workflow-context: #516784;
+  --workflow-context-soft: #e8edf1;
+  --workflow-noise: #6f625c;
+  --workflow-noise-soft: #eee9e4;
+  background:
+    radial-gradient(circle at 18% 8%, rgba(95, 111, 82, 0.08), transparent 24rem),
+    radial-gradient(circle at 86% 22%, rgba(143, 168, 213, 0.1), transparent 22rem),
+    linear-gradient(180deg, #fbfaf7 0%, var(--workflow-canvas) 44%, #ece8df 100%);
+  color: var(--workflow-ink);
+  height: auto;
+  min-height: 100svh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: clamp(14px, 1.4vw, 24px);
+}
+
+.arena-shell-investigate .arena-topbar {
+  background: rgba(251, 250, 247, 0.86);
+  border: 1px solid var(--workflow-border);
+  border-radius: 18px;
+  margin-bottom: 12px;
+  max-width: 1728px;
+  min-height: 54px;
+  padding: 8px 12px 8px 16px;
+}
+
+.arena-shell-investigate .arena-brand {
+  color: var(--workflow-ink);
+}
+
+.arena-shell-investigate .arena-brand h1 {
+  color: var(--workflow-ink);
+  font-size: 18px;
+  font-weight: 760;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.arena-shell-investigate .arena-brand p,
+.arena-shell-investigate .eyebrow {
+  color: var(--workflow-muted);
+  font-size: 12px;
+  font-weight: 760;
+  letter-spacing: 0;
+  margin: 0;
+  text-transform: none;
+}
+
+.arena-shell-investigate .arena-topbar-actions button,
+.arena-shell-investigate .stage-controls button,
+.arena-shell-investigate .receipt-actions button,
+.arena-shell-investigate .drawer-close {
+  background: var(--workflow-surface);
+  border: 1px solid var(--workflow-border);
+  border-radius: 999px;
+  color: var(--workflow-ink);
+  min-height: 40px;
+  padding: 0 14px;
+}
+
+.arena-shell-investigate .arena-topbar-actions button:hover,
+.arena-shell-investigate .stage-controls button:hover,
+.arena-shell-investigate .receipt-actions button:hover,
+.arena-shell-investigate .drawer-close:hover {
+  background: var(--workflow-panel);
+  border-color: var(--workflow-border-strong);
+  transform: translateY(-1px);
+}
+
+.arena-shell-investigate .arena-layout {
+  align-items: start;
+  gap: 14px;
+  grid-template-columns: 66px minmax(0, 1fr) clamp(292px, 20vw, 344px);
+  height: auto;
+  max-width: 1728px;
+}
+
+.arena-shell-investigate .arena-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.arena-shell-investigate .stage-transition {
+  animation: workflowStageEnter 180ms ease-out both;
+  min-height: 0;
+}
+
+.arena-shell-investigate .stage-surface {
+  background: rgba(251, 250, 247, 0.92);
+  border: 1px solid var(--workflow-border);
+  border-radius: 24px;
+  box-shadow: 0 6px 8px rgba(50, 48, 47, 0.04);
+  color: var(--workflow-ink);
+  height: auto;
+  min-height: calc(100svh - 132px);
+  overflow: visible;
+  padding: clamp(18px, 2vw, 28px);
+}
+
+.arena-shell-investigate .stage-controls {
+  justify-content: space-between;
+  margin-top: 0;
+}
+
+.arena-shell-investigate .stage-controls button:disabled {
+  opacity: 0.45;
+}
+
+.arena-shell-investigate .stage-rail {
+  align-self: start;
+  background: rgba(251, 250, 247, 0.72);
+  border: 1px solid var(--workflow-border);
+  border-radius: 18px;
+  box-shadow: none;
+  gap: 6px;
+  padding: 6px;
+  position: sticky;
+  top: 14px;
+}
+
+.arena-shell-investigate .stage-rail-button {
+  background: transparent;
+  border-color: transparent;
+  border-radius: 14px;
+  color: var(--workflow-soft);
+  min-height: 56px;
+  padding: 6px 3px;
+}
+
+.arena-shell-investigate .stage-rail-button:hover,
+.arena-shell-investigate .stage-rail-button.is-active {
+  background: var(--workflow-surface);
+  border-color: var(--workflow-border);
+  color: var(--workflow-ink);
+  transform: none;
+}
+
+.arena-shell-investigate .stage-rail-button.is-complete .stage-rail-index {
+  background: var(--workflow-supported-soft);
+  border-color: rgba(63, 125, 85, 0.26);
+  color: var(--workflow-supported);
+}
+
+.arena-shell-investigate .stage-rail-index {
+  border-color: var(--workflow-border);
+  color: inherit;
+  height: 26px;
+  width: 26px;
+}
+
+.arena-shell-investigate .stage-rail-label {
+  color: inherit;
+  font-size: 10px;
+  line-height: 1.1;
+  max-width: 54px;
+}
+
+.arena-shell-investigate .workflow-stage-heading {
+  align-items: flex-start;
+  border-bottom: 1px solid var(--workflow-border);
+  gap: 18px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+}
+
+.arena-shell-investigate .workflow-stage-heading > div {
+  max-width: 840px;
+}
+
+.arena-shell-investigate .workflow-stage-heading h2,
+.arena-shell-investigate .review-drawer-header h2 {
+  color: var(--workflow-ink);
+  font-size: clamp(24px, 2.2vw, 31px);
+  font-weight: 780;
+  letter-spacing: -0.015em;
+  line-height: 1.12;
+  margin: 4px 0 0;
+  text-wrap: balance;
+}
+
+.arena-shell-investigate .stage-heading-copy {
+  color: var(--workflow-muted);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 8px 0 0;
+  max-width: 68ch;
+  text-wrap: pretty;
+}
+
+.arena-shell-investigate .workflow-section-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.arena-shell-investigate .workflow-section-header h3 {
+  color: var(--workflow-ink);
+  font-size: 15px;
+  font-weight: 780;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.arena-shell-investigate .workflow-section-header p {
+  color: var(--workflow-muted);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 4px 0 0;
+  max-width: 60ch;
+}
+
+.arena-shell-investigate .count-pill,
+.arena-shell-investigate .sealed-chip,
+.arena-shell-investigate .agreement-chip,
+.arena-shell-investigate .status-chip,
+.arena-shell-investigate .evidence-rating {
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 780;
+  min-height: 28px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+.arena-shell-investigate .count-pill,
+.arena-shell-investigate .sealed-chip,
+.arena-shell-investigate .agreement-chip {
+  background: var(--workflow-panel);
+  border: 1px solid var(--workflow-border);
+  color: var(--workflow-muted);
+}
+
+.arena-shell-investigate .status-chip-supported,
+.arena-shell-investigate .evidence-rating-supports {
+  background: var(--workflow-supported-soft);
+  border: 1px solid rgba(63, 125, 85, 0.24);
+  color: #2f6644;
+}
+
+.arena-shell-investigate .status-chip-overclaimed,
+.arena-shell-investigate .evidence-rating-contradicts,
+.arena-shell-investigate .agreement-chip.is-disagree {
+  background: var(--workflow-contradicted-soft);
+  border: 1px solid rgba(155, 61, 53, 0.24);
+  color: #84342d;
+}
+
+.arena-shell-investigate .status-chip-impure,
+.arena-shell-investigate .evidence-rating-weak {
+  background: var(--workflow-weak-soft);
+  border: 1px solid rgba(154, 106, 47, 0.24);
+  color: #745023;
+}
+
+.arena-shell-investigate .status-chip-broad,
+.arena-shell-investigate .evidence-rating-context {
+  background: var(--workflow-context-soft);
+  border: 1px solid rgba(81, 103, 132, 0.24);
+  color: #435873;
+}
+
+.arena-shell-investigate .status-chip-uncertain,
+.arena-shell-investigate .evidence-rating-noise {
+  background: var(--workflow-noise-soft);
+  border: 1px solid rgba(111, 98, 92, 0.22);
+  color: #5b514c;
+}
+
+.arena-shell-investigate .agreement-chip.is-agree {
+  background: var(--workflow-supported-soft);
+  border-color: rgba(63, 125, 85, 0.24);
+  color: #2f6644;
+}
+
+.arena-shell-investigate .primary-action {
+  background: var(--workflow-ink);
+  border: 1px solid var(--workflow-ink);
+  border-radius: 999px;
+  color: var(--workflow-surface);
+  font-size: 14px;
+  font-weight: 820;
+  min-height: 44px;
+  padding: 0 18px;
+}
+
+.arena-shell-investigate .primary-action:hover {
+  background: #1f1e1d;
+  border-color: #1f1e1d;
+  transform: translateY(-1px);
+}
+
+.arena-shell-investigate .primary-action:disabled {
+  opacity: 0.42;
+  transform: none;
+}
+
+.arena-shell-investigate .soft-chip,
+.arena-shell-investigate .risk-chip,
+.arena-shell-investigate .chip-button {
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1.15;
+  min-height: 32px;
+  padding: 8px 10px;
+}
+
+.arena-shell-investigate .soft-chip {
+  background: var(--workflow-panel);
+  border: 1px solid var(--workflow-border);
+  color: var(--workflow-muted);
+}
+
+.arena-shell-investigate .risk-chip {
+  background: var(--workflow-weak-soft);
+  border: 1px solid rgba(154, 106, 47, 0.2);
+  color: #745023;
+}
+
+.arena-shell-investigate .chip-button {
+  background: var(--workflow-surface);
+  border: 1px solid var(--workflow-border);
+  color: var(--workflow-muted);
+}
+
+.arena-shell-investigate .chip-button:hover,
+.arena-shell-investigate .chip-button.is-selected {
+  background: var(--workflow-ink);
+  border-color: var(--workflow-ink);
+  color: var(--workflow-surface);
+}
+
+.arena-shell-investigate .semantic-mini-map {
+  background: var(--workflow-panel);
+  border: 1px solid var(--workflow-border);
+  border-radius: 16px;
+  display: grid;
+  gap: 8px;
+  max-width: 360px;
+  padding: 10px;
+  position: static;
+  width: 100%;
+  z-index: auto;
+}
+
+.arena-shell-investigate .mini-map-field {
+  background:
+    radial-gradient(circle at var(--mini-x) var(--mini-y), color-mix(in srgb, var(--mini-accent) 18%, transparent), transparent 36%),
+    linear-gradient(180deg, #fffdfa, #eeeae0);
+  border: 1px solid rgba(50, 48, 47, 0.08);
+}
+
+.arena-shell-investigate .mini-map-reference {
+  background: rgba(50, 48, 47, 0.34);
+}
+
+.arena-shell-investigate .mini-map-focus {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--mini-accent) 20%, transparent);
+}
+
+.arena-shell-investigate .mini-map-caption span {
+  color: var(--workflow-muted);
+}
+
+.arena-shell-investigate .mini-map-caption strong {
+  color: var(--workflow-ink);
+}
+
+.arena-shell-investigate .case-file-context-row,
+.arena-shell-investigate .blind-context-row,
+.arena-shell-investigate .reveal-context-row,
+.arena-shell-investigate .evidence-board-summary-row,
+.arena-shell-investigate .duel-context-row,
+.arena-shell-investigate .impostor-context-row,
+.arena-shell-investigate .verdict-context-row {
+  align-items: start;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(220px, 0.52fr) minmax(0, 1fr);
+  margin-bottom: 16px;
+}
+
+.arena-shell-investigate .case-file-context-note,
+.arena-shell-investigate .reveal-context-note,
+.arena-shell-investigate .verdict-judgment-banner,
+.arena-shell-investigate .sealed-claim-block {
+  background: var(--workflow-panel);
+  border: 1px solid var(--workflow-border);
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.arena-shell-investigate .case-file-context-note,
+.arena-shell-investigate .reveal-context-note,
+.arena-shell-investigate .verdict-judgment-banner {
+  align-content: center;
+  display: grid;
+}
+
+.arena-shell-investigate .case-file-context-note strong,
+.arena-shell-investigate .reveal-context-note strong,
+.arena-shell-investigate .verdict-judgment-banner strong,
+.arena-shell-investigate .sealed-claim-block strong {
+  color: var(--workflow-ink);
+  display: block;
+  font-size: 18px;
+  font-weight: 780;
+  line-height: 1.25;
+  margin-top: 4px;
+}
+
+.arena-shell-investigate .case-file-context-note p,
+.arena-shell-investigate .reveal-context-note p,
+.arena-shell-investigate .verdict-judgment-banner p,
+.arena-shell-investigate .sealed-claim-block p {
+  color: var(--workflow-muted);
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 7px 0 0;
+}
+
+.arena-shell-investigate .reveal-context-note span,
+.arena-shell-investigate .verdict-judgment-banner span {
+  color: var(--workflow-muted);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.arena-shell-investigate .sealed-claim-block {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.arena-shell-investigate .sealed-claim-block > span {
+  background:
+    linear-gradient(180deg, rgba(50, 48, 47, 0.08), rgba(50, 48, 47, 0.03)),
+    var(--workflow-surface);
+  border: 1px solid var(--workflow-border);
+  border-radius: 999px;
+  flex: 0 0 auto;
+  height: 44px;
+  position: relative;
+  width: 44px;
+}
+
+.arena-shell-investigate .sealed-claim-block > span::after {
+  background: var(--workflow-muted);
+  border-radius: 999px;
+  content: "";
+  height: 8px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+}
+
+.arena-shell-investigate .case-file-grid,
+.arena-shell-investigate .blind-layout,
+.arena-shell-investigate .verdict-layout,
+.arena-shell-investigate .impostor-layout {
+  align-items: stretch;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  margin-top: 0;
+}
+
+.arena-shell-investigate .case-file-brief,
+.arena-shell-investigate .case-file-panel,
+.arena-shell-investigate .evidence-preview-panel,
+.arena-shell-investigate .blind-choice-panel,
+.arena-shell-investigate .verdict-choice-panel,
+.arena-shell-investigate .impostor-detail,
+.arena-shell-investigate .claim-tile,
+.arena-shell-investigate .session-preview,
+.arena-shell-investigate .evidence-preview-item,
+.arena-shell-investigate .choice-card,
+.arena-shell-investigate .duel-card,
+.arena-shell-investigate .evidence-board-card {
+  background: var(--workflow-surface);
+  border: 1px solid var(--workflow-border);
+  border-radius: 18px;
+  color: var(--workflow-ink);
+  padding: 16px;
+}
+
+.arena-shell-investigate .case-file-brief,
+.arena-shell-investigate .case-file-panel,
+.arena-shell-investigate .evidence-preview-panel,
+.arena-shell-investigate .blind-choice-panel,
+.arena-shell-investigate .verdict-choice-panel,
+.arena-shell-investigate .impostor-detail {
+  background: var(--workflow-panel);
+}
+
+.arena-shell-investigate .case-file-brief h3 {
+  color: var(--workflow-ink);
+  font-size: clamp(20px, 1.7vw, 25px);
+  font-weight: 780;
+  line-height: 1.18;
+  margin: 8px 0 16px;
+  text-wrap: balance;
+}
+
+.arena-shell-investigate .case-file-kicker,
+.arena-shell-investigate .mono-value,
+.arena-shell-investigate .evidence-preview-item span,
+.arena-shell-investigate .session-preview span,
+.arena-shell-investigate .claim-tile span,
+.arena-shell-investigate .duel-card span,
+.arena-shell-investigate .session-orbit-card span {
+  color: var(--workflow-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 780;
+  letter-spacing: 0;
+}
+
+.arena-shell-investigate .case-file-metrics,
+.arena-shell-investigate .cockpit-metrics {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.arena-shell-investigate .metric-card,
+.arena-shell-investigate .cockpit-metrics div,
+.arena-shell-investigate .impostor-detail dl div,
+.arena-shell-investigate .receipt-grid div {
+  background: var(--workflow-surface);
+  border: 1px solid var(--workflow-border);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.arena-shell-investigate .metric-card span,
+.arena-shell-investigate .cockpit-metrics dt,
+.arena-shell-investigate .receipt-grid dt,
+.arena-shell-investigate .impostor-detail dt {
+  color: var(--workflow-muted);
+  display: block;
+  font-size: 11px;
+  font-weight: 760;
+  margin: 0;
+}
+
+.arena-shell-investigate .metric-card strong,
+.arena-shell-investigate .cockpit-metrics dd,
+.arena-shell-investigate .receipt-grid dd,
+.arena-shell-investigate .impostor-detail dd {
+  color: var(--workflow-ink);
+  display: block;
+  font-size: 18px;
+  font-weight: 780;
+  line-height: 1.2;
+  margin: 4px 0 0;
+}
+
+.arena-shell-investigate .case-file-brief .primary-action {
+  margin-top: 18px;
+}
+
+.arena-shell-investigate .case-file-neighbour {
+  background: var(--workflow-surface);
+  border: 1px solid var(--workflow-border);
+  border-radius: 16px;
+  margin-top: 16px;
+  padding: 14px;
+}
+
+.arena-shell-investigate .case-file-neighbour span,
+.arena-shell-investigate .outlier-explanation span,
+.arena-shell-investigate .rating-control-label {
+  color: var(--workflow-muted);
+  display: block;
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.arena-shell-investigate .case-file-neighbour strong {
+  color: var(--workflow-ink);
+  display: block;
+  font-size: 16px;
+  margin-top: 4px;
+}
+
+.arena-shell-investigate .case-file-neighbour p,
+.arena-shell-investigate .outlier-explanation p,
+.arena-shell-investigate .case-file-brief p,
+.arena-shell-investigate .evidence-board-card p,
+.arena-shell-investigate .evidence-preview-item p,
+.arena-shell-investigate .choice-card span,
+.arena-shell-investigate .duel-card p,
+.arena-shell-investigate .impostor-detail p,
+.arena-shell-investigate .session-preview p,
+.arena-shell-investigate .claim-tile p {
+  color: var(--workflow-muted);
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 8px 0 0;
+}
+
+.arena-shell-investigate .case-file-section {
+  margin-top: 18px;
+}
+
+.arena-shell-investigate .claims-strip,
+.arena-shell-investigate .case-file-evidence-row,
+.arena-shell-investigate .evidence-board-grid,
+.arena-shell-investigate .duel-grid,
+.arena-shell-investigate .blind-choice-grid,
+.arena-shell-investigate .evidence-preview-list {
+  display: grid;
+  gap: 12px;
+}
+
+.arena-shell-investigate .claims-strip {
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+.arena-shell-investigate .case-file-evidence-row {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.arena-shell-investigate .claim-tile h3,
+.arena-shell-investigate .session-preview strong,
+.arena-shell-investigate .evidence-preview-item strong,
+.arena-shell-investigate .choice-card strong,
+.arena-shell-investigate .duel-card strong,
+.arena-shell-investigate .evidence-board-card h3,
+.arena-shell-investigate .impostor-detail h3 {
+  color: var(--workflow-ink);
+  display: block;
+  font-size: 15px;
+  font-weight: 780;
+  line-height: 1.32;
+  margin: 8px 0 0;
+}
+
+.arena-shell-investigate .claim-tile div,
+.arena-shell-investigate .evidence-card-header,
+.arena-shell-investigate .duel-card-meta {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.arena-shell-investigate .blind-layout {
+  grid-template-columns: minmax(320px, 0.96fr) minmax(360px, 1.04fr);
+}
+
+.arena-shell-investigate .evidence-preview-list {
+  max-height: none;
+}
+
+.arena-shell-investigate .blind-choice-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.arena-shell-investigate .choice-card,
+.arena-shell-investigate .duel-card,
+.arena-shell-investigate .session-orbit-card,
+.arena-shell-investigate .rating-button,
+.arena-shell-investigate .verdict-button {
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.arena-shell-investigate .choice-card:hover,
+.arena-shell-investigate .duel-card:hover,
+.arena-shell-investigate .session-orbit-card:hover,
+.arena-shell-investigate .rating-button:hover,
+.arena-shell-investigate .verdict-button:hover {
+  background: #fffdf9;
+  border-color: var(--workflow-border-strong);
+}
+
+.arena-shell-investigate .choice-card.is-selected,
+.arena-shell-investigate .duel-card.is-selected,
+.arena-shell-investigate .session-orbit-card.is-selected,
+.arena-shell-investigate .verdict-button.is-selected,
+.arena-shell-investigate .rating-button.is-selected {
+  background: #eef1ec;
+  border-color: rgba(95, 111, 82, 0.38);
+}
+
+.arena-shell-investigate .blind-choice-panel .primary-action,
+.arena-shell-investigate .label-duel-stage > .primary-action {
+  margin-top: 14px;
+  width: 100%;
+}
+
+.arena-shell-investigate .reveal-vault {
+  align-items: stretch;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) 88px minmax(0, 1fr);
+  margin-top: 0;
+  perspective: none;
+}
+
+.arena-shell-investigate .reveal-card {
+  background: var(--workflow-surface);
+  border: 1px solid var(--workflow-border);
+  border-radius: 20px;
+  min-height: 230px;
+  padding: 20px;
+}
+
+.arena-shell-investigate .reveal-vault.is-revealed .ai-card {
+  border-color: rgba(95, 111, 82, 0.36);
+  transform: none;
+}
+
+.arena-shell-investigate .reveal-card span {
+  color: var(--workflow-muted);
+  display: block;
+  font-size: 12px;
+  font-weight: 760;
+  margin-bottom: 12px;
+}
+
+.arena-shell-investigate .reveal-card strong {
+  color: var(--workflow-ink);
+  display: block;
+  font-size: clamp(22px, 2vw, 30px);
+  font-weight: 780;
+  line-height: 1.14;
+}
+
+.arena-shell-investigate .reveal-card p {
+  color: var(--workflow-muted);
+  font-size: 14px;
+  line-height: 1.58;
+  margin: 14px 0 0;
+}
+
+.arena-shell-investigate .redacted-claim {
+  background: transparent;
+  color: var(--workflow-muted) !important;
+  min-height: 0;
+}
+
+.arena-shell-investigate .reveal-comparison-node {
+  align-self: center;
+  background: var(--workflow-panel);
+  border: 1px solid var(--workflow-border);
+  border-radius: 999px;
+  color: var(--workflow-muted);
+  display: grid;
+  font-size: 12px;
+  font-weight: 780;
+  height: 88px;
+  justify-content: center;
+  place-items: center;
+  text-align: center;
+}
+
+.arena-shell-investigate .reveal-comparison-node.is-live {
+  background: var(--workflow-ink);
+  border-color: var(--workflow-ink);
+  color: var(--workflow-surface);
+}
+
+.arena-shell-investigate .reveal-result {
+  background: var(--workflow-panel);
+  border: 1px solid var(--workflow-border);
+  border-radius: 18px;
+  margin-top: 14px;
+  padding: 16px;
+}
+
+.arena-shell-investigate .reveal-result h3 {
+  color: var(--workflow-ink);
+  font-size: 18px;
+  font-weight: 780;
+  margin: 0;
+}
+
+.arena-shell-investigate .reveal-result p {
+  color: var(--workflow-muted);
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 8px 0 0;
+}
+
+.arena-shell-investigate .reveal-context-action {
+  justify-self: start;
+  margin-top: 14px;
+}
+
+.arena-shell-investigate .evidence-board-summary-row {
+  align-items: stretch;
+}
+
+.arena-shell-investigate .evidence-balance {
+  background: var(--workflow-panel);
+  border: 1px solid var(--workflow-border);
+  border-radius: 18px;
+  margin-top: 0;
+  padding: 16px;
+}
+
+.arena-shell-investigate .balance-meter {
+  background: rgba(50, 48, 47, 0.08);
+  border-radius: 999px;
+  display: flex;
+  height: 12px;
+  overflow: hidden;
+}
+
+.arena-shell-investigate .balance-supporting {
+  background: var(--workflow-supported);
+}
+
+.arena-shell-investigate .balance-weak {
+  background: var(--workflow-weak);
+}
+
+.arena-shell-investigate .balance-contradictory {
+  background: var(--workflow-contradicted);
+}
+
+.arena-shell-investigate .balance-context {
+  background: var(--workflow-context);
+}
+
+.arena-shell-investigate .balance-legend,
+.arena-shell-investigate .receipt-balance {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.arena-shell-investigate .balance-legend span,
+.arena-shell-investigate .receipt-balance span {
+  background: var(--workflow-surface);
+  border: 1px solid var(--workflow-border);
+  border-radius: 999px;
+  color: var(--workflow-muted);
+  font-size: 12px;
+  font-weight: 760;
+  padding: 7px 10px;
+}
+
+.arena-shell-investigate .balance-legend strong,
+.arena-shell-investigate .receipt-balance strong {
+  color: var(--workflow-ink);
+}
+
+.arena-shell-investigate .balance-note,
+.arena-shell-investigate .export-message {
+  color: var(--workflow-muted);
+  font-size: 13px;
+  margin: 10px 0 0;
+}
+
+.arena-shell-investigate .evidence-board-grid {
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  margin-top: 12px;
+}
+
+.arena-shell-investigate .evidence-board-card {
+  display: grid;
+  gap: 10px;
+}
+
+.arena-shell-investigate .evidence-board-card::before {
+  display: none;
+}
+
+.arena-shell-investigate .evidence-board-card-supports_label {
+  background: var(--workflow-supported-soft);
+}
+
+.arena-shell-investigate .evidence-board-card-weak_support {
+  background: var(--workflow-weak-soft);
+}
+
+.arena-shell-investigate .evidence-board-card-contradicts_label {
+  background: var(--workflow-contradicted-soft);
+}
+
+.arena-shell-investigate .evidence-board-card-needs_context {
+  background: var(--workflow-context-soft);
+}
+
+.arena-shell-investigate .evidence-board-card-irrelevant_noise {
+  background: var(--workflow-noise-soft);
+}
+
+.arena-shell-investigate .evidence-card-title-row {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.arena-shell-investigate .evidence-card-title-row h3 {
+  margin: 0;
+}
+
+.arena-shell-investigate .evidence-card-title-row span {
+  color: var(--workflow-muted);
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.arena-shell-investigate .relation-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 2px;
+}
+
+.arena-shell-investigate .relation-list span {
+  background: rgba(251, 250, 247, 0.68);
+  border: 1px solid var(--workflow-border);
+  border-radius: 999px;
+  color: var(--workflow-muted);
+  font-size: 11px;
+  font-weight: 720;
+  padding: 6px 9px;
+}
+
+.arena-shell-investigate .rating-control {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  margin-top: 0;
+}
+
+.arena-shell-investigate .rating-button {
+  background: rgba(251, 250, 247, 0.74);
+  border: 1px solid var(--workflow-border);
+  border-radius: 12px;
+  color: var(--workflow-ink);
+  font-size: 12px;
+  font-weight: 760;
+  min-height: 40px;
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.arena-shell-investigate .duel-context-row,
+.arena-shell-investigate .impostor-context-row,
+.arena-shell-investigate .verdict-context-row {
+  grid-template-columns: minmax(210px, 0.42fr) minmax(0, 1fr);
+}
+
+.arena-shell-investigate .duel-grid {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  position: static;
+}
+
+.arena-shell-investigate .duel-grid::before {
+  display: none;
+}
+
+.arena-shell-investigate .duel-card {
+  min-height: 190px;
+  position: relative;
+  z-index: auto;
+}
+
+.arena-shell-investigate .duel-card.is-selected {
+  box-shadow: none;
+}
+
+.arena-shell-investigate .duel-card strong {
+  font-size: 18px;
+  margin-top: 14px;
+}
+
+.arena-shell-investigate .duel-card em {
+  background: var(--workflow-panel);
+  border: 1px solid var(--workflow-border);
+  border-radius: 999px;
+  color: var(--workflow-ink);
+  display: inline-flex;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 760;
+  margin-top: 0;
+  padding: 5px 8px;
+}
+
+.arena-shell-investigate .reason-panel {
+  background: var(--workflow-panel);
+  border: 1px solid var(--workflow-border);
+  border-radius: 18px;
+  margin-top: 14px;
+  padding: 16px;
+}
+
+.arena-shell-investigate .impostor-layout {
+  grid-template-columns: minmax(420px, 1fr) minmax(280px, 0.78fr);
+}
+
+.arena-shell-investigate .session-orbit {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(95, 111, 82, 0.08), transparent 30%),
+    var(--workflow-panel);
+  border: 1px solid var(--workflow-border);
+  border-radius: 20px;
+  min-height: clamp(400px, 46svh, 520px);
+  overflow: hidden;
+  position: relative;
+}
+
+.arena-shell-investigate .session-orbit::before {
+  border-color: rgba(50, 48, 47, 0.12);
+  height: 68%;
+  left: 16%;
+  top: 15%;
+  width: 68%;
+}
+
+.arena-shell-investigate .orbit-core {
+  background: var(--workflow-surface);
+  border: 1px solid var(--workflow-border);
+  color: var(--workflow-muted);
+  height: 132px;
+  width: 132px;
+}
+
+.arena-shell-investigate .session-orbit-card {
+  background: rgba(251, 250, 247, 0.94);
+  border: 1px solid var(--workflow-border);
+  border-radius: 16px;
+  box-shadow: 0 6px 8px rgba(50, 48, 47, 0.05);
+  color: var(--workflow-ink);
+  padding: 12px;
+  width: 164px;
+}
+
+.arena-shell-investigate .session-orbit-card strong {
+  color: var(--workflow-ink);
+  display: block;
+  font-size: 13px;
+  line-height: 1.25;
+  margin: 6px 0;
+}
+
+.arena-shell-investigate .session-orbit-card em {
+  color: var(--workflow-weak);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 780;
+}
+
+.arena-shell-investigate .session-detail-metrics {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 16px 0;
+}
+
+.arena-shell-investigate .outlier-explanation {
+  background: var(--workflow-surface);
+  border: 1px solid var(--workflow-border);
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.arena-shell-investigate .impostor-detail .primary-action {
+  margin-top: 16px;
+}
+
+.arena-shell-investigate .verdict-layout {
+  grid-template-columns: minmax(320px, 0.9fr) minmax(380px, 1.1fr);
+}
+
+.arena-shell-investigate .verdict-judgment-banner {
+  background: var(--workflow-ink);
+  border-color: var(--workflow-ink);
+  color: var(--workflow-surface);
+}
+
+.arena-shell-investigate .verdict-judgment-banner span,
+.arena-shell-investigate .verdict-judgment-banner p {
+  color: rgba(251, 250, 247, 0.72);
+}
+
+.arena-shell-investigate .verdict-judgment-banner strong {
+  color: var(--workflow-surface);
+  font-size: clamp(22px, 2.2vw, 32px);
+}
+
+.arena-shell-investigate .verdict-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.arena-shell-investigate .verdict-button {
+  background: var(--workflow-surface);
+  border: 1px solid var(--workflow-border);
+  border-radius: 14px;
+  color: var(--workflow-ink);
+  font-size: 14px;
+  font-weight: 780;
+  min-height: 58px;
+  padding: 13px;
+}
+
+.arena-shell-investigate .verdict-button span {
+  display: block;
+}
+
+.arena-shell-investigate .judgment-receipt {
+  animation: receiptReveal 200ms ease-out both;
+  background: var(--workflow-surface);
+  border: 1px solid var(--workflow-border);
+  border-radius: 20px;
+  color: var(--workflow-ink);
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+}
+
+.arena-shell-investigate .receipt-header h3 {
+  color: var(--workflow-ink);
+  font-size: clamp(22px, 2vw, 30px);
+  font-weight: 780;
+  line-height: 1.15;
+  margin: 5px 0 0;
+}
+
+.arena-shell-investigate .receipt-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 16px;
+}
+
+.arena-shell-investigate .receipt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.arena-shell-investigate .receipt-actions button {
+  background: var(--workflow-surface);
+  color: var(--workflow-muted);
+}
+
+.arena-shell-investigate .receipt-actions button:hover {
+  color: var(--workflow-ink);
+}
+
+.arena-shell-investigate .investigation-cockpit {
+  background: rgba(251, 250, 247, 0.82);
+  border: 1px solid var(--workflow-border);
+  border-radius: 20px;
+  box-shadow: none;
+  color: var(--workflow-ink);
+  gap: 12px;
+  height: auto;
+  max-height: none;
+  overflow: visible;
+  padding: 16px;
+  position: sticky;
+  top: 14px;
+}
+
+.arena-shell-investigate .cockpit-header {
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.arena-shell-investigate .cockpit-header h2 {
+  color: var(--workflow-ink);
+  font-size: 19px;
+  font-weight: 780;
+  line-height: 1.2;
+  margin-top: 4px;
+}
+
+.arena-shell-investigate .cockpit-stage-summary,
+.arena-shell-investigate .cockpit-claim,
+.arena-shell-investigate .cockpit-progress {
+  background: var(--workflow-surface);
+  border: 1px solid var(--workflow-border);
+  border-radius: 15px;
+  padding: 12px;
+}
+
+.arena-shell-investigate .cockpit-stage-summary {
+  align-items: center;
+  border-bottom: 1px solid var(--workflow-border);
+  border-top: 1px solid var(--workflow-border);
+  display: flex;
+  justify-content: space-between;
+}
+
+.arena-shell-investigate .cockpit-stage-summary span,
+.arena-shell-investigate .cockpit-claim-label,
+.arena-shell-investigate .cockpit-progress span {
+  color: var(--workflow-muted);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.arena-shell-investigate .cockpit-stage-summary strong,
+.arena-shell-investigate .cockpit-claim strong {
+  color: var(--workflow-ink);
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.arena-shell-investigate .cockpit-claim strong {
+  display: block;
+  margin-top: 6px;
+}
+
+.arena-shell-investigate .cockpit-progress-track {
+  background: rgba(50, 48, 47, 0.08);
+  border-radius: 999px;
+  height: 8px;
+  margin-top: 9px;
+  overflow: hidden;
+}
+
+.arena-shell-investigate .cockpit-progress-track span {
+  background: var(--workflow-focus);
+  display: block;
+  height: 100%;
+}
+
+.arena-shell-investigate .cockpit-metadata {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.arena-shell-investigate .cockpit-metadata div {
+  background: var(--workflow-surface);
+  border: 1px solid var(--workflow-border);
+  border-radius: 12px;
+  padding: 9px;
+}
+
+.arena-shell-investigate .cockpit-metadata dt,
+.arena-shell-investigate .cockpit-metadata dd {
+  font-size: 11px;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.arena-shell-investigate .cockpit-metadata dt {
+  color: var(--workflow-muted);
+  font-weight: 760;
+}
+
+.arena-shell-investigate .cockpit-metadata dd {
+  color: var(--workflow-ink);
+  margin-top: 3px;
+  text-align: left;
+}
+
+.arena-shell-investigate .cockpit-section {
+  display: none;
+}
+
+.arena-shell-investigate .review-drawer-scrim {
+  background: rgba(50, 48, 47, 0.36);
+}
+
+.arena-shell-investigate .review-drawer {
+  background: var(--workflow-surface);
+  border-left: 1px solid var(--workflow-border);
+  box-shadow: -8px 0 8px rgba(50, 48, 47, 0.05);
+  color: var(--workflow-ink);
+}
+
+.arena-shell-investigate .json-preview {
+  background: #262423;
+  border: 0;
+  border-radius: 16px;
+  color: #f8f4ec;
+}
+
+@keyframes workflowStageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1180px) {
+  .arena-shell-investigate .arena-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .arena-shell-investigate .stage-rail,
+  .arena-shell-investigate .investigation-cockpit {
+    position: static;
+  }
+
+  .arena-shell-investigate .stage-rail {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .arena-shell-investigate .stage-rail-button {
+    flex: 0 0 92px;
+    min-height: 50px;
+  }
+
+  .arena-shell-investigate .stage-rail-label {
+    max-width: 70px;
+  }
+
+  .arena-shell-investigate .investigation-cockpit {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  }
+
+  .arena-shell-investigate .cockpit-metrics,
+  .arena-shell-investigate .cockpit-metadata {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 860px) {
+  .arena-shell-investigate .arena-topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .arena-shell-investigate .stage-surface {
+    min-height: auto;
+  }
+
+  .arena-shell-investigate .case-file-context-row,
+  .arena-shell-investigate .blind-context-row,
+  .arena-shell-investigate .reveal-context-row,
+  .arena-shell-investigate .evidence-board-summary-row,
+  .arena-shell-investigate .duel-context-row,
+  .arena-shell-investigate .impostor-context-row,
+  .arena-shell-investigate .verdict-context-row,
+  .arena-shell-investigate .case-file-grid,
+  .arena-shell-investigate .blind-layout,
+  .arena-shell-investigate .verdict-layout,
+  .arena-shell-investigate .impostor-layout,
+  .arena-shell-investigate .reveal-vault,
+  .arena-shell-investigate .investigation-cockpit {
+    grid-template-columns: 1fr;
+  }
+
+  .arena-shell-investigate .reveal-comparison-node {
+    height: 52px;
+    width: 100%;
+  }
+
+  .arena-shell-investigate .session-orbit {
+    min-height: 520px;
+  }
+}
+
+@media (max-width: 620px) {
+  .arena-shell-investigate {
+    padding: 10px;
+  }
+
+  .arena-shell-investigate .workflow-stage-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .arena-shell-investigate .stage-rail-button {
+    flex-basis: 78px;
+  }
+
+  .arena-shell-investigate .blind-choice-grid,
+  .arena-shell-investigate .verdict-grid,
+  .arena-shell-investigate .receipt-grid,
+  .arena-shell-investigate .case-file-metrics,
+  .arena-shell-investigate .cockpit-metrics,
+  .arena-shell-investigate .cockpit-metadata,
+  .arena-shell-investigate .session-detail-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .arena-shell-investigate .evidence-board-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arena-shell-investigate * {
+    animation-duration: 1ms !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+}

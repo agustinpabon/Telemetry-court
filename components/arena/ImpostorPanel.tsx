@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 
 import { SemanticMiniMap } from "@/components/arena/SemanticMiniMap";
+import { SectionHeader, StageHeader } from "@/components/arena/WorkflowPrimitives";
 import { formatSupportScore } from "@/lib/caseMetrics";
 import type { CaseReviewState } from "@/lib/arenaReviewState";
 import type { CaseFile } from "@/lib/types";
@@ -37,17 +38,24 @@ export function ImpostorPanel({
 
   return (
     <section className="impostor-stage stage-surface" aria-label="Find the Impostor">
-      <div className="stage-heading">
-        <div>
-          <p className="eyebrow">Find the Impostor</p>
-          <h2>Which representative session least belongs?</h2>
-        </div>
-        <span className="count-pill">
-          {caseFile.representativeSessions.length} representative sessions
-        </span>
-      </div>
+      <StageHeader
+        kicker="Find the Impostor"
+        title="Which representative session least belongs?"
+        description="Test cluster purity by selecting the session with the weakest fit against the behavioural region."
+        meta={
+          <span className="count-pill">
+            {caseFile.representativeSessions.length} representative sessions
+          </span>
+        }
+      />
 
-      <SemanticMiniMap caseFile={caseFile} label="Purity context" />
+      <div className="impostor-context-row">
+        <SemanticMiniMap caseFile={caseFile} label="Purity context" />
+        <SectionHeader
+          title="Session fit map"
+          description="Outlier score and feature overlap help explain whether the cluster is coherent or mixed."
+        />
+      </div>
 
       <div className="impostor-layout">
         <div className="session-orbit" aria-label="Representative session orbit">
@@ -85,7 +93,7 @@ export function ImpostorPanel({
               <span className="mono-value">{selectedSession.id}</span>
               <h3>{selectedSession.title}</h3>
               <p>{selectedSession.summary}</p>
-              <dl>
+              <dl className="session-detail-metrics">
                 <div>
                   <dt>Feature overlap</dt>
                   <dd>{formatSupportScore(selectedSession.featureOverlap)}</dd>
@@ -108,6 +116,7 @@ export function ImpostorPanel({
             </>
           ) : (
             <>
+              <span className="mono-value">Purity test</span>
               <h3>Cluster purity unresolved</h3>
               <p>
                 The final purity judgment needs the session with the weakest feature

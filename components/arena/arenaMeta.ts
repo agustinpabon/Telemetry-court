@@ -92,6 +92,12 @@ export function getEvidenceStrengthTaxonomyLabel(
   return "CONFLICTING";
 }
 
+export function getEvidenceStrengthTaxonomyClassName(
+  label: ReturnType<typeof getEvidenceStrengthTaxonomyLabel>,
+): string {
+  return `evidence-taxonomy-label evidence-taxonomy-${label.toLowerCase()}`;
+}
+
 export const candidateSourceLabel: Record<CandidateLabelSource, string> = {
   baseline_ai: "Baseline AI",
   evidence_constrained_ai: "Evidence-constrained AI",
