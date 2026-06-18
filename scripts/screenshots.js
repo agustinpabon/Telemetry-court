@@ -23,14 +23,43 @@ async function captureScreenshots() {
   });
 
   try {
+    console.log(`Setting origin to ${baseUrl} and seeding state...`);
+    await page.goto(baseUrl, { waitUntil: "networkidle" });
+    
+    // Seed the required state to bypass route guards
+    await page.evaluate(() => {
+      const state = {
+        selectedCaseId: "case-arena-001",
+        reviewsByCase: {
+          "case-arena-001": {
+            blindChoiceId: "none-of-these",
+            aiLabelRevealed: true,
+            evidenceRatings: {},
+            labelDuelWinnerId: "candidate-0",
+            impostorSessionId: "session-5-impostor",
+            finalVerdict: "accept"
+          }
+        }
+      };
+      window.sessionStorage.setItem("telemetry-court-arena-state-v1", JSON.stringify(state));
+    });
+
     for (const route of routes) {
+      console.log(`Capturing ${route.fileName} on route ${route.path}...`);
       const url = new URL(route.path, baseUrl).toString();
 
       await page.goto(url, { waitUntil: "networkidle" });
+      
+      const currentUrl = new URL(page.url());
+      if (currentUrl.pathname !== route.path && currentUrl.pathname !== route.path + '/') {
+         console.warn(`Warning: Expected to be on ${route.path} but was redirected to ${currentUrl.pathname}`);
+      }
+
       await page.screenshot({
         path: path.join(screenshotDir, route.fileName),
         fullPage: true,
       });
+      console.log(`Saved ${route.fileName}`);
     }
   } finally {
     await browser.close();
