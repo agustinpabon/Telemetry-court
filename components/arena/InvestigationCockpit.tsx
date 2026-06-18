@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import {
   landscapeStatusMeta,
   reviewStatusLabel,
@@ -39,6 +41,11 @@ export function InvestigationCockpit({
   const status = landscapeStatusMeta[caseFile.landscapeStatus];
   const activeStageLabel =
     arenaStages.find((stage) => stage.id === activeStage)?.label ?? "Investigation";
+  const activeStageIndex = arenaStages.findIndex((stage) => stage.id === activeStage);
+  const activeStepLabel =
+    activeStageIndex >= 0
+      ? `${activeStageIndex + 1} of ${arenaStages.length} · ${activeStageLabel}`
+      : activeStageLabel;
   const primaryAction =
     activeStage === "blind_read"
       ? null
@@ -73,10 +80,16 @@ export function InvestigationCockpit({
       <div className="cockpit-header">
         <div>
           <p className="eyebrow">Case status</p>
-          <h2>{caseFile.cluster.name}</h2>
+          <h2>
+            {isBlindReadBeforeReveal
+              ? "Blind Read status"
+              : reviewState.aiLabelRevealed
+                ? `AI suggested: ${caseFile.topicLabel.name}`
+                : caseFile.cluster.name}
+          </h2>
         </div>
         {isBlindReadBeforeReveal ? (
-          <span className="status-chip status-chip-neutral">Blind read</span>
+          <span className="status-chip status-chip-neutral">Blind Read</span>
         ) : (
           <span className={status.className}>{status.label}</span>
         )}
@@ -85,7 +98,7 @@ export function InvestigationCockpit({
       {isCaseFileStage ? (
         <>
           <dl className="case-cockpit-list">
-            <SummaryLine label="Stage" value={activeStageLabel} />
+            <SummaryLine label="Step" value={activeStepLabel} />
             <SummaryLine label="AI claim" value={aiClaimState} />
             <SummaryLine
               label="Review status"
@@ -95,8 +108,8 @@ export function InvestigationCockpit({
               label="Progress"
               value={
                 reviewState.blindChoiceId
-                  ? "Blind read already started"
-                  : "Case opened / blind read not started"
+                  ? "Blind Read already started"
+                  : "Case opened / Blind Read not started"
               }
             />
           </dl>
@@ -111,27 +124,32 @@ export function InvestigationCockpit({
           </button>
         </>
       ) : isBlindReadBeforeReveal ? (
-        <dl className="case-status-list">
-          <SummaryLine label="Stage" value={activeStageLabel} />
-          <SummaryLine label="AI claim" value="Hidden" />
-          <SummaryLine
-            label="Your choice"
-            value={blindChoice?.label ?? "Not selected yet"}
-          />
-          <SummaryLine
-            label="Next step"
-            value={
-              blindChoice
-                ? "Reveal the AI label"
-                : "Choose an interpretation to reveal AI label"
-            }
-          />
-        </dl>
+        <>
+          <dl className="case-status-list">
+            <SummaryLine label="Step" value={activeStepLabel} />
+            <SummaryLine label="AI claim" value="Hidden" />
+            <SummaryLine
+              label="Your interpretation"
+              value={blindChoice?.label ?? "Not selected"}
+            />
+            <SummaryLine
+              label="Next"
+              value={blindChoice ? "Reveal the AI label" : "Choose an interpretation"}
+            />
+          </dl>
+          <ul className="cockpit-checklist" aria-label="Blind Read readiness">
+            <ChecklistItem complete>AI claim hidden</ChecklistItem>
+            <ChecklistItem complete>Evidence visible</ChecklistItem>
+            <ChecklistItem complete={Boolean(blindChoice)}>
+              {blindChoice ? "Interpretation selected" : "Interpretation not selected"}
+            </ChecklistItem>
+          </ul>
+        </>
       ) : (
         <>
           <div className="cockpit-stage-summary">
-            <span>Stage</span>
-            <strong>{activeStageLabel}</strong>
+            <span>Step</span>
+            <strong>{activeStepLabel}</strong>
           </div>
 
           <div className="cockpit-claim">
@@ -275,6 +293,21 @@ function Metric({ label, value }: { label: string; value: string }) {
       <dt>{label}</dt>
       <dd>{value}</dd>
     </div>
+  );
+}
+
+function ChecklistItem({
+  children,
+  complete = false,
+}: {
+  children: ReactNode;
+  complete?: boolean;
+}) {
+  return (
+    <li className={complete ? "is-complete" : undefined}>
+      <span className="checklist-icon" aria-hidden="true" />
+      <span>{children}</span>
+    </li>
   );
 }
 

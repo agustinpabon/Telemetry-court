@@ -50,8 +50,8 @@ export function AiRevealPanel({
           <strong>
             {revealed
               ? agrees
-                ? "Blind read aligns with the model."
-                : "Blind read and model claim diverge."
+                ? "Blind Read aligns with the model."
+                : "Blind Read and model claim diverge."
               : "AI claim remains sealed."}
           </strong>
           <p>{getBlindAgreementCopy(blindChoice?.label, caseFile)}</p>

@@ -7,7 +7,7 @@ import type {
 import type { EvidenceArenaReview } from "@/lib/exportReview";
 
 export const arenaStages = [
-  { id: "landscape", label: "Evidence landscape" },
+  { id: "landscape", label: "Landscape" },
   { id: "case_file", label: "Case File" },
   { id: "blind_read", label: "Blind Read" },
   { id: "ai_reveal", label: "AI Reveal" },
@@ -208,10 +208,13 @@ export function getReviewCompletion(
   evidenceRatings: Record<string, EvidenceRating>,
   caseFile: CaseFile,
 ): number {
+  void evidenceRatings;
+  const userEvidenceRatings = reviewState.evidenceRatings ?? {};
+
   return [
     reviewState.blindChoiceId,
     reviewState.aiLabelRevealed,
-    Object.keys(evidenceRatings).length >= caseFile.evidenceItems.length,
+    Object.keys(userEvidenceRatings).length >= caseFile.evidenceItems.length,
     reviewState.labelDuelWinnerId,
     reviewState.impostorSessionId,
     reviewState.finalVerdict,
@@ -223,12 +226,15 @@ export function getStageCompletionMap(
   reviewState: CaseReviewState,
   evidenceRatings: Record<string, EvidenceRating>,
 ): Record<ArenaStage, boolean> {
+  void evidenceRatings;
+  const userEvidenceRatings = reviewState.evidenceRatings ?? {};
+
   return {
     landscape: true,
     case_file: true,
     blind_read: Boolean(reviewState.blindChoiceId),
     ai_reveal: Boolean(reviewState.aiLabelRevealed),
-    evidence_board: Object.keys(evidenceRatings).length >= caseFile.evidenceItems.length,
+    evidence_board: Object.keys(userEvidenceRatings).length >= caseFile.evidenceItems.length,
     label_duel: Boolean(reviewState.labelDuelWinnerId),
     impostor: Boolean(reviewState.impostorSessionId),
     verdict: Boolean(reviewState.finalVerdict),
