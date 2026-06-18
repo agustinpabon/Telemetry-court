@@ -2,258 +2,201 @@
 
 ## Current Status
 
-Telemetry Court is a frontend-first prototype for checking whether AI-generated telemetry cluster labels and explanations are supported by evidence.
+Telemetry Court is a frontend-first Evidence Arena prototype using Next.js, TypeScript, Tailwind, and local synthetic fixture data.
 
-The repo currently has:
+Core product line:
 
-- Product, architecture, data model, design system, workflow, and commit-standard documentation.
-- A Next.js App Router prototype using synthetic sample data.
-- A canonical runtime path for claim-to-evidence links through `evidenceRelations`.
-- Shared case metrics helpers and focused unit coverage.
-- No backend, authentication, live AI generation, telemetry ingestion, or production data handling.
+```text
+AI names the pattern. Humans test the evidence.
+```
 
-Current execution focus: polish the static evidence-review MVP so a reviewer can open one case, inspect the generated label and explanation, review each claim, inspect linked evidence, understand support status, and decide whether to accept or reject the label.
+The old passive approve/reject label-validator MVP is superseded. Claim/evidence inspection remains central, but it now lives inside a broader interactive investigation workflow.
+
+## Core Product Flow
+
+```text
+Telemetry clusters
+-> AI-generated interpretation
+-> evidence-first investigation
+-> structured human verdict
+-> evaluation data for better prompts, labels, embeddings, and cluster quality
+```
+
+## Active Vertical Slice
+
+The current app should let a user:
+
+1. Open a telemetry landscape.
+2. Select a behavioural region / case.
+3. Inspect case context and evidence.
+4. Make a blind interpretation from structured options before seeing the AI label.
+5. Reveal the AI label.
+6. Classify evidence cards.
+7. Compare candidate labels in a label duel.
+8. Pick an impostor / outlier session.
+9. Select structured failure modes and a final verdict.
+10. Export or view structured review JSON.
+
+The happy path must not require typed text. Free text can exist later only as optional expert annotation.
 
 ## Work Tracks
 
-### UI / UX
+### Product / UX
 
-Make the product understandable, calm, accessible, and easy to scan. If only the builders can read it, the tool is not done.
+Make the arena investigative, calm, credible, and structured-choice first.
 
-### Telemetry / Data
+### Evidence Model
 
-Prepare clusters, evidence, labels, fixtures, and adapters that make telemetry-like data usable without introducing real or sensitive telemetry into the repo.
+Keep claims, evidence items, evidence relations, support scores, candidate labels, representative sessions, evidence classifications, failure modes, and verdicts inspectable and exportable.
 
-### AI Agents
+### Synthetic Data
 
-Define interpretation-agent contracts that cite sources, expose uncertainty, extract claims, and ask for proof rather than merely generating plausible labels.
+Maintain safe local cases that demonstrate supported labels, overclaims, broad labels, impure clusters, and correct uncertainty.
 
-### Scoring / Evaluation
+### Scientific Review Data
 
-Define and test the rubric for correctness, grounding, usefulness, support strength, contradiction, missing evidence, and confidence.
+Make review JSON useful as evaluation data for labels, prompts, evidence packets, embeddings, and cluster quality.
 
-### Backend / Platform
+### Future Import / Platform
 
-Connect the workflow through storage, APIs, import/export boundaries, CI, evaluation runs, and fast iteration only when the static workflow has earned that complexity.
-
-### Security / Governance
-
-Keep data where it belongs: synthetic or research-grade, auditable, explicit about limitations, and not production-risky.
+After the static arena is credible, define import/export boundaries for approved upstream artifacts from systems such as Toponymy-style naming workflows and DataMapPlot-style landscape outputs.
 
 ## Milestone Overview
 
 | Milestone | Status | Goal |
 |---|---|---|
-| Milestone 0 — Foundation And Agent Discipline | Mostly complete | Make the repo safe for AI-assisted development before building more product surface. |
-| Milestone 1 — Polished Static Evidence Review MVP | Active | Turn the current static prototype into a clean, usable evidence-review product without backend, auth, live AI, or live telemetry ingestion. |
-| Milestone 2 — Evidence Integrity And Scoring Evaluation | Planned | Make the evidence/scoring layer harder to break and easier to explain. |
-| Milestone 3 — Telemetry And Data Adapter MVP | Planned | Define how real or semi-real telemetry would enter Telemetry Court without building a full ingestion platform yet. |
-| Milestone 4 — AI Agent Interpretation Loop | Planned | Define how an AI-generated label/explanation becomes claims that must be proven. |
-| Milestone 5 — Backend And Platform Readiness | Planned | Prepare for persistence, CI, import/export boundaries, and repeatable workflows without prematurely building a full backend. |
-| Milestone 6 — Security, Governance, And v0.1 Release | Planned | Make the public demo safe, honest, auditable, and release-ready. |
+| Milestone 0 — Evidence Arena Pivot Stabilization | Active | Stabilize the pivot, remove outdated framing, and ensure docs/tests/agents agree on the new direction. |
+| Milestone 1 — Polished Static Evidence Arena MVP | Active next | Make the synthetic vertical slice demo-ready and credible. |
+| Milestone 2 — Scientific Review Data Model | Planned | Make human review output useful as evaluation data, not just UI state. |
+| Milestone 3 — Telemetry Map + Case Exploration | Planned | Make the landscape, clusters, uncertainty, neighboring regions, and case navigation more informative. |
+| Milestone 4 — Pipeline Integration Readiness | Planned | Prepare import/export boundaries for Toponymy, DataMapPlot, generated cluster labels, and real telemetry-derived artifacts without requiring restricted data. |
+| Milestone 5 — Advanced Evidence Arena | Planned | Model debate, cross-examination, counterfactual map lab, live jury/demo mode, and research-grade interaction experiments. |
 
-## Milestone 0 — Foundation And Agent Discipline
-
-### Status
-
-Mostly complete.
+## Milestone 0 — Evidence Arena Pivot Stabilization
 
 ### Goal
 
-Make the repo safe for AI-assisted development before building more product surface.
+Stabilize the pivot, remove outdated framing, ensure docs/tests/agents agree on the new direction.
 
-### Completed Foundation Work
+### Immediate Issues
 
-- Repository context and agent instructions.
-- Product direction and non-goals.
-- Architecture notes.
-- Canonical data model documentation.
-- Runtime case model alignment.
-- Case metrics helpers.
-- Case metrics tests.
-- Canonical evidence relations.
-- Evidence-first design system documentation.
-- High-trust fintech design reference with legal-safe boundaries.
-- Development workflow and commit standards.
-- Pull request template and AI changelog practice.
+- `docs: remove superseded label-validator framing`
+- `test: cover evidence arena happy path`
+- `chore: commit and document evidence arena pivot`
 
-### Definition of Done
+### Definition Of Done
 
-- Agents know what Telemetry Court is and is not.
-- Product, model, architecture, design, and workflow docs exist.
-- Claim-to-evidence linking has one canonical relationship path.
-- Checks can be run consistently with `npm test`, `npm run lint`, and `npm run build`.
-- Future work can be scoped as small, reviewable issues.
+- Product docs and agent docs consistently describe Telemetry Court as an Evidence Arena.
+- Historical approve/reject-only language is preserved only as superseded context.
+- Tests protect the current structured-choice happy path.
+- Changelog and handoff material clearly explain the pivot and validation status.
 
-## Milestone 1 — Polished Static Evidence Review MVP
-
-### Status
-
-Active.
+## Milestone 1 — Polished Static Evidence Arena MVP
 
 ### Goal
 
-Turn the current static prototype into a clean, usable evidence-review product without backend, auth, live AI, or live telemetry ingestion.
+Make the synthetic vertical slice demo-ready and credible.
 
-### Why This Comes Next
+### Immediate Issues
 
-The product needs to prove its core review loop before adding infrastructure. A user should be able to understand the generated label, inspect claims, see linked evidence, understand support and contradiction, and make an analyst verdict using only static sample data.
+- `ux: polish telemetry landscape as primary entry point`
+- `ux: improve case file investigation hierarchy`
+- `ux: refine blind investigation and AI reveal flow`
+- `ux: make evidence classification feel active and clear`
+- `ux: refine label duel and impostor interactions`
+- `feat: add review progress and reset/navigation controls`
+- `a11y: improve keyboard and screen reader support for structured choices`
 
-This milestone keeps the focus on the question: can AI prove what it claims?
+### Definition Of Done
 
-### Planned Issues
-
-- `style(tokens): add global Telemetry Court design tokens`
-- `style(app-shell): align app canvas and panel surfaces`
-- `style(claim-ledger): improve claim scanning hierarchy`
-- `style(evidence-cards): clarify source, polarity, and strength`
-- `feat(claim-selection): select a claim and highlight linked evidence`
-- `feat(evidence-filtering): filter evidence through canonical relations`
-- `test(render): add smoke coverage for core case review flow`
-
-### Definition of Done
-
-- The static app feels calm, spacious, and evidence-first.
-- Global visual tokens exist and are used by follow-up styling work.
-- Claims are easy to scan by text, status, score, and linked evidence.
-- Evidence cards clearly show source, polarity, strength, and relation explanation.
-- A reviewer can select a claim and see related evidence without relying on color alone.
-- Evidence filtering uses canonical `evidenceRelations`.
-- The core case review language has lightweight render or smoke coverage.
+- The homepage starts with a telemetry landscape, not a form.
+- Five synthetic cases are available and credible as demo data.
+- Case files clearly distinguish context, claims, evidence, sessions, and uncertainty.
+- The reviewer can complete the full workflow without typing.
+- Evidence ratings, label duel, impostor selection, failure modes, verdict, and export feel connected.
+- Structured choice controls are accessible by keyboard and screen reader.
 - `npm test`, `npm run lint`, and `npm run build` pass.
-- No backend, live AI, auth, real telemetry, or dependency expansion is introduced.
 
-## Milestone 2 — Evidence Integrity And Scoring Evaluation
-
-### Goal
-
-Make the evidence/scoring layer harder to break and easier to explain.
-
-### Candidate Issues
-
-- `model(case-integrity): validate claim-evidence relation completeness`
-- `test(case-integrity): cover orphan claims and orphan evidence`
-- `docs(scoring): define support scoring rubric`
-- `model(scoring): add evidence strength aggregation helper`
-- `feat(export): export case summary as markdown or JSON`
-
-### Definition of Done
-
-- Invalid or incomplete claim-evidence relationships are detectable.
-- Orphan claims and orphan evidence are covered by tests or validation helpers.
-- The scoring rubric explains support, weak support, contradiction, unsupported claims, and insufficient evidence.
-- Evidence strength aggregation is deterministic and easy to inspect.
-- Exported summaries preserve claims, evidence, scores, uncertainty, and verdicts.
-
-## Milestone 3 — Telemetry And Data Adapter MVP
+## Milestone 2 — Scientific Review Data Model
 
 ### Goal
 
-Define how real or semi-real telemetry would enter Telemetry Court without building a full ingestion platform yet.
+Make the human review output useful as evaluation data, not just UI state.
 
-### Candidate Issues
+### Immediate Issues
 
-- `docs(adapter): define Telemetry Court input contract`
-- `model(adapter): define imported cluster interpretation schema`
-- `data(fixtures): add imported cluster case fixture`
-- `test(fixtures): validate imported case fixture shape`
-- `docs(toponymy): document Toponymy handoff assumptions`
+- `schema: formalize structured review export`
+- `docs: define evaluation meaning of each verdict and failure mode`
 
-### Definition of Done
+### Candidate Later Issue
 
-- A documented input contract explains what upstream systems must provide.
-- Imported cluster interpretation shape maps cleanly into the case model.
-- Fixtures remain synthetic and safe.
-- Fixture validation catches obvious shape errors.
-- Toponymy handoff assumptions are documented without adding a hard dependency.
+- `feat: add local review persistence`
 
-## Milestone 4 — AI Agent Interpretation Loop
+### Definition Of Done
 
-### Goal
+- Review export schema is documented, versioned, and tested.
+- Export includes reviewer choices, evidence ratings, label duel result, impostor selection, failure modes, verdict, timestamps, and version metadata.
+- Verdicts and failure modes have clear evaluation meaning.
+- The docs explain how outputs can support prompt, label, embedding, evidence-packet, and cluster-quality evaluation.
 
-Define how an AI-generated label/explanation becomes claims that must be proven.
-
-### Candidate Issues
-
-- `docs(ai-contract): define AI interpretation output contract`
-- `model(ai-output): define generated claim schema`
-- `data(ai-fixture): add mock AI interpretation fixture`
-- `docs(prompts): add claim extraction prompt template`
-- `docs(prompts): add evidence-grounding critique prompt template`
-- `test(ai-output): handle malformed AI output`
-
-### Definition of Done
-
-- AI output contracts distinguish label, explanation, claims, uncertainty, and required evidence.
-- Generated claims have a schema that can be validated before review.
-- Mock AI fixtures remain clearly synthetic.
-- Prompt templates ask for grounded claims and evidence critique.
-- Malformed AI output is handled explicitly instead of silently becoming trusted evidence.
-
-## Milestone 5 — Backend And Platform Readiness
+## Milestone 3 — Telemetry Map + Case Exploration
 
 ### Goal
 
-Prepare for persistence, CI, import/export boundaries, and repeatable workflows without prematurely building a full backend.
+Make the landscape, clusters, uncertainty, neighboring regions, and case navigation more informative.
 
-### Candidate Issues
+### Candidate Work
 
-- `chore(ci): add GitHub Actions for test lint build`
-- `docs(platform): document persistence options`
-- `feat(import-export): add local case import export boundary`
-- `refactor(case-loading): add case loading abstraction`
-- `fix(case-loading): handle invalid case files safely`
+- Improve cluster neighborhood explanations.
+- Show uncertainty and model agreement without dashboard clutter.
+- Add safer case navigation and review-state scanning.
+- Explore DataMapPlot-style import assumptions only after a safe contract exists.
 
-### Definition of Done
-
-- CI runs the standard checks.
-- Persistence options are documented with tradeoffs and non-goals.
-- Local import/export boundaries are explicit and safe.
-- Case loading has a narrow abstraction that does not force a backend.
-- Invalid case files fail safely and explain what went wrong.
-
-## Milestone 6 — Security, Governance, And v0.1 Release
+## Milestone 4 — Pipeline Integration Readiness
 
 ### Goal
 
-Make the public demo safe, honest, auditable, and release-ready.
+Prepare import/export boundaries for Toponymy, DataMapPlot, generated cluster labels, and real telemetry-derived artifacts without requiring real restricted data.
 
-### Candidate Issues
+### Candidate Work
 
-- `docs(data-policy): add telemetry sample handling policy`
-- `docs(security): define security boundaries`
-- `docs(audit): document audit-trail concept`
-- `data(samples): review sample data for sensitive content`
-- `docs(release): add v0.1 release checklist`
-- `docs(readme): add demo walkthrough`
-- `docs(release): prepare v0.1 release notes`
+- Define the approved evidence-packet input contract.
+- Define generated-label and generated-claim contracts.
+- Document Toponymy handoff assumptions using only the official repository as source of truth.
+- Add fixture validation for imported local JSON.
+- Keep real restricted telemetry out of the repo.
 
-### Definition of Done
+## Milestone 5 — Advanced Evidence Arena
 
-- Data policy clearly prohibits secrets, customer data, and real incident claims in sample fixtures.
-- Security boundaries explain what the demo does and does not protect.
-- Audit-trail concepts are documented before persistence is added.
-- Sample data has been reviewed for sensitive content.
-- Release checklist and notes are ready for a public v0.1 demo.
-- README explains the demo honestly without overclaiming product maturity.
+### Goal
+
+Model debate, cross-examination, counterfactual map lab, live jury/demo mode, and research-grade interaction experiments.
+
+### Candidate Work
+
+- Model-vs-model label debate.
+- Cross-examination prompts tied to evidence cards.
+- Counterfactual map lab for cluster split/merge experiments.
+- Live jury/demo mode for workshops.
+- Research-grade interaction experiments around anchoring, uncertainty, and evidence quality.
 
 ## Issue Creation Rule
 
-Only create detailed GitHub issues for the current active milestone and the next one when the current milestone is nearly complete.
-
-Do not create every candidate issue as a GitHub issue up front. Candidate issues are planning inventory, not execution commitments.
+Create only a small immediate batch for the active milestone and the nearest follow-up. Do not turn every future idea into a GitHub issue. Candidate work remains planning inventory until it is close enough for execution.
 
 ## Product Guardrails
 
-- Telemetry Court validates AI-generated interpretations; it is not primarily a label generator.
+- Telemetry Court is an evidence-first investigation environment, not a chatbot wrapper.
+- It is not a SIEM, SOC dashboard, threat-intelligence dashboard, or cyberpunk visualization.
+- It is not just an approve/reject label validator.
 - Every generated claim must be inspectable.
-- Every claim should link to evidence or explicitly say evidence is missing.
-- Distinguish supported, weakly supported, contradicted, unsupported, and insufficient-evidence claims.
+- Every evidence card should be classifiable as supports, weak support, irrelevant/noise, contradicts, or needs context.
+- Distinguish supported, weakly supported, contradicted, unsupported, overclaimed, impure, and uncertain states.
 - Do not hide uncertainty.
 - Do not invent evidence.
+- Do not require typing for the core workflow.
 - Do not introduce real telemetry, secrets, customer data, or incident claims.
-- Do not turn the product into a SIEM, chatbot, threat-intelligence dashboard, or cyberpunk SOC interface.
-- Visual work must support evidence inspection and follow `docs/DESIGN_SYSTEM.md`.
+- Visual work must follow `docs/DESIGN_SYSTEM.md` and support evidence inspection.
 
 ## Checks Required Before Closing Issues
 
@@ -263,4 +206,4 @@ Do not create every candidate issue as a GitHub issue up front. Candidate issues
 - Documentation updated when product, model, architecture, workflow, design, test, or behavior context changes.
 - PR description follows `.github/pull_request_template.md`.
 - UI changes include screenshots or recordings.
-- Evidence-model changes explain claim, evidence, relation, score, verdict, and audit impact.
+- Evidence-model changes explain claim, evidence, relation, score, verdict, review-data, and audit impact.

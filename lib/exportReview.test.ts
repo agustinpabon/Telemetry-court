@@ -6,6 +6,7 @@ import {
   buildReviewResultExport,
   getReviewResultExportFilename,
   serializeReviewResultExport,
+  type EvidenceArenaReview,
 } from "@/lib/exportReview";
 
 test("review result export preserves the selected case evidence trail", () => {
@@ -55,7 +56,37 @@ test("serialized review export is readable JSON with a stable filename", () => {
   });
   const serializedExport = serializeReviewResultExport(exportResult);
 
-  assert.equal(getReviewResultExportFilename(caseFile), "case-sample-002-review-result.json");
+  assert.equal(getReviewResultExportFilename(caseFile), "case-arena-002-review-result.json");
   assert.equal(serializedExport.endsWith("\n"), true);
   assert.deepEqual(JSON.parse(serializedExport), exportResult);
+});
+
+test("arena review export preserves structured reviewer choices", () => {
+  const caseFile = sampleCases[0];
+  const arenaReview: EvidenceArenaReview = {
+    blindChoiceId: "routine-iam-provisioning",
+    blindChoiceLabel: "Routine IAM role provisioning",
+    aiLabel: caseFile.topicLabel.name,
+    blindChoiceAgreesWithAi: false,
+    labelDuelWinnerId: "label-iam-constrained",
+    labelDuelWinnerLabel: "Routine IAM role provisioning",
+    duelReasons: ["less_overclaimed", "missing_evidence"],
+    evidenceRatings: {
+      "iam-e-01": "weak_support",
+      "iam-e-02": "contradicts_label",
+    },
+    impostorSessionId: "iam-s-04",
+    impostorSessionTitle: "Cross-account PassRole probe",
+    impostorExplanation: "Lowest feature overlap and highest outlier score.",
+    failureModes: ["missing_evidence"],
+    finalVerdict: "unsupported_overclaimed",
+  };
+  const exportResult = buildReviewResultExport({
+    caseFile,
+    exportTimestamp: "2026-06-13T14:00:00.000Z",
+    arenaReview,
+  });
+
+  assert.deepEqual(exportResult.arenaReview, arenaReview);
+  assert.equal(exportResult.arenaReview?.aiLabel, "Suspicious IAM privilege escalation");
 });

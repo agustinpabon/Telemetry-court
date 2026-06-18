@@ -86,11 +86,51 @@ function createCaseFile({
 } = {}): CaseFile {
   return {
     id,
+    dataset: "Synthetic test dataset",
+    reviewStatus: "unreviewed",
+    landscapeStatus: "uncertain",
+    modelAgreement: 0,
+    evidenceStrength: 0,
+    uncertainty: 1,
+    mapPosition: { x: 50, y: 50 },
+    topFeatures: [],
+    riskFlags: [],
+    nearestNeighbor: {
+      clusterId: "cluster-neighbour",
+      label: "Synthetic neighbour",
+      distance: 0.5,
+      note: "Synthetic neighbour note",
+    },
     cluster: {
       id: "cluster-1",
       name: "Synthetic cluster",
       source: "sample",
     },
+    blindInterpretationOptions: [],
+    candidateLabels: [
+      {
+        id: "label-candidate-1",
+        source: "baseline_ai",
+        label: "Synthetic label",
+        rationale: "Synthetic rationale",
+        supportEstimate: 0.5,
+      },
+    ],
+    seededBestLabelId: "label-candidate-1",
+    seededImpostorSessionId: "session-1",
+    representativeSessions: [
+      {
+        id: "session-1",
+        title: "Synthetic session",
+        principal: "synthetic-principal",
+        timestamp: "2026-06-11T00:00:00Z",
+        featureOverlap: 0.5,
+        outlierScore: 0.5,
+        summary: "Synthetic session summary",
+      },
+    ],
+    failureModes: [],
+    defaultEvidenceRatings: {},
     topicLabel: {
       id: "label-1",
       clusterId: "cluster-1",
@@ -249,24 +289,24 @@ test("primary evidence polarity handles support, contradiction, neutral, and emp
 
 test("cluster and claim evidence lookups return matching domain records and empty arrays for missing ids", () => {
   const iamReviewCase = sampleCases[0];
-  const reviewClaims = getClaimsForCluster(iamReviewCase, "cluster-017");
-  const claimEvidence = getEvidenceForClaim(iamReviewCase, "claim-002");
-  const claimEvidenceIds = getEvidenceIdsForClaim(iamReviewCase, "claim-002");
-  const claimRelations = getEvidenceRelationsForClaim(iamReviewCase, "claim-002");
+  const reviewClaims = getClaimsForCluster(iamReviewCase, "cluster-iam-029");
+  const claimEvidence = getEvidenceForClaim(iamReviewCase, "iam-c-02");
+  const claimEvidenceIds = getEvidenceIdsForClaim(iamReviewCase, "iam-c-02");
+  const claimRelations = getEvidenceRelationsForClaim(iamReviewCase, "iam-c-02");
 
   assert.equal(reviewClaims.length, 3);
   assert.deepEqual(
     reviewClaims.map((claim) => claim.id),
-    ["claim-001", "claim-002", "claim-003"],
+    ["iam-c-01", "iam-c-02", "iam-c-03"],
   );
   assert.deepEqual(
     claimEvidence.map((item) => item.id),
-    ["evidence-002", "evidence-003"],
+    ["iam-e-02", "iam-e-03"],
   );
-  assert.deepEqual(claimEvidenceIds, ["evidence-002", "evidence-003"]);
+  assert.deepEqual(claimEvidenceIds, ["iam-e-02", "iam-e-03"]);
   assert.deepEqual(
     claimRelations.map((relation) => relation.evidenceId),
-    ["evidence-002", "evidence-003"],
+    ["iam-e-02", "iam-e-03"],
   );
   assert.deepEqual(getClaimsForCluster(iamReviewCase, "missing-cluster"), []);
   assert.deepEqual(getEvidenceForClaim(iamReviewCase, "missing-claim"), []);
@@ -346,9 +386,9 @@ test("evidence relations are the only source of truth for claim-to-evidence link
 
 test("relations for evidence are shared for polarity and evidence-card style views", () => {
   const caseFile = sampleCases[1];
-  const relations = getRelationsForEvidence(caseFile, "evidence-101");
+  const relations = getRelationsForEvidence(caseFile, "ps-e-04");
 
-  assert.deepEqual(relations.map((relation) => relation.claimId), ["claim-102"]);
+  assert.deepEqual(relations.map((relation) => relation.claimId), ["ps-c-03"]);
   assert.equal(getPrimaryEvidencePolarity(relations), "contradicts");
   assert.deepEqual(getRelationsForEvidence(caseFile, "missing-evidence"), []);
 });

@@ -3,7 +3,8 @@ import {
   getClaimSupportScore,
   getEvidenceIdsForClaim,
 } from "@/lib/caseMetrics";
-import type { CaseFile, Claim, SupportStatus } from "@/lib/types";
+import { supportStatusMeta } from "@/lib/supportStatusMeta";
+import type { CaseFile, Claim } from "@/lib/types";
 
 type ClaimLedgerProps = {
   caseFile: CaseFile;
@@ -11,32 +12,6 @@ type ClaimLedgerProps = {
   selectedClaimId?: string;
   onSelectClaim: (claimId: string) => void;
   onClearClaim: () => void;
-};
-
-const statusMeta: Record<
-  SupportStatus,
-  { label: string; className: string }
-> = {
-  supported: {
-    label: "Supported",
-    className: "bg-[var(--color-supported-soft)] text-[var(--color-supported)]",
-  },
-  weakly_supported: {
-    label: "Weakly supported",
-    className: "bg-[var(--color-uncertain-soft)] text-[var(--color-uncertain)]",
-  },
-  contradicted: {
-    label: "Contradicted",
-    className: "bg-[var(--color-unsupported-soft)] text-[var(--color-unsupported)]",
-  },
-  unsupported: {
-    label: "Unsupported",
-    className: "bg-[var(--color-unsupported-soft)] text-[var(--color-unsupported)]",
-  },
-  insufficient_evidence: {
-    label: "Insufficient evidence",
-    className: "bg-[var(--color-uncertain-soft)] text-[var(--color-uncertain)]",
-  },
 };
 
 export function ClaimLedger({
@@ -74,7 +49,7 @@ export function ClaimLedger({
         <div className="mt-5 space-y-3">
           {claims.map((claim) => {
             const isSelected = claim.id === selectedClaimId;
-            const status = statusMeta[claim.status];
+            const status = supportStatusMeta[claim.status];
             const evidenceIds = getEvidenceIdsForClaim(caseFile, claim.id);
 
             return (
@@ -95,7 +70,7 @@ export function ClaimLedger({
                         {claim.id}
                       </span>
                       <span
-                        className={`rounded-full px-2.5 py-1 text-xs font-medium ${status.className}`}
+                        className={`rounded-full px-2.5 py-1 text-xs font-medium ${status.badgeClassName}`}
                       >
                         {status.label}
                       </span>

@@ -3,28 +3,13 @@ import {
   formatSupportScore,
   getAverageSupportScore,
 } from "@/lib/caseMetrics";
-import type { CaseFile, SupportStatus } from "@/lib/types";
+import { supportStatusMeta } from "@/lib/supportStatusMeta";
+import type { CaseFile } from "@/lib/types";
 
 type CaseSwitcherProps = {
   cases: CaseFile[];
   selectedCaseId: string;
   onSelect: (caseId: string) => void;
-};
-
-const statusLabel: Record<SupportStatus, string> = {
-  supported: "Supported",
-  weakly_supported: "Weakly supported",
-  contradicted: "Contradicted",
-  unsupported: "Unsupported",
-  insufficient_evidence: "Insufficient evidence",
-};
-
-const statusClassName: Record<SupportStatus, string> = {
-  supported: "bg-[var(--color-supported-soft)] text-[var(--color-supported)]",
-  weakly_supported: "bg-[var(--color-uncertain-soft)] text-[var(--color-uncertain)]",
-  contradicted: "bg-[var(--color-unsupported-soft)] text-[var(--color-unsupported)]",
-  unsupported: "bg-[var(--color-unsupported-soft)] text-[var(--color-unsupported)]",
-  insufficient_evidence: "bg-[var(--color-uncertain-soft)] text-[var(--color-uncertain)]",
 };
 
 export function CaseSwitcher({
@@ -54,6 +39,7 @@ export function CaseSwitcher({
         {cases.map((currentCase) => {
           const isSelected = currentCase.id === selectedCaseId;
           const caseStatus = deriveCaseSupportStatus(currentCase);
+          const status = supportStatusMeta[caseStatus];
 
           return (
             <button
@@ -71,9 +57,9 @@ export function CaseSwitcher({
                   {currentCase.cluster.id}
                 </span>
                 <span
-                  className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusClassName[caseStatus]}`}
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium ${status.badgeClassName}`}
                 >
-                  {statusLabel[caseStatus]}
+                  {status.label}
                 </span>
               </div>
               <h3 className="mt-4 text-lg font-semibold tracking-[-0.02em] text-[var(--color-ink)]">

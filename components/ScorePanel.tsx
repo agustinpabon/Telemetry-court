@@ -4,64 +4,19 @@ import {
   getAverageSupportScore,
   getClaimStatusCounts,
 } from "@/lib/caseMetrics";
-import type { CaseFile, SupportStatus } from "@/lib/types";
+import {
+  supportStatusMeta,
+  supportStatusStates,
+} from "@/lib/supportStatusMeta";
+import type { CaseFile } from "@/lib/types";
 
 type ScorePanelProps = {
   caseFile: CaseFile;
 };
 
-const statusMeta: Record<
-  SupportStatus,
-  { label: string; className: string; note: string; plainLanguage: string }
-> = {
-  supported: {
-    label: "Supported",
-    className: "text-[var(--color-supported)]",
-    note: "Evidence consistently reinforces the generated interpretation.",
-    plainLanguage:
-      "Plain-language readout: the generated meaning holds up because the strongest evidence supports the reviewable claims.",
-  },
-  weakly_supported: {
-    label: "Weakly supported",
-    className: "text-[var(--color-uncertain)]",
-    note: "Some evidence supports the interpretation, but confidence remains limited.",
-    plainLanguage:
-      "Plain-language readout: the generated meaning is plausible, but the record needs clearer support before it should be accepted as stated.",
-  },
-  contradicted: {
-    label: "Contradicted",
-    className: "text-[var(--color-unsupported)]",
-    note: "At least one evidence item directly contradicts a generated claim.",
-    plainLanguage:
-      "Plain-language readout: the generated meaning conflicts with part of the record and should not be accepted without revision.",
-  },
-  unsupported: {
-    label: "Unsupported",
-    className: "text-[var(--color-unsupported)]",
-    note: "The evidence does not adequately support the interpretation.",
-    plainLanguage:
-      "Plain-language readout: the generated meaning does not stand because the evidence does not support the story the label is telling.",
-  },
-  insufficient_evidence: {
-    label: "Insufficient evidence",
-    className: "text-[var(--color-uncertain)]",
-    note: "The record lacks enough evidence to judge the claim confidently.",
-    plainLanguage:
-      "Plain-language readout: the system should expose the gap instead of presenting the claim as proven.",
-  },
-};
-
-const statusStates: SupportStatus[] = [
-  "supported",
-  "weakly_supported",
-  "contradicted",
-  "unsupported",
-  "insufficient_evidence",
-];
-
 export function ScorePanel({ caseFile }: ScorePanelProps) {
   const caseStatus = deriveCaseSupportStatus(caseFile);
-  const currentStatus = statusMeta[caseStatus];
+  const currentStatus = supportStatusMeta[caseStatus];
   const claimStatusCounts = getClaimStatusCounts(caseFile);
 
   return (
@@ -76,7 +31,7 @@ export function ScorePanel({ caseFile }: ScorePanelProps) {
 
         <div className="rounded-[28px] border border-[var(--color-border-strong)] bg-[var(--color-panel)]/72 p-5">
           <div className="flex flex-wrap items-center gap-2">
-            {statusStates.map((state) => {
+            {supportStatusStates.map((state) => {
               const isActive = state === caseStatus;
               return (
                 <div
@@ -87,13 +42,13 @@ export function ScorePanel({ caseFile }: ScorePanelProps) {
                       : "border-[var(--color-border)] bg-transparent text-[var(--color-muted)]"
                   }`}
                 >
-                  {statusMeta[state].label}
+                  {supportStatusMeta[state].label}
                 </div>
               );
             })}
           </div>
 
-          <p className={`mt-5 text-5xl font-semibold tracking-[-0.06em] ${currentStatus.className}`}>
+          <p className={`mt-5 text-5xl font-semibold tracking-[-0.06em] ${currentStatus.textClassName}`}>
             {currentStatus.label}
           </p>
           <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">

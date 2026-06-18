@@ -2,7 +2,7 @@
 
 ## Current Repo Status
 
-Telemetry Court is currently a Next.js App Router project using TypeScript, Tailwind, and static sample data. The repository already contains frontend components, sample cases, and domain types.
+Telemetry Court is currently a Next.js App Router project using TypeScript, Tailwind, and static sample data. The repository contains frontend components, Evidence Arena sample cases, shared helpers, and domain types.
 
 There is no backend, database, authentication layer, telemetry ingestion pipeline, or Toponymy integration.
 
@@ -18,12 +18,15 @@ For the MVP, keep the architecture frontend-first:
 
 ## Frontend-First MVP Approach
 
-The first implementation phase should prove the review experience with static data before adding infrastructure. Static sample data is enough to validate the product questions:
+The current implementation phase should prove the Evidence Arena with static data before adding infrastructure. Static sample data is enough to validate the product questions:
 
-- Can a reviewer see what the AI claimed?
-- Can they inspect evidence for each claim?
-- Can they see support, contradiction, and missing evidence?
-- Can they understand why confidence was assigned?
+- Can a reviewer explore multiple behavioural regions?
+- Can they inspect a selected case file?
+- Can they make a blind interpretation before seeing the AI label?
+- Can they classify evidence cards?
+- Can they compare candidate labels?
+- Can they identify an outlier session?
+- Can they issue and export a structured verdict?
 
 ## Suggested Domain Model
 
@@ -35,6 +38,9 @@ Use the domain model in `docs/DATA_MODEL.md` as the conceptual source of truth:
 - `EvidenceItem`
 - `EvidenceRelation`
 - `SupportScore`
+- `CandidateLabel`
+- `RepresentativeSession`
+- `EvidenceArenaReview`
 - `AnalystVerdict`
 - `CaseFile`
 
@@ -43,16 +49,26 @@ Existing frontend types may evolve toward this model incrementally. Avoid broad 
 ## Data Flow
 
 ```text
-Cluster -> Topic Label -> Claims -> Evidence Items -> Scores -> Verdict
+Telemetry landscape
+-> CaseFile
+-> blind interpretation
+-> AI label reveal
+-> evidence ratings
+-> label duel
+-> impostor session
+-> structured verdict
+-> review export
 ```
 
-1. A cluster is selected for review.
-2. A generated topic label and explanation are shown.
-3. Claims are extracted or represented as reviewable assertions.
-4. Evidence items are linked to each claim.
-5. Evidence relations define polarity, strength, and explanation.
-6. Support scores summarize claim-level confidence.
-7. The analyst records or reviews a verdict.
+1. A behavioural region is selected from the landscape.
+2. The selected case file exposes cluster context, claims, evidence, candidate labels, and sessions.
+3. The reviewer makes a blind structured choice before reveal.
+4. The AI label is revealed and compared with the blind choice.
+5. Evidence cards are classified by the reviewer.
+6. Candidate labels are compared in a label duel.
+7. A representative session is selected as the likely impostor / outlier.
+8. Failure modes and final verdict are selected.
+9. The review is exported as structured JSON.
 
 ## Suggested Future Backend Boundaries
 
@@ -75,4 +91,4 @@ Do not add these boundaries until product need is clear.
 - Persistent case storage.
 - User accounts or authentication.
 - Production deployment workflow.
-- DataMapPlot-style map exploration.
+- Full DataMapPlot-style map exploration.

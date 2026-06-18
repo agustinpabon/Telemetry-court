@@ -4,17 +4,21 @@
 
 Give agents narrow, concrete tasks. Name the relevant file or product surface when possible. Tell the agent whether the task is documentation, data model, UI, or verification work.
 
-Good tasks include a clear expected output and remind the agent that Telemetry Court is an evidence-checking product, not a generic dashboard.
+Good tasks include a clear expected output and remind the agent that Telemetry Court is an Evidence Arena investigation workflow, not a generic dashboard.
 
 ## Good Task Prompt Template
 
 ```txt
 You are working on Telemetry Court.
 
-This is not a generic AI dashboard. It is an evidence-checking interface for AI-generated telemetry cluster labels.
+This is not a generic AI dashboard. It is an evidence-first investigation environment for testing AI-generated telemetry interpretations.
+
+Core line:
+AI names the pattern. Humans test the evidence.
 
 Before coding, read:
 - AGENTS.md
+- docs/PRODUCT_VISION.md
 - docs/PROJECT_CONTEXT.md
 - docs/PRODUCT_DECISIONS.md
 - docs/ARCHITECTURE.md
@@ -27,6 +31,7 @@ Constraints:
 - Make the smallest safe change.
 - Do not redesign unrelated areas.
 - Preserve Apple / Wealthsimple visual discipline.
+- Preserve the structured-choice Evidence Arena workflow.
 - Every claim must connect to evidence or explicitly show missing evidence.
 - Use existing domain model names.
 - Any factual Toponymy statement must be grounded in the official `TutteInstitute/toponymy` GitHub repository, not DeepWiki or generated summaries.
@@ -75,7 +80,7 @@ These are too broad, conflict with product direction, or risk introducing unsafe
 ## GitHub Issue Workflow
 
 - Issues should be created from `docs/ROADMAP.md`.
-- Only the active milestone should have detailed issues by default.
+- Only the active milestone and the nearest follow-up should have detailed issues by default.
 - Every issue should have a clear goal, scope, out-of-scope list, acceptance criteria, checks, and agent notes.
 - Agents should work from one issue at a time.
 - Agents should not combine issues unless explicitly asked.
@@ -105,7 +110,7 @@ Escalate gradually when:
 - A previous attempt failed.
 - The bug is ambiguous.
 - The change affects architecture or the domain model.
-- Evidence scoring logic is involved.
+- Evidence scoring or structured review export logic is involved.
 - A wrong answer would waste significant review time.
 - Security, auth, database migrations, or production bugs are in scope.
 

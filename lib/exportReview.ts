@@ -1,4 +1,26 @@
-import type { AnalystVerdict, CaseFile } from "@/lib/types";
+import type {
+  AnalystVerdict,
+  CaseFile,
+  DuelReason,
+  EvidenceRating,
+  FinalVerdict,
+} from "@/lib/types";
+
+export type EvidenceArenaReview = {
+  blindChoiceId?: string;
+  blindChoiceLabel?: string;
+  aiLabel: string;
+  blindChoiceAgreesWithAi?: boolean;
+  labelDuelWinnerId?: string;
+  labelDuelWinnerLabel?: string;
+  duelReasons: DuelReason[];
+  evidenceRatings: Record<string, EvidenceRating>;
+  impostorSessionId?: string;
+  impostorSessionTitle?: string;
+  impostorExplanation?: string;
+  failureModes: DuelReason[];
+  finalVerdict?: FinalVerdict;
+};
 
 export type ReviewResultExport = {
   exportTimestamp: string;
@@ -9,6 +31,7 @@ export type ReviewResultExport = {
   evidenceItems: CaseFile["evidenceItems"];
   evidenceRelations: CaseFile["evidenceRelations"];
   supportScores: CaseFile["supportScores"];
+  arenaReview?: EvidenceArenaReview;
   analystVerdict?: AnalystVerdict;
 };
 
@@ -40,10 +63,12 @@ export function buildAnalystVerdictForExport(
 export function buildReviewResultExport({
   caseFile,
   exportTimestamp,
+  arenaReview,
   localVerdict,
 }: {
   caseFile: CaseFile;
   exportTimestamp: string;
+  arenaReview?: EvidenceArenaReview;
   localVerdict?: LocalAnalystVerdict;
 }): ReviewResultExport {
   const analystVerdict = buildAnalystVerdictForExport(caseFile, localVerdict);
@@ -57,6 +82,7 @@ export function buildReviewResultExport({
     evidenceItems: caseFile.evidenceItems,
     evidenceRelations: caseFile.evidenceRelations,
     supportScores: caseFile.supportScores,
+    ...(arenaReview ? { arenaReview } : {}),
     ...(analystVerdict ? { analystVerdict } : {}),
   };
 }

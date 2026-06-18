@@ -1,6 +1,20 @@
 # Data Model
 
-This document defines the conceptual MVP domain model. Existing application types can evolve toward this model incrementally.
+This document defines the conceptual Evidence Arena domain model. The older claim/evidence validation model is still useful, but it now sits inside a broader case-review workflow.
+
+Current product flow:
+
+```text
+Telemetry landscape
+-> CaseFile
+-> blind interpretation
+-> AI label reveal
+-> evidence ratings
+-> label duel
+-> impostor session
+-> structured verdict
+-> review export
+```
 
 ## TypeScript-Like Pseudocode
 
@@ -27,6 +41,37 @@ type AnalystDecision =
   | "revise"
   | "reject"
   | "needs_more_review";
+
+type EvidenceRating =
+  | "supports_label"
+  | "weak_support"
+  | "irrelevant_noise"
+  | "contradicts_label"
+  | "needs_context";
+
+type CandidateLabelSource =
+  | "baseline_ai"
+  | "evidence_constrained_ai"
+  | "human_style"
+  | "uncertain_label";
+
+type DuelReason =
+  | "better_supported"
+  | "less_overclaimed"
+  | "more_specific"
+  | "too_broad"
+  | "missing_evidence"
+  | "cluster_seems_mixed";
+
+type FinalVerdict =
+  | "supported"
+  | "partially_supported"
+  | "unsupported_overclaimed"
+  | "uncertain"
+  | "cluster_impure"
+  | "needs_split"
+  | "needs_merge"
+  | "needs_better_evidence";
 
 interface Cluster {
   id: string;
@@ -85,6 +130,47 @@ interface SupportScore {
   rationale: string;
 }
 
+interface BlindInterpretationOption {
+  id: string;
+  label: string;
+  helper: string;
+}
+
+interface CandidateLabel {
+  id: string;
+  source: CandidateLabelSource;
+  label: string;
+  rationale: string;
+  supportEstimate: number;
+}
+
+interface RepresentativeSession {
+  id: string;
+  title: string;
+  principal: string;
+  timestamp: string;
+  featureOverlap: number;
+  outlierScore: number;
+  summary: string;
+  outlierReason?: string;
+}
+
+interface EvidenceArenaReview {
+  blindChoiceId?: string;
+  blindChoiceLabel?: string;
+  aiLabel: string;
+  blindChoiceAgreesWithAi?: boolean;
+  labelDuelWinnerId?: string;
+  labelDuelWinnerLabel?: string;
+  duelReasons: DuelReason[];
+  evidenceRatings: Record<string, EvidenceRating>;
+  impostorSessionId?: string;
+  impostorSessionTitle?: string;
+  impostorExplanation?: string;
+  failureModes: DuelReason[];
+  finalVerdict?: FinalVerdict;
+}
+
 interface AnalystVerdict {
   decision: AnalystDecision;
   summary: string;
@@ -95,7 +181,29 @@ interface AnalystVerdict {
 interface CaseFile {
   id: string;
   cluster: Cluster;
+  dataset: string;
+  reviewStatus: "unreviewed" | "in_review" | "needs_split" | "needs_evidence" | "reviewed";
+  landscapeStatus: "supported" | "overclaimed" | "impure" | "too_broad" | "uncertain";
+  modelAgreement: number;
+  evidenceStrength: number;
+  uncertainty: number;
+  mapPosition: { x: number; y: number };
+  topFeatures: string[];
+  riskFlags: string[];
+  nearestNeighbor: {
+    clusterId: string;
+    label: string;
+    distance: number;
+    note: string;
+  };
   topicLabel: TopicLabel;
+  blindInterpretationOptions: BlindInterpretationOption[];
+  candidateLabels: CandidateLabel[];
+  seededBestLabelId: string;
+  seededImpostorSessionId: string;
+  representativeSessions: RepresentativeSession[];
+  failureModes: DuelReason[];
+  defaultEvidenceRatings: Record<string, EvidenceRating>;
   claims: Claim[];
   evidenceItems: EvidenceItem[];
   evidenceRelations: EvidenceRelation[];
@@ -104,99 +212,22 @@ interface CaseFile {
 }
 ```
 
-## Sample JSON
+## Arena Review Export
 
-```json
-{
-  "id": "case-sample-001",
-  "cluster": {
-    "id": "cluster-017",
-    "name": "Synthetic IAM Review Cluster",
-    "description": "Synthetic cluster of read-oriented identity review activity.",
-    "source": "sample",
-    "size": 148
-  },
-  "topicLabel": {
-    "id": "label-017-a",
-    "clusterId": "cluster-017",
-    "name": "Repeated Cloud Permission Review",
-    "explanation": "This cluster appears to represent routine identity and access review activity with read-heavy permission inspection.",
-    "generatedBy": "Toponymy-style summarizer v0.4",
-    "generatedAt": "2026-06-11T14:42:00Z"
-  },
-  "claims": [
-    {
-      "id": "claim-001",
-      "clusterId": "cluster-017",
-      "topicLabelId": "label-017-a",
-      "text": "The cluster is anchored by read-oriented IAM inspection rather than mutating access changes.",
-      "status": "supported",
-      "supportScore": 0.91,
-      "rationale": "The strongest synthetic features are account enumeration and policy reads, with no matching grant or privilege-change pattern."
-    },
-    {
-      "id": "claim-002",
-      "clusterId": "cluster-017",
-      "topicLabelId": "label-017-a",
-      "text": "Nothing in the cluster departs from normal review timing and origin patterns.",
-      "status": "contradicted",
-      "supportScore": 0.28,
-      "rationale": "One synthetic exemplar includes an unusual off-hours origin that weakens the clean routine-review narrative."
-    }
-  ],
-  "evidenceItems": [
-    {
-      "id": "evidence-001",
-      "clusterId": "cluster-017",
-      "title": "Read-heavy IAM inspection features",
-      "summary": "Synthetic salient features center on ListUsers, GetPolicy, and ListAttachedUserPolicies.",
-      "sourceType": "session_feature",
-      "rawReference": "sample/features/cluster-017"
-    },
-    {
-      "id": "evidence-002",
-      "clusterId": "cluster-017",
-      "title": "Off-hours rare-region exemplar",
-      "summary": "A synthetic session occurs at 02:14 local time from a rarely seen control-plane region.",
-      "sourceType": "exemplar",
-      "rawReference": "sample/exemplars/cluster-017/session-09"
-    }
-  ],
-  "evidenceRelations": [
-    {
-      "claimId": "claim-001",
-      "evidenceId": "evidence-001",
-      "polarity": "supports",
-      "strength": "strong",
-      "explanation": "Read-oriented features directly support the inspection-workflow claim."
-    },
-    {
-      "claimId": "claim-002",
-      "evidenceId": "evidence-002",
-      "polarity": "contradicts",
-      "strength": "strong",
-      "explanation": "The off-hours rare-region exemplar contradicts the claim that timing and origin are fully normal."
-    }
-  ],
-  "supportScores": [
-    {
-      "claimId": "claim-001",
-      "value": 0.91,
-      "status": "supported",
-      "rationale": "Strong direct support from synthetic session features."
-    },
-    {
-      "claimId": "claim-002",
-      "value": 0.28,
-      "status": "contradicted",
-      "rationale": "Strong contradictory evidence from one synthetic exemplar."
-    }
-  ],
-  "analystVerdict": {
-    "decision": "revise",
-    "summary": "The label is directionally plausible, but the explanation should acknowledge the off-hours origin outlier.",
-    "reviewer": "Synthetic reviewer",
-    "reviewedAt": "2026-06-11T15:10:00Z"
-  }
-}
-```
+The review export should preserve both the case evidence trail and the reviewer's structured arena choices:
+
+- blind choice;
+- AI label;
+- blind agreement/disagreement;
+- label duel winner;
+- duel reason chips;
+- evidence ratings;
+- impostor session;
+- failure modes;
+- final verdict.
+
+Typing must not be required to produce this export.
+
+## Runtime Fixture
+
+Use `data/sampleCases.ts` as the concrete runtime fixture reference. It contains five synthetic arena cases and an integrity check for claim IDs, evidence IDs, candidate labels, seeded impostor sessions, default evidence ratings, and support scores.
