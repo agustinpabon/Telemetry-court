@@ -4,6 +4,7 @@ import {
   SectionHeader,
   StageHeader,
 } from "@/components/arena/WorkflowPrimitives";
+import { arenaStages } from "@/lib/arenaReviewState";
 import type { CaseReviewState } from "@/lib/arenaReviewState";
 import type { CaseFile } from "@/lib/types";
 
@@ -26,35 +27,22 @@ export function BlindReadPanel({
     ? reviewState.aiLabelRevealed
       ? "Next: AI Reveal"
       : "Reveal AI label"
-    : "Choose an interpretation to reveal AI label";
+    : "Choose an interpretation to continue";
 
   return (
     <section className="blind-stage stage-surface" aria-label="Blind Read">
       <StageHeader
         kicker="Blind Read"
-        title="Read the evidence first."
-        description="Choose what the behaviour supports before seeing the AI’s label."
-        meta={<span className="sealed-chip">AI claim hidden</span>}
+        title="Judge the evidence first."
+        description="Choose an independent interpretation before seeing the AI label."
       />
 
-      <nav className="blind-progress" aria-label="Case review progress">
-        <span>Case File</span>
-        <strong>Blind Read</strong>
-        <span>AI Reveal</span>
-        <span>Verdict</span>
-      </nav>
+      <BlindReadProgress />
 
       <div className="blind-context-row">
         <SealedClaimBlock
           title="AI claim hidden"
-          description="The model’s label is hidden until you submit your own interpretation."
-        />
-        <SemanticMiniMap
-          caseFile={caseFile}
-          detail="Related sessions"
-          label="Observed behaviour cluster"
-          neutral
-          showEvidenceMetric={false}
+          description="The AI label remains sealed until you choose one interpretation below."
         />
       </div>
 
@@ -64,21 +52,39 @@ export function BlindReadPanel({
             title="Evidence summary"
             description="A short read of the visible packet before any AI claim is shown."
           />
-          <div className="evidence-summary-grid">
-            {evidenceSummary.map((group) => (
-              <section className="evidence-summary-group" key={group.title}>
-                <h4>{group.title}</h4>
-                <ul>
-                  {group.items.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </section>
-            ))}
+          <div className="blind-evidence-content">
+            <div className="evidence-summary-grid">
+              {evidenceSummary.map((group) => (
+                <section className="evidence-summary-group" key={group.title}>
+                  <h4>{group.title}</h4>
+                  <p>{group.body}</p>
+                </section>
+              ))}
+            </div>
+
+            <aside className="blind-region-preview">
+              <div>
+                <span>Context preview</span>
+                <strong>Selected region</strong>
+              </div>
+              <SemanticMiniMap
+                caseFile={caseFile}
+                detail="Nearby sessions"
+                label="Selected behaviour region"
+                neutral
+                showEvidenceMetric={false}
+              />
+              <p>
+                A small locator for the selected behaviour region and nearby
+                sessions.
+              </p>
+            </aside>
           </div>
 
           <details className="technical-evidence-disclosure">
-            <summary>View technical evidence</summary>
+            <summary>
+              <span>View technical evidence</span>
+            </summary>
             <div className="evidence-preview-list">
               {caseFile.evidenceItems.map((evidence) => (
                 <div key={evidence.id} className="evidence-preview-item">
@@ -105,7 +111,9 @@ export function BlindReadPanel({
                 return (
                   <label
                     key={option.id}
-                    className={`choice-card ${isSelected ? "is-selected" : ""}`}
+                    className={`choice-card ${
+                      isSelected ? "is-selected" : ""
+                    } ${option.id === "none-of-these" ? "is-secondary-option" : ""}`}
                   >
                     <input
                       checked={isSelected}
@@ -126,6 +134,11 @@ export function BlindReadPanel({
             </div>
           </fieldset>
           <div className="blind-decision-footer">
+            {!reviewState.aiLabelRevealed ? (
+              <p className="blind-cta-note">
+                Your choice will be saved before the AI label is shown.
+              </p>
+            ) : null}
             <button
               type="button"
               className="primary-action"
@@ -143,31 +156,27 @@ export function BlindReadPanel({
 
 type EvidenceSummaryGroup = {
   title: string;
-  items: string[];
+  body: string;
 };
 
 function buildEvidenceSummary(caseFile: CaseFile): EvidenceSummaryGroup[] {
   if (caseFile.id === "case-arena-001") {
     return [
       {
-        title: "What happened",
-        items: [
-          "IAM role creation and policy attachment were observed.",
-          "Activity occurred during a daytime rollout window.",
-        ],
+        title: "Observed",
+        body: "IAM role creation and policy attachment were observed.",
       },
       {
-        title: "What limits a stronger conclusion",
-        items: [
-          "No confirmed downstream abuse was observed.",
-          "No sensitive data access was confirmed after the change.",
-        ],
+        title: "Context",
+        body: "Activity occurred during a daytime rollout window.",
       },
       {
-        title: "What remains ambiguous",
-        items: [
-          "One off-hours PassRole-like probe appears outside the rollout window.",
-        ],
+        title: "Limitations",
+        body: "No confirmed downstream abuse or sensitive data access was observed.",
+      },
+      {
+        title: "Ambiguous signal",
+        body: "One off-hours PassRole-like probe appears outside the rollout window.",
       },
     ];
   }
@@ -200,25 +209,67 @@ function buildEvidenceSummary(caseFile: CaseFile): EvidenceSummaryGroup[] {
 
   return [
     {
-      title: "What happened",
-      items:
+      title: "Observed",
+      body:
         happened.length > 0
-          ? happened
-          : [caseFile.cluster.description ?? caseFile.cluster.name],
+          ? happened[0] ?? ""
+          : caseFile.cluster.description ?? "Visible evidence describes the selected region.",
     },
     {
-      title: "What limits a stronger conclusion",
-      items:
+      title: "Context",
+      body:
+        happened.length > 1
+          ? happened[1] ?? ""
+          : "Use the visible packet only; the AI label is not part of this step.",
+    },
+    {
+      title: "Limitations",
+      body:
         limiting.length > 0
-          ? limiting
-          : ["No additional limiting evidence is attached to this sample packet."],
+          ? limiting[0] ?? ""
+          : "No additional limiting evidence is attached to this sample packet.",
     },
     {
-      title: "What remains ambiguous",
-      items:
+      title: "Ambiguous signal",
+      body:
         ambiguous.length > 0
-          ? ambiguous
-          : ["The packet still requires a reviewer choice before the AI label is shown."],
+          ? ambiguous[0] ?? ""
+          : "The packet still requires a reviewer choice before the AI label is shown.",
     },
   ];
+}
+
+function BlindReadProgress() {
+  const currentStageIndex = arenaStages.findIndex(
+    (stage) => stage.id === "blind_read",
+  );
+
+  return (
+    <nav className="blind-progress" aria-label="Blind Read progress">
+      <div className="blind-progress-summary">
+        <strong>Step 3 of 8 · Blind Read</strong>
+      </div>
+      <ol>
+        {arenaStages.map((stage, index) => {
+          const isCurrent = stage.id === "blind_read";
+          const isComplete = index < currentStageIndex;
+
+          return (
+            <li
+              key={stage.id}
+              className={`${isComplete ? "is-complete" : ""} ${
+                isCurrent ? "is-current" : ""
+              }`}
+              aria-current={isCurrent ? "step" : undefined}
+              aria-label={`${index + 1}. ${stage.label}${
+                isCurrent ? ", current step" : ""
+              }`}
+            >
+              <span aria-hidden="true" />
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
 }

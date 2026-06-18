@@ -50,7 +50,7 @@ export function getArenaStageForPathname(pathname: string): ArenaStage | null {
 }
 
 export const arenaRouteEntries = [
-  { stage: "landscape", label: "Evidence landscape", path: "/" },
+  { stage: "landscape", label: "Landscape", path: "/" },
   { stage: "case_file", label: "Case File", path: "/case-file" },
   { stage: "blind_read", label: "Blind Read", path: "/blind-read" },
   { stage: "ai_reveal", label: "AI Reveal", path: "/ai-reveal" },

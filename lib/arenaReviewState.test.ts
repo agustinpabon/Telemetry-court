@@ -69,6 +69,18 @@ test("arena reducer drives the staged structured-choice happy path", () => {
   assert.equal(evidenceRatings[evidence.id], "contradicts_label");
   assert.equal(balance.contradictory, 1);
 
+  for (const remainingEvidence of targetCase.evidenceItems.slice(1)) {
+    arenaState = arenaReducer(
+      arenaState,
+      {
+        type: "classifyEvidence",
+        evidenceId: remainingEvidence.id,
+        rating: "supports_label",
+      },
+      sampleCases,
+    );
+  }
+
   const candidate = targetCase.candidateLabels[0];
   assert.ok(candidate);
 

@@ -103,7 +103,6 @@ test("home page static review flow exposes the core Telemetry Court concepts", (
   assert.match(pageText, /Open case file/);
   assert.doesNotMatch(pageText, /Investigation Cockpit/);
   assert.doesNotMatch(pageText, /Hidden until blind read/);
-  assert.match(pageText, /Review JSON/);
   assert.match(pageText, /Case File/);
   assert.match(pageText, /Blind Read/);
   assert.match(pageText, /AI Reveal/);
@@ -264,32 +263,56 @@ test("case file region context renders a real locator for real context nodes", (
 test("blind read protects the AI judgment until the reviewer chooses", () => {
   const pageText = renderBlindReadPageText();
 
-  assert.match(pageText, /Read the evidence first\./);
+  assert.match(pageText, /Step 3 of 8 · Blind Read/);
+  assert.match(pageText, /Judge the evidence first\./);
   assert.match(
     pageText,
-    /Choose what the behaviour supports before seeing the AI’s label\./,
+    /Choose an independent interpretation before seeing the AI label\./,
   );
+  assert.match(pageText, /Landscape/);
+  assert.match(pageText, /Case File/);
+  assert.match(pageText, /Blind Read/);
+  assert.match(pageText, /AI Reveal/);
+  assert.match(pageText, /Evidence Board/);
+  assert.match(pageText, /Label Duel/);
+  assert.match(pageText, /Impostor/);
+  assert.match(pageText, /Verdict/);
   assert.match(pageText, /AI claim hidden/);
   assert.match(
     pageText,
-    /The model’s label is hidden until you submit your own interpretation\./,
+    /The AI label remains sealed until you choose one interpretation below\./,
+  );
+  assert.match(pageText, /Selected behaviour region/);
+  assert.match(
+    pageText,
+    /A small locator for the selected behaviour region and nearby sessions\./,
   );
   assert.match(pageText, /Evidence summary/);
-  assert.match(pageText, /What happened/);
-  assert.match(pageText, /What limits a stronger conclusion/);
-  assert.match(pageText, /What remains ambiguous/);
+  assert.match(pageText, /Observed/);
+  assert.match(pageText, /Context/);
+  assert.match(pageText, /Limitations/);
+  assert.match(pageText, /Ambiguous signal/);
   assert.match(pageText, /Your interpretation/);
   assert.match(
     pageText,
     /What is the strongest conclusion supported by the evidence\?/,
   );
   assert.match(pageText, /Case status/);
-  assert.match(pageText, /Stage<\/dt><dd>Blind Read/);
+  assert.match(pageText, /Step<\/dt><dd>3 of 8 · Blind Read/);
   assert.match(pageText, /AI claim<\/dt><dd>Hidden/);
-  assert.match(pageText, /Your choice<\/dt><dd>Not selected yet/);
-  assert.match(pageText, /Next step<\/dt><dd>Choose an interpretation/);
-  assert.match(pageText, /Choose an interpretation to reveal AI label/);
+  assert.match(pageText, /Your interpretation<\/dt><dd>Not selected/);
+  assert.match(pageText, /Next<\/dt><dd>Choose an interpretation/);
+  assert.match(pageText, /AI claim hidden/);
+  assert.match(pageText, /Evidence visible/);
+  assert.match(pageText, /Interpretation not selected/);
+  assert.match(pageText, /Choose an interpretation to continue/);
+  assert.match(
+    pageText,
+    /Your choice will be saved before the AI label is shown\./,
+  );
   assert.match(pageText, /Possible privilege escalation/);
+  assert.match(pageText, /disabled=""/);
+  assert.doesNotMatch(pageText, /IAM role provisioning region/);
   assert.doesNotMatch(pageText, /Suspicious IAM privilege escalation/);
   assert.doesNotMatch(pageText, /OVERCLAIM/);
   assert.doesNotMatch(pageText, /Agreement/);
@@ -298,6 +321,24 @@ test("blind read protects the AI judgment until the reviewer chooses", () => {
   assert.doesNotMatch(pageText, /Average support/);
   assert.doesNotMatch(pageText, /Avg\. support/);
   assert.doesNotMatch(pageText, /38% evidence/);
+});
+
+test("later review routes stay sealed until a blind interpretation exists", () => {
+  const pageText = renderStaticMarkup(
+    React.createElement(AppShell, {
+      cases: sampleCases,
+      landscapeContextNodes: sampleLandscapeContextNodes,
+      initialStage: "ai_reveal",
+      pathname: "/ai-reveal",
+      onNavigatePath: () => undefined,
+    }),
+  );
+
+  assert.match(pageText, /Judge the evidence first\./);
+  assert.match(pageText, /Choose an interpretation to continue/);
+  assert.match(pageText, /Selected behaviour region/);
+  assert.doesNotMatch(pageText, /Suspicious IAM privilege escalation/);
+  assert.doesNotMatch(pageText, /IAM role provisioning region/);
 });
 
 test("blind interpretation choices render as accessible radio cards", () => {
@@ -320,6 +361,25 @@ test("blind interpretation choices render as accessible radio cards", () => {
   assert.match(markup, /Selected/);
   assert.match(markup, /Reveal AI label/);
   assert.doesNotMatch(markup, /disabled=""/);
+});
+
+test("blind read returns to AI Reveal once the label is already revealed", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const markup = renderStaticMarkup(
+    React.createElement(BlindReadPanel, {
+      caseFile: selectedCase,
+      reviewState: {
+        blindChoiceId: "routine-iam-provisioning",
+        aiLabelRevealed: true,
+      },
+      onChooseBlindInterpretation: () => undefined,
+      onRevealAiLabel: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /Next: AI Reveal/);
 });
 
 test("shared review UI keeps contradicted and unsupported styling distinct", () => {
