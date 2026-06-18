@@ -13,6 +13,7 @@ import { ReviewSummaryDrawer } from "@/components/arena/ReviewSummaryDrawer";
 import { StageRail } from "@/components/arena/StageRail";
 import { TelemetryGalaxy } from "@/components/arena/TelemetryGalaxy";
 import { VerdictPanel } from "@/components/arena/VerdictPanel";
+import { ArenaHeader } from "@/components/arena/WorkflowPrimitives";
 import {
   getArenaStageForPathname,
   getPathForArenaStage,
@@ -243,6 +244,11 @@ export function AppShell({
   const stageTransitionKey = isExploreMode
     ? activeStage
     : `${selectedCase.id}-${activeStage}`;
+  const showInvestigationCockpit =
+    !isExploreMode &&
+    activeStage !== "case_file" &&
+    activeStage !== "blind_read" &&
+    activeStage !== "ai_reveal";
   const shellClassName = [
     "arena-shell",
     isExploreMode ? "arena-shell-explore" : "arena-shell-investigate",
@@ -253,15 +259,9 @@ export function AppShell({
 
   return (
     <main className={shellClassName}>
-      <header className="arena-topbar">
-        <div className="arena-brand">
-          <div>
-            <h1>Telemetry Court</h1>
-            <p>Evidence review for AI-named telemetry clusters.</p>
-          </div>
-        </div>
-        <div className="arena-topbar-actions">
-          {activeStage === "verdict" ? (
+      <ArenaHeader
+        actions={
+          activeStage === "verdict" ? (
             <details className="arena-utility-menu">
               <summary>Review data</summary>
               <div className="arena-utility-menu-panel">
@@ -270,9 +270,9 @@ export function AppShell({
                 </button>
               </div>
             </details>
-          ) : null}
-        </div>
-      </header>
+          ) : null
+        }
+      />
 
       <div className="arena-layout">
         <StageRail
@@ -335,7 +335,7 @@ export function AppShell({
           )}
         </section>
 
-        {!isExploreMode && activeStage !== "case_file" ? (
+        {showInvestigationCockpit ? (
           <InvestigationCockpit
             key={selectedCase.id}
             caseFile={selectedCase}

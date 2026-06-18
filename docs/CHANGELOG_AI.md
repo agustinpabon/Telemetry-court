@@ -19,6 +19,32 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-18: Fix Arena Screenshot Route Guards
+
+- Agent/model: Antigravity (Gemini 3.1 Pro)
+- Prompt scope: Fix the Playwright screenshot script that was failing to capture unique stages due to the recently added route guards in the arena layout.
+- Files changed: `scripts/screenshots.js`
+- Summary: Injected a safe seed state into `sessionStorage` under `telemetry-court-arena-state-v1` immediately after the first navigation to allow Playwright to bypass the `isStageAccessible` route guards and capture distinct screenshots for pages 3-8. Added logging warnings if redirection still happens.
+- Decisions made: Simulated the completion of previous stages directly via the store rather than running a full automated click-through, ensuring the screenshots stay focused and the test runs quickly.
+- Checks run: Executed `node scripts/screenshots.js` manually; verified images in `screenshots/` updated correctly for stages 3-8 without falling back to stage 3.
+- Assumptions: The structure of `telemetry-court-arena-state-v1` will remain stable enough for the screenshot script, or the script will be updated alongside the state schema.
+- Risks/follow-ups: If the reducer logic drastically changes or requires more keys (like `reviewsByCase[id].evidenceRatings` being populated for stage 5), the mock state might need expanding.
+- Next recommended step: None.
+- Suggested commit message: `test(e2e): seed arena state to bypass route guards for screenshots`
+
+## 2026-06-18: Shared Workflow Layout Foundation
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Create a reusable workflow layout foundation from the current `/ai-reveal` visual direction without redesigning the remaining workflow pages.
+- Files changed: `components/arena/WorkflowPrimitives.tsx`, `components/arena/WorkflowPrimitives.test.tsx`, `components/arena/AppShell.tsx`, `components/arena/AiRevealPanel.tsx`, `components/arena/BlindReadPanel.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, `next.config.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added shared arena primitives for workflow shell, header, compact step progress, step hero, status badges, soft sections/evidence rows, and CTA footer. Migrated `/ai-reveal` to those shared primitives with visual parity, lightly aligned `/blind-read` to the same centered header/progress/hero/shell language, and kept `/evidence-board`, `/label-duel`, `/impostor`, and `/verdict` behaviorally unchanged for later migration.
+- Decisions made: Centralized the header markup in `ArenaHeader`; removed the repeated side cockpit from `/blind-read` and `/ai-reveal` because those pages now carry their own state; left the heavier rail/cockpit treatment on pages 5-8 as an intentional unmigrated follow-up; disabled the Next.js dev indicator with `devIndicators: false` after confirming the black circular `N` was framework dev UI, not app UI.
+- Checks run: `npx tsc --noEmit` passed; `npm test` passed with 32 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/WorkflowPrimitives.tsx components/arena/WorkflowPrimitives.test.tsx components/arena/AiRevealPanel.tsx components/arena/BlindReadPanel.tsx components/arena/AppShell.tsx app/investigation-workflow.css app/page.test.ts next.config.ts` returned `[]`; Playwright verification against `http://localhost:3047` captured `/blind-read`, `/ai-reveal`, `/evidence-board`, `/label-duel`, `/impostor`, and `/verdict` screenshots with no console errors and no horizontal overflow.
+- Assumptions: This pass should create a migration foundation and only apply it immediately where low-risk: `/ai-reveal` and `/blind-read`.
+- Risks/follow-ups: Pages 5-8 still use older dashboard-like sections, stage rail, right case cockpit, and generic bottom `Next` controls. Migrate them one page at a time onto the new primitives.
+- Next recommended step: Apply `ArenaWorkflowShell`, `ArenaStepProgress`, `ArenaStepHero`, `ArenaStatusBadge`, and `ArenaActionFooter` to `/evidence-board` next, replacing generic `Next` with a descriptive CTA.
+- Suggested commit message: `ux(arena): extract workflow layout foundation`
+
 ## 2026-06-18: AI Reveal Bottom Action Cleanup
 
 - Agent/model: Codex (GPT-5)

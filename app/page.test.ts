@@ -9,7 +9,6 @@ import { AiRevealPanel } from "@/components/arena/AiRevealPanel";
 import { BlindReadPanel } from "@/components/arena/BlindReadPanel";
 import { CaseFilePanel } from "@/components/arena/CaseFilePanel";
 import { getLandscapeAtlasPosition } from "@/components/arena/EvidenceGalaxyAtlas";
-import { InvestigationCockpit } from "@/components/arena/InvestigationCockpit";
 import { CaseSwitcher } from "@/components/CaseSwitcher";
 import { ClaimLedger } from "@/components/ClaimLedger";
 import { EvidenceCard } from "@/components/EvidenceCard";
@@ -299,14 +298,7 @@ test("blind read protects the AI judgment until the reviewer chooses", () => {
     pageText,
     /What is the strongest conclusion supported by the evidence\?/,
   );
-  assert.match(pageText, /Case status/);
-  assert.match(pageText, /Step<\/dt><dd>3 of 8 · Blind Read/);
-  assert.match(pageText, /AI claim<\/dt><dd>Hidden/);
-  assert.match(pageText, /Your interpretation<\/dt><dd>Not selected/);
-  assert.match(pageText, /Next<\/dt><dd>Choose an interpretation/);
   assert.match(pageText, /AI claim hidden/);
-  assert.match(pageText, /Evidence visible/);
-  assert.match(pageText, /Interpretation not selected/);
   assert.match(pageText, /Choose an interpretation to continue/);
   assert.match(
     pageText,
@@ -314,6 +306,10 @@ test("blind read protects the AI judgment until the reviewer chooses", () => {
   );
   assert.match(pageText, /Possible privilege escalation/);
   assert.match(pageText, /disabled=""/);
+  assert.doesNotMatch(pageText, /Case status/);
+  assert.doesNotMatch(pageText, /Step<\/dt><dd>3 of 8 · Blind Read/);
+  assert.doesNotMatch(pageText, /Evidence visible/);
+  assert.doesNotMatch(pageText, /Interpretation not selected/);
   assert.doesNotMatch(pageText, /IAM role provisioning region/);
   assert.doesNotMatch(pageText, /Suspicious IAM privilege escalation/);
   assert.doesNotMatch(pageText, /OVERCLAIM/);
@@ -352,27 +348,13 @@ test("AI Reveal presents divergence as an evidence review moment", () => {
     aiLabelRevealed: true,
   };
   const markup = renderStaticMarkup(
-    React.createElement(
-      React.Fragment,
-      null,
-      React.createElement(AiRevealPanel, {
-        caseFile: selectedCase,
-        reviewState,
-        onRevealAiLabel: () => undefined,
-        onContinue: () => undefined,
-        onBackToBlindRead: () => undefined,
-      }),
-      React.createElement(InvestigationCockpit, {
-        caseFile: selectedCase,
-        activeStage: "ai_reveal",
-        reviewState,
-        reviewCompletion: 2,
-        onOpenCaseFile: () => undefined,
-        onStartInvestigation: () => undefined,
-        onRevealAiLabel: () => undefined,
-        onOpenReviewDrawer: () => undefined,
-      }),
-    ),
+    React.createElement(AiRevealPanel, {
+      caseFile: selectedCase,
+      reviewState,
+      onRevealAiLabel: () => undefined,
+      onContinue: () => undefined,
+      onBackToBlindRead: () => undefined,
+    }),
   );
 
   assert.match(markup, /Step 4 of 8 · AI Reveal/);
@@ -403,7 +385,7 @@ test("AI Reveal presents divergence as an evidence review moment", () => {
   assert.match(markup, /Evidence support for AI claim/);
   assert.match(markup, /Review evidence board/);
   assert.match(markup, /Back to blind read/);
-  assert.match(markup, /Next<\/dt><dd>Evidence Board/);
+  assert.doesNotMatch(markup, /Next<\/dt><dd>Evidence Board/);
   assert.doesNotMatch(markup, /Compare blind interpretation with the model claim/);
   assert.doesNotMatch(markup, /Disagreement/);
   assert.doesNotMatch(markup, />tests</);
@@ -451,7 +433,7 @@ test("blind read returns to AI Reveal once the label is already revealed", () =>
     }),
   );
 
-  assert.match(markup, /Next: AI Reveal/);
+  assert.match(markup, /Return to AI Reveal/);
 });
 
 test("shared review UI keeps contradicted and unsupported styling distinct", () => {

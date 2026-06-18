@@ -1,9 +1,15 @@
 import {
-  arenaStages,
   labelsMatch,
   type CaseReviewState,
 } from "@/lib/arenaReviewState";
 import { formatSupportScore, getAverageSupportScore } from "@/lib/caseMetrics";
+import {
+  ArenaActionFooter,
+  ArenaStatusBadge,
+  ArenaStepHero,
+  ArenaStepProgress,
+  ArenaWorkflowShell,
+} from "@/components/arena/WorkflowPrimitives";
 import type { CaseFile } from "@/lib/types";
 
 type AiRevealPanelProps = {
@@ -49,47 +55,46 @@ export function AiRevealPanel({
   ];
 
   return (
-    <section className="ai-reveal-stage stage-surface" aria-label="AI Reveal">
-      <RevealProgress />
+    <ArenaWorkflowShell className="ai-reveal-stage" ariaLabel="AI Reveal">
+      <ArenaStepProgress currentStage="ai_reveal" />
 
-      <header className="reveal-hero">
-        <div className="reveal-hero-copy">
-          <div className="reveal-hero-meta">
-            <p className="eyebrow">AI Reveal</p>
-            <span
-              className={assessment.className}
-              aria-label={`${assessment.label}: ${assessment.body}`}
-            >
-              {assessment.label}
-            </span>
-          </div>
-          <h2>
-            {revealed
-              ? agrees
-                ? "Your read and the AI label align."
-                : "Your read and the AI label diverge."
-              : "Reveal the AI label."}
-          </h2>
-          <p className="reveal-hero-summary">
-            {revealed
-              ? `You selected ${blindChoice?.label ?? "a blind read"}. The model suggested ${caseFile.topicLabel.name}.`
-              : "Your blind read is saved. Reveal the model claim before reviewing the evidence board."}
-          </p>
-          <p className="reveal-hero-context">
-            This is not a verdict. It highlights a conflict that needs evidence
-            review.
-          </p>
-        </div>
-      </header>
+      <ArenaStepHero
+        eyebrow="AI Reveal"
+        status={
+          <ArenaStatusBadge
+            tone={assessment.tone}
+            ariaLabel={`${assessment.label}: ${assessment.body}`}
+          >
+            {assessment.label}
+          </ArenaStatusBadge>
+        }
+        title={
+          revealed
+            ? agrees
+              ? "Your read and the AI label align."
+              : "Your read and the AI label diverge."
+            : "Reveal the AI label."
+        }
+        summary={
+          revealed
+            ? `You selected ${blindChoice?.label ?? "a blind read"}. The model suggested ${caseFile.topicLabel.name}.`
+            : "Your blind read is saved. Reveal the model claim before reviewing the evidence board."
+        }
+        context="This is not a verdict. It highlights a conflict that needs evidence review."
+      />
 
-      <div className={`reveal-comparison ${revealed ? "is-revealed" : ""}`}>
-        <article className="reveal-card blind-card">
+      <div
+        className={`arena-comparison-block reveal-comparison ${
+          revealed ? "is-revealed" : ""
+        }`}
+      >
+        <article className="arena-comparison-card reveal-card blind-card">
           <span>Your blind read</span>
           <strong>{blindChoice?.label ?? "Awaiting blind choice"}</strong>
           <p>{comparisonCopy.blind}</p>
         </article>
 
-        <article className="reveal-card ai-card">
+        <article className="arena-comparison-card reveal-card ai-card">
           <span>AI label</span>
           {revealed ? (
             <>
@@ -105,8 +110,11 @@ export function AiRevealPanel({
         </article>
       </div>
 
-      <section className="reveal-evidence-alignment" aria-labelledby="overclaim-reason">
-        <div className="reveal-section-heading">
+      <section
+        className="arena-soft-section reveal-evidence-alignment"
+        aria-labelledby="overclaim-reason"
+      >
+        <div className="arena-section-heading reveal-section-heading">
           <h3 id="overclaim-reason">Why this may be an overclaim</h3>
           <p>
             The evidence confirms IAM activity, but the strongest claim needs more
@@ -114,9 +122,9 @@ export function AiRevealPanel({
           </p>
         </div>
 
-        <div className="reveal-evidence-list">
+        <div className="arena-evidence-rows reveal-evidence-list">
           {evidenceRows.map((row) => (
-            <div className="reveal-evidence-row" key={row.label}>
+            <div className="arena-evidence-row reveal-evidence-row" key={row.label}>
               <span>{row.label}</span>
               <p>{row.body}</p>
             </div>
@@ -139,67 +147,29 @@ export function AiRevealPanel({
           </div>
         </details>
 
-        <footer className="reveal-actions" aria-label="AI Reveal actions">
-          <p>Inspect the signals before deciding whether the AI label is supported.</p>
-          <div>
-            <button
-              type="button"
-              className="secondary-action"
-              onClick={onBackToBlindRead}
-            >
-              Back to blind read
-            </button>
-            {revealed ? (
-              <button type="button" className="primary-action" onClick={onContinue}>
-                Review evidence board
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="primary-action"
-                disabled={!reviewState.blindChoiceId}
-                onClick={onRevealAiLabel}
-              >
-                Reveal AI label
-              </button>
-            )}
-          </div>
-        </footer>
+        <ArenaActionFooter
+          className="reveal-actions"
+          ariaLabel="AI Reveal actions"
+          microcopy="Inspect the signals before deciding whether the AI label is supported."
+          secondaryAction={{
+            label: "Back to blind read",
+            onClick: onBackToBlindRead,
+          }}
+          primaryAction={
+            revealed
+              ? {
+                  label: "Review evidence board",
+                  onClick: onContinue,
+                }
+              : {
+                  label: "Reveal AI label",
+                  disabled: !reviewState.blindChoiceId,
+                  onClick: onRevealAiLabel,
+                }
+          }
+        />
       </div>
-    </section>
-  );
-}
-
-function RevealProgress() {
-  const currentStageIndex = arenaStages.findIndex((stage) => stage.id === "ai_reveal");
-
-  return (
-    <nav className="reveal-progress" aria-label="AI Reveal progress">
-      <div className="reveal-progress-summary">
-        <strong>Step 4 of 8 · AI Reveal</strong>
-      </div>
-      <ol>
-        {arenaStages.map((stage, index) => {
-          const isCurrent = stage.id === "ai_reveal";
-          const isComplete = index < currentStageIndex;
-
-          return (
-            <li
-              key={stage.id}
-              className={`${isComplete ? "is-complete" : ""} ${
-                isCurrent ? "is-current" : ""
-              }`}
-              aria-current={isCurrent ? "step" : undefined}
-              aria-label={`${index + 1}. ${stage.label}${
-                isCurrent ? ", current step" : ""
-              }`}
-            >
-              <span aria-hidden="true" />
-            </li>
-          );
-        })}
-      </ol>
-    </nav>
+    </ArenaWorkflowShell>
   );
 }
 
@@ -208,7 +178,7 @@ function getAssessmentCopy(caseFile: CaseFile, revealed: boolean) {
     return {
       label: "Sealed",
       body: "The model claim is still hidden until the reviewer triggers the reveal.",
-      className: "reveal-status-badge is-sealed",
+      tone: "sealed" as const,
     };
   }
 
@@ -217,14 +187,14 @@ function getAssessmentCopy(caseFile: CaseFile, revealed: boolean) {
       label: "Likely overclaim",
       body:
         "The evidence confirms IAM activity, but does not yet show malicious intent, privilege abuse, or sensitive data access.",
-      className: "reveal-status-badge is-overclaim",
+      tone: "overclaim" as const,
     };
   }
 
   return {
     label: "Needs evidence review",
     body: "Use the evidence board to judge whether the model label is grounded.",
-    className: "reveal-status-badge is-neutral",
+    tone: "neutral" as const,
   };
 }
 

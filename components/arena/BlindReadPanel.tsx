@@ -1,10 +1,12 @@
 import { SemanticMiniMap } from "@/components/arena/SemanticMiniMap";
 import {
-  SealedClaimBlock,
+  ArenaActionFooter,
+  ArenaStatusBadge,
+  ArenaStepHero,
+  ArenaStepProgress,
+  ArenaWorkflowShell,
   SectionHeader,
-  StageHeader,
 } from "@/components/arena/WorkflowPrimitives";
-import { arenaStages } from "@/lib/arenaReviewState";
 import type { CaseReviewState } from "@/lib/arenaReviewState";
 import type { CaseFile } from "@/lib/types";
 
@@ -25,26 +27,25 @@ export function BlindReadPanel({
   const hasBlindChoice = Boolean(reviewState.blindChoiceId);
   const actionLabel = hasBlindChoice
     ? reviewState.aiLabelRevealed
-      ? "Next: AI Reveal"
+      ? "Return to AI Reveal"
       : "Reveal AI label"
     : "Choose an interpretation to continue";
 
   return (
-    <section className="blind-stage stage-surface" aria-label="Blind Read">
-      <StageHeader
-        kicker="Blind Read"
+    <ArenaWorkflowShell className="blind-stage" ariaLabel="Blind Read">
+      <ArenaStepProgress currentStage="blind_read" />
+
+      <ArenaStepHero
+        eyebrow="Blind Read"
+        status={
+          <ArenaStatusBadge tone="sealed">
+            AI claim hidden
+          </ArenaStatusBadge>
+        }
         title="Judge the evidence first."
-        description="Choose an independent interpretation before seeing the AI label."
+        summary="Choose an independent interpretation before seeing the AI label."
+        context="The AI label remains sealed until you choose one interpretation below."
       />
-
-      <BlindReadProgress />
-
-      <div className="blind-context-row">
-        <SealedClaimBlock
-          title="AI claim hidden"
-          description="The AI label remains sealed until you choose one interpretation below."
-        />
-      </div>
 
       <div className="blind-decision-layout">
         <article className="blind-evidence-panel">
@@ -133,24 +134,23 @@ export function BlindReadPanel({
               })}
             </div>
           </fieldset>
-          <div className="blind-decision-footer">
-            {!reviewState.aiLabelRevealed ? (
-              <p className="blind-cta-note">
-                Your choice will be saved before the AI label is shown.
-              </p>
-            ) : null}
-            <button
-              type="button"
-              className="primary-action"
-              disabled={!hasBlindChoice}
-              onClick={onRevealAiLabel}
-            >
-              {actionLabel}
-            </button>
-          </div>
+          <ArenaActionFooter
+            className="blind-decision-footer"
+            ariaLabel="Blind Read actions"
+            microcopy={
+              reviewState.aiLabelRevealed
+                ? "Your blind interpretation is already saved."
+                : "Your choice will be saved before the AI label is shown."
+            }
+            primaryAction={{
+              label: actionLabel,
+              disabled: !hasBlindChoice,
+              onClick: onRevealAiLabel,
+            }}
+          />
         </article>
       </div>
-    </section>
+    </ArenaWorkflowShell>
   );
 }
 
@@ -237,39 +237,4 @@ function buildEvidenceSummary(caseFile: CaseFile): EvidenceSummaryGroup[] {
           : "The packet still requires a reviewer choice before the AI label is shown.",
     },
   ];
-}
-
-function BlindReadProgress() {
-  const currentStageIndex = arenaStages.findIndex(
-    (stage) => stage.id === "blind_read",
-  );
-
-  return (
-    <nav className="blind-progress" aria-label="Blind Read progress">
-      <div className="blind-progress-summary">
-        <strong>Step 3 of 8 · Blind Read</strong>
-      </div>
-      <ol>
-        {arenaStages.map((stage, index) => {
-          const isCurrent = stage.id === "blind_read";
-          const isComplete = index < currentStageIndex;
-
-          return (
-            <li
-              key={stage.id}
-              className={`${isComplete ? "is-complete" : ""} ${
-                isCurrent ? "is-current" : ""
-              }`}
-              aria-current={isCurrent ? "step" : undefined}
-              aria-label={`${index + 1}. ${stage.label}${
-                isCurrent ? ", current step" : ""
-              }`}
-            >
-              <span aria-hidden="true" />
-            </li>
-          );
-        })}
-      </ol>
-    </nav>
-  );
 }
