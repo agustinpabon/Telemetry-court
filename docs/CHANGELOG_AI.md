@@ -19,6 +19,32 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-18: AI Reveal Bottom Action Cleanup
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Tiny final cleanup pass on `/ai-reveal` only, focused on making the bottom action area more compact, keeping `View scoring details` clearly interactive, preserving the main reveal structure/copy, and keeping the evidence-board transition intact.
+- Files changed: `components/arena/AiRevealPanel.tsx`, `app/investigation-workflow.css`, and `docs/CHANGELOG_AI.md`.
+- Summary: Grouped the scoring disclosure and CTA footer into one compact bottom-control cluster, kept the scoring control as a native disclosure with clearer hover/focus/active states, tightened the microcopy/button grouping, gave the AI Reveal primary CTA scoped dark hover/focus behavior without heavy shadows, and trimmed the AI Reveal stage gap slightly.
+- Decisions made: Kept the reveal hero, comparison, evidence explanation, copy, route guards, `/blind-read` behavior, 8-step progress, and `Review evidence board` transition unchanged; kept scoring details available but secondary.
+- Checks run: `npx tsc --noEmit` passed; `npm test` passed with 32 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json app/investigation-workflow.css components/arena/AiRevealPanel.tsx` returned `[]`; browser verification against `http://localhost:3030` in Brave confirmed one `Review evidence board` CTA, one functional `View scoring details` disclosure, no horizontal overflow at 1440x900 or 1116x632, direct `/ai-reveal` guard back to `/blind-read`, and successful transition to `/evidence-board`. Screenshots saved to `/private/tmp/telemetry-ai-reveal-tiny-cleanup-desktop-settled.png` and `/private/tmp/telemetry-ai-reveal-tiny-cleanup-110-width-settled.png`.
+- Assumptions: A tiny structural wrapper around the existing disclosure and footer is acceptable because it does not change review state, routing, copy, or workflow behavior.
+- Risks/follow-ups: A very short 1116x632 viewport still needs slight vertical scrolling, but the prior horizontal clipping/dispersion problem remains fixed and the bottom controls stay grouped.
+- Next recommended step: Review `/ai-reveal` in Brave at your normal zoom and confirm the lower action cluster feels final.
+- Suggested commit message: `ux(arena): tighten ai reveal actions`
+
+## 2026-06-18: AI Reveal Final Premium Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Final premium polish pass on `/ai-reveal` only, focused on alignment, visual hierarchy, softer surfaces, less dashboard-like comparison/evidence treatment, and preserving all workflow behavior.
+- Files changed: `components/arena/AiRevealPanel.tsx`, `app/investigation-workflow.css`, and `docs/CHANGELOG_AI.md`.
+- Summary: Aligned the Telemetry Court header to the same max-width as the reveal stage, removed the outer stage panel so the page no longer reads as cards inside a card, moved `Likely overclaim` beside the `AI Reveal` eyebrow, removed the `versus` divider, softened the comparison into one neutral two-lane surface, made the evidence explanation less table-like, and grouped the CTA/microcopy into a cleaner next-step row.
+- Decisions made: Preserved the AI Reveal content, route guards, reducer state, 8-step progress, Blind Read behavior, hidden AI Reveal sidebar, collapsed scoring disclosure, and `Review evidence board` transition; kept all changes scoped to AI Reveal styling and markup.
+- Checks run: `npx tsc --noEmit` passed; `npm test` passed with 32 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json app/investigation-workflow.css components/arena/AiRevealPanel.tsx components/arena/InvestigationCockpit.tsx components/arena/AppShell.tsx app/page.test.ts` returned `[]`; browser verification against `http://localhost:3028` passed at 1440x900, 1116x632, and 390x844 with no horizontal overflow, no generic `Next`, no `Open review summary`, no `tests` text, no `versus` text, one `Review evidence board` CTA, hidden AI Reveal sidebar, direct `/ai-reveal` guard back to `/blind-read` without visible AI-label leak, and working transition to `/evidence-board`. Screenshots saved to `/private/tmp/telemetry-ai-reveal-final-polish-desktop.png`, `/private/tmp/telemetry-ai-reveal-final-polish-110-width.png`, and `/private/tmp/telemetry-ai-reveal-final-polish-mobile.png`.
+- Assumptions: AI Reveal should behave as a focused reveal moment where the page itself carries the case state, so the case-status sidebar can remain hidden on this route.
+- Risks/follow-ups: The final mobile page still scrolls, but the desktop and zoom-width compositions now fit comfortably without horizontal drift or repeated summary blocks.
+- Next recommended step: Review `/ai-reveal` in Brave at your usual zoom and confirm the final centered composition feels presentation-ready.
+- Suggested commit message: `ux(arena): polish ai reveal final layout`
+
 ## 2026-06-18: AI Reveal 110% Zoom Resilience
 
 - Agent/model: Codex (GPT-5)

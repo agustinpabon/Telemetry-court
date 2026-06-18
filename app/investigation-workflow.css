@@ -3189,7 +3189,17 @@
 }
 
 .arena-shell-investigate.arena-stage-ai_reveal .arena-layout {
-  grid-template-columns: minmax(0, 1fr) clamp(264px, 18vw, 308px);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.arena-shell-investigate.arena-stage-ai_reveal .arena-topbar {
+  background: transparent;
+  border-color: transparent;
+  margin: 0 auto 10px;
+  max-width: 980px;
+  min-height: 0;
+  padding: 0 2px;
+  width: 100%;
 }
 
 .arena-shell-investigate.arena-stage-ai_reveal .stage-rail {
@@ -3198,24 +3208,24 @@
 
 .arena-shell-investigate.arena-stage-ai_reveal .arena-workspace {
   justify-self: center;
-  max-width: 1080px;
+  max-width: 980px;
   min-width: 0;
   width: 100%;
 }
 
 .arena-shell-investigate.arena-stage-ai_reveal .stage-surface {
-  background: rgba(251, 250, 247, 0.94);
-  border-color: rgba(50, 48, 47, 0.08);
+  background: transparent;
+  border-color: transparent;
   box-shadow: none;
   max-width: 100%;
-  min-height: calc(100svh - 132px);
-  padding: clamp(26px, 3vw, 46px);
+  min-height: 0;
+  padding: 0;
 }
 
 .arena-shell-investigate .ai-reveal-stage {
   align-content: start;
   display: grid;
-  gap: 22px;
+  gap: 10px;
   grid-template-rows: auto;
   min-width: 0;
 }
@@ -3225,6 +3235,7 @@
   display: flex;
   gap: 18px;
   justify-content: space-between;
+  padding: 0 2px;
 }
 
 .arena-shell-investigate .reveal-progress-summary strong {
@@ -3265,26 +3276,34 @@
 }
 
 .arena-shell-investigate .reveal-hero {
-  align-items: end;
+  align-items: start;
   background:
-    linear-gradient(145deg, rgba(255, 253, 249, 0.96), rgba(247, 245, 239, 0.74)),
+    linear-gradient(145deg, rgba(255, 253, 249, 0.78), rgba(247, 245, 239, 0.46)),
     var(--workflow-surface);
-  border: 1px solid rgba(50, 48, 47, 0.075);
-  border-radius: 22px;
+  border: 1px solid rgba(50, 48, 47, 0.06);
+  border-radius: 18px;
   display: grid;
-  gap: 28px;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.34fr);
-  min-height: 260px;
-  padding: clamp(24px, 3.5vw, 42px);
+  gap: 0;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 0;
+  padding: clamp(18px, 2.2vw, 24px);
 }
 
 .arena-shell-investigate .reveal-hero-copy {
   max-width: 760px;
 }
 
+.arena-shell-investigate .reveal-hero-meta {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-start;
+}
+
 .arena-shell-investigate .reveal-hero h2 {
   color: var(--workflow-ink);
-  font-size: 42px;
+  font-size: 34px;
   font-weight: 790;
   letter-spacing: 0;
   line-height: 1.08;
@@ -3294,32 +3313,21 @@
 
 .arena-shell-investigate .reveal-hero-summary {
   color: var(--workflow-ink);
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 650;
-  line-height: 1.48;
-  margin: 16px 0 0;
+  line-height: 1.42;
+  margin: 10px 0 0;
   max-width: 64ch;
   text-wrap: pretty;
 }
 
-.arena-shell-investigate .reveal-hero-context,
-.arena-shell-investigate .reveal-status p {
+.arena-shell-investigate .reveal-hero-context {
   color: var(--workflow-muted);
-  font-size: 14px;
-  line-height: 1.55;
-  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.48;
+  margin: 7px 0 0;
   max-width: 62ch;
-}
-
-.arena-shell-investigate .reveal-status {
-  align-self: stretch;
-  background: rgba(247, 245, 239, 0.72);
-  border: 1px solid rgba(50, 48, 47, 0.08);
-  border-radius: 18px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 16px;
+  text-wrap: pretty;
 }
 
 .arena-shell-investigate .reveal-status-badge {
@@ -3328,7 +3336,8 @@
   font-size: 12px;
   font-weight: 820;
   line-height: 1.1;
-  padding: 8px 11px;
+  padding: 7px 10px;
+  white-space: nowrap;
 }
 
 .arena-shell-investigate .reveal-status-badge.is-overclaim {
@@ -3346,21 +3355,32 @@
 
 .arena-shell-investigate .reveal-comparison {
   align-items: stretch;
+  background: rgba(251, 250, 247, 0.42);
+  border: 1px solid rgba(50, 48, 47, 0.06);
+  border-radius: 16px;
   display: grid;
-  gap: 14px;
-  grid-template-columns: minmax(0, 1fr) 56px minmax(0, 1fr);
+  gap: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow: hidden;
 }
 
 .arena-shell-investigate .reveal-card {
-  background: rgba(255, 253, 249, 0.72);
-  border: 1px solid rgba(50, 48, 47, 0.08);
-  border-radius: 18px;
-  min-height: 188px;
-  padding: 22px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  min-height: 122px;
+  padding: 14px 18px;
 }
 
-.arena-shell-investigate .reveal-comparison.is-revealed .ai-card {
-  border-color: rgba(154, 106, 47, 0.2);
+.arena-shell-investigate .reveal-card:first-child {
+  border-right: 1px solid rgba(50, 48, 47, 0.06);
+  padding-left: 2px;
+  padding-right: 22px;
+}
+
+.arena-shell-investigate .reveal-card:last-child {
+  padding-left: 22px;
+  padding-right: 2px;
 }
 
 .arena-shell-investigate .reveal-card span {
@@ -3369,69 +3389,41 @@
   font-size: 12px;
   font-weight: 780;
   line-height: 1.2;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .arena-shell-investigate .reveal-card strong {
   color: var(--workflow-ink);
   display: block;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 780;
   letter-spacing: 0;
-  line-height: 1.18;
+  line-height: 1.2;
   text-wrap: balance;
 }
 
 .arena-shell-investigate .reveal-card p {
   color: var(--workflow-muted);
   font-size: 14px;
-  line-height: 1.55;
-  margin: 14px 0 0;
+  line-height: 1.48;
+  margin: 10px 0 0;
   max-width: 48ch;
   text-wrap: pretty;
 }
 
-.arena-shell-investigate .reveal-comparison-divider {
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  position: relative;
-}
-
-.arena-shell-investigate .reveal-comparison-divider::before {
-  background: rgba(50, 48, 47, 0.1);
-  content: "";
-  height: 100%;
-  position: absolute;
-  width: 1px;
-}
-
-.arena-shell-investigate .reveal-comparison-divider span {
-  background: var(--workflow-surface);
-  border: 1px solid rgba(50, 48, 47, 0.08);
-  border-radius: 999px;
-  color: var(--workflow-muted);
-  font-size: 11px;
-  font-weight: 790;
-  line-height: 1;
-  padding: 8px 9px;
-  position: relative;
-  text-transform: lowercase;
-}
-
 .arena-shell-investigate .reveal-evidence-alignment {
-  background: rgba(247, 245, 239, 0.66);
-  border: 1px solid rgba(50, 48, 47, 0.075);
-  border-radius: 20px;
-  padding: 20px;
+  background: rgba(251, 250, 247, 0.42);
+  border: 1px solid rgba(50, 48, 47, 0.06);
+  border-radius: 16px;
+  padding: 17px 18px;
 }
 
 .arena-shell-investigate .reveal-section-heading {
-  align-items: end;
+  align-items: start;
   display: flex;
-  gap: 18px;
-  justify-content: space-between;
-  margin-bottom: 8px;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
 }
 
 .arena-shell-investigate .reveal-section-heading h3 {
@@ -3447,22 +3439,22 @@
   font-size: 13px;
   line-height: 1.45;
   margin: 0;
-  max-width: 42ch;
-  text-align: right;
+  max-width: 68ch;
+  text-align: left;
 }
 
 .arena-shell-investigate .reveal-evidence-list {
   display: grid;
-  gap: 0;
+  gap: 11px;
 }
 
 .arena-shell-investigate .reveal-evidence-row {
-  align-items: baseline;
-  border-top: 1px solid rgba(50, 48, 47, 0.08);
+  align-items: start;
+  border-top: 0;
   display: grid;
-  gap: 18px;
-  grid-template-columns: minmax(92px, 0.18fr) minmax(0, 1fr);
-  padding: 14px 0;
+  gap: 14px;
+  grid-template-columns: minmax(92px, 0.16fr) minmax(0, 1fr);
+  padding: 0;
 }
 
 .arena-shell-investigate .reveal-evidence-row:first-child {
@@ -3482,32 +3474,85 @@
 
 .arena-shell-investigate .reveal-evidence-row p {
   color: var(--workflow-ink);
-  font-size: 15px;
-  font-weight: 650;
+  font-size: 14px;
+  font-weight: 620;
   line-height: 1.45;
   margin: 0;
 }
 
+.arena-shell-investigate .reveal-bottom-controls {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: -1px;
+  min-width: 0;
+}
+
 .arena-shell-investigate .reveal-scoring-details {
-  justify-self: start;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.arena-shell-investigate .reveal-scoring-details[open] {
+  flex: 1 1 100%;
 }
 
 .arena-shell-investigate .reveal-scoring-details summary {
   align-items: center;
-  background: transparent;
-  border: 0;
+  background: rgba(255, 253, 249, 0.52);
+  border: 1px solid rgba(50, 48, 47, 0.08);
   border-radius: 999px;
   color: var(--workflow-muted);
   cursor: pointer;
   display: inline-flex;
+  gap: 7px;
   font-size: 13px;
   font-weight: 760;
   min-height: 34px;
-  padding: 0;
+  list-style: none;
+  padding: 0 11px;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+  user-select: none;
+}
+
+.arena-shell-investigate .reveal-scoring-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.arena-shell-investigate .reveal-scoring-details[open] summary {
+  margin-left: auto;
+}
+
+.arena-shell-investigate .reveal-scoring-details summary::after {
+  content: "→";
+  font-size: 13px;
+  line-height: 1;
+  transition: transform 180ms ease, color 180ms ease;
+}
+
+.arena-shell-investigate .reveal-scoring-details[open] summary::after {
+  transform: rotate(90deg);
 }
 
 .arena-shell-investigate .reveal-scoring-details summary:hover {
+  background: rgba(247, 245, 239, 0.82);
+  border-color: rgba(50, 48, 47, 0.16);
   color: var(--workflow-ink);
+}
+
+.arena-shell-investigate .reveal-scoring-details summary:active {
+  transform: translateY(1px);
+}
+
+.arena-shell-investigate .reveal-scoring-details summary:focus-visible {
+  outline: 3px solid rgba(95, 111, 82, 0.24);
+  outline-offset: 3px;
 }
 
 .arena-shell-investigate .reveal-score-grid {
@@ -3518,7 +3563,10 @@
   gap: 0;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 10px;
+  margin-left: auto;
+  max-width: 540px;
   overflow: hidden;
+  width: 100%;
 }
 
 .arena-shell-investigate .reveal-score-grid div {
@@ -3554,11 +3602,12 @@
 
 .arena-shell-investigate .reveal-actions {
   align-items: center;
-  border-top: 1px solid rgba(50, 48, 47, 0.08);
   display: flex;
-  gap: 18px;
-  justify-content: space-between;
-  padding-top: 18px;
+  flex: 0 1 auto;
+  gap: 14px;
+  justify-content: flex-end;
+  min-width: 0;
+  padding-top: 0;
 }
 
 .arena-shell-investigate .reveal-actions p {
@@ -3566,14 +3615,43 @@
   font-size: 13px;
   line-height: 1.45;
   margin: 0;
-  max-width: 44ch;
+  max-width: 34ch;
+  text-wrap: pretty;
 }
 
 .arena-shell-investigate .reveal-actions div {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 9px;
   justify-content: flex-end;
+}
+
+.arena-shell-investigate .reveal-actions button {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.arena-shell-investigate .reveal-actions button:focus-visible {
+  outline: 3px solid rgba(95, 111, 82, 0.24);
+  outline-offset: 3px;
+}
+
+.arena-shell-investigate .reveal-actions .primary-action {
+  min-width: 184px;
+}
+
+.arena-shell-investigate .reveal-actions .primary-action:hover {
+  background: #242322;
+  border-color: #242322;
+  box-shadow: none;
+}
+
+.arena-shell-investigate .reveal-actions .primary-action:active,
+.arena-shell-investigate .secondary-action:active {
+  transform: translateY(0);
 }
 
 .arena-shell-investigate .secondary-action {
@@ -3594,12 +3672,12 @@
 }
 
 .arena-shell-investigate.arena-stage-ai_reveal .investigation-cockpit {
-  background: rgba(251, 250, 247, 0.72);
+  background: rgba(251, 250, 247, 0.58);
   border-color: rgba(50, 48, 47, 0.08);
-  border-radius: 18px;
-  display: grid;
-  gap: 12px;
-  padding: 14px;
+  border-radius: 16px;
+  display: none;
+  gap: 10px;
+  padding: 12px;
 }
 
 .arena-shell-investigate .ai-reveal-cockpit .cockpit-header {
@@ -3607,7 +3685,7 @@
 }
 
 .arena-shell-investigate .ai-reveal-cockpit .cockpit-header h2 {
-  font-size: 17px;
+  font-size: 16px;
 }
 
 .arena-shell-investigate .ai-reveal-cockpit .status-chip {
@@ -3618,7 +3696,7 @@
 }
 
 .arena-shell-investigate .ai-reveal-case-list div {
-  padding: 10px 0;
+  padding: 9px 0;
 }
 
 .arena-shell-investigate .ai-reveal-case-list dd {
@@ -3640,7 +3718,7 @@
   }
 
   .arena-shell-investigate.arena-stage-ai_reveal .investigation-cockpit {
-    grid-template-columns: minmax(0, 0.45fr) minmax(0, 1fr);
+    display: none;
     position: static;
   }
 
@@ -3671,7 +3749,7 @@
   }
 
   .arena-shell-investigate.arena-stage-ai_reveal .investigation-cockpit {
-    display: grid;
+    display: none;
     gap: 14px;
     grid-template-columns: minmax(200px, 0.62fr) minmax(0, 1fr);
     max-height: none;
@@ -3687,12 +3765,13 @@
 
 @media (max-width: 860px) {
   .arena-shell-investigate.arena-stage-ai_reveal .stage-surface {
-    padding: 20px;
+    padding: 0;
   }
 
   .arena-shell-investigate .reveal-progress,
   .arena-shell-investigate .reveal-hero,
   .arena-shell-investigate .reveal-section-heading,
+  .arena-shell-investigate .reveal-bottom-controls,
   .arena-shell-investigate .reveal-actions,
   .arena-shell-investigate.arena-stage-ai_reveal .investigation-cockpit {
     align-items: stretch;
@@ -3701,6 +3780,7 @@
 
   .arena-shell-investigate .reveal-progress,
   .arena-shell-investigate .reveal-section-heading,
+  .arena-shell-investigate .reveal-bottom-controls,
   .arena-shell-investigate .reveal-actions {
     flex-direction: column;
   }
@@ -3727,18 +3807,38 @@
     grid-template-columns: 1fr;
   }
 
-  .arena-shell-investigate .reveal-comparison-divider {
-    min-height: 36px;
+  .arena-shell-investigate .reveal-card:first-child {
+    border-bottom: 1px solid rgba(50, 48, 47, 0.06);
+    border-right: 0;
+    padding: 14px 0 18px;
   }
 
-  .arena-shell-investigate .reveal-comparison-divider::before {
-    height: 1px;
-    width: 100%;
+  .arena-shell-investigate .reveal-card:last-child {
+    padding: 18px 0 14px;
   }
 
   .arena-shell-investigate .reveal-section-heading p {
     max-width: none;
     text-align: left;
+  }
+
+  .arena-shell-investigate .reveal-scoring-details,
+  .arena-shell-investigate .reveal-scoring-details[open],
+  .arena-shell-investigate .reveal-actions {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .arena-shell-investigate .reveal-scoring-details[open] summary {
+    margin-left: 0;
+  }
+
+  .arena-shell-investigate .reveal-score-grid {
+    max-width: none;
+  }
+
+  .arena-shell-investigate .reveal-actions p {
+    max-width: none;
   }
 
   .arena-shell-investigate .reveal-actions div {
@@ -3765,6 +3865,11 @@
 
   .arena-shell-investigate .reveal-actions div,
   .arena-shell-investigate .reveal-actions button {
+    width: 100%;
+  }
+
+  .arena-shell-investigate .reveal-scoring-details summary {
+    justify-content: center;
     width: 100%;
   }
 }
