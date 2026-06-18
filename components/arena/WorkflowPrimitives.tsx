@@ -1,5 +1,218 @@
 import type { ReactNode } from "react";
 
+import { arenaStages, type ArenaStage } from "@/lib/arenaReviewState";
+
+type ArenaHeaderProps = {
+  actions?: ReactNode;
+};
+
+export function ArenaHeader({ actions }: ArenaHeaderProps) {
+  return (
+    <header className="arena-topbar arena-header">
+      <div className="arena-brand">
+        <div>
+          <h1>Telemetry Court</h1>
+          <p>Evidence review for AI-named telemetry clusters.</p>
+        </div>
+      </div>
+      {actions ? <div className="arena-topbar-actions">{actions}</div> : null}
+    </header>
+  );
+}
+
+type ArenaWorkflowShellProps = {
+  ariaLabel: string;
+  children?: ReactNode;
+  className?: string;
+};
+
+export function ArenaWorkflowShell({
+  ariaLabel,
+  children,
+  className,
+}: ArenaWorkflowShellProps) {
+  return (
+    <section
+      className={["arena-workflow-shell", "stage-surface", className]
+        .filter(Boolean)
+        .join(" ")}
+      aria-label={ariaLabel}
+    >
+      {children}
+    </section>
+  );
+}
+
+type ArenaStepProgressProps = {
+  currentStage: ArenaStage;
+  className?: string;
+  label?: string;
+};
+
+export function ArenaStepProgress({
+  currentStage,
+  className,
+  label,
+}: ArenaStepProgressProps) {
+  const currentStageIndex = arenaStages.findIndex(
+    (stage) => stage.id === currentStage,
+  );
+  const currentStageLabel =
+    label ??
+    arenaStages.find((stage) => stage.id === currentStage)?.label ??
+    "Workflow";
+  const currentStep =
+    currentStageIndex >= 0 ? currentStageIndex + 1 : arenaStages.length;
+
+  return (
+    <nav
+      className={["arena-step-progress", className].filter(Boolean).join(" ")}
+      aria-label={`${currentStageLabel} progress`}
+    >
+      <div className="arena-step-progress-summary">
+        <strong>
+          Step {currentStep} of {arenaStages.length} · {currentStageLabel}
+        </strong>
+      </div>
+      <ol>
+        {arenaStages.map((stage, index) => {
+          const isCurrent = stage.id === currentStage;
+          const isComplete = currentStageIndex >= 0 && index < currentStageIndex;
+
+          return (
+            <li
+              key={stage.id}
+              className={`${isComplete ? "is-complete" : ""} ${
+                isCurrent ? "is-current" : ""
+              }`}
+              aria-current={isCurrent ? "step" : undefined}
+              aria-label={`${index + 1}. ${stage.label}${
+                isCurrent ? ", current step" : ""
+              }`}
+            >
+              <span aria-hidden="true" />
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}
+
+type ArenaStatusBadgeTone =
+  | "neutral"
+  | "sealed"
+  | "blind-read"
+  | "evidence-gap"
+  | "overclaim"
+  | "supported"
+  | "uncertain"
+  | "contradicted"
+  | "unsupported"
+  | "weak";
+
+type ArenaStatusBadgeProps = {
+  children?: ReactNode;
+  tone?: ArenaStatusBadgeTone;
+  ariaLabel?: string;
+};
+
+export function ArenaStatusBadge({
+  children,
+  tone = "neutral",
+  ariaLabel,
+}: ArenaStatusBadgeProps) {
+  return (
+    <span
+      className={`arena-status-badge arena-status-badge-${tone}`}
+      aria-label={ariaLabel}
+    >
+      {children}
+    </span>
+  );
+}
+
+type ArenaStepHeroProps = {
+  eyebrow: string;
+  status?: ReactNode;
+  title: string;
+  summary: ReactNode;
+  context?: ReactNode;
+};
+
+export function ArenaStepHero({
+  eyebrow,
+  status,
+  title,
+  summary,
+  context,
+}: ArenaStepHeroProps) {
+  return (
+    <header className="arena-step-hero">
+      <div className="arena-step-hero-copy">
+        <div className="arena-step-hero-meta">
+          <p className="eyebrow">{eyebrow}</p>
+          {status}
+        </div>
+        <h2>{title}</h2>
+        <p className="arena-step-hero-summary">{summary}</p>
+        {context ? <p className="arena-step-hero-context">{context}</p> : null}
+      </div>
+    </header>
+  );
+}
+
+type ArenaAction = {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+};
+
+type ArenaActionFooterProps = {
+  microcopy: ReactNode;
+  primaryAction: ArenaAction;
+  secondaryAction?: ArenaAction;
+  ariaLabel?: string;
+  className?: string;
+};
+
+export function ArenaActionFooter({
+  microcopy,
+  primaryAction,
+  secondaryAction,
+  ariaLabel = "Workflow actions",
+  className,
+}: ArenaActionFooterProps) {
+  return (
+    <footer
+      className={["arena-action-footer", className].filter(Boolean).join(" ")}
+      aria-label={ariaLabel}
+    >
+      <p>{microcopy}</p>
+      <div>
+        {secondaryAction ? (
+          <button
+            type="button"
+            className="secondary-action"
+            disabled={secondaryAction.disabled}
+            onClick={secondaryAction.onClick}
+          >
+            {secondaryAction.label}
+          </button>
+        ) : null}
+        <button
+          type="button"
+          className="primary-action"
+          disabled={primaryAction.disabled}
+          onClick={primaryAction.onClick}
+        >
+          {primaryAction.label}
+        </button>
+      </div>
+    </footer>
+  );
+}
+
 type StageHeaderProps = {
   kicker: string;
   title: string;

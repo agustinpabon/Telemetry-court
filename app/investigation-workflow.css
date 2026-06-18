@@ -1036,11 +1036,39 @@
 }
 
 .arena-shell-investigate.arena-stage-blind_read .arena-layout {
-  grid-template-columns: minmax(0, 1fr) clamp(264px, 18vw, 304px);
+  grid-template-columns: minmax(0, 1fr);
+  margin: 0 auto;
+  max-width: 980px;
 }
 
 .arena-shell-investigate.arena-stage-blind_read .stage-rail {
   display: none;
+}
+
+.arena-shell-investigate.arena-stage-blind_read .arena-topbar {
+  background: transparent;
+  border-color: transparent;
+  margin: 0 auto 10px;
+  max-width: 980px;
+  min-height: 0;
+  padding: 0 2px;
+  width: 100%;
+}
+
+.arena-shell-investigate.arena-stage-blind_read .arena-workspace {
+  justify-self: center;
+  max-width: 980px;
+  min-width: 0;
+  width: 100%;
+}
+
+.arena-shell-investigate.arena-stage-blind_read .stage-surface {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  max-width: 100%;
+  min-height: 0;
+  padding: 0;
 }
 
 .arena-shell-investigate.arena-stage-case_file .stage-surface {
@@ -3188,6 +3216,259 @@
   }
 }
 
+.arena-shell-investigate.arena-stage-blind_read .blind-stage,
+.arena-shell-investigate.arena-stage-ai_reveal .ai-reveal-stage {
+  align-content: start;
+  display: grid;
+  gap: 10px;
+  grid-template-rows: auto;
+  min-width: 0;
+}
+
+.arena-shell-investigate .arena-step-progress {
+  align-items: center;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  padding: 0 2px;
+}
+
+.arena-shell-investigate .arena-step-progress-summary strong {
+  color: var(--workflow-muted);
+  font-size: 12px;
+  font-weight: 780;
+  line-height: 1.2;
+}
+
+.arena-shell-investigate .arena-step-progress ol {
+  display: grid;
+  gap: 5px;
+  grid-template-columns: repeat(8, minmax(18px, 1fr));
+  list-style: none;
+  margin: 0;
+  max-width: 260px;
+  padding: 0;
+  width: min(32vw, 260px);
+}
+
+.arena-shell-investigate .arena-step-progress li {
+  min-width: 0;
+}
+
+.arena-shell-investigate .arena-step-progress li > span {
+  background: rgba(50, 48, 47, 0.12);
+  border-radius: 999px;
+  display: block;
+  height: 4px;
+}
+
+.arena-shell-investigate .arena-step-progress li.is-complete > span {
+  background: rgba(95, 111, 82, 0.42);
+}
+
+.arena-shell-investigate .arena-step-progress li.is-current > span {
+  background: var(--workflow-ink);
+}
+
+.arena-shell-investigate .arena-step-hero {
+  align-items: start;
+  background:
+    linear-gradient(145deg, rgba(255, 253, 249, 0.78), rgba(247, 245, 239, 0.46)),
+    var(--workflow-surface);
+  border: 1px solid rgba(50, 48, 47, 0.06);
+  border-radius: 18px;
+  display: grid;
+  gap: 0;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 0;
+  padding: clamp(18px, 2.2vw, 24px);
+}
+
+.arena-shell-investigate .arena-step-hero-copy {
+  max-width: 760px;
+}
+
+.arena-shell-investigate .arena-step-hero-meta {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-start;
+}
+
+.arena-shell-investigate .arena-step-hero h2 {
+  color: var(--workflow-ink);
+  font-size: 34px;
+  font-weight: 790;
+  letter-spacing: 0;
+  line-height: 1.08;
+  margin: 8px 0 0;
+  text-wrap: balance;
+}
+
+.arena-shell-investigate .arena-step-hero-summary {
+  color: var(--workflow-ink);
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.42;
+  margin: 10px 0 0;
+  max-width: 64ch;
+  text-wrap: pretty;
+}
+
+.arena-shell-investigate .arena-step-hero-context {
+  color: var(--workflow-muted);
+  font-size: 13px;
+  line-height: 1.48;
+  margin: 7px 0 0;
+  max-width: 62ch;
+  text-wrap: pretty;
+}
+
+.arena-shell-investigate .arena-status-badge {
+  align-self: flex-start;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 820;
+  line-height: 1.1;
+  padding: 7px 10px;
+  white-space: nowrap;
+}
+
+.arena-shell-investigate .arena-status-badge-overclaim,
+.arena-shell-investigate .arena-status-badge-weak,
+.arena-shell-investigate .arena-status-badge-evidence-gap {
+  background: var(--workflow-weak-soft);
+  border: 1px solid rgba(154, 106, 47, 0.22);
+  color: #6f4d23;
+}
+
+.arena-shell-investigate .arena-status-badge-supported {
+  background: var(--workflow-supported-soft);
+  border: 1px solid rgba(63, 125, 85, 0.24);
+  color: #2f6644;
+}
+
+.arena-shell-investigate .arena-status-badge-contradicted {
+  background: var(--workflow-contradicted-soft);
+  border: 1px solid rgba(155, 61, 53, 0.24);
+  color: #84342d;
+}
+
+.arena-shell-investigate .arena-status-badge-uncertain,
+.arena-shell-investigate .arena-status-badge-unsupported {
+  background: var(--workflow-noise-soft);
+  border: 1px solid rgba(111, 98, 92, 0.22);
+  color: #5b514c;
+}
+
+.arena-shell-investigate .arena-status-badge-sealed,
+.arena-shell-investigate .arena-status-badge-blind-read,
+.arena-shell-investigate .arena-status-badge-neutral {
+  background: var(--workflow-panel);
+  border: 1px solid var(--workflow-border);
+  color: var(--workflow-muted);
+}
+
+.arena-shell-investigate .arena-comparison-block,
+.arena-shell-investigate .arena-soft-section {
+  background: rgba(251, 250, 247, 0.42);
+  border: 1px solid rgba(50, 48, 47, 0.06);
+  border-radius: 16px;
+}
+
+.arena-shell-investigate .arena-section-heading {
+  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+
+.arena-shell-investigate .arena-section-heading h3 {
+  color: var(--workflow-ink);
+  font-size: 20px;
+  font-weight: 780;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.arena-shell-investigate .arena-section-heading p {
+  color: var(--workflow-muted);
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 0;
+  max-width: 68ch;
+  text-align: left;
+}
+
+.arena-shell-investigate .arena-evidence-rows {
+  display: grid;
+  gap: 11px;
+}
+
+.arena-shell-investigate .arena-evidence-row {
+  align-items: start;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(92px, 0.16fr) minmax(0, 1fr);
+  padding: 0;
+}
+
+.arena-shell-investigate .arena-evidence-row span {
+  color: var(--workflow-muted);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.arena-shell-investigate .arena-evidence-row p {
+  color: var(--workflow-ink);
+  font-size: 14px;
+  font-weight: 620;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.arena-shell-investigate .arena-action-footer {
+  align-items: center;
+  display: flex;
+  flex: 0 1 auto;
+  gap: 14px;
+  justify-content: flex-end;
+  min-width: 0;
+  padding-top: 0;
+}
+
+.arena-shell-investigate .arena-action-footer p {
+  color: var(--workflow-muted);
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 0;
+  max-width: 34ch;
+  text-wrap: pretty;
+}
+
+.arena-shell-investigate .arena-action-footer div {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 9px;
+  justify-content: flex-end;
+}
+
+.arena-shell-investigate .arena-action-footer button {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.arena-shell-investigate .arena-action-footer button:focus-visible {
+  outline: 3px solid rgba(95, 111, 82, 0.24);
+  outline-offset: 3px;
+}
+
 .arena-shell-investigate.arena-stage-ai_reveal .arena-layout {
   grid-template-columns: minmax(0, 1fr);
 }
@@ -3769,37 +4050,48 @@
   }
 
   .arena-shell-investigate .reveal-progress,
+  .arena-shell-investigate .arena-step-progress,
   .arena-shell-investigate .reveal-hero,
+  .arena-shell-investigate .arena-step-hero,
   .arena-shell-investigate .reveal-section-heading,
+  .arena-shell-investigate .arena-section-heading,
   .arena-shell-investigate .reveal-bottom-controls,
   .arena-shell-investigate .reveal-actions,
+  .arena-shell-investigate .arena-action-footer,
   .arena-shell-investigate.arena-stage-ai_reveal .investigation-cockpit {
     align-items: stretch;
     grid-template-columns: 1fr;
   }
 
   .arena-shell-investigate .reveal-progress,
+  .arena-shell-investigate .arena-step-progress,
   .arena-shell-investigate .reveal-section-heading,
+  .arena-shell-investigate .arena-section-heading,
   .arena-shell-investigate .reveal-bottom-controls,
-  .arena-shell-investigate .reveal-actions {
+  .arena-shell-investigate .reveal-actions,
+  .arena-shell-investigate .arena-action-footer {
     flex-direction: column;
   }
 
-  .arena-shell-investigate .reveal-progress ol {
+  .arena-shell-investigate .reveal-progress ol,
+  .arena-shell-investigate .arena-step-progress ol {
     max-width: none;
     width: 100%;
   }
 
-  .arena-shell-investigate .reveal-hero {
+  .arena-shell-investigate .reveal-hero,
+  .arena-shell-investigate .arena-step-hero {
     min-height: 0;
   }
 
-  .arena-shell-investigate .reveal-hero h2 {
+  .arena-shell-investigate .reveal-hero h2,
+  .arena-shell-investigate .arena-step-hero h2 {
     font-size: 32px;
     line-height: 1.12;
   }
 
-  .arena-shell-investigate .reveal-hero-summary {
+  .arena-shell-investigate .reveal-hero-summary,
+  .arena-shell-investigate .arena-step-hero-summary {
     font-size: 15px;
   }
 
@@ -3817,14 +4109,16 @@
     padding: 18px 0 14px;
   }
 
-  .arena-shell-investigate .reveal-section-heading p {
+  .arena-shell-investigate .reveal-section-heading p,
+  .arena-shell-investigate .arena-section-heading p {
     max-width: none;
     text-align: left;
   }
 
   .arena-shell-investigate .reveal-scoring-details,
   .arena-shell-investigate .reveal-scoring-details[open],
-  .arena-shell-investigate .reveal-actions {
+  .arena-shell-investigate .reveal-actions,
+  .arena-shell-investigate .arena-action-footer {
     flex: 1 1 100%;
     width: 100%;
   }
@@ -3837,17 +4131,20 @@
     max-width: none;
   }
 
-  .arena-shell-investigate .reveal-actions p {
+  .arena-shell-investigate .reveal-actions p,
+  .arena-shell-investigate .arena-action-footer p {
     max-width: none;
   }
 
-  .arena-shell-investigate .reveal-actions div {
+  .arena-shell-investigate .reveal-actions div,
+  .arena-shell-investigate .arena-action-footer div {
     justify-content: flex-start;
   }
 }
 
 @media (max-width: 620px) {
   .arena-shell-investigate .reveal-evidence-row,
+  .arena-shell-investigate .arena-evidence-row,
   .arena-shell-investigate .reveal-score-grid {
     grid-template-columns: 1fr;
   }
@@ -3864,7 +4161,9 @@
   }
 
   .arena-shell-investigate .reveal-actions div,
-  .arena-shell-investigate .reveal-actions button {
+  .arena-shell-investigate .reveal-actions button,
+  .arena-shell-investigate .arena-action-footer div,
+  .arena-shell-investigate .arena-action-footer button {
     width: 100%;
   }
 
