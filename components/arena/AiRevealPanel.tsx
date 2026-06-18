@@ -1,5 +1,6 @@
 import {
   labelsMatch,
+  type ArenaStage,
   type CaseReviewState,
 } from "@/lib/arenaReviewState";
 import { formatSupportScore, getAverageSupportScore } from "@/lib/caseMetrics";
@@ -18,6 +19,7 @@ type AiRevealPanelProps = {
   onRevealAiLabel: () => void;
   onContinue: () => void;
   onBackToBlindRead: () => void;
+  onSelectStage?: (stage: ArenaStage) => void;
 };
 
 export function AiRevealPanel({
@@ -26,6 +28,7 @@ export function AiRevealPanel({
   onRevealAiLabel,
   onContinue,
   onBackToBlindRead,
+  onSelectStage,
 }: AiRevealPanelProps) {
   const blindChoice = caseFile.blindInterpretationOptions.find(
     (option) => option.id === reviewState.blindChoiceId,
@@ -56,7 +59,7 @@ export function AiRevealPanel({
 
   return (
     <ArenaWorkflowShell className="ai-reveal-stage" ariaLabel="AI Reveal">
-      <ArenaStepProgress currentStage="ai_reveal" />
+      <ArenaStepProgress currentStage="ai_reveal" onSelectStage={onSelectStage} />
 
       <ArenaStepHero
         eyebrow="AI Reveal"

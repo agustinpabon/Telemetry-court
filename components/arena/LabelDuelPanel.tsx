@@ -3,9 +3,16 @@ import {
   duelReasonLabel,
 } from "@/components/arena/arenaMeta";
 import { SemanticMiniMap } from "@/components/arena/SemanticMiniMap";
-import { SectionHeader, StageHeader } from "@/components/arena/WorkflowPrimitives";
+import {
+  ArenaActionFooter,
+  ArenaStatusBadge,
+  ArenaStepHero,
+  ArenaStepProgress,
+  ArenaWorkflowShell,
+  SectionHeader,
+} from "@/components/arena/WorkflowPrimitives";
 import { formatSupportScore } from "@/lib/caseMetrics";
-import type { CaseReviewState } from "@/lib/arenaReviewState";
+import type { ArenaStage, CaseReviewState } from "@/lib/arenaReviewState";
 import type { CaseFile, DuelReason } from "@/lib/types";
 
 type LabelDuelPanelProps = {
@@ -13,7 +20,9 @@ type LabelDuelPanelProps = {
   reviewState: CaseReviewState;
   onSelectWinner: (candidateId: string) => void;
   onToggleReason: (reason: DuelReason) => void;
+  onBackToEvidenceBoard?: () => void;
   onContinue: () => void;
+  onSelectStage?: (stage: ArenaStage) => void;
 };
 
 export function LabelDuelPanel({
@@ -21,23 +30,27 @@ export function LabelDuelPanel({
   reviewState,
   onSelectWinner,
   onToggleReason,
+  onBackToEvidenceBoard,
   onContinue,
+  onSelectStage,
 }: LabelDuelPanelProps) {
   const selectedCandidate = caseFile.candidateLabels.find(
     (candidate) => candidate.id === reviewState.labelDuelWinnerId,
   );
 
   return (
-    <section className="label-duel-stage stage-surface" aria-label="Label Duel">
-      <StageHeader
-        kicker="Label Duel"
-        title="Judge competing interpretations"
-        description="Choose the label that is best supported by the evidence, not the one that sounds most confident."
-        meta={
-          <span className="count-pill">
+    <ArenaWorkflowShell className="label-duel-stage" ariaLabel="Label Duel">
+      <ArenaStepProgress currentStage="label_duel" onSelectStage={onSelectStage} />
+
+      <ArenaStepHero
+        eyebrow="Label Duel"
+        status={
+          <ArenaStatusBadge tone="uncertain">
             {caseFile.candidateLabels.length} candidate labels
-          </span>
+          </ArenaStatusBadge>
         }
+        title="Judge competing interpretations"
+        summary="Choose the label that is best supported by the evidence, not the one that sounds most confident."
       />
 
       <div className="duel-context-row">
@@ -99,14 +112,28 @@ export function LabelDuelPanel({
         </div>
       </div>
 
-      <button
-        type="button"
-        className="primary-action"
-        onClick={onContinue}
-        disabled={!reviewState.labelDuelWinnerId}
-      >
-        Continue to impostor review
-      </button>
-    </section>
+      <ArenaActionFooter
+        className="label-duel-actions"
+        ariaLabel="Label Duel actions"
+        microcopy={
+          reviewState.labelDuelWinnerId
+            ? "Carry the defensible label into the cluster-purity check."
+            : "Select the most defensible label before continuing."
+        }
+        secondaryAction={
+          onBackToEvidenceBoard
+            ? {
+                label: "Back to evidence board",
+                onClick: onBackToEvidenceBoard,
+              }
+            : undefined
+        }
+        primaryAction={{
+          label: "Continue to impostor review",
+          disabled: !reviewState.labelDuelWinnerId,
+          onClick: onContinue,
+        }}
+      />
+    </ArenaWorkflowShell>
   );
 }

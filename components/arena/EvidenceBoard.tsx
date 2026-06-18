@@ -1,9 +1,19 @@
 import { EvidenceBalance } from "@/components/arena/EvidenceBalance";
 import { SemanticMiniMap } from "@/components/arena/SemanticMiniMap";
 import { evidenceRatingMeta, evidenceRatingOptions } from "@/components/arena/arenaMeta";
-import { SectionHeader, StageHeader } from "@/components/arena/WorkflowPrimitives";
+import {
+  ArenaActionFooter,
+  ArenaStatusBadge,
+  ArenaStepHero,
+  ArenaStepProgress,
+  ArenaWorkflowShell,
+  SectionHeader,
+} from "@/components/arena/WorkflowPrimitives";
 import { getRelationsForEvidence } from "@/lib/caseMetrics";
-import type { EvidenceBalance as EvidenceBalanceValue } from "@/lib/arenaReviewState";
+import type {
+  ArenaStage,
+  EvidenceBalance as EvidenceBalanceValue,
+} from "@/lib/arenaReviewState";
 import type { CaseFile, EvidenceRating } from "@/lib/types";
 
 type EvidenceBoardProps = {
@@ -11,6 +21,9 @@ type EvidenceBoardProps = {
   evidenceRatings: Record<string, EvidenceRating>;
   balance: EvidenceBalanceValue;
   onRateEvidence: (evidenceId: string, rating: EvidenceRating) => void;
+  onBackToAiReveal?: () => void;
+  onContinue?: () => void;
+  onSelectStage?: (stage: ArenaStage) => void;
 };
 
 export function EvidenceBoard({
@@ -18,14 +31,29 @@ export function EvidenceBoard({
   evidenceRatings,
   balance,
   onRateEvidence,
+  onBackToAiReveal,
+  onContinue,
+  onSelectStage,
 }: EvidenceBoardProps) {
   return (
-    <section className="evidence-board-stage stage-surface" aria-label="Evidence Board">
-      <StageHeader
-        kicker="Evidence Board"
+    <ArenaWorkflowShell
+      className="evidence-board-stage"
+      ariaLabel="Evidence Board"
+    >
+      <ArenaStepProgress
+        currentStage="evidence_board"
+        onSelectStage={onSelectStage}
+      />
+
+      <ArenaStepHero
+        eyebrow="Evidence Board"
+        status={
+          <ArenaStatusBadge tone="evidence-gap">
+            {caseFile.evidenceItems.length} evidence cards
+          </ArenaStatusBadge>
+        }
         title="Classify the evidence against the claim"
-        description="Each evidence card receives one structured classification so support, contradiction, and context gaps stay inspectable."
-        meta={<span className="count-pill">{caseFile.evidenceItems.length} evidence cards</span>}
+        summary="Each evidence card receives one structured classification so support, contradiction, and context gaps stay inspectable."
       />
 
       <div className="evidence-board-summary-row">
@@ -86,6 +114,26 @@ export function EvidenceBoard({
           );
         })}
       </div>
-    </section>
+
+      {onContinue ? (
+        <ArenaActionFooter
+          className="evidence-board-actions"
+          ariaLabel="Evidence Board actions"
+          microcopy="Use these classifications to choose the strongest competing label next."
+          secondaryAction={
+            onBackToAiReveal
+              ? {
+                  label: "Back to AI reveal",
+                  onClick: onBackToAiReveal,
+                }
+              : undefined
+          }
+          primaryAction={{
+            label: "Continue to label duel",
+            onClick: onContinue,
+          }}
+        />
+      ) : null}
+    </ArenaWorkflowShell>
   );
 }

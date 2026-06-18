@@ -6,7 +6,15 @@ import {
   getGalaxyStatusAccent,
   getLandscapeAtlasPosition,
 } from "@/components/arena/EvidenceGalaxyAtlas";
-import { SectionHeader } from "@/components/arena/WorkflowPrimitives";
+import {
+  ArenaActionFooter,
+  ArenaStatusBadge,
+  ArenaStepHero,
+  ArenaStepProgress,
+  ArenaWorkflowShell,
+  SectionHeader,
+} from "@/components/arena/WorkflowPrimitives";
+import type { ArenaStage } from "@/lib/arenaReviewState";
 import { formatSupportScore, getAverageSupportScore } from "@/lib/caseMetrics";
 import type {
   CaseFile,
@@ -20,7 +28,9 @@ type CaseFilePanelProps = {
   caseFile: CaseFile;
   cases: CaseFile[];
   landscapeContextNodes?: LandscapeContextNode[];
+  onBackToLandscape?: () => void;
   onStartInvestigation: () => void;
+  onSelectStage?: (stage: ArenaStage) => void;
 };
 
 type EvidencePreviewType = "feature" | "timing" | "counterexample" | "neighbour";
@@ -81,11 +91,27 @@ const sourceTypePreviewType: Record<EvidenceSourceType, EvidencePreviewType> = {
   analyst_note: "counterexample",
 };
 
+function getCaseFileStatusTone(status: LandscapeStatus) {
+  switch (status) {
+    case "supported":
+      return "supported" as const;
+    case "overclaimed":
+      return "evidence-gap" as const;
+    case "uncertain":
+      return "uncertain" as const;
+    case "impure":
+    case "too_broad":
+      return "weak" as const;
+  }
+}
+
 export function CaseFilePanel({
   caseFile,
   cases,
   landscapeContextNodes = [],
+  onBackToLandscape,
   onStartInvestigation,
+  onSelectStage,
 }: CaseFilePanelProps) {
   const evidencePreviewRows = getEvidencePreviewRows(caseFile);
   const reviewQuestions = getReviewQuestions(caseFile);
@@ -94,27 +120,20 @@ export function CaseFilePanel({
   );
 
   return (
-    <section className="case-file-stage stage-surface" aria-label="Case File">
-      <article className="case-file-intake-hero">
-        <div className="case-file-hero-copy">
-          <p className="eyebrow">Case File</p>
-          <h2>{caseFile.cluster.name}</h2>
-          <p>{heroDescriptionCopy[caseFile.landscapeStatus]}</p>
-        </div>
-        <div className="case-file-hero-action">
-          <span className="case-file-status-pill">
+    <ArenaWorkflowShell className="case-file-stage" ariaLabel="Case File">
+      <ArenaStepProgress currentStage="case_file" onSelectStage={onSelectStage} />
+
+      <ArenaStepHero
+        eyebrow="Case File"
+        status={
+          <ArenaStatusBadge tone={getCaseFileStatusTone(caseFile.landscapeStatus)}>
             {caseBriefStateCopy[caseFile.landscapeStatus]}
-          </span>
-          <button
-            type="button"
-            className="primary-action"
-            onClick={onStartInvestigation}
-          >
-            Start blind investigation
-          </button>
-          <p>AI claim remains hidden until your first read.</p>
-        </div>
-      </article>
+          </ArenaStatusBadge>
+        }
+        title={caseFile.cluster.name}
+        summary={heroDescriptionCopy[caseFile.landscapeStatus]}
+        context="AI claim remains hidden until your first read."
+      />
 
       <div className="case-file-intake-grid">
         <div className="case-file-main-grid">
@@ -265,22 +284,28 @@ export function CaseFilePanel({
               </dl>
             </article>
 
-            <article className="case-file-next-card">
-              <span>Next step</span>
-              <strong>Blind investigation</strong>
-              <p>Read the packet before the generated claim is revealed.</p>
-              <button
-                type="button"
-                className="primary-action"
-                onClick={onStartInvestigation}
-              >
-                Start blind investigation
-              </button>
-            </article>
           </div>
         </aside>
       </div>
-    </section>
+
+      <ArenaActionFooter
+        className="case-file-actions"
+        ariaLabel="Case File actions"
+        microcopy="Read the packet before the generated claim is revealed."
+        secondaryAction={
+          onBackToLandscape
+            ? {
+                label: "Return to landscape",
+                onClick: onBackToLandscape,
+              }
+            : undefined
+        }
+        primaryAction={{
+          label: "Start blind investigation",
+          onClick: onStartInvestigation,
+        }}
+      />
+    </ArenaWorkflowShell>
   );
 }
 

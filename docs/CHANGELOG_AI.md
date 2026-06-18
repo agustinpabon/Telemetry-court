@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-18: Global Workflow Chrome Migration
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Migrate all 8 Telemetry Court workflow pages onto the shared `/ai-reveal` visual foundation without deeply redesigning page-specific task content.
+- Files changed: `components/arena/WorkflowPrimitives.tsx`, `components/arena/AppShell.tsx`, `components/arena/TelemetryGalaxy.tsx`, `components/arena/CaseFilePanel.tsx`, `components/arena/BlindReadPanel.tsx`, `components/arena/AiRevealPanel.tsx`, `components/arena/EvidenceBoard.tsx`, `components/arena/LabelDuelPanel.tsx`, `components/arena/ImpostorPanel.tsx`, `components/arena/VerdictPanel.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Migrated Evidence Landscape, Case File, Blind Read, AI Reveal, Evidence Board, Label Duel, Impostor, and Verdict to the shared centered workflow shell, aligned header, compact 8-step progress, shared hero pattern, status badges, and action footer language. Removed the mounted heavy stage rail, right case-status cockpit, and generic global Back/Next controls from the active workflow chrome while preserving route guards, session state, evidence classification, label duel, impostor selection, verdict, export, and review drawer behavior.
+- Decisions made: Kept the Evidence Landscape's dark galaxy experience but aligned its app header and progress chrome with the light shared system; extended `ArenaStepProgress` to support compact guarded stage navigation so the old rail's navigational affordance is preserved without dominating the layout; used a shared 1040px centered workflow width; kept the Verdict review-data menu; left the old StageRail and InvestigationCockpit source in place for a later cleanup-only pass instead of removing unrelated code.
+- Checks run: `npx tsc --noEmit` passed; `npm test` passed with 33 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/WorkflowPrimitives.tsx components/arena/TelemetryGalaxy.tsx components/arena/CaseFilePanel.tsx components/arena/BlindReadPanel.tsx components/arena/AiRevealPanel.tsx components/arena/EvidenceBoard.tsx components/arena/LabelDuelPanel.tsx components/arena/ImpostorPanel.tsx components/arena/VerdictPanel.tsx components/arena/AppShell.tsx app/investigation-workflow.css app/page.test.ts` returned `[]`; desktop screenshots captured all 8 workflow pages through the real guarded flow; mobile smoke test passed with no console errors, no horizontal overflow, no old rail/cockpit/global controls, and correct step labels. Screenshots saved in `/tmp/telemetry-court-global-chrome/`.
+- Assumptions: Replacing the left rail with compact clickable progress segments is an acceptable global navigation treatment because it still uses the existing guarded `navigateToStage` path; page internals can remain visually denser until their dedicated redesign passes.
+- Risks/follow-ups: Evidence Board, Label Duel, Impostor, and Verdict still contain older task-card compositions by design; the next pass should redesign those internals one page at a time. Old unused chrome components and CSS can be removed after the new shell direction settles.
+- Next recommended step: Start the page-specific redesign pass with `/evidence-board`, reducing card nesting while keeping evidence classification logic intact.
+- Suggested commit message: `ux(arena): migrate workflow chrome globally`
+
 ## 2026-06-18: Fix Arena Screenshot Route Guards
 
 - Agent/model: Antigravity (Gemini 3.1 Pro)

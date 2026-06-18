@@ -10,6 +10,11 @@ import {
   EvidenceGalaxyAtlas,
   getGalaxyStatusAccent,
 } from "@/components/arena/EvidenceGalaxyAtlas";
+import {
+  ArenaStepProgress,
+  ArenaWorkflowShell,
+} from "@/components/arena/WorkflowPrimitives";
+import type { ArenaStage } from "@/lib/arenaReviewState";
 import { formatSupportScore } from "@/lib/caseMetrics";
 import type { CaseFile, LandscapeContextNode } from "@/lib/types";
 
@@ -22,6 +27,7 @@ type TelemetryGalaxyProps = {
   onPreviewCase: (caseId: string) => void;
   onClearPreview: () => void;
   onOpenCaseFile: () => void;
+  onSelectStage?: (stage: ArenaStage) => void;
 };
 
 type SelectedRegionStyle = CSSProperties & {
@@ -37,9 +43,15 @@ export function TelemetryGalaxy({
   onPreviewCase,
   onClearPreview,
   onOpenCaseFile,
+  onSelectStage,
 }: TelemetryGalaxyProps) {
   return (
-    <section className="galaxy-stage stage-surface" aria-label="Evidence landscape">
+    <ArenaWorkflowShell className="galaxy-stage" ariaLabel="Evidence landscape">
+      <ArenaStepProgress
+        currentStage="landscape"
+        onSelectStage={onSelectStage}
+      />
+
       <div className="stage-heading">
         <div>
           <h2>Evidence landscape</h2>
@@ -71,7 +83,7 @@ export function TelemetryGalaxy({
           onOpenCaseFile={onOpenCaseFile}
         />
       </div>
-    </section>
+    </ArenaWorkflowShell>
   );
 }
 

@@ -1,9 +1,16 @@
 import type { CSSProperties } from "react";
 
 import { SemanticMiniMap } from "@/components/arena/SemanticMiniMap";
-import { SectionHeader, StageHeader } from "@/components/arena/WorkflowPrimitives";
+import {
+  ArenaActionFooter,
+  ArenaStatusBadge,
+  ArenaStepHero,
+  ArenaStepProgress,
+  ArenaWorkflowShell,
+  SectionHeader,
+} from "@/components/arena/WorkflowPrimitives";
 import { formatSupportScore } from "@/lib/caseMetrics";
-import type { CaseReviewState } from "@/lib/arenaReviewState";
+import type { ArenaStage, CaseReviewState } from "@/lib/arenaReviewState";
 import type { CaseFile } from "@/lib/types";
 
 const orbitPositions = [
@@ -18,7 +25,9 @@ type ImpostorPanelProps = {
   caseFile: CaseFile;
   reviewState: CaseReviewState;
   onSelectSession: (sessionId: string) => void;
+  onBackToLabelDuel?: () => void;
   onContinue: () => void;
+  onSelectStage?: (stage: ArenaStage) => void;
 };
 
 type SessionStyle = CSSProperties & {
@@ -30,23 +39,27 @@ export function ImpostorPanel({
   caseFile,
   reviewState,
   onSelectSession,
+  onBackToLabelDuel,
   onContinue,
+  onSelectStage,
 }: ImpostorPanelProps) {
   const selectedSession = caseFile.representativeSessions.find(
     (session) => session.id === reviewState.impostorSessionId,
   );
 
   return (
-    <section className="impostor-stage stage-surface" aria-label="Find the Impostor">
-      <StageHeader
-        kicker="Find the Impostor"
-        title="Which representative session least belongs?"
-        description="Test cluster purity by selecting the session with the weakest fit against the behavioural region."
-        meta={
-          <span className="count-pill">
+    <ArenaWorkflowShell className="impostor-stage" ariaLabel="Find the Impostor">
+      <ArenaStepProgress currentStage="impostor" onSelectStage={onSelectStage} />
+
+      <ArenaStepHero
+        eyebrow="Find the Impostor"
+        status={
+          <ArenaStatusBadge tone="uncertain">
             {caseFile.representativeSessions.length} representative sessions
-          </span>
+          </ArenaStatusBadge>
         }
+        title="Which representative session least belongs?"
+        summary="Test cluster purity by selecting the session with the weakest fit against the behavioural region."
       />
 
       <div className="impostor-context-row">
@@ -110,9 +123,6 @@ export function ImpostorPanel({
                     "This reviewer-selected session is recorded in the JSON export, but it is not the seeded outlier for this synthetic case."}
                 </p>
               </div>
-              <button type="button" className="primary-action" onClick={onContinue}>
-                Continue to verdict
-              </button>
             </>
           ) : (
             <>
@@ -126,6 +136,29 @@ export function ImpostorPanel({
           )}
         </article>
       </div>
-    </section>
+
+      <ArenaActionFooter
+        className="impostor-actions"
+        ariaLabel="Impostor actions"
+        microcopy={
+          selectedSession
+            ? "Use the weakest-fit session to inform the final verdict."
+            : "Select the least representative session before continuing."
+        }
+        secondaryAction={
+          onBackToLabelDuel
+            ? {
+                label: "Back to label duel",
+                onClick: onBackToLabelDuel,
+              }
+            : undefined
+        }
+        primaryAction={{
+          label: "Continue to verdict",
+          disabled: !selectedSession,
+          onClick: onContinue,
+        }}
+      />
+    </ArenaWorkflowShell>
   );
 }

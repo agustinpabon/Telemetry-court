@@ -7,10 +7,8 @@ import { BlindReadPanel } from "@/components/arena/BlindReadPanel";
 import { CaseFilePanel } from "@/components/arena/CaseFilePanel";
 import { EvidenceBoard } from "@/components/arena/EvidenceBoard";
 import { ImpostorPanel } from "@/components/arena/ImpostorPanel";
-import { InvestigationCockpit } from "@/components/arena/InvestigationCockpit";
 import { LabelDuelPanel } from "@/components/arena/LabelDuelPanel";
 import { ReviewSummaryDrawer } from "@/components/arena/ReviewSummaryDrawer";
-import { StageRail } from "@/components/arena/StageRail";
 import { TelemetryGalaxy } from "@/components/arena/TelemetryGalaxy";
 import { VerdictPanel } from "@/components/arena/VerdictPanel";
 import { ArenaHeader } from "@/components/arena/WorkflowPrimitives";
@@ -22,13 +20,10 @@ import {
   arenaReducer,
   buildArenaReview,
   createInitialArenaState,
-  getAdjacentStage,
   getCurrentReviewState,
   getEvidenceBalance,
   getEvidenceRatings,
-  getReviewCompletion,
   getSelectedCase,
-  getStageCompletionMap,
   type ArenaAction,
   type ArenaUiState,
   arenaStages,
@@ -125,16 +120,6 @@ export function AppShell({
 
   const evidenceRatings = getEvidenceRatings(selectedCase, reviewState);
   const evidenceBalance = getEvidenceBalance(selectedCase, evidenceRatings);
-  const reviewCompletion = getReviewCompletion(
-    reviewState,
-    evidenceRatings,
-    selectedCase,
-  );
-  const completedStages = getStageCompletionMap(
-    selectedCase,
-    reviewState,
-    evidenceRatings,
-  );
   const blindChoice = selectedCase.blindInterpretationOptions.find(
     (option) => option.id === reviewState.blindChoiceId,
   );
@@ -172,10 +157,6 @@ export function AppShell({
     }
 
     dispatchArena({ type: "goToStage", stage: protectedStage });
-  }
-
-  function goToAdjacentStage(direction: 1 | -1) {
-    navigateToStage(getAdjacentStage(activeStage, direction));
   }
 
   function openCaseFile() {
@@ -244,11 +225,6 @@ export function AppShell({
   const stageTransitionKey = isExploreMode
     ? activeStage
     : `${selectedCase.id}-${activeStage}`;
-  const showInvestigationCockpit =
-    !isExploreMode &&
-    activeStage !== "case_file" &&
-    activeStage !== "blind_read" &&
-    activeStage !== "ai_reveal";
   const shellClassName = [
     "arena-shell",
     isExploreMode ? "arena-shell-explore" : "arena-shell-investigate",
@@ -275,12 +251,6 @@ export function AppShell({
       />
 
       <div className="arena-layout">
-        <StageRail
-          activeStage={activeStage}
-          completedStages={completedStages}
-          onSelectStage={navigateToStage}
-        />
-
         <section className="arena-workspace" aria-live="polite">
           <div
             key={stageTransitionKey}
@@ -306,48 +276,7 @@ export function AppShell({
               openReviewDrawer,
             })}
           </div>
-
-          {isExploreMode ||
-          activeStage === "blind_read" ||
-          activeStage === "ai_reveal" ? null : (
-            <div className="stage-controls">
-              <button
-                type="button"
-                onClick={() => goToAdjacentStage(-1)}
-              >
-                Back
-              </button>
-              <button
-                type="button"
-                onClick={() => goToAdjacentStage(1)}
-                disabled={
-                  activeStage === "verdict" ||
-                  getProtectedArenaStage(
-                    getAdjacentStage(activeStage, 1),
-                    blindChoiceId,
-                    aiLabelRevealed,
-                  ) === activeStage
-                }
-              >
-                Next
-              </button>
-            </div>
-          )}
         </section>
-
-        {showInvestigationCockpit ? (
-          <InvestigationCockpit
-            key={selectedCase.id}
-            caseFile={selectedCase}
-            activeStage={activeStage}
-            reviewState={reviewState}
-            reviewCompletion={reviewCompletion}
-            onOpenCaseFile={openCaseFile}
-            onStartInvestigation={startInvestigation}
-            onRevealAiLabel={revealAiLabel}
-            onOpenReviewDrawer={openReviewDrawer}
-          />
-        ) : null}
       </div>
 
       {arenaState.reviewDrawerOpen ? (
@@ -465,7 +394,9 @@ function renderStage({
           caseFile={selectedCase}
           cases={cases}
           landscapeContextNodes={landscapeContextNodes}
+          onBackToLandscape={() => navigateToStage("landscape")}
           onStartInvestigation={startInvestigation}
+          onSelectStage={navigateToStage}
         />
       );
     case "blind_read":
@@ -477,6 +408,7 @@ function renderStage({
             dispatchArena({ type: "chooseBlindInterpretation", optionId })
           }
           onRevealAiLabel={revealAiLabel}
+          onSelectStage={navigateToStage}
         />
       );
     case "ai_reveal":
@@ -487,6 +419,7 @@ function renderStage({
           onRevealAiLabel={revealAiLabel}
           onContinue={() => navigateToStage("evidence_board")}
           onBackToBlindRead={() => navigateToStage("blind_read")}
+          onSelectStage={navigateToStage}
         />
       );
     case "evidence_board":
@@ -498,6 +431,9 @@ function renderStage({
           onRateEvidence={(evidenceId, rating) =>
             dispatchArena({ type: "classifyEvidence", evidenceId, rating })
           }
+          onBackToAiReveal={() => navigateToStage("ai_reveal")}
+          onContinue={() => navigateToStage("label_duel")}
+          onSelectStage={navigateToStage}
         />
       );
     case "label_duel":
@@ -511,7 +447,9 @@ function renderStage({
           onToggleReason={(reason) =>
             dispatchArena({ type: "toggleDuelReason", reason })
           }
+          onBackToEvidenceBoard={() => navigateToStage("evidence_board")}
           onContinue={() => navigateToStage("impostor")}
+          onSelectStage={navigateToStage}
         />
       );
     case "impostor":
@@ -522,7 +460,9 @@ function renderStage({
           onSelectSession={(sessionId) =>
             dispatchArena({ type: "selectImpostorSession", sessionId })
           }
+          onBackToLabelDuel={() => navigateToStage("label_duel")}
           onContinue={() => navigateToStage("verdict")}
+          onSelectStage={navigateToStage}
         />
       );
     case "verdict":
@@ -537,9 +477,11 @@ function renderStage({
           onToggleFailureMode={(reason) =>
             dispatchArena({ type: "toggleFailureMode", reason })
           }
+          onBackToImpostor={() => navigateToStage("impostor")}
           onOpenReviewDrawer={openReviewDrawer}
           onCopyJson={handleCopyReviewJson}
           onDownloadJson={handleDownloadReviewJson}
+          onSelectStage={navigateToStage}
         />
       );
     case "landscape":
@@ -554,6 +496,7 @@ function renderStage({
           onPreviewCase={setPreviewCaseId}
           onClearPreview={() => setPreviewCaseId(undefined)}
           onOpenCaseFile={openCaseFile}
+          onSelectStage={navigateToStage}
         />
       );
   }

@@ -1,12 +1,23 @@
 import { JudgmentReceipt } from "@/components/arena/JudgmentReceipt";
 import { SemanticMiniMap } from "@/components/arena/SemanticMiniMap";
-import { SectionHeader, StageHeader } from "@/components/arena/WorkflowPrimitives";
+import {
+  ArenaActionFooter,
+  ArenaStatusBadge,
+  ArenaStepHero,
+  ArenaStepProgress,
+  ArenaWorkflowShell,
+  SectionHeader,
+} from "@/components/arena/WorkflowPrimitives";
 import {
   duelReasonLabel,
   finalVerdictLabel,
   finalVerdicts,
 } from "@/components/arena/arenaMeta";
-import type { CaseReviewState, EvidenceBalance } from "@/lib/arenaReviewState";
+import type {
+  ArenaStage,
+  CaseReviewState,
+  EvidenceBalance,
+} from "@/lib/arenaReviewState";
 import type { CaseFile, DuelReason, FinalVerdict } from "@/lib/types";
 
 type VerdictPanelProps = {
@@ -15,9 +26,11 @@ type VerdictPanelProps = {
   balance: EvidenceBalance;
   onSelectVerdict: (verdict: FinalVerdict) => void;
   onToggleFailureMode: (reason: DuelReason) => void;
+  onBackToImpostor?: () => void;
   onOpenReviewDrawer: () => void;
   onCopyJson: () => void;
   onDownloadJson: () => void;
+  onSelectStage?: (stage: ArenaStage) => void;
 };
 
 export function VerdictPanel({
@@ -26,9 +39,11 @@ export function VerdictPanel({
   balance,
   onSelectVerdict,
   onToggleFailureMode,
+  onBackToImpostor,
   onOpenReviewDrawer,
   onCopyJson,
   onDownloadJson,
+  onSelectStage,
 }: VerdictPanelProps) {
   const blindChoice = caseFile.blindInterpretationOptions.find(
     (option) => option.id === reviewState.blindChoiceId,
@@ -44,12 +59,18 @@ export function VerdictPanel({
     : undefined;
 
   return (
-    <section className="verdict-stage stage-surface" aria-label="Structured Verdict">
-      <StageHeader
-        kicker="Structured Verdict"
+    <ArenaWorkflowShell className="verdict-stage" ariaLabel="Structured Verdict">
+      <ArenaStepProgress currentStage="verdict" onSelectStage={onSelectStage} />
+
+      <ArenaStepHero
+        eyebrow="Structured Verdict"
+        status={
+          <ArenaStatusBadge tone={reviewState.finalVerdict ? "supported" : "neutral"}>
+            {reviewState.finalVerdict ? "Verdict selected" : "Awaiting verdict"}
+          </ArenaStatusBadge>
+        }
         title="Issue a defensible judgment"
-        description="Resolve the investigation into a structured outcome that can be exported as review data."
-        meta={<span className="count-pill">8 verdict paths</span>}
+        summary="Resolve the investigation into a structured outcome that can be exported as review data."
       />
 
       <div className="verdict-context-row">
@@ -126,6 +147,29 @@ export function VerdictPanel({
           onDownloadJson={onDownloadJson}
         />
       </div>
-    </section>
+
+      <ArenaActionFooter
+        className="verdict-actions"
+        ariaLabel="Verdict actions"
+        microcopy={
+          reviewState.finalVerdict
+            ? "Open the structured review data when the verdict is ready."
+            : "Choose a verdict before opening the structured review JSON."
+        }
+        secondaryAction={
+          onBackToImpostor
+            ? {
+                label: "Back to impostor review",
+                onClick: onBackToImpostor,
+              }
+            : undefined
+        }
+        primaryAction={{
+          label: "Open review JSON",
+          disabled: !reviewState.finalVerdict,
+          onClick: onOpenReviewDrawer,
+        }}
+      />
+    </ArenaWorkflowShell>
   );
 }

@@ -47,12 +47,14 @@ type ArenaStepProgressProps = {
   currentStage: ArenaStage;
   className?: string;
   label?: string;
+  onSelectStage?: (stage: ArenaStage) => void;
 };
 
 export function ArenaStepProgress({
   currentStage,
   className,
   label,
+  onSelectStage,
 }: ArenaStepProgressProps) {
   const currentStageIndex = arenaStages.findIndex(
     (stage) => stage.id === currentStage,
@@ -78,6 +80,9 @@ export function ArenaStepProgress({
         {arenaStages.map((stage, index) => {
           const isCurrent = stage.id === currentStage;
           const isComplete = currentStageIndex >= 0 && index < currentStageIndex;
+          const stageLabel = `${index + 1}. ${stage.label}${
+            isCurrent ? ", current step" : ""
+          }`;
 
           return (
             <li
@@ -86,11 +91,19 @@ export function ArenaStepProgress({
                 isCurrent ? "is-current" : ""
               }`}
               aria-current={isCurrent ? "step" : undefined}
-              aria-label={`${index + 1}. ${stage.label}${
-                isCurrent ? ", current step" : ""
-              }`}
+              aria-label={onSelectStage ? undefined : stageLabel}
             >
-              <span aria-hidden="true" />
+              {onSelectStage ? (
+                <button
+                  type="button"
+                  onClick={() => onSelectStage(stage.id)}
+                  aria-label={stageLabel}
+                >
+                  <span aria-hidden="true" />
+                </button>
+              ) : (
+                <span aria-hidden="true" />
+              )}
             </li>
           );
         })}

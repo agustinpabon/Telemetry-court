@@ -8,7 +8,11 @@ import { AppShell } from "@/components/arena/AppShell";
 import { AiRevealPanel } from "@/components/arena/AiRevealPanel";
 import { BlindReadPanel } from "@/components/arena/BlindReadPanel";
 import { CaseFilePanel } from "@/components/arena/CaseFilePanel";
+import { EvidenceBoard } from "@/components/arena/EvidenceBoard";
 import { getLandscapeAtlasPosition } from "@/components/arena/EvidenceGalaxyAtlas";
+import { ImpostorPanel } from "@/components/arena/ImpostorPanel";
+import { LabelDuelPanel } from "@/components/arena/LabelDuelPanel";
+import { VerdictPanel } from "@/components/arena/VerdictPanel";
 import { CaseSwitcher } from "@/components/CaseSwitcher";
 import { ClaimLedger } from "@/components/ClaimLedger";
 import { EvidenceCard } from "@/components/EvidenceCard";
@@ -23,6 +27,10 @@ import {
   getPathForArenaStage,
 } from "@/lib/arenaRoutes";
 import { getRelationsForEvidence } from "@/lib/caseMetrics";
+import {
+  getEvidenceBalance,
+  getEvidenceRatings,
+} from "@/lib/arenaReviewState";
 
 function renderHomePageText(): string {
   const html = renderToStaticMarkup(
@@ -75,6 +83,7 @@ test("home page static review flow exposes the core Telemetry Court concepts", (
 
   assert.match(pageText, /Telemetry Court/);
   assert.match(pageText, /Evidence review for AI-named telemetry clusters\./);
+  assert.match(pageText, /Step 1 of 8 · Landscape/);
   assert.match(pageText, /Evidence landscape/);
   assert.match(
     pageText,
@@ -111,6 +120,7 @@ test("home page static review flow exposes the core Telemetry Court concepts", (
   assert.match(pageText, /Label Duel/);
   assert.match(pageText, /Impostor/);
   assert.match(pageText, /Verdict/);
+  assert.doesNotMatch(pageText, /Investigation stages/);
 });
 
 test("telemetry galaxy renders every synthetic behavioural region", () => {
@@ -158,6 +168,7 @@ test("case file intake summarizes the selected region before blind investigation
   const pageText = renderCaseFilePageText();
 
   assert.match(pageText, /Case File/);
+  assert.match(pageText, /Step 2 of 8 · Case File/);
   assert.match(pageText, /IAM role provisioning region/);
   assert.match(pageText, /cluster-iam-029/);
   assert.match(pageText, /Evidence gap/);
@@ -187,6 +198,7 @@ test("case file intake summarizes the selected region before blind investigation
   assert.match(pageText, /View in landscape/);
   assert.match(pageText, /Start blind investigation/);
   assert.match(pageText, /AI claim remains hidden until your first read\./);
+  assert.match(pageText, /Return to landscape/);
   assert.match(pageText, /Landscape locator/);
   assert.match(pageText, /cluster-iam-029 selected/);
   assert.match(pageText, /cluster-iam-041 nearest neighbour/);
@@ -202,6 +214,8 @@ test("case file intake summarizes the selected region before blind investigation
   assert.doesNotMatch(pageText, /Resource discovery/);
   assert.doesNotMatch(pageText, /IAM administration neighbourhood/);
   assert.doesNotMatch(pageText, /Suspicious IAM privilege escalation/);
+  assert.doesNotMatch(pageText, /Investigation stages/);
+  assert.doesNotMatch(pageText, />Next<\/button>/);
 });
 
 test("case file region context falls back when neighbour coordinates are unavailable", () => {
@@ -393,6 +407,71 @@ test("AI Reveal presents divergence as an evidence review moment", () => {
   assert.doesNotMatch(markup, /Open review summary/);
   assert.doesNotMatch(markup, /AI suggested:/);
   assert.doesNotMatch(markup, /2\/6 review steps complete/);
+});
+
+test("later workflow panels use compact chrome and descriptive actions", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const evidenceRatings = getEvidenceRatings(selectedCase, {});
+  const balance = getEvidenceBalance(selectedCase, evidenceRatings);
+  const markup = renderStaticMarkup(
+    React.createElement(
+      React.Fragment,
+      null,
+      React.createElement(EvidenceBoard, {
+        caseFile: selectedCase,
+        evidenceRatings,
+        balance,
+        onRateEvidence: () => undefined,
+        onBackToAiReveal: () => undefined,
+        onContinue: () => undefined,
+      }),
+      React.createElement(LabelDuelPanel, {
+        caseFile: selectedCase,
+        reviewState: { labelDuelWinnerId: selectedCase.candidateLabels[0]?.id },
+        onSelectWinner: () => undefined,
+        onToggleReason: () => undefined,
+        onBackToEvidenceBoard: () => undefined,
+        onContinue: () => undefined,
+      }),
+      React.createElement(ImpostorPanel, {
+        caseFile: selectedCase,
+        reviewState: {
+          impostorSessionId: selectedCase.representativeSessions[0]?.id,
+        },
+        onSelectSession: () => undefined,
+        onBackToLabelDuel: () => undefined,
+        onContinue: () => undefined,
+      }),
+      React.createElement(VerdictPanel, {
+        caseFile: selectedCase,
+        reviewState: { finalVerdict: "unsupported_overclaimed" },
+        balance,
+        onSelectVerdict: () => undefined,
+        onToggleFailureMode: () => undefined,
+        onBackToImpostor: () => undefined,
+        onOpenReviewDrawer: () => undefined,
+        onCopyJson: () => undefined,
+        onDownloadJson: () => undefined,
+      }),
+    ),
+  );
+
+  assert.match(markup, /Step 5 of 8 · Evidence Board/);
+  assert.match(markup, /Step 6 of 8 · Label Duel/);
+  assert.match(markup, /Step 7 of 8 · Impostor/);
+  assert.match(markup, /Step 8 of 8 · Verdict/);
+  assert.match(markup, /Continue to label duel/);
+  assert.match(markup, /Back to AI reveal/);
+  assert.match(markup, /Continue to impostor review/);
+  assert.match(markup, /Back to evidence board/);
+  assert.match(markup, /Continue to verdict/);
+  assert.match(markup, /Back to label duel/);
+  assert.match(markup, /Open review JSON/);
+  assert.match(markup, /Back to impostor review/);
+  assert.doesNotMatch(markup, /Open review summary/);
+  assert.doesNotMatch(markup, />Next<\/button>/);
 });
 
 test("blind interpretation choices render as accessible radio cards", () => {
