@@ -19,6 +19,45 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-18: Blind Read Zoom Resilience
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Fix the `/blind-read` layout at browser zoom levels, especially 110%, after the simplified premium layout still felt cramped at intermediate widths.
+- Files changed: `app/investigation-workflow.css`, `screenshots/blind-read.png`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a mid-width Blind Read layout for zoomed desktop windows so the main stage becomes full width and the compact status card moves below it instead of squeezing the stage sideways. Also changed the interpretation grid from a fixed two-column layout to a width-aware `auto-fit` grid so cards only sit side by side when each card has enough room.
+- Decisions made: Preserved the compact right status card on wide desktop and kept the existing mobile collapse behavior; solved the 110% failure by removing the narrow side-by-side composition at mid widths rather than only shrinking typography or spacing.
+- Checks run: `npx tsc --noEmit` passed; `npm test` passed with 31 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json app/investigation-workflow.css components/arena/BlindReadPanel.tsx components/arena/InvestigationCockpit.tsx app/page.test.ts` returned `[]`; Playwright zoom-equivalent verification passed at 80%, 90%, 100%, 110%, 125%, and 150% with no horizontal overflow, no visible text overflow, no pre-reveal leakage, enabled reveal after selection, and status-panel update after selecting an interpretation.
+- Assumptions: The reported 110% issue is the intermediate-width desktop layout around a 1440px browser window at 110% zoom, approximated with a 1309px CSS viewport in automated verification.
+- Risks/follow-ups: If reviewers commonly run browser zoom above 150%, consider a broader workflow-wide zoom audit across Case File, AI Reveal, Evidence Board, Label Duel, Impostor, and Verdict.
+- Next recommended step: Try `http://localhost:3020/blind-read` at 90%, 100%, 110%, 125%, and 150% in your browser and confirm the card density now feels right.
+- Suggested commit message: `ux(arena): harden blind read zoom layout`
+
+## 2026-06-18: Blind Read Premium Simplification Pass
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Refine the `/blind-read` stage one more step so it feels calmer, less crowded, and more intentional while preserving the pre-reveal blind-read guardrails.
+- Files changed: `components/arena/BlindReadPanel.tsx`, `components/arena/InvestigationCockpit.tsx`, `components/arena/AiRevealPanel.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, `screenshots/blind-read.png`, and `docs/CHANGELOG_AI.md`.
+- Summary: Removed the duplicated Blind Read left-rail navigation from the active layout, replaced the crowded labeled 8-step strip with `Step 3 of 8 · Blind Read` and compact progress segments, changed the hero copy to `Judge the evidence first.`, made the evidence/context area full-width above the choices, moved the cluster preview into a secondary context-preview module, tightened interpretation cards into a denser two-column desktop grid, added CTA save-before-reveal microcopy, and compacted the pre-reveal case-status card.
+- Decisions made: Kept all pre-reveal AI claim, agreement, support, suspiciousness, overclaim, and result metrics hidden; treated checklist evidence state as `Evidence visible` rather than inferred review completion; used explicit completed/incomplete checklist icons; kept `None of these` visually secondary; normalized user-facing step-name casing to `Blind Read`.
+- Checks run: `npx tsc --noEmit` passed; `npm test` passed with 31 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/BlindReadPanel.tsx components/arena/InvestigationCockpit.tsx components/arena/AiRevealPanel.tsx app/investigation-workflow.css app/page.test.ts` returned `[]`; Playwright verification against `http://localhost:3020/blind-read` passed on 1440x900 and 390x844 with no pre-reveal label/status/metric leakage, no horizontal overflow, hidden rail, 8 progress segments, disabled CTA before selection, enabled reveal after selection, and status-panel update after selecting an interpretation.
+- Assumptions: The Blind Read page should use the page-level progress treatment as its only primary navigation, with the global stage rail hidden only on this step.
+- Risks/follow-ups: The compact status card remains below the main content on narrow screens; if mobile needs persistent status, a future pass could collapse it into a top summary row rather than restoring a sidebar.
+- Next recommended step: Review the updated `/blind-read` screenshot against the demo viewport and decide whether the same compact progress treatment should become the workflow-wide pattern.
+- Suggested commit message: `ux(arena): simplify blind read decision stage`
+
+## 2026-06-18: Blind Read Flow Coherence Refinement
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Refine the `/blind-read` stage so it reads as step 3 of the full 8-step review flow, protects the blind interpretation before AI reveal, removes conflicting navigation, and improves the premium evidence-first layout.
+- Files changed: `components/arena/BlindReadPanel.tsx`, `components/arena/InvestigationCockpit.tsx`, `components/arena/AppShell.tsx`, `lib/arenaReviewState.ts`, `lib/arenaRoutes.ts`, `app/investigation-workflow.css`, `app/page.test.ts`, `lib/arenaReviewState.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Replaced the 4-step Blind Read progress with an 8-step progress model, neutralized the pre-reveal case title, tightened the sealed-claim notice and secondary cluster preview, converted evidence bullets into scan-friendly rows, polished the technical-evidence disclosure, strengthened radio-card affordance, hid top-level export until Verdict, and removed the Blind Read footer `Next` path. Added route protection so `/ai-reveal` and later stages render/redirect back until the required blind read and reveal gates are satisfied.
+- Decisions made: Used `Landscape` as the short step label while retaining the Evidence landscape page title; treated seeded default evidence ratings as fixture defaults rather than completed user classification work; kept one compact sealed-claim notice plus the right-panel `AI claim: Hidden` status; kept the mini-map only as a small neutral locator with no pre-reveal evidence/status metrics.
+- Checks run: `npx tsc --noEmit` passed; `npm test` passed with 31 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/BlindReadPanel.tsx components/arena/InvestigationCockpit.tsx components/arena/AppShell.tsx lib/arenaReviewState.ts lib/arenaRoutes.ts app/investigation-workflow.css app/page.test.ts lib/arenaReviewState.test.ts` returned `[]`; browser verification against the existing dev server at `http://localhost:3000` confirmed no pre-reveal AI label/case-title/status/metric leakage, disabled CTA before selection, exactly one reveal CTA after selection, route guard from `/ai-reveal` back to `/blind-read`, no desktop/mobile horizontal overflow, no error overlay, and no console errors. Screenshots saved to `/private/tmp/telemetry-blind-read-refined-desktop-v2.png` and `/private/tmp/telemetry-blind-read-refined-mobile-v2.png`.
+- Assumptions: The default IAM sample remains the primary demo case, and evidence-summary copy should stay neutral while still naming observed IAM operations because those are visible evidence, not the hidden AI interpretation.
+- Risks/follow-ups: The global left rail is still visually compact and number-forward, but the Blind Read page now has a labeled 8-step progress component in the main workspace. A future workflow-wide pass could standardize all stage navigation around the same clearer progress model.
+- Next recommended step: Apply the same route-gate and progress-language audit to `/ai-reveal`, `/evidence-board`, and `/label-duel` so every stage has the same 8-step coherence.
+- Suggested commit message: `ux(arena): refine blind read flow protection`
+
 ## 2026-06-18: Blind Read Decision-Focused Redesign
 
 - Agent/model: Codex (GPT-5)

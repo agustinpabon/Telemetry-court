@@ -30,6 +30,7 @@ import {
   getStageCompletionMap,
   type ArenaAction,
   type ArenaUiState,
+  arenaStages,
 } from "@/lib/arenaReviewState";
 import {
   buildReviewResultExport,
@@ -66,10 +67,18 @@ export function AppShell({
   const [exportMessage, setExportMessage] = useState<string>();
 
   const selectedCase = getSelectedCase(cases, arenaState);
+  const reviewState = getCurrentReviewState(arenaState);
+  const blindChoiceId = reviewState.blindChoiceId;
+  const aiLabelRevealed = reviewState.aiLabelRevealed;
+  const activeStage = getProtectedArenaStage(
+    arenaState.activeStage,
+    blindChoiceId,
+    aiLabelRevealed,
+  );
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0 });
-  }, [arenaState.activeStage, selectedCase?.id]);
+  }, [activeStage, selectedCase?.id]);
 
   useEffect(() => {
     persistArenaSessionState(arenaState);
@@ -77,11 +86,30 @@ export function AppShell({
 
   useEffect(() => {
     const routeStage = getArenaStageForPathname(pathname);
+    const protectedRouteStage = routeStage
+      ? getProtectedArenaStage(routeStage, blindChoiceId, aiLabelRevealed)
+      : null;
 
-    if (routeStage && routeStage !== arenaState.activeStage) {
-      rawDispatch({ type: "goToStage", stage: routeStage });
+    if (!protectedRouteStage) {
+      return;
     }
-  }, [arenaState.activeStage, pathname]);
+
+    const protectedPath = getPathForArenaStage(protectedRouteStage);
+
+    if (protectedPath !== pathname) {
+      onNavigatePath(protectedPath);
+    }
+
+    if (protectedRouteStage !== arenaState.activeStage) {
+      rawDispatch({ type: "goToStage", stage: protectedRouteStage });
+    }
+  }, [
+    aiLabelRevealed,
+    arenaState.activeStage,
+    blindChoiceId,
+    onNavigatePath,
+    pathname,
+  ]);
 
   if (!selectedCase) {
     return (
@@ -94,7 +122,6 @@ export function AppShell({
     );
   }
 
-  const reviewState = getCurrentReviewState(arenaState);
   const evidenceRatings = getEvidenceRatings(selectedCase, reviewState);
   const evidenceBalance = getEvidenceBalance(selectedCase, evidenceRatings);
   const reviewCompletion = getReviewCompletion(
@@ -132,17 +159,22 @@ export function AppShell({
   }
 
   function navigateToStage(stage: ReturnType<typeof createInitialArenaState>["activeStage"]) {
-    const nextPath = getPathForArenaStage(stage);
+    const protectedStage = getProtectedArenaStage(
+      stage,
+      blindChoiceId,
+      aiLabelRevealed,
+    );
+    const nextPath = getPathForArenaStage(protectedStage);
 
     if (nextPath !== pathname) {
       onNavigatePath(nextPath);
     }
 
-    dispatchArena({ type: "goToStage", stage });
+    dispatchArena({ type: "goToStage", stage: protectedStage });
   }
 
   function goToAdjacentStage(direction: 1 | -1) {
-    navigateToStage(getAdjacentStage(arenaState.activeStage, direction));
+    navigateToStage(getAdjacentStage(activeStage, direction));
   }
 
   function openCaseFile() {
@@ -154,6 +186,11 @@ export function AppShell({
   }
 
   function revealAiLabel() {
+    if (!reviewState.blindChoiceId) {
+      navigateToStage("blind_read");
+      return;
+    }
+
     dispatchArena({ type: "revealAiLabel" });
 
     const nextPath = getPathForArenaStage("ai_reveal");
@@ -202,14 +239,14 @@ export function AppShell({
     dispatchArena({ type: "setReviewDrawerOpen", open: false });
   }
 
-  const isExploreMode = arenaState.activeStage === "landscape";
+  const isExploreMode = activeStage === "landscape";
   const stageTransitionKey = isExploreMode
-    ? arenaState.activeStage
-    : `${selectedCase.id}-${arenaState.activeStage}`;
+    ? activeStage
+    : `${selectedCase.id}-${activeStage}`;
   const shellClassName = [
     "arena-shell",
     isExploreMode ? "arena-shell-explore" : "arena-shell-investigate",
-    `arena-stage-${arenaState.activeStage}`,
+    `arena-stage-${activeStage}`,
   ]
     .filter(Boolean)
     .join(" ");
@@ -224,20 +261,22 @@ export function AppShell({
           </div>
         </div>
         <div className="arena-topbar-actions">
-          <details className="arena-utility-menu">
-            <summary>Export</summary>
-            <div className="arena-utility-menu-panel">
-              <button type="button" onClick={openReviewDrawer}>
-                Review JSON
-              </button>
-            </div>
-          </details>
+          {activeStage === "verdict" ? (
+            <details className="arena-utility-menu">
+              <summary>Review data</summary>
+              <div className="arena-utility-menu-panel">
+                <button type="button" onClick={openReviewDrawer}>
+                  Review JSON
+                </button>
+              </div>
+            </details>
+          ) : null}
         </div>
       </header>
 
       <div className="arena-layout">
         <StageRail
-          activeStage={arenaState.activeStage}
+          activeStage={activeStage}
           completedStages={completedStages}
           onSelectStage={navigateToStage}
         />
@@ -252,7 +291,7 @@ export function AppShell({
               landscapeContextNodes,
               selectedCase,
               previewCaseId,
-              activeStage: arenaState.activeStage,
+              activeStage,
               reviewState,
               evidenceRatings,
               evidenceBalance,
@@ -268,19 +307,25 @@ export function AppShell({
             })}
           </div>
 
-          {isExploreMode ? null : (
+          {isExploreMode || activeStage === "blind_read" ? null : (
             <div className="stage-controls">
               <button
                 type="button"
                 onClick={() => goToAdjacentStage(-1)}
-                disabled={arenaState.activeStage === "landscape"}
               >
                 Back
               </button>
               <button
                 type="button"
                 onClick={() => goToAdjacentStage(1)}
-                disabled={arenaState.activeStage === "verdict"}
+                disabled={
+                  activeStage === "verdict" ||
+                  getProtectedArenaStage(
+                    getAdjacentStage(activeStage, 1),
+                    blindChoiceId,
+                    aiLabelRevealed,
+                  ) === activeStage
+                }
               >
                 Next
               </button>
@@ -288,11 +333,11 @@ export function AppShell({
           )}
         </section>
 
-        {!isExploreMode && arenaState.activeStage !== "case_file" ? (
+        {!isExploreMode && activeStage !== "case_file" ? (
           <InvestigationCockpit
             key={selectedCase.id}
             caseFile={selectedCase}
-            activeStage={arenaState.activeStage}
+            activeStage={activeStage}
             reviewState={reviewState}
             reviewCompletion={reviewCompletion}
             onOpenCaseFile={openCaseFile}
@@ -509,4 +554,30 @@ function renderStage({
         />
       );
   }
+}
+
+function getProtectedArenaStage(
+  requestedStage: ReturnType<typeof createInitialArenaState>["activeStage"],
+  blindChoiceId?: string,
+  aiLabelRevealed?: boolean,
+): ReturnType<typeof createInitialArenaState>["activeStage"] {
+  const requestedStageIndex = arenaStageIndex(requestedStage);
+  const blindReadIndex = arenaStageIndex("blind_read");
+  const aiRevealIndex = arenaStageIndex("ai_reveal");
+
+  if (requestedStageIndex > blindReadIndex && !blindChoiceId) {
+    return "blind_read";
+  }
+
+  if (requestedStageIndex > aiRevealIndex && !aiLabelRevealed) {
+    return "ai_reveal";
+  }
+
+  return requestedStage;
+}
+
+function arenaStageIndex(
+  stage: ReturnType<typeof createInitialArenaState>["activeStage"],
+): number {
+  return arenaStages.findIndex((currentStage) => currentStage.id === stage);
 }
