@@ -68,10 +68,13 @@ export type EvidenceBalance = {
   counts: Record<EvidenceRating, number>;
 };
 
-export function createInitialArenaState(cases: CaseFile[]): ArenaUiState {
+export function createInitialArenaState(
+  cases: CaseFile[],
+  initialStage: ArenaStage = "landscape",
+): ArenaUiState {
   return {
     selectedCaseId: cases[0]?.id ?? "",
-    activeStage: "landscape",
+    activeStage: initialStage,
     reviewsByCase: {},
     reviewDrawerOpen: false,
   };

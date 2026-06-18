@@ -127,3 +127,15 @@ Before UI or styling work, also read `docs/DESIGN_SYSTEM.md`.
 - Do not suggest vague commit messages like "update files" or "fix stuff."
 - Prefer narrow tasks and small diffs.
 - Do not rewrite git history unless the user explicitly asks.
+
+## Agent skills
+
+- Use local markdown issue files under `./issues/`.
+- Use `$grill-me` before planning or coding.
+- Use `$to-prd` after the grilling session.
+- Use `$to-issues` to create vertical-slice / tracer-bullet issues.
+- Mark issues as `AFK` or `human-in-the-loop`.
+- Use `$tdd` for implementation work where practical.
+- Use fresh-context review before merge.
+- Do not touch existing unstaged feature files.
+- Do not commit anything.

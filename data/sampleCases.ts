@@ -1,4 +1,4 @@
-import type { CaseFile } from "@/lib/types";
+import type { CaseFile, LandscapeContextNode } from "@/lib/types";
 
 const sampleCasesData: CaseFile[] = [
   {
@@ -16,6 +16,7 @@ const sampleCasesData: CaseFile[] = [
       "TagRole",
       "iam:PassRole absent",
       "daytime change window",
+      "rollout metadata",
     ],
     riskFlags: ["Intent not evidenced", "Administrative mutations", "No persistence signal"],
     nearestNeighbor: {
@@ -49,7 +50,7 @@ const sampleCasesData: CaseFile[] = [
       },
       {
         id: "suspicious-privilege-escalation",
-        label: "Suspicious privilege escalation",
+        label: "Possible privilege escalation",
         helper: "Would require stronger evidence of unauthorized privilege expansion.",
       },
       {
@@ -1454,6 +1455,33 @@ const sampleCasesData: CaseFile[] = [
   },
 ];
 
+const sampleLandscapeContextNodesData: LandscapeContextNode[] = [
+  {
+    id: "context-iam-041",
+    nodeType: "context",
+    label: "Standard platform role lifecycle",
+    landscapeStatus: "supported",
+    modelAgreement: 0.76,
+    evidenceStrength: 0.78,
+    uncertainty: 0.28,
+    mapPosition: { x: 33, y: 64 },
+    cluster: {
+      id: "cluster-iam-041",
+      name: "Standard platform role lifecycle",
+      description:
+        "Synthetic context-only neighbour for routine IAM role creation, policy attachment, tagging, and ticket-backed rollout metadata.",
+      source: "sample",
+      size: 142,
+    },
+    nearestNeighbor: {
+      clusterId: "cluster-iam-029",
+      label: "IAM role provisioning region",
+      distance: 0.18,
+      note: "Context neighbour shares role creation and tagging with clearer ticket metadata and lower uncertainty.",
+    },
+  },
+];
+
 function assertCaseIntegrity(cases: CaseFile[]): CaseFile[] {
   for (const currentCase of cases) {
     const claimIds = new Set(currentCase.claims.map((claim) => claim.id));
@@ -1523,3 +1551,5 @@ function assertCaseIntegrity(cases: CaseFile[]): CaseFile[] {
 }
 
 export const sampleCases: CaseFile[] = assertCaseIntegrity(sampleCasesData);
+export const sampleLandscapeContextNodes: LandscapeContextNode[] =
+  sampleLandscapeContextNodesData;

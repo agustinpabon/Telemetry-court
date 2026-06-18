@@ -14,9 +14,14 @@ import { StageRail } from "@/components/arena/StageRail";
 import { TelemetryGalaxy } from "@/components/arena/TelemetryGalaxy";
 import { VerdictPanel } from "@/components/arena/VerdictPanel";
 import {
+  getArenaStageForPathname,
+  getPathForArenaStage,
+} from "@/lib/arenaRoutes";
+import {
   arenaReducer,
   buildArenaReview,
   createInitialArenaState,
+  getAdjacentStage,
   getCurrentReviewState,
   getEvidenceBalance,
   getEvidenceRatings,
@@ -24,24 +29,38 @@ import {
   getSelectedCase,
   getStageCompletionMap,
   type ArenaAction,
+  type ArenaUiState,
 } from "@/lib/arenaReviewState";
 import {
   buildReviewResultExport,
   getReviewResultExportFilename,
   serializeReviewResultExport,
 } from "@/lib/exportReview";
-import type { CaseFile } from "@/lib/types";
+import type { CaseFile, LandscapeContextNode } from "@/lib/types";
 
 type AppShellProps = {
   cases: CaseFile[];
+  landscapeContextNodes?: LandscapeContextNode[];
+  initialStage: ReturnType<typeof createInitialArenaState>["activeStage"];
+  pathname: string;
+  onNavigatePath: (path: string) => void;
 };
 
-export function AppShell({ cases }: AppShellProps) {
+const arenaSessionStateKey = "telemetry-court-arena-state-v1";
+
+export function AppShell({
+  cases,
+  landscapeContextNodes = [],
+  initialStage,
+  pathname,
+  onNavigatePath,
+}: AppShellProps) {
   const [arenaState, rawDispatch] = useReducer(
     (state: ReturnType<typeof createInitialArenaState>, action: ArenaAction) =>
       arenaReducer(state, action, cases),
-    cases,
-    createInitialArenaState,
+    { cases, initialStage },
+    ({ cases: initialCases, initialStage: nextInitialStage }) =>
+      createInitialStateWithSession(initialCases, nextInitialStage),
   );
   const [previewCaseId, setPreviewCaseId] = useState<string>();
   const [exportMessage, setExportMessage] = useState<string>();
@@ -51,6 +70,18 @@ export function AppShell({ cases }: AppShellProps) {
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0 });
   }, [arenaState.activeStage, selectedCase?.id]);
+
+  useEffect(() => {
+    persistArenaSessionState(arenaState);
+  }, [arenaState]);
+
+  useEffect(() => {
+    const routeStage = getArenaStageForPathname(pathname);
+
+    if (routeStage && routeStage !== arenaState.activeStage) {
+      rawDispatch({ type: "goToStage", stage: routeStage });
+    }
+  }, [arenaState.activeStage, pathname]);
 
   if (!selectedCase) {
     return (
@@ -95,8 +126,40 @@ export function AppShell({ cases }: AppShellProps) {
   );
 
   function dispatchArena(action: ArenaAction) {
+    persistArenaSessionState(arenaReducer(arenaState, action, cases));
     rawDispatch(action);
     setExportMessage(undefined);
+  }
+
+  function navigateToStage(stage: ReturnType<typeof createInitialArenaState>["activeStage"]) {
+    const nextPath = getPathForArenaStage(stage);
+
+    if (nextPath !== pathname) {
+      onNavigatePath(nextPath);
+    }
+
+    dispatchArena({ type: "goToStage", stage });
+  }
+
+  function goToAdjacentStage(direction: 1 | -1) {
+    navigateToStage(getAdjacentStage(arenaState.activeStage, direction));
+  }
+
+  function openCaseFile() {
+    navigateToStage("case_file");
+  }
+
+  function startInvestigation() {
+    navigateToStage("blind_read");
+  }
+
+  function revealAiLabel() {
+    dispatchArena({ type: "revealAiLabel" });
+
+    const nextPath = getPathForArenaStage("ai_reveal");
+    if (nextPath !== pathname) {
+      onNavigatePath(nextPath);
+    }
   }
 
   async function handleCopyReviewJson() {
@@ -161,9 +224,14 @@ export function AppShell({ cases }: AppShellProps) {
           </div>
         </div>
         <div className="arena-topbar-actions">
-          <button type="button" onClick={openReviewDrawer}>
-            Review JSON
-          </button>
+          <details className="arena-utility-menu">
+            <summary>Export</summary>
+            <div className="arena-utility-menu-panel">
+              <button type="button" onClick={openReviewDrawer}>
+                Review JSON
+              </button>
+            </div>
+          </details>
         </div>
       </header>
 
@@ -171,7 +239,7 @@ export function AppShell({ cases }: AppShellProps) {
         <StageRail
           activeStage={arenaState.activeStage}
           completedStages={completedStages}
-          onSelectStage={(stage) => dispatchArena({ type: "goToStage", stage })}
+          onSelectStage={navigateToStage}
         />
 
         <section className="arena-workspace" aria-live="polite">
@@ -181,6 +249,7 @@ export function AppShell({ cases }: AppShellProps) {
           >
             {renderStage({
               cases,
+              landscapeContextNodes,
               selectedCase,
               previewCaseId,
               activeStage: arenaState.activeStage,
@@ -189,6 +258,10 @@ export function AppShell({ cases }: AppShellProps) {
               evidenceBalance,
               setPreviewCaseId,
               dispatchArena,
+              navigateToStage,
+              openCaseFile,
+              startInvestigation,
+              revealAiLabel,
               handleCopyReviewJson,
               handleDownloadReviewJson,
               openReviewDrawer,
@@ -199,14 +272,14 @@ export function AppShell({ cases }: AppShellProps) {
             <div className="stage-controls">
               <button
                 type="button"
-                onClick={() => dispatchArena({ type: "goToPreviousStage" })}
+                onClick={() => goToAdjacentStage(-1)}
                 disabled={arenaState.activeStage === "landscape"}
               >
                 Back
               </button>
               <button
                 type="button"
-                onClick={() => dispatchArena({ type: "goToNextStage" })}
+                onClick={() => goToAdjacentStage(1)}
                 disabled={arenaState.activeStage === "verdict"}
               >
                 Next
@@ -215,19 +288,19 @@ export function AppShell({ cases }: AppShellProps) {
           )}
         </section>
 
-        {isExploreMode ? null : (
+        {!isExploreMode && arenaState.activeStage !== "case_file" ? (
           <InvestigationCockpit
             key={selectedCase.id}
             caseFile={selectedCase}
             activeStage={arenaState.activeStage}
             reviewState={reviewState}
             reviewCompletion={reviewCompletion}
-            onOpenCaseFile={() => dispatchArena({ type: "openCaseFile" })}
-            onStartInvestigation={() => dispatchArena({ type: "startInvestigation" })}
-            onRevealAiLabel={() => dispatchArena({ type: "revealAiLabel" })}
+            onOpenCaseFile={openCaseFile}
+            onStartInvestigation={startInvestigation}
+            onRevealAiLabel={revealAiLabel}
             onOpenReviewDrawer={openReviewDrawer}
           />
-        )}
+        ) : null}
       </div>
 
       {arenaState.reviewDrawerOpen ? (
@@ -250,8 +323,60 @@ export function AppShell({ cases }: AppShellProps) {
   );
 }
 
+function createInitialStateWithSession(
+  cases: CaseFile[],
+  initialStage: ReturnType<typeof createInitialArenaState>["activeStage"],
+): ArenaUiState {
+  const fallbackState = createInitialArenaState(cases, initialStage);
+
+  if (typeof window === "undefined") {
+    return fallbackState;
+  }
+
+  try {
+    const storedState = window.sessionStorage.getItem(arenaSessionStateKey);
+
+    if (!storedState) {
+      return fallbackState;
+    }
+
+    const parsedState = JSON.parse(storedState) as Partial<
+      Pick<ArenaUiState, "reviewsByCase" | "selectedCaseId">
+    >;
+    const persistedSelectedCaseId = parsedState.selectedCaseId;
+    const selectedCaseId =
+      typeof persistedSelectedCaseId === "string" &&
+      cases.some((caseFile) => caseFile.id === persistedSelectedCaseId)
+        ? persistedSelectedCaseId
+        : fallbackState.selectedCaseId;
+
+    return {
+      ...fallbackState,
+      selectedCaseId,
+      reviewsByCase: parsedState.reviewsByCase ?? fallbackState.reviewsByCase,
+    };
+  } catch {
+    return fallbackState;
+  }
+}
+
+function persistArenaSessionState(state: ArenaUiState) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.sessionStorage.setItem(
+    arenaSessionStateKey,
+    JSON.stringify({
+      selectedCaseId: state.selectedCaseId,
+      reviewsByCase: state.reviewsByCase,
+    }),
+  );
+}
+
 function renderStage({
   cases,
+  landscapeContextNodes,
   selectedCase,
   previewCaseId,
   activeStage,
@@ -260,11 +385,16 @@ function renderStage({
   evidenceBalance,
   setPreviewCaseId,
   dispatchArena,
+  navigateToStage,
+  openCaseFile,
+  startInvestigation,
+  revealAiLabel,
   handleCopyReviewJson,
   handleDownloadReviewJson,
   openReviewDrawer,
 }: {
   cases: CaseFile[];
+  landscapeContextNodes: LandscapeContextNode[];
   selectedCase: CaseFile;
   previewCaseId?: string;
   activeStage: ReturnType<typeof createInitialArenaState>["activeStage"];
@@ -273,6 +403,10 @@ function renderStage({
   evidenceBalance: ReturnType<typeof getEvidenceBalance>;
   setPreviewCaseId: (caseId?: string) => void;
   dispatchArena: (action: ArenaAction) => void;
+  navigateToStage: (stage: ReturnType<typeof createInitialArenaState>["activeStage"]) => void;
+  openCaseFile: () => void;
+  startInvestigation: () => void;
+  revealAiLabel: () => void;
   handleCopyReviewJson: () => void;
   handleDownloadReviewJson: () => void;
   openReviewDrawer: () => void;
@@ -282,7 +416,9 @@ function renderStage({
       return (
         <CaseFilePanel
           caseFile={selectedCase}
-          onStartInvestigation={() => dispatchArena({ type: "startInvestigation" })}
+          cases={cases}
+          landscapeContextNodes={landscapeContextNodes}
+          onStartInvestigation={startInvestigation}
         />
       );
     case "blind_read":
@@ -293,7 +429,7 @@ function renderStage({
           onChooseBlindInterpretation={(optionId) =>
             dispatchArena({ type: "chooseBlindInterpretation", optionId })
           }
-          onRevealAiLabel={() => dispatchArena({ type: "revealAiLabel" })}
+          onRevealAiLabel={revealAiLabel}
         />
       );
     case "ai_reveal":
@@ -301,8 +437,8 @@ function renderStage({
         <AiRevealPanel
           caseFile={selectedCase}
           reviewState={reviewState}
-          onRevealAiLabel={() => dispatchArena({ type: "revealAiLabel" })}
-          onContinue={() => dispatchArena({ type: "goToStage", stage: "evidence_board" })}
+          onRevealAiLabel={revealAiLabel}
+          onContinue={() => navigateToStage("evidence_board")}
         />
       );
     case "evidence_board":
@@ -327,7 +463,7 @@ function renderStage({
           onToggleReason={(reason) =>
             dispatchArena({ type: "toggleDuelReason", reason })
           }
-          onContinue={() => dispatchArena({ type: "goToStage", stage: "impostor" })}
+          onContinue={() => navigateToStage("impostor")}
         />
       );
     case "impostor":
@@ -338,7 +474,7 @@ function renderStage({
           onSelectSession={(sessionId) =>
             dispatchArena({ type: "selectImpostorSession", sessionId })
           }
-          onContinue={() => dispatchArena({ type: "goToStage", stage: "verdict" })}
+          onContinue={() => navigateToStage("verdict")}
         />
       );
     case "verdict":
@@ -363,12 +499,13 @@ function renderStage({
       return (
         <TelemetryGalaxy
           cases={cases}
+          landscapeContextNodes={landscapeContextNodes}
           selectedCase={selectedCase}
           previewCaseId={previewCaseId}
           onSelectCase={(caseId) => dispatchArena({ type: "selectCase", caseId })}
           onPreviewCase={setPreviewCaseId}
           onClearPreview={() => setPreviewCaseId(undefined)}
-          onOpenCaseFile={() => dispatchArena({ type: "openCaseFile" })}
+          onOpenCaseFile={openCaseFile}
         />
       );
   }

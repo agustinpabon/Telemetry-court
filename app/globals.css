@@ -11021,6 +11021,38 @@ textarea,
   color: rgba(218, 246, 226, 0.92);
 }
 
+.arena-shell-explore .evidence-galaxy-atlas .landscape-context-node {
+  background: var(--context-node-accent);
+  border: 1px solid color-mix(in srgb, var(--context-node-accent), transparent 32%);
+  border-radius: 999px;
+  height: 12px;
+  left: var(--context-node-x);
+  opacity: 0.54;
+  pointer-events: none;
+  position: absolute;
+  top: var(--context-node-y);
+  transform: translate(-50%, -50%);
+  width: 12px;
+  z-index: 7;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .landscape-context-node::after {
+  border: 1px solid color-mix(in srgb, var(--context-node-accent), transparent 42%);
+  border-radius: inherit;
+  content: "";
+  inset: -5px;
+  opacity: calc(0.24 + var(--context-node-uncertainty) * 0.18);
+  position: absolute;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .landscape-context-node.is-nearby {
+  opacity: 0.76;
+}
+
+.arena-shell-explore .evidence-galaxy-atlas .landscape-context-node.is-distant {
+  opacity: 0.34;
+}
+
 @media (max-width: 900px) {
   .arena-shell-explore .arena-brand p {
     display: none;

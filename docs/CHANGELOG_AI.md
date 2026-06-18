@@ -19,6 +19,123 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-18: Blind Read Decision-Focused Redesign
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Redesign the `/blind-read` stage into a calm, premium, decision-focused blind review that prevents pre-reveal AI judgment leakage and makes the reveal action singular and obvious.
+- Files changed: `components/arena/BlindReadPanel.tsx`, `components/arena/InvestigationCockpit.tsx`, `components/arena/SemanticMiniMap.tsx`, `components/arena/WorkflowPrimitives.tsx`, `components/arena/AppShell.tsx`, `data/sampleCases.ts`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Rebuilt Blind Read around the heading `Read the evidence first.`, a neutral AI-claim-hidden card, four-step progress cue, concise evidence summary, secondary technical-evidence disclosure, accessible radio-card interpretations, one disabled/enabled reveal CTA, and a neutral `Case status` panel before reveal. Moved `Review JSON` under an `Export` menu and added session-scoped review-state persistence so selecting and revealing on `/blind-read` survives the route transition to `/ai-reveal`.
+- Decisions made: Hid `OVERCLAIM`, agreement, evidence, uncertainty, and average-support metrics before reveal; renamed the blind choice to `Possible privilege escalation` while keeping the actual AI label hidden and unchanged; kept the mini-map as a smaller neutral context object without evidence percentages; moved the status panel below the main content on narrow screens.
+- Checks run: Added blind-read guardrail and accessible-radio-card tests; `npm test` passed with 29 tests; `npm run lint` passed with the existing 134 `.agents/skills/impeccable` warnings and no app errors; `npm run build` passed; `git diff --check` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/BlindReadPanel.tsx components/arena/InvestigationCockpit.tsx components/arena/SemanticMiniMap.tsx components/arena/AppShell.tsx app/investigation-workflow.css app/page.test.ts` returned `[]`; Playwright verification against `http://localhost:3000/blind-read` saved `/private/tmp/telemetry-blind-read-redesign-desktop.png`, `/private/tmp/telemetry-blind-read-redesign-mobile.png`, and `/private/tmp/telemetry-ai-reveal-after-blind-redesign.png`, confirming no pre-reveal hidden-label/status/metric leakage, disabled CTA before choice, exactly one reveal button after choice, visible AI claim and metrics after reveal, and no desktop/mobile horizontal overflow.
+- Assumptions: The default IAM sample case remains the main demo path, so the evidence summary uses only facts already present in that synthetic packet.
+- Risks/follow-ups: The broad stage rail still contains the full workflow; the added four-step progress cue now clarifies the review path on Blind Read, but a future scoped pass could simplify the global stage rail across all investigation screens.
+- Next recommended step: Review the desktop and mobile screenshots in the target presentation viewport and decide whether the same decision-focused treatment should be applied to `/ai-reveal`.
+- Suggested commit message: `ux(arena): protect blind read decision flow`
+
+## 2026-06-18: Case File Region Context Real Neighbour Locator
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Use `$impeccable` for a final targeted `/case-file` Region context pass, making `cluster-iam-041` a real plotted neighbour in the shared Evidence Landscape data model while avoiding fake geography.
+- Files changed: `lib/types.ts`, `data/sampleCases.ts`, `app/[[...stage]]/page.tsx`, `components/arena/RoutedAppShell.tsx`, `components/arena/AppShell.tsx`, `components/arena/TelemetryGalaxy.tsx`, `components/arena/EvidenceGalaxyAtlas.tsx`, `components/arena/CaseFilePanel.tsx`, `app/globals.css`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a `LandscapeContextNode` type and exposed `cluster-iam-041` as a context-only landscape node with real coordinates, status, label, and nearest-neighbour metadata. Routed the shared context-node data into the Evidence Landscape and Case File Region context so `cluster-iam-029` now renders the real locator branch with selected, nearest-neighbour, and faint surrounding real nodes.
+- Decisions made: Kept `cluster-iam-041` out of the full reviewable case workflow; reused `getLandscapeAtlasPosition` and `getGalaxyStatusAccent` from the Evidence Landscape for the locator; kept the fallback summary for cases where the nearest neighbour cannot be resolved to a plotted landscape node; avoided fake background regions, invented blobs, decorative territory labels, and inferred geometry.
+- Checks run: `npm test` passed with 27 tests; `npm run lint` passed with the existing 134 `.agents/skills/impeccable` warnings and no app errors; `npm run build` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/CaseFilePanel.tsx components/arena/EvidenceGalaxyAtlas.tsx components/arena/TelemetryGalaxy.tsx components/arena/AppShell.tsx components/arena/RoutedAppShell.tsx data/sampleCases.ts app/page.test.ts app/globals.css app/investigation-workflow.css` reported only the two known pre-existing `transition: width` warnings in `app/globals.css`; Playwright verification against `http://localhost:3038/case-file` saved `/private/tmp/telemetry-region-context-real-locator-desktop.png` and `/private/tmp/telemetry-region-context-real-locator-mobile.png`, confirmed real locator rendering, no fallback, `View in landscape` navigation to `/`, the `cluster-iam-041` Evidence Landscape context node, no hidden AI claim exposure, and no desktop or mobile horizontal overflow.
+- Assumptions: A context-only neighbour is the right model because `cluster-iam-041` needs landscape coordinates and comparison metadata, but does not need the full evidence packet/review workflow.
+- Risks/follow-ups: If context nodes later become selectable or reviewable, promote them deliberately into full `CaseFile` records instead of overloading the context-only type.
+- Next recommended step: Review `/case-file` and `/` in the local browser to confirm the context-only node should remain non-selectable.
+- Suggested commit message: `ux(arena): add real region context neighbour locator`
+
+## 2026-06-18: Case File Region Context Real Locator Gate
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Use `$impeccable` to refine only the `/case-file` Region context card into a hybrid module that can show a real Evidence Landscape locator without inventing geography.
+- Files changed: `components/arena/CaseFilePanel.tsx`, `components/arena/EvidenceGalaxyAtlas.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Extracted the Evidence Landscape atlas coordinate helper for reuse, added a compact read-only `Landscape locator` branch that renders selected, nearest-neighbour, and context points only when the nearest neighbour is present as real landscape case data, and kept the current production view as an explicit neighbour-summary fallback because `cluster-iam-041` has no case coordinates today.
+- Decisions made: Reused the same `cases` data, `getLandscapeAtlasPosition`, and `getGalaxyStatusAccent` logic as the Evidence Landscape; avoided plotting `cluster-iam-041` from distance metadata alone; removed Region-context-specific `SemanticMiniMap` CSS hooks so the old fake reference-point map is not revived in this card.
+- Checks run: Added test coverage for the current fallback and the future locator-available branch; `npm test` passed with 25 tests; `npm run lint` passed with the existing 134 `.agents/skills/impeccable` warnings and no app errors; `npm run build` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/CaseFilePanel.tsx components/arena/EvidenceGalaxyAtlas.tsx app/investigation-workflow.css app/page.test.ts` returned `[]`; Playwright verification against `http://localhost:3036/case-file` saved `/private/tmp/telemetry-region-context-hybrid-desktop.png` and `/private/tmp/telemetry-region-context-hybrid-mobile.png`, confirmed fallback rendering, no locator with current data, no hidden AI claim exposure, no mobile horizontal overflow, and `View in landscape` navigating to `/`.
+- Assumptions: The current sample landscape intentionally includes `cluster-iam-041` as nearest-neighbour metadata only, not as a first-class plotted region.
+- Risks/follow-ups: To show the locator in production, add `cluster-iam-041` as real landscape case data with coordinates from the same fixture model; do not infer its position from neighbour distance.
+- Next recommended step: Promote nearest-neighbour clusters into the Evidence Landscape data model if spatial comparison should be visible on `/case-file`.
+- Suggested commit message: `ux(arena): gate region locator on real landscape data`
+
+## 2026-06-17: Case File Region Context Semantic Refinement
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Use `$impeccable` to stop iterating on the failed Region context mini-map and refactor only that module into a real-context fallback.
+- Files changed: `components/arena/CaseFilePanel.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Implemented Option B: removed the fake abstract mini-map entirely and replaced it with a compact neighbour-comparison card showing the selected region, nearest neighbour, similarity, evidence strength, uncertainty, interpretation, caution, and `View in landscape` action.
+- Decisions made: Chose the no-map fallback because `cluster-iam-041` exists as nearest-neighbour metadata rather than a selectable Evidence Landscape case with real coordinates; drawing it on a mini-map would require inventing geometry. Preserved the hidden AI claim by saying “malicious interpretation” rather than exposing the generated label.
+- Checks run: Updated static render expectations for the comparison module and added negative checks against fake region labels; `npm test` passed with 24 tests; `npm run lint` passed with the existing 134 `.agents/skills/impeccable` warnings and no app errors; `npm run build` passed; Playwright verification against the production build on `localhost:3033` saved `/private/tmp/telemetry-region-context-fallback-desktop.png` and `/private/tmp/telemetry-region-context-fallback-mobile.png`, confirmed zero locator fields/maps, two comparison entities, three signal rows, no fake labels, no horizontal overflow, and no hidden AI claim exposure.
+- Assumptions: Until the nearest-neighbour metadata has real Evidence Landscape coordinates, a clear comparison is more truthful than a locator visualization.
+- Risks/follow-ups: If neighbour clusters become first-class landscape cases later, Region context can be revisited as Option A by rendering actual landscape geometry from shared atlas data.
+- Next recommended step: Keep Region context text-only until the data model exposes real neighbouring-region coordinates.
+- Suggested commit message: `ux(arena): replace region context map with comparison`
+
+## 2026-06-17: Case File Region Context Locator Refactor
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Use `$impeccable` to refactor only the `/case-file` Region context module as navigation plus context, not another decorative mini chart.
+- Files changed: `components/arena/CaseFilePanel.tsx`, `components/arena/AppShell.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Rebuilt Region context into a two-level module with a global landscape locator, a local nearest-neighbour zoom, compact comparison facts, and revised ambiguity copy while preserving the rest of the Case File structure and pre-blind hidden-claim logic.
+- Decisions made: Passed the existing case list into `CaseFilePanel` so Region context can render a simplified full-field locator; reused known synthetic case positions for the locator with a fallback for future cases; kept the nearest-neighbour cluster as a virtual local comparison because `cluster-iam-041` is neighbour metadata rather than a full selectable sample case.
+- Checks run: Added test coverage for `Landscape position`, `Nearest neighbour context`, neighbour meaning, and the updated ambiguity statement; `npm test` passed with 24 tests; `npm run lint` passed with the existing 134 `.agents/skills/impeccable` warnings and no app errors; `npm run build` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/CaseFilePanel.tsx app/investigation-workflow.css app/page.test.ts` returned `[]`; Playwright screenshots saved to `/private/tmp/telemetry-region-context-refactor-desktop.png` and `/private/tmp/telemetry-region-context-refactor-mobile.png`; browser verification confirmed no hidden AI claim exposure, no mobile horizontal overflow, and `Start blind investigation` routes to `/blind-read`.
+- Assumptions: The IAM case should be positioned as part of a routine IAM neighbourhood before the blind read without making the hidden suspicious claim dominant.
+- Risks/follow-ups: The locator uses a simplified level-of-detail map rather than a reusable shared galaxy-position helper; if the atlas geometry becomes dynamic, extracting a shared landscape-position utility would prevent drift.
+- Next recommended step: Review the new Region context screenshots against the Evidence Landscape and decide whether the locator geometry should be shared with the main atlas component in a later cleanup.
+- Suggested commit message: `ux(arena): refactor case file region context locator`
+
+## 2026-06-17: Case File Region Context Refinement
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Use `$impeccable` to refine the current `/case-file` implementation without redesigning the screen from scratch, with priority on Region Context usefulness and reducing card-heavy visual weight.
+- Files changed: `components/arena/CaseFilePanel.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Refined the existing Case File intake by making the hero slightly tighter, softening repeated panel treatments, converting nested facts/readiness boxes into row rhythm, tightening evidence preview density, grouping readiness with the CTA, and rebuilding Region Context into an analytical comparison module.
+- Decisions made: Kept the current Case File structure and content model; preserved the pre-blind hidden-claim state; added relative-distance labeling from existing nearest-neighbour distance data; kept the mini-map quiet and paired it with explicit selected/nearest/evidence/uncertainty facts instead of a heavy legend.
+- Checks run: Added a red test for the Region Context comparison language, then `npm test` passed with 24 tests; `npm run lint` passed with the existing 134 `.agents/skills/impeccable` warnings and no app errors; `npm run build` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/CaseFilePanel.tsx app/investigation-workflow.css app/page.test.ts` returned `[]`; Playwright screenshots saved to `/private/tmp/telemetry-case-file-refined-desktop.png` and `/private/tmp/telemetry-case-file-refined-mobile.png`; Playwright CTA check confirmed `Start blind investigation` routes to `/blind-read`.
+- Assumptions: The default IAM case should communicate routine-role-lifecycle proximity and ambiguity before revealing the AI label, without making the suspicious claim dominant.
+- Risks/follow-ups: The stylesheet still contains older unused Case File selectors from prior iterations; a future cleanup-only pass can consolidate those once this refined direction is accepted.
+- Next recommended step: Review the refined `/case-file` screenshots in the target demo viewport and then do a narrow CSS cleanup pass if the direction is approved.
+- Suggested commit message: `ux(arena): refine case file region context`
+
+## 2026-06-17: Case File Intake Redesign
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Redesign only Screen 2, `/case-file`, as a calm pre-blind investigation intake screen without redesigning the Evidence Landscape.
+- Files changed: `components/arena/CaseFilePanel.tsx`, `components/arena/AppShell.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, `data/sampleCases.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Rebuilt the Case File stage around a compact hero, evidence-gap status, case brief, signal metrics, observed feature stack, review questions, compact evidence packet preview, useful region-context evidence map, review-readiness rail, and normal-sized blind-investigation CTA.
+- Decisions made: Removed the Case File-only duplicate external review cockpit so the stage can use its own right rail; kept the generated AI label hidden before blind read; derived preview rows and review questions from existing case data; appended `rollout metadata` to the synthetic IAM feature stack because that signal already exists in the case description and evidence.
+- Checks run: `npm test` passed with 24 tests; `npm run lint` passed with existing `.agents/skills/impeccable` warnings and no app errors; `npm run build` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/CaseFilePanel.tsx app/investigation-workflow.css components/arena/AppShell.tsx` returned `[]`; Playwright screenshots saved to `/private/tmp/telemetry-case-file-desktop.png` and `/private/tmp/telemetry-case-file-mobile.png`; Playwright CTA check confirmed `Start blind investigation` routes to `/blind-read`.
+- Assumptions: The default selected behavioural region remains the IAM provisioning case; the Case File screen should show possible overclaim/evidence-gap risk without making the hidden AI claim the dominant headline.
+- Risks/follow-ups: `app/investigation-workflow.css` still contains prior Case File CSS layers that are now unused by the new markup; a later cleanup-only pass can consolidate old selectors after this direction is accepted.
+- Next recommended step: Review `/case-file` in the demo browser at the target presentation viewport and then decide whether to remove the old unused Case File CSS selectors.
+- Suggested commit message: `ux(arena): redesign case file intake`
+
+## 2026-06-16: Case File Intake Composition Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Run `$impeccable polish` only on Screen 2, Case File, to make it read as a compact investigation intake document without redesigning Screens 1 or 3-8.
+- Files changed: `components/arena/CaseFilePanel.tsx`, `components/arena/InvestigationCockpit.tsx`, `app/investigation-workflow.css`, and `docs/CHANGELOG_AI.md`.
+- Summary: Reworked the Case File screen around a stronger case brief, specific evidence-gap copy, compact region context, integrated claim rows, balanced evidence packet preview cards, lower-weight support metrics, scan-friendly feature/risk sections, and a lighter Case File-specific review cockpit with the single primary `Start blind investigation` CTA.
+- Decisions made: Kept the existing light dossier direction and synthetic fixture data; reduced the former map-first composition into a smaller useful region-context module; removed the competing main-content CTA in favor of the cockpit action; hid generic Case File bottom stage controls to avoid duplicate next actions; preserved later-stage cockpit behavior.
+- Checks run: `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/CaseFilePanel.tsx components/arena/InvestigationCockpit.tsx app/investigation-workflow.css` returned `[]`; `npm test` passed with 23 tests; `npm run lint` passed with the existing 134 `.agents/skills/impeccable` warnings and no errors; `npm run build` passed; `git diff --check` passed; Brave headless screenshots were captured at `/private/tmp/tc-case-file-direct.png` and `/private/tmp/tc-case-file-mobile-direct.png`.
+- Assumptions: The requested Screen 2 polish should prioritize the default IAM role provisioning case while keeping status/gap copy safe for the other synthetic cases if selected.
+- Risks/follow-ups: The app still has substantial pre-existing dirty routing/screenshot changes and older global responsive cockpit overrides; this pass added scoped Case File overrides rather than consolidating the historical CSS layers.
+- Next recommended step: Review `/private/tmp/tc-case-file-direct.png` in the target demo viewport, then separately consolidate old global cockpit/mobile CSS once the Case File direction is accepted.
+- Suggested commit message: `ux(arena): polish case file intake`
+
+## 2026-06-16: Stage URLs for Main Arena Views
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Fix the local navigation/routing structure so the real eight main Telemetry Court arena views each have a stable URL path, keep the existing UI intact, make refresh and browser history work, and add a screenshot capture script for every main route.
+- Files changed: `app/[[...stage]]/page.tsx`, `app/page.test.ts`, `components/arena/AppShell.tsx`, `components/arena/RoutedAppShell.tsx`, `lib/arenaReviewState.ts`, `lib/arenaRoutes.ts`, `scripts/screenshots.js`, `screenshots/01-landscape.png`, `screenshots/02-case-file.png`, `screenshots/03-blind-read.png`, `screenshots/04-ai-reveal.png`, `screenshots/05-evidence-board.png`, `screenshots/06-label-duel.png`, `screenshots/07-impostor.png`, `screenshots/08-verdict.png`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a shared arena stage-to-path map, replaced the single root-only page with an optional catch-all App Router entry for the eight existing arena stages, synced the stage rail and stage actions to the current pathname, preserved the existing shell and panels, and kept a single standalone Playwright script that captures full-page screenshots for every routed stage under `./screenshots`.
+- Decisions made: Used the existing `arenaStages` workflow as the source of truth for route discovery; kept route names aligned to the real stage IDs instead of inventing new product areas; used one optional catch-all route to keep refreshes working across stage URLs with a small diff; avoided touching the already-dirty `package.json` and `package-lock.json` by shipping the screenshot tool as a standalone script rather than a new npm script; removed the duplicate screenshot helper and standardized on `node scripts/screenshots.js` as the final command.
+- Checks run: `npm test` passed with 23 tests; `npm run lint` passed with 134 pre-existing warnings in `.agents/skills/impeccable` and no errors; `npm run build` passed; browser verification against `http://localhost:3000` confirmed `/`, `/case-file`, `/blind-read`, `/ai-reveal`, `/evidence-board`, `/label-duel`, `/impostor`, and `/verdict` each loaded with the matching active stage; `node scripts/screenshots.js` generated eight screenshots in `./screenshots`.
+- Assumptions: The task required stable URLs for the eight top-level arena workflow views, not per-case deep links, so case selection still defaults to the current in-memory case state instead of encoding case IDs in the route.
+- Risks/follow-ups: Navigation between stage URLs preserves the visible stage and browser history, but case selection and review progress remain in client state rather than URL state. If you want shareable deep links for a specific case or in-progress review later, that should be a separate scoped pass.
+- Next recommended step: Decide whether case identity should stay implicit or become a second route/query seam such as `?case=<id>` in a follow-up change.
+- Suggested commit message: `feat(arena): add stable stage urls for main views`
+
 ## 2026-06-16: Investigation Workflow Light Dossier Polish
 
 - Agent/model: Codex (GPT-5)

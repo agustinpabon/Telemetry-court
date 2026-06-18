@@ -66,7 +66,7 @@ type SealedClaimBlockProps = {
 };
 
 export function SealedClaimBlock({
-  title = "AI claim sealed",
+  title = "AI claim hidden",
   description,
   revealed = false,
 }: SealedClaimBlockProps) {

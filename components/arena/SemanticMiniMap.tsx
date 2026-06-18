@@ -5,8 +5,11 @@ import { formatSupportScore } from "@/lib/caseMetrics";
 import type { CaseFile } from "@/lib/types";
 
 type SemanticMiniMapProps = {
+  detail?: string;
   caseFile: CaseFile;
   label?: string;
+  neutral?: boolean;
+  showEvidenceMetric?: boolean;
 };
 
 type MiniMapStyle = CSSProperties & {
@@ -26,20 +29,27 @@ const referencePoints = [
 ];
 
 export function SemanticMiniMap({
+  detail,
   caseFile,
   label = "Semantic position",
+  neutral = false,
+  showEvidenceMetric = true,
 }: SemanticMiniMapProps) {
   const status = landscapeStatusMeta[caseFile.landscapeStatus];
   const style: MiniMapStyle = {
     "--mini-x": `${caseFile.mapPosition.x}%`,
     "--mini-y": `${caseFile.mapPosition.y}%`,
-    "--mini-accent": status.accent,
+    "--mini-accent": neutral ? "#6f625c" : status.accent,
     "--mini-evidence": `${Math.max(caseFile.evidenceStrength * 100, 8)}%`,
     "--mini-uncertainty": `${Math.max(caseFile.uncertainty * 100, 8)}%`,
   };
 
   return (
-    <aside className="semantic-mini-map" style={style} aria-label={label}>
+    <aside
+      className={`semantic-mini-map ${neutral ? "is-neutral" : ""}`}
+      style={style}
+      aria-label={label}
+    >
       <div className="mini-map-field" aria-hidden="true">
         {referencePoints.map((point, index) => (
           <span
@@ -54,7 +64,11 @@ export function SemanticMiniMap({
       </div>
       <div className="mini-map-caption">
         <span>{label}</span>
-        <strong>{formatSupportScore(caseFile.evidenceStrength)} evidence</strong>
+        <strong>
+          {showEvidenceMetric
+            ? `${formatSupportScore(caseFile.evidenceStrength)} evidence`
+            : detail ?? "Blind context"}
+        </strong>
       </div>
     </aside>
   );

@@ -11,10 +11,11 @@ import {
   getGalaxyStatusAccent,
 } from "@/components/arena/EvidenceGalaxyAtlas";
 import { formatSupportScore } from "@/lib/caseMetrics";
-import type { CaseFile } from "@/lib/types";
+import type { CaseFile, LandscapeContextNode } from "@/lib/types";
 
 type TelemetryGalaxyProps = {
   cases: CaseFile[];
+  landscapeContextNodes?: LandscapeContextNode[];
   selectedCase: CaseFile;
   previewCaseId?: string;
   onSelectCase: (caseId: string) => void;
@@ -29,6 +30,7 @@ type SelectedRegionStyle = CSSProperties & {
 
 export function TelemetryGalaxy({
   cases,
+  landscapeContextNodes = [],
   selectedCase,
   previewCaseId,
   onSelectCase,
@@ -56,6 +58,7 @@ export function TelemetryGalaxy({
       >
         <EvidenceGalaxyAtlas
           cases={cases}
+          landscapeContextNodes={landscapeContextNodes}
           selectedCase={selectedCase}
           previewCaseId={previewCaseId}
           onSelectCase={onSelectCase}

@@ -7,10 +7,15 @@ import {
 } from "@/components/arena/arenaMeta";
 import { ClusterNode } from "@/components/arena/ClusterNode";
 import { formatSupportScore } from "@/lib/caseMetrics";
-import type { CaseFile } from "@/lib/types";
+import type {
+  CaseFile,
+  LandscapeContextNode,
+  LandscapeNode,
+} from "@/lib/types";
 
 type EvidenceGalaxyAtlasProps = {
   cases: CaseFile[];
+  landscapeContextNodes?: LandscapeContextNode[];
   selectedCase: CaseFile;
   previewCaseId?: string;
   onSelectCase: (caseId: string) => void;
@@ -48,8 +53,17 @@ type LinkStyle = CSSProperties & {
   "--link-glow-width": string;
 };
 
+type ContextNodeStyle = CSSProperties & {
+  "--context-node-x": string;
+  "--context-node-y": string;
+  "--context-node-accent": string;
+  "--context-node-evidence": string;
+  "--context-node-uncertainty": string;
+};
+
 export function EvidenceGalaxyAtlas({
   cases,
+  landscapeContextNodes = [],
   selectedCase,
   previewCaseId,
   onSelectCase,
@@ -62,7 +76,14 @@ export function EvidenceGalaxyAtlas({
     cases.findIndex((caseFile) => caseFile.id === selectedCase.id),
     0,
   );
-  const galaxyConnections = useMemo(() => buildGalaxyConnections(cases), [cases]);
+  const landscapeNodes = useMemo(
+    () => [...cases, ...landscapeContextNodes],
+    [cases, landscapeContextNodes],
+  );
+  const galaxyConnections = useMemo(
+    () => buildGalaxyConnections(landscapeNodes),
+    [landscapeNodes],
+  );
   const previewCase =
     cases.find((caseFile) => caseFile.id === previewCaseId) ?? selectedCase;
   const focusCaseId = previewCase.id;
@@ -70,8 +91,8 @@ export function EvidenceGalaxyAtlas({
     () => buildLinkedCaseIds(galaxyConnections, focusCaseId),
     [galaxyConnections, focusCaseId],
   );
-  const focusPosition = getAtlasPosition(previewCase);
-  const selectedPosition = getAtlasPosition(selectedCase);
+  const focusPosition = getLandscapeAtlasPosition(previewCase);
+  const selectedPosition = getLandscapeAtlasPosition(selectedCase);
   const selectedAccent = getGalaxyStatusAccent(selectedCase);
   const selectedStatus = landscapeStatusMeta[selectedCase.landscapeStatus];
   const selectedEvidenceStrength = getEvidenceStrengthTaxonomyLabel(
@@ -81,7 +102,10 @@ export function EvidenceGalaxyAtlas({
   const selectedEvidenceStrengthClassName = getEvidenceStrengthTaxonomyClassName(
     selectedEvidenceStrength,
   );
-  const sessionRange = useMemo(() => getSessionRange(cases), [cases]);
+  const sessionRange = useMemo(
+    () => getSessionRange(landscapeNodes),
+    [landscapeNodes],
+  );
   const cameraOffsetX = (52 - selectedPosition.x) * 0.08;
   const cameraOffsetY = (48 - selectedPosition.y) * 0.08;
   const mapStyle: AtlasMapStyle = {
@@ -149,7 +173,7 @@ export function EvidenceGalaxyAtlas({
       <aside className="atlas-key" aria-labelledby={atlasKeyTitleId}>
         <div className="atlas-key-header">
           <span id={atlasKeyTitleId}>Key</span>
-          <span>{cases.length} regions</span>
+          <span>{landscapeNodes.length} nodes</span>
         </div>
         <p className="atlas-key-note" id={atlasDescriptionId}>
           Proximity groups related behaviour; size, ring, and tint encode review
@@ -244,17 +268,18 @@ export function EvidenceGalaxyAtlas({
 
       <div className="galaxy-camera">
         <div className="galaxy-ambient" aria-hidden="true">
-          {cases.map((caseFile, index) => {
-            const accent = getGalaxyStatusAccent(caseFile);
-            const focusDistance = getMapDistance(caseFile, previewCase);
-            const position = getAtlasPosition(caseFile);
-            const isLinked = linkedCaseIds.has(caseFile.id);
-            const sessionWeight = getSessionWeight(caseFile, sessionRange);
-            const statusClassName = getRegionStatusClassName(caseFile);
+          {landscapeNodes.map((node, index) => {
+            const accent = getGalaxyStatusAccent(node);
+            const focusDistance = getMapDistance(node, previewCase);
+            const position = getLandscapeAtlasPosition(node);
+            const isLinked = linkedCaseIds.has(node.id);
+            const sessionWeight = getSessionWeight(node, sessionRange);
+            const statusClassName = getRegionStatusClassName(node);
             const regionClassName = [
               "galaxy-region-boundary",
               statusClassName,
-              caseFile.id === selectedCase.id ? "is-selected" : "",
+              node.id === selectedCase.id ? "is-selected" : "",
+              isLandscapeContextNode(node) ? "is-context-node" : "",
               isLinked ? "is-linked" : "",
               isLinked || focusDistance <= 34 ? "is-nearby" : "is-distant",
             ]
@@ -264,19 +289,19 @@ export function EvidenceGalaxyAtlas({
             return (
               <span
                 className={regionClassName}
-                key={`region-${caseFile.id}`}
+                key={`region-${node.id}`}
                 style={
                   {
                     "--region-x": `${position.x}%`,
                     "--region-y": `${position.y}%`,
                     "--region-width": `${16 + sessionWeight * 18}%`,
                     "--region-height": `${
-                      12 + sessionWeight * 13 + caseFile.uncertainty * 4
+                      12 + sessionWeight * 13 + node.uncertainty * 4
                     }%`,
                     "--region-accent": accent,
-                    "--region-opacity": `${0.18 + caseFile.modelAgreement * 0.2}`,
-                    "--region-support": `${(0.07 + caseFile.evidenceStrength * 0.2).toFixed(2)}`,
-                    "--region-pressure": `${(0.1 + caseFile.uncertainty * 0.32).toFixed(2)}`,
+                    "--region-opacity": `${0.18 + node.modelAgreement * 0.2}`,
+                    "--region-support": `${(0.07 + node.evidenceStrength * 0.2).toFixed(2)}`,
+                    "--region-pressure": `${(0.1 + node.uncertainty * 0.32).toFixed(2)}`,
                     "--region-delay": `${140 + index * 42}ms`,
                     transform: `translate(-50%, -50%) rotate(${
                       index % 2 === 0 ? -8 : 6
@@ -334,12 +359,23 @@ export function EvidenceGalaxyAtlas({
               getMapDistance(caseFile, previewCase) <= 34
             }
             connected={linkedCaseIds.has(caseFile.id)}
-            displayPosition={getAtlasPosition(caseFile)}
+            displayPosition={getLandscapeAtlasPosition(caseFile)}
             accent={getGalaxyStatusAccent(caseFile)}
             nodeId={getAtlasNodeId(caseFile.id)}
             onSelect={onSelectCase}
             onPreview={onPreviewCase}
             onClearPreview={onClearPreview}
+          />
+        ))}
+
+        {landscapeContextNodes.map((node) => (
+          <LandscapeContextPoint
+            key={node.id}
+            node={node}
+            nearby={
+              linkedCaseIds.has(node.id) ||
+              getMapDistance(node, previewCase) <= 34
+            }
           />
         ))}
       </div>
@@ -355,7 +391,7 @@ export const landscapeStatusOrder = [
   "too_broad",
 ] as const;
 
-const galaxyStatusAccents: Record<CaseFile["landscapeStatus"], string> = {
+const galaxyStatusAccents: Record<LandscapeNode["landscapeStatus"], string> = {
   supported: "#8fb6a0",
   overclaimed: "#c9958d",
   impure: "#c6ad78",
@@ -378,13 +414,39 @@ type SessionRange = {
 
 type GalaxyConnectionType = "similarity" | "uncertain" | "overclaim";
 
-export function getGalaxyStatusAccent(caseFile: CaseFile): string {
-  return galaxyStatusAccents[caseFile.landscapeStatus];
+export function getGalaxyStatusAccent(node: LandscapeNode): string {
+  return galaxyStatusAccents[node.landscapeStatus];
 }
 
-function buildConnectionPath(from: CaseFile, to: CaseFile, index: number): string {
-  const fromPosition = getAtlasPosition(from);
-  const toPosition = getAtlasPosition(to);
+function LandscapeContextPoint({
+  node,
+  nearby,
+}: {
+  node: LandscapeContextNode;
+  nearby: boolean;
+}) {
+  const position = getLandscapeAtlasPosition(node);
+  const style: ContextNodeStyle = {
+    "--context-node-x": `${position.x}%`,
+    "--context-node-y": `${position.y}%`,
+    "--context-node-accent": getGalaxyStatusAccent(node),
+    "--context-node-evidence": node.evidenceStrength.toFixed(2),
+    "--context-node-uncertainty": node.uncertainty.toFixed(2),
+  };
+
+  return (
+    <span
+      className={`landscape-context-node ${nearby ? "is-nearby" : "is-distant"}`}
+      role="img"
+      aria-label={`${node.cluster.id} context node: ${node.label}`}
+      style={style}
+    />
+  );
+}
+
+function buildConnectionPath(from: LandscapeNode, to: LandscapeNode, index: number): string {
+  const fromPosition = getLandscapeAtlasPosition(from);
+  const toPosition = getLandscapeAtlasPosition(to);
   const x1 = fromPosition.x;
   const y1 = fromPosition.y;
   const x2 = toPosition.x;
@@ -420,17 +482,17 @@ function buildLinkedCaseIds(
   return linkedCaseIds;
 }
 
-function getAtlasPosition(caseFile: CaseFile): CaseFile["mapPosition"] {
-  return atlasDisplayPositions[caseFile.id] ?? {
-    x: 28 + caseFile.mapPosition.x * 0.64,
-    y: 12 + caseFile.mapPosition.y * 0.74,
+export function getLandscapeAtlasPosition(node: LandscapeNode): LandscapeNode["mapPosition"] {
+  return atlasDisplayPositions[node.id] ?? {
+    x: 28 + node.mapPosition.x * 0.64,
+    y: 12 + node.mapPosition.y * 0.74,
   };
 }
 
-function buildGalaxyConnections(cases: CaseFile[]) {
-  return cases
+function buildGalaxyConnections(nodes: LandscapeNode[]) {
+  return nodes
     .flatMap((from, fromIndex) =>
-      cases.slice(fromIndex + 1).map((to) => {
+      nodes.slice(fromIndex + 1).map((to) => {
         const distance = getMapDistance(from, to);
         const evidenceDelta = Math.abs(from.evidenceStrength - to.evidenceStrength);
         const agreementDelta = Math.abs(from.modelAgreement - to.modelAgreement);
@@ -458,10 +520,10 @@ function buildGalaxyConnections(cases: CaseFile[]) {
       }),
     )
     .sort((a, b) => b.strength - a.strength || a.distance - b.distance)
-    .slice(0, Math.min(6, cases.length + 1));
+    .slice(0, Math.min(7, nodes.length + 1));
 }
 
-function getMapDistance(from: CaseFile, to: CaseFile): number {
+function getMapDistance(from: LandscapeNode, to: LandscapeNode): number {
   return Math.hypot(
     from.mapPosition.x - to.mapPosition.x,
     (from.mapPosition.y - to.mapPosition.y) * 1.08,
@@ -473,8 +535,8 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 function getConnectionType(
-  from: CaseFile,
-  to: CaseFile,
+  from: LandscapeNode,
+  to: LandscapeNode,
   deltas: {
     evidenceDelta: number;
     uncertaintyDelta: number;
@@ -512,8 +574,8 @@ const galaxyConnectionDashArrays: Record<GalaxyConnectionType, string> = {
   overclaim: "1.4 5.2",
 };
 
-function getSessionRange(cases: CaseFile[]): SessionRange {
-  const sessionCounts = cases.map((caseFile) => caseFile.cluster.size ?? 0);
+function getSessionRange(nodes: LandscapeNode[]): SessionRange {
+  const sessionCounts = nodes.map((node) => node.cluster.size ?? 0);
 
   return {
     min: Math.min(...sessionCounts),
@@ -521,15 +583,15 @@ function getSessionRange(cases: CaseFile[]): SessionRange {
   };
 }
 
-function getSessionWeight(caseFile: CaseFile, range: SessionRange): number {
-  const size = caseFile.cluster.size ?? range.min;
+function getSessionWeight(node: LandscapeNode, range: SessionRange): number {
+  const size = node.cluster.size ?? range.min;
   const spread = Math.max(range.max - range.min, 1);
 
   return clamp((size - range.min) / spread, 0, 1);
 }
 
-function getRegionStatusClassName(caseFile: CaseFile): string {
-  return `is-${caseFile.landscapeStatus.replace("_", "-")}`;
+function getRegionStatusClassName(node: LandscapeNode): string {
+  return `is-${node.landscapeStatus.replace("_", "-")}`;
 }
 
 function getAtlasNodeId(caseId: string): string {
@@ -538,4 +600,8 @@ function getAtlasNodeId(caseId: string): string {
 
 function getShortAtlasName(caseFile: CaseFile): string {
   return caseFile.cluster.name.replace(/\s+region$/i, "");
+}
+
+function isLandscapeContextNode(node: LandscapeNode): node is LandscapeContextNode {
+  return "nodeType" in node && node.nodeType === "context";
 }

@@ -78,6 +78,31 @@ export type Cluster = {
   size?: number;
 };
 
+export type NearestNeighbor = {
+  clusterId: string;
+  label: string;
+  distance: number;
+  note: string;
+};
+
+export type LandscapeContextNode = {
+  id: string;
+  nodeType: "context";
+  label: string;
+  cluster: Cluster;
+  landscapeStatus: LandscapeStatus;
+  modelAgreement: number;
+  evidenceStrength: number;
+  uncertainty: number;
+  mapPosition: {
+    x: number;
+    y: number;
+  };
+  nearestNeighbor: NearestNeighbor;
+};
+
+export type LandscapeNode = CaseFile | LandscapeContextNode;
+
 export type BlindInterpretationOption = {
   id: string;
   label: string;
@@ -168,12 +193,7 @@ export type CaseFile = {
   };
   topFeatures: string[];
   riskFlags: string[];
-  nearestNeighbor: {
-    clusterId: string;
-    label: string;
-    distance: number;
-    note: string;
-  };
+  nearestNeighbor: NearestNeighbor;
   blindInterpretationOptions: BlindInterpretationOption[];
   candidateLabels: CandidateLabel[];
   seededBestLabelId: string;
