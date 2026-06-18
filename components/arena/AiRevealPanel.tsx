@@ -54,7 +54,15 @@ export function AiRevealPanel({
 
       <header className="reveal-hero">
         <div className="reveal-hero-copy">
-          <p className="eyebrow">AI Reveal</p>
+          <div className="reveal-hero-meta">
+            <p className="eyebrow">AI Reveal</p>
+            <span
+              className={assessment.className}
+              aria-label={`${assessment.label}: ${assessment.body}`}
+            >
+              {assessment.label}
+            </span>
+          </div>
           <h2>
             {revealed
               ? agrees
@@ -72,10 +80,6 @@ export function AiRevealPanel({
             review.
           </p>
         </div>
-        <aside className="reveal-status" aria-label="Current assessment">
-          <span className={assessment.className}>{assessment.label}</span>
-          <p>{assessment.body}</p>
-        </aside>
       </header>
 
       <div className={`reveal-comparison ${revealed ? "is-revealed" : ""}`}>
@@ -84,10 +88,6 @@ export function AiRevealPanel({
           <strong>{blindChoice?.label ?? "Awaiting blind choice"}</strong>
           <p>{comparisonCopy.blind}</p>
         </article>
-
-        <div className="reveal-comparison-divider" aria-hidden="true">
-          <span>{revealed && agrees ? "matches" : "versus"}</span>
-        </div>
 
         <article className="reveal-card ai-card">
           <span>AI label</span>
@@ -109,8 +109,8 @@ export function AiRevealPanel({
         <div className="reveal-section-heading">
           <h3 id="overclaim-reason">Why this may be an overclaim</h3>
           <p>
-            The evidence confirms some IAM activity, but the strongest claim needs
-            more support.
+            The evidence confirms IAM activity, but the strongest claim needs more
+            support.
           </p>
         </div>
 
@@ -124,44 +124,48 @@ export function AiRevealPanel({
         </div>
       </section>
 
-      <details className="reveal-scoring-details">
-        <summary>View scoring details</summary>
-        <div className="reveal-score-grid" aria-label="Technical scoring">
-          {scoringDetails.map((detail) => (
-            <div key={detail.label}>
-              <span>{detail.label}</span>
-              <strong>{detail.value}</strong>
-            </div>
-          ))}
-        </div>
-      </details>
+      <div className="reveal-bottom-controls">
+        <details className="reveal-scoring-details">
+          <summary>
+            <span>View scoring details</span>
+          </summary>
+          <div className="reveal-score-grid" aria-label="Technical scoring">
+            {scoringDetails.map((detail) => (
+              <div key={detail.label}>
+                <span>{detail.label}</span>
+                <strong>{detail.value}</strong>
+              </div>
+            ))}
+          </div>
+        </details>
 
-      <footer className="reveal-actions" aria-label="AI Reveal actions">
-        <p>Inspect the signals before deciding whether the AI label is supported.</p>
-        <div>
-          <button
-            type="button"
-            className="secondary-action"
-            onClick={onBackToBlindRead}
-          >
-            Back to blind read
-          </button>
-          {revealed ? (
-            <button type="button" className="primary-action" onClick={onContinue}>
-              Review evidence board
-            </button>
-          ) : (
+        <footer className="reveal-actions" aria-label="AI Reveal actions">
+          <p>Inspect the signals before deciding whether the AI label is supported.</p>
+          <div>
             <button
               type="button"
-              className="primary-action"
-              disabled={!reviewState.blindChoiceId}
-              onClick={onRevealAiLabel}
+              className="secondary-action"
+              onClick={onBackToBlindRead}
             >
-              Reveal AI label
+              Back to blind read
             </button>
-          )}
-        </div>
-      </footer>
+            {revealed ? (
+              <button type="button" className="primary-action" onClick={onContinue}>
+                Review evidence board
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="primary-action"
+                disabled={!reviewState.blindChoiceId}
+                onClick={onRevealAiLabel}
+              >
+                Reveal AI label
+              </button>
+            )}
+          </div>
+        </footer>
+      </div>
     </section>
   );
 }
