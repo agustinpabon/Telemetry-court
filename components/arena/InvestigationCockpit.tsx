@@ -58,6 +58,7 @@ export function InvestigationCockpit({
           onOpenReviewDrawer,
         });
   const isCaseFileStage = activeStage === "case_file";
+  const isAiRevealStage = activeStage === "ai_reveal";
   const isBlindReadBeforeReveal =
     activeStage === "blind_read" && !reviewState.aiLabelRevealed;
   const blindChoice = caseFile.blindInterpretationOptions.find(
@@ -74,7 +75,9 @@ export function InvestigationCockpit({
 
   return (
     <aside
-      className={`investigation-cockpit ${isCaseFileStage ? "cockpit-case-file" : ""}`}
+      className={`investigation-cockpit ${
+        isCaseFileStage ? "cockpit-case-file" : ""
+      } ${isAiRevealStage ? "ai-reveal-cockpit" : ""}`}
       aria-label="Case status"
     >
       <div className="cockpit-header">
@@ -83,13 +86,28 @@ export function InvestigationCockpit({
           <h2>
             {isBlindReadBeforeReveal
               ? "Blind Read status"
-              : reviewState.aiLabelRevealed
+              : isAiRevealStage
+                ? "AI Reveal"
+                : reviewState.aiLabelRevealed
                 ? `AI suggested: ${caseFile.topicLabel.name}`
                 : caseFile.cluster.name}
           </h2>
         </div>
         {isBlindReadBeforeReveal ? (
           <span className="status-chip status-chip-neutral">Blind Read</span>
+        ) : isAiRevealStage ? (
+          <span
+            className={
+              reviewState.aiLabelRevealed && caseFile.landscapeStatus === "overclaimed"
+                ? "status-chip status-chip-overclaimed"
+                : "status-chip status-chip-neutral"
+            }
+          >
+            {getAiRevealAssessmentLabel({
+              caseFile,
+              revealed: reviewState.aiLabelRevealed,
+            })}
+          </span>
         ) : (
           <span className={status.className}>{status.label}</span>
         )}
@@ -144,6 +162,35 @@ export function InvestigationCockpit({
               {blindChoice ? "Interpretation selected" : "Interpretation not selected"}
             </ChecklistItem>
           </ul>
+        </>
+      ) : isAiRevealStage ? (
+        <>
+          <dl className="case-status-list ai-reveal-case-list">
+            <SummaryLine label="Step" value={activeStepLabel} />
+            <SummaryLine
+              label="Your read"
+              value={blindChoice?.label ?? "Not recorded"}
+            />
+            <SummaryLine
+              label="AI label"
+              value={
+                reviewState.aiLabelRevealed
+                  ? caseFile.topicLabel.name
+                  : "Hidden until reveal"
+              }
+            />
+            <SummaryLine
+              label="Assessment"
+              value={getAiRevealAssessmentLabel({
+                caseFile,
+                revealed: reviewState.aiLabelRevealed,
+              })}
+            />
+            <SummaryLine
+              label="Next"
+              value={reviewState.aiLabelRevealed ? "Evidence Board" : "Reveal AI label"}
+            />
+          </dl>
         </>
       ) : (
         <>
@@ -326,6 +373,24 @@ function getResultLabel({
 
   if (labelsMatch(blindChoiceLabel, caseFile.topicLabel.name)) {
     return "Match";
+  }
+
+  return cockpitReviewStatusLabel[caseFile.landscapeStatus];
+}
+
+function getAiRevealAssessmentLabel({
+  caseFile,
+  revealed,
+}: {
+  caseFile: CaseFile;
+  revealed?: boolean;
+}): string {
+  if (!revealed) {
+    return "Pending reveal";
+  }
+
+  if (caseFile.landscapeStatus === "overclaimed") {
+    return "Likely overclaim";
   }
 
   return cockpitReviewStatusLabel[caseFile.landscapeStatus];

@@ -307,7 +307,9 @@ export function AppShell({
             })}
           </div>
 
-          {isExploreMode || activeStage === "blind_read" ? null : (
+          {isExploreMode ||
+          activeStage === "blind_read" ||
+          activeStage === "ai_reveal" ? null : (
             <div className="stage-controls">
               <button
                 type="button"
@@ -484,6 +486,7 @@ function renderStage({
           reviewState={reviewState}
           onRevealAiLabel={revealAiLabel}
           onContinue={() => navigateToStage("evidence_board")}
+          onBackToBlindRead={() => navigateToStage("blind_read")}
         />
       );
     case "evidence_board":
