@@ -5,9 +5,11 @@ import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { AppShell } from "@/components/arena/AppShell";
+import { AiRevealPanel } from "@/components/arena/AiRevealPanel";
 import { BlindReadPanel } from "@/components/arena/BlindReadPanel";
 import { CaseFilePanel } from "@/components/arena/CaseFilePanel";
 import { getLandscapeAtlasPosition } from "@/components/arena/EvidenceGalaxyAtlas";
+import { InvestigationCockpit } from "@/components/arena/InvestigationCockpit";
 import { CaseSwitcher } from "@/components/CaseSwitcher";
 import { ClaimLedger } from "@/components/ClaimLedger";
 import { EvidenceCard } from "@/components/EvidenceCard";
@@ -339,6 +341,76 @@ test("later review routes stay sealed until a blind interpretation exists", () =
   assert.match(pageText, /Selected behaviour region/);
   assert.doesNotMatch(pageText, /Suspicious IAM privilege escalation/);
   assert.doesNotMatch(pageText, /IAM role provisioning region/);
+});
+
+test("AI Reveal presents divergence as an evidence review moment", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const reviewState = {
+    blindChoiceId: "cloud-resource-discovery",
+    aiLabelRevealed: true,
+  };
+  const markup = renderStaticMarkup(
+    React.createElement(
+      React.Fragment,
+      null,
+      React.createElement(AiRevealPanel, {
+        caseFile: selectedCase,
+        reviewState,
+        onRevealAiLabel: () => undefined,
+        onContinue: () => undefined,
+        onBackToBlindRead: () => undefined,
+      }),
+      React.createElement(InvestigationCockpit, {
+        caseFile: selectedCase,
+        activeStage: "ai_reveal",
+        reviewState,
+        reviewCompletion: 2,
+        onOpenCaseFile: () => undefined,
+        onStartInvestigation: () => undefined,
+        onRevealAiLabel: () => undefined,
+        onOpenReviewDrawer: () => undefined,
+      }),
+    ),
+  );
+
+  assert.match(markup, /Step 4 of 8 · AI Reveal/);
+  assert.match(markup, /Your read and the AI label diverge\./);
+  assert.match(
+    markup,
+    /You selected Cloud resource discovery\. The model suggested Suspicious IAM privilege escalation\./,
+  );
+  assert.match(markup, /Likely overclaim/);
+  assert.match(markup, /Your blind read/);
+  assert.match(markup, /Discovery-like activity is present/);
+  assert.match(markup, /AI label/);
+  assert.match(
+    markup,
+    /The model raised the severity because IAM role creation and policy attachment were observed\./,
+  );
+  assert.match(markup, /Why this may be an overclaim/);
+  assert.match(markup, /Observed/);
+  assert.match(markup, /IAM role creation and policy attachment\./);
+  assert.match(markup, /Missing/);
+  assert.match(
+    markup,
+    /No confirmed downstream abuse, sensitive data access, or malicious intent\./,
+  );
+  assert.match(markup, /Ambiguous/);
+  assert.match(markup, /One PassRole-like probe appears outside the rollout window\./);
+  assert.match(markup, /View scoring details/);
+  assert.match(markup, /Evidence support for AI claim/);
+  assert.match(markup, /Review evidence board/);
+  assert.match(markup, /Back to blind read/);
+  assert.match(markup, /Next<\/dt><dd>Evidence Board/);
+  assert.doesNotMatch(markup, /Compare blind interpretation with the model claim/);
+  assert.doesNotMatch(markup, /Disagreement/);
+  assert.doesNotMatch(markup, />tests</);
+  assert.doesNotMatch(markup, /Open evidence board/);
+  assert.doesNotMatch(markup, /Open review summary/);
+  assert.doesNotMatch(markup, /AI suggested:/);
+  assert.doesNotMatch(markup, /2\/6 review steps complete/);
 });
 
 test("blind interpretation choices render as accessible radio cards", () => {

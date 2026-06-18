@@ -19,6 +19,32 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-18: AI Reveal 110% Zoom Resilience
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Fix the `/ai-reveal` layout when Brave/browser zoom is around 110%, where the reveal stage could drift horizontally and leave the user looking at the clipped right edge of the page.
+- Files changed: `app/investigation-workflow.css` and `docs/CHANGELOG_AI.md`.
+- Summary: Added an AI Reveal-specific mid-width layout from 861px to 1320px that switches the page to a true single-column stack, keeps the main reveal stage first, moves the case-status panel below it, and hard-constrains the workspace, stage, and cockpit to the viewport width.
+- Decisions made: Matched the earlier Blind Read zoom-resilience pattern instead of shrinking all text; preserved the desktop side summary above 1320px and the existing mobile stack below 860px.
+- Checks run: `npx tsc --noEmit` passed; `npm test` passed with 32 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json app/investigation-workflow.css components/arena/AiRevealPanel.tsx components/arena/InvestigationCockpit.tsx components/arena/AppShell.tsx app/page.test.ts` returned `[]`; browser verification against `http://localhost:3000` passed at 1116x632, 1024x640, and a 1228x696 viewport with an added 110% page zoom stress check, with no horizontal overflow, one `Review evidence board` CTA, no generic `Next`, and no console issues. Screenshots saved to `/private/tmp/telemetry-ai-reveal-zoom-110-equivalent.png`, `/private/tmp/telemetry-ai-reveal-zoom-125-equivalent.png`, and `/private/tmp/telemetry-ai-reveal-css-zoom-110.png`.
+- Assumptions: The problematic 110% screenshot corresponds to a mid-width CSS viewport around 1116px after browser chrome and zoom are accounted for.
+- Risks/follow-ups: Browser zoom can combine with each user's window size differently; if another awkward breakpoint appears, add the specific CSS viewport dimensions to the verification matrix.
+- Next recommended step: Recheck `/ai-reveal` in Brave at 110% zoom with the same window size and confirm the page no longer drifts to the right.
+- Suggested commit message: `fix(arena): harden ai reveal zoom layout`
+
+## 2026-06-18: AI Reveal Premium Overclaim Moment
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Redesign only `/ai-reveal` into a calm, premium reveal screen that makes the Blind Read/AI-label divergence, likely overclaim assessment, evidence rationale, and evidence-board action immediately clear.
+- Files changed: `components/arena/AiRevealPanel.tsx`, `components/arena/InvestigationCockpit.tsx`, `components/arena/AppShell.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Rebuilt AI Reveal around `Your read and the AI label diverge.`, a single `Likely overclaim` assessment, side-by-side blind-read/AI-label comparison, three evidence alignment rows for observed/missing/ambiguous signals, collapsed technical scoring, one primary `Review evidence board` CTA, and a compact case-state sidebar. Removed the large reveal mini-map from this stage, removed the debug-looking `tests` comparison node, hid the generic Back/Next footer on AI Reveal, and removed the review-summary action from this page.
+- Decisions made: Kept the existing route guards, reducer state, 8-step workflow, and evidence-board transition intact; reused the synthetic IAM evidence already in `data/sampleCases.ts`; kept raw scores available only under `View scoring details`; left broader non-AI-Reveal cockpit behavior unchanged.
+- Checks run: `npx tsc --noEmit` passed; `npm test` passed with 32 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/AiRevealPanel.tsx components/arena/InvestigationCockpit.tsx components/arena/AppShell.tsx app/investigation-workflow.css app/page.test.ts` returned `[]`; browser verification against the existing dev server at `http://localhost:3000` confirmed the Blind Read selection/reveal path, one `Review evidence board` CTA, no generic `Next` button, no `Open review summary`, no `tests` text, no desktop/mobile horizontal overflow, route guard from direct `/ai-reveal` access back to `/blind-read`, and working transition to `/evidence-board`. Screenshots saved to `/private/tmp/telemetry-ai-reveal-compare-blind-read.png`, `/private/tmp/telemetry-ai-reveal-redesign-desktop.png`, `/private/tmp/telemetry-ai-reveal-redesign-clean-desktop.png`, and `/private/tmp/telemetry-ai-reveal-redesign-mobile.png`.
+- Assumptions: The default IAM sample case remains the primary demo route for `/ai-reveal`, so the overclaim explanation can name IAM role creation, policy attachment, missing abuse evidence, and the ambiguous PassRole-like probe without inventing evidence.
+- Risks/follow-ups: The existing dev server on port 3000 emits historical hot-reload log noise from prior edits, but the fresh browser verification for this pass reported no current console issues. A future workflow-wide pass could standardize the same compact progress treatment across Evidence Board and Label Duel.
+- Next recommended step: Review `http://localhost:3000/ai-reveal` after selecting Cloud resource discovery on `/blind-read` and confirm the reveal moment feels presentation-ready.
+- Suggested commit message: `ux(arena): redesign ai reveal overclaim moment`
+
 ## 2026-06-18: Blind Read Zoom Resilience
 
 - Agent/model: Codex (GPT-5)
