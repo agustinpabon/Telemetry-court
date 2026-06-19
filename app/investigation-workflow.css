@@ -4522,6 +4522,349 @@
   margin-top: 2px;
 }
 
+.arena-shell.arena-shell-investigate .evidence-board-stage {
+  gap: 14px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-review-context {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.arena-shell.arena-shell-investigate .evidence-review-context div {
+  background: rgba(251, 250, 247, 0.64);
+  border: 1px solid rgba(50, 48, 47, 0.075);
+  border-radius: 14px;
+  min-width: 0;
+  padding: 12px 14px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-review-context span,
+.arena-shell.arena-shell-investigate .evidence-classification-summary span,
+.arena-shell.arena-shell-investigate .evidence-plain-review span,
+.arena-shell.arena-shell-investigate .evidence-signal-row > span,
+.arena-shell.arena-shell-investigate .claim-checklist-balance > span {
+  color: var(--workflow-muted);
+  display: block;
+  font-size: 11px;
+  font-weight: 790;
+  line-height: 1.2;
+}
+
+.arena-shell.arena-shell-investigate .evidence-review-context strong {
+  color: var(--workflow-ink);
+  display: block;
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1.35;
+  margin-top: 5px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-balance-summary {
+  align-items: center;
+  background: rgba(247, 245, 239, 0.76);
+  border: 1px solid rgba(50, 48, 47, 0.075);
+  border-radius: 18px;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  padding: 17px 18px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-balance-copy {
+  max-width: 58ch;
+  min-width: 0;
+}
+
+.arena-shell.arena-shell-investigate .evidence-balance-copy h3,
+.arena-shell.arena-shell-investigate .claim-checklist-card h3 {
+  color: var(--workflow-ink);
+  font-size: 17px;
+  font-weight: 790;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.arena-shell.arena-shell-investigate .evidence-balance-copy p {
+  color: var(--workflow-muted);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 6px 0 0;
+  text-wrap: pretty;
+}
+
+.arena-shell.arena-shell-investigate .evidence-balance-counts {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 7px;
+  justify-content: flex-end;
+}
+
+.arena-shell.arena-shell-investigate .evidence-balance-counts.is-compact {
+  flex: none;
+  justify-content: flex-start;
+  margin-top: 8px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-balance-counts span {
+  align-items: center;
+  background: rgba(251, 250, 247, 0.78);
+  border: 1px solid rgba(50, 48, 47, 0.08);
+  border-radius: 999px;
+  color: var(--workflow-muted);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 760;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+.arena-shell.arena-shell-investigate .evidence-balance-counts strong {
+  color: var(--workflow-ink);
+}
+
+.arena-shell.arena-shell-investigate .evidence-balance-counts i {
+  background: var(--workflow-muted);
+  border-radius: 999px;
+  display: inline-block;
+  height: 7px;
+  width: 7px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-balance-counts .is-supporting i {
+  background: var(--workflow-supported);
+}
+
+.arena-shell.arena-shell-investigate .evidence-balance-counts .is-weak i {
+  background: var(--workflow-weak);
+}
+
+.arena-shell.arena-shell-investigate .evidence-balance-counts .is-contradictory i {
+  background: var(--workflow-contradicted);
+}
+
+.arena-shell.arena-shell-investigate .evidence-balance-counts .is-context i {
+  background: var(--workflow-context);
+}
+
+.arena-shell.arena-shell-investigate .evidence-review-layout {
+  align-items: start;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 304px);
+}
+
+.arena-shell.arena-shell-investigate .evidence-review-main,
+.arena-shell.arena-shell-investigate .evidence-review-list {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.arena-shell.arena-shell-investigate .evidence-confirmation-count {
+  background: rgba(251, 250, 247, 0.78);
+  border: 1px solid rgba(50, 48, 47, 0.08);
+  border-radius: 999px;
+  color: var(--workflow-muted);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 780;
+  min-height: 30px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+.arena-shell.arena-shell-investigate .evidence-review-card {
+  background: rgba(251, 250, 247, 0.82);
+  border: 1px solid rgba(50, 48, 47, 0.085);
+  border-radius: 18px;
+  color: var(--workflow-ink);
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-review-card-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+}
+
+.arena-shell.arena-shell-investigate .evidence-review-card-header h3 {
+  color: var(--workflow-ink);
+  font-size: 17px;
+  font-weight: 790;
+  line-height: 1.25;
+  margin: 6px 0 0;
+  text-wrap: balance;
+}
+
+.arena-shell.arena-shell-investigate .evidence-classification-summary {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+  text-align: right;
+}
+
+.arena-shell.arena-shell-investigate .evidence-classification-summary .evidence-rating {
+  display: inline-flex;
+  min-height: 28px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-plain-review {
+  border-top: 1px solid rgba(50, 48, 47, 0.075);
+  display: grid;
+  gap: 11px;
+  padding-top: 14px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-plain-review p {
+  color: var(--workflow-ink);
+  font-size: 14px;
+  font-weight: 560;
+  line-height: 1.5;
+  margin: 5px 0 0;
+  text-wrap: pretty;
+}
+
+.arena-shell.arena-shell-investigate .evidence-signal-row {
+  align-items: flex-start;
+  border-top: 1px solid rgba(50, 48, 47, 0.075);
+  display: grid;
+  gap: 8px;
+  padding-top: 13px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-signal-row div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-signal-row em {
+  background: rgba(247, 245, 239, 0.72);
+  border: 1px solid rgba(50, 48, 47, 0.075);
+  border-radius: 999px;
+  color: var(--workflow-muted);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 760;
+  line-height: 1;
+  padding: 7px 9px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-rating-row {
+  display: grid;
+  gap: 8px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-rating-row .rating-control {
+  background: rgba(247, 245, 239, 0.76);
+  border: 1px solid rgba(50, 48, 47, 0.08);
+  border-radius: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  grid-template-columns: none;
+  padding: 4px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-rating-row .rating-button {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: var(--workflow-muted);
+  flex: 1 1 112px;
+  font-size: 12px;
+  font-weight: 780;
+  min-height: 34px;
+  padding: 7px 9px;
+  text-align: center;
+}
+
+.arena-shell.arena-shell-investigate .evidence-rating-row .rating-button:hover {
+  background: rgba(251, 250, 247, 0.72);
+  border-color: rgba(50, 48, 47, 0.08);
+  color: var(--workflow-ink);
+}
+
+.arena-shell.arena-shell-investigate .evidence-rating-row .rating-button.is-selected {
+  background: var(--workflow-surface);
+  border-color: rgba(50, 48, 47, 0.18);
+  color: var(--workflow-ink);
+}
+
+.arena-shell.arena-shell-investigate .evidence-rating-row .rating-button:focus-visible {
+  outline: 3px solid rgba(95, 111, 82, 0.24);
+  outline-offset: 2px;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-sidebar {
+  align-self: start;
+  position: sticky;
+  top: 16px;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-card {
+  background: rgba(247, 245, 239, 0.78);
+  border: 1px solid rgba(50, 48, 47, 0.08);
+  border-radius: 18px;
+  display: grid;
+  gap: 14px;
+  padding: 17px;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-group {
+  border-top: 1px solid rgba(50, 48, 47, 0.075);
+  padding-top: 13px;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-group h4 {
+  color: var(--workflow-muted);
+  font-size: 12px;
+  font-weight: 790;
+  line-height: 1.2;
+  margin: 0 0 8px;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-group ul {
+  display: grid;
+  gap: 7px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-group li {
+  color: var(--workflow-ink);
+  font-size: 13px;
+  font-weight: 620;
+  line-height: 1.4;
+  padding-left: 17px;
+  position: relative;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-group li::before {
+  background: rgba(50, 48, 47, 0.34);
+  border-radius: 999px;
+  content: "";
+  height: 5px;
+  left: 2px;
+  position: absolute;
+  top: 0.55em;
+  width: 5px;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-balance {
+  border-top: 1px solid rgba(50, 48, 47, 0.075);
+  padding-top: 13px;
+}
+
 @media (max-width: 860px) {
   .arena-shell {
     padding: 12px;
@@ -4552,12 +4895,597 @@
   .arena-shell .arena-action-footer div {
     justify-content: flex-start;
   }
+
+  .arena-shell.arena-shell-investigate .evidence-review-context,
+  .arena-shell.arena-shell-investigate .evidence-review-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-balance-summary,
+  .arena-shell.arena-shell-investigate .evidence-review-card-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-balance-counts,
+  .arena-shell.arena-shell-investigate .evidence-classification-summary {
+    justify-content: flex-start;
+    justify-items: start;
+    text-align: left;
+  }
+
+  .arena-shell.arena-shell-investigate .claim-checklist-sidebar {
+    position: static;
+  }
 }
 
 @media (max-width: 620px) {
   .arena-shell .arena-action-footer div,
   .arena-shell .arena-action-footer button {
     width: 100%;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-review-card,
+  .arena-shell.arena-shell-investigate .claim-checklist-card,
+  .arena-shell.arena-shell-investigate .evidence-balance-summary {
+    padding: 15px;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-rating-row .rating-button {
+    flex-basis: 100%;
+  }
+}
+
+/* Evidence Board refinement pass */
+.arena-shell.arena-shell-investigate .evidence-board-stage {
+  gap: 10px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-board-stage .arena-step-hero {
+  background: rgba(251, 250, 247, 0.5);
+  border-color: rgba(50, 48, 47, 0.04);
+  box-shadow: none;
+  padding: 13px 18px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-board-stage .arena-step-hero h2 {
+  font-size: 29px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-board-stage .arena-step-hero-summary {
+  color: var(--workflow-muted);
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-review-context {
+  gap: 6px;
+  border-bottom: 1px solid rgba(50, 48, 47, 0.055);
+  border-top: 1px solid rgba(50, 48, 47, 0.055);
+  padding: 9px 2px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-review-context div {
+  background: transparent;
+  border-color: transparent;
+  border-radius: 0;
+  padding: 0 10px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-review-context span {
+  font-size: 10.5px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-review-context strong {
+  font-size: 12.5px;
+  margin-top: 3px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-balance-summary {
+  align-items: stretch;
+  background: transparent;
+  border-color: transparent;
+  border-radius: 0;
+  display: block;
+  padding: 4px 2px 5px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-balance-line {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-balance-copy h3 {
+  color: var(--workflow-ink);
+  display: inline;
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.arena-shell.arena-shell-investigate .evidence-balance-copy p {
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.45;
+  margin-top: 3px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-balance-counts span {
+  background: transparent;
+  border: 0;
+  color: var(--workflow-ink);
+  display: inline;
+  font-size: 13px;
+  font-weight: 780;
+  min-height: auto;
+  padding: 0;
+  white-space: normal;
+}
+
+.arena-shell.arena-shell-investigate .evidence-balance-counts {
+  color: var(--workflow-ink);
+  display: inline;
+  font-size: 13px;
+  font-weight: 720;
+  line-height: 1.35;
+}
+
+.arena-shell.arena-shell-investigate .evidence-review-layout {
+  gap: 14px;
+  grid-template-areas: "main sidebar";
+  grid-template-columns: minmax(0, 1fr) minmax(248px, 292px);
+}
+
+.arena-shell.arena-shell-investigate .evidence-review-main {
+  grid-area: main;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-sidebar {
+  grid-area: sidebar;
+}
+
+.arena-shell.arena-shell-investigate .evidence-list-header {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.arena-shell.arena-shell-investigate .evidence-list-header span,
+.arena-shell.arena-shell-investigate .evidence-list-header strong {
+  color: var(--workflow-muted);
+  font-size: 12px;
+  font-weight: 780;
+  line-height: 1.2;
+}
+
+.arena-shell.arena-shell-investigate .evidence-list-header p {
+  color: var(--workflow-muted);
+  font-size: 12px;
+  font-weight: 560;
+  line-height: 1.35;
+  margin: 4px 0 0;
+  max-width: 56ch;
+  text-wrap: pretty;
+}
+
+.arena-shell.arena-shell-investigate .evidence-list-header strong {
+  background: rgba(251, 250, 247, 0.55);
+  border: 1px solid rgba(50, 48, 47, 0.05);
+  border-radius: 999px;
+  padding: 6px 9px;
+  white-space: nowrap;
+}
+
+.arena-shell.arena-shell-investigate .evidence-review-list {
+  gap: 9px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-review-card {
+  background: rgba(251, 250, 247, 0.82);
+  border-color: rgba(50, 48, 47, 0.05);
+  border-radius: 16px;
+  box-shadow: 0 1px 4px rgba(50, 48, 47, 0.02);
+  gap: 9px;
+  padding: 13px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-review-card-header {
+  align-items: center;
+  gap: 12px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-review-card-header h3 {
+  font-size: 16px;
+  margin: 0;
+}
+
+.arena-shell.arena-shell-investigate .evidence-classification-summary {
+  flex: 0 0 auto;
+}
+
+.arena-shell.arena-shell-investigate .evidence-classification-summary .evidence-rating {
+  font-size: 10.5px;
+  min-height: 24px;
+  padding: 0 8px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-card-summary {
+  color: rgba(50, 48, 47, 0.82);
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.52;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.arena-shell.arena-shell-investigate .evidence-summary-mobile,
+.arena-shell.arena-shell-investigate .action-label-mobile {
+  display: none;
+}
+
+.arena-shell.arena-shell-investigate .evidence-details {
+  padding-top: 1px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-details summary,
+.arena-shell.arena-shell-investigate .claim-checklist-card summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.arena-shell.arena-shell-investigate .evidence-details summary::-webkit-details-marker,
+.arena-shell.arena-shell-investigate .claim-checklist-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.arena-shell.arena-shell-investigate .evidence-details summary {
+  align-items: center;
+  border-radius: 999px;
+  color: rgba(50, 48, 47, 0.62);
+  display: inline-flex;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 1.2;
+  min-height: 26px;
+  padding: 0 7px;
+  margin-left: -7px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-details summary:hover {
+  background: rgba(50, 48, 47, 0.045);
+  color: var(--workflow-ink);
+}
+
+.arena-shell.arena-shell-investigate .evidence-details summary:focus-visible {
+  outline: 3px solid rgba(95, 111, 82, 0.24);
+  outline-offset: 2px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-details-body {
+  display: grid;
+  gap: 9px;
+  padding-top: 9px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-details-body p {
+  color: var(--workflow-muted);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.arena-shell.arena-shell-investigate .evidence-signal-row {
+  border-top: 0;
+  gap: 7px;
+  padding-top: 0;
+}
+
+.arena-shell.arena-shell-investigate .evidence-signal-row em {
+  background: rgba(247, 245, 239, 0.62);
+  border-color: rgba(50, 48, 47, 0.06);
+  font-size: 10.5px;
+  padding: 6px 8px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-secondary-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.arena-shell.arena-shell-investigate .evidence-rating-row {
+  gap: 0;
+}
+
+.arena-shell.arena-shell-investigate .evidence-rating-row .rating-control {
+  background: rgba(247, 245, 239, 0.36);
+  border-color: rgba(50, 48, 47, 0.035);
+  border-radius: 12px;
+  display: grid;
+  gap: 2px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 2px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-rating-row .rating-button {
+  border-color: transparent;
+  border-radius: 9px;
+  flex: none;
+  font-size: 11px;
+  font-weight: 740;
+  min-height: 28px;
+  padding: 4px 7px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-rating-row .rating-button.is-selected {
+  background: rgba(251, 250, 247, 0.9);
+  border-color: rgba(50, 48, 47, 0.1);
+  box-shadow: 0 1px 2px rgba(50, 48, 47, 0.025);
+}
+
+.arena-shell.arena-shell-investigate .noise-rating-button {
+  align-self: start;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: var(--workflow-muted);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 720;
+  justify-self: start;
+  min-height: 26px;
+  padding: 0 2px;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.arena-shell.arena-shell-investigate .noise-rating-button:hover,
+.arena-shell.arena-shell-investigate .noise-rating-button.is-selected {
+  background: transparent;
+  color: var(--workflow-ink);
+}
+
+.arena-shell.arena-shell-investigate .noise-rating-button:focus-visible {
+  outline: 3px solid rgba(95, 111, 82, 0.24);
+  outline-offset: 2px;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-card {
+  background: rgba(247, 245, 239, 0.34);
+  border-color: rgba(50, 48, 47, 0.035);
+  border-radius: 16px;
+  display: block;
+  padding: 12px;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-card-mobile {
+  display: none;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-card summary {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-card summary::after {
+  color: var(--workflow-muted);
+  content: "+";
+  font-size: 16px;
+  font-weight: 760;
+  line-height: 1;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-card[open] summary::after {
+  content: "-";
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-card summary strong,
+.arena-shell.arena-shell-investigate .claim-checklist-heading strong {
+  color: var(--workflow-ink);
+  display: block;
+  font-size: 14px;
+  font-weight: 760;
+  line-height: 1.25;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-card summary em,
+.arena-shell.arena-shell-investigate .claim-checklist-heading em {
+  color: var(--workflow-muted);
+  display: block;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 560;
+  line-height: 1.3;
+  margin-top: 3px;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-card:not([open]) > .claim-checklist-body {
+  display: grid;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-body {
+  display: grid;
+  gap: 11px;
+  padding-top: 10px;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-group {
+  border-top: 1px solid rgba(50, 48, 47, 0.035);
+  padding-top: 10px;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-group:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-group h4 {
+  color: rgba(50, 48, 47, 0.74);
+  font-size: 11.5px;
+  font-weight: 720;
+  margin-bottom: 5px;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-group ul {
+  gap: 5px;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-group li {
+  color: var(--workflow-muted);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  padding-left: 0;
+}
+
+.arena-shell.arena-shell-investigate .claim-checklist-group li::before {
+  display: none;
+}
+
+.arena-shell.arena-shell-investigate .evidence-board-actions {
+  margin-top: 4px;
+}
+
+@media (max-width: 860px) {
+  .arena-shell.arena-shell-investigate .evidence-board-stage {
+    gap: 9px;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-board-stage .arena-step-hero {
+    padding: 15px;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-board-stage .arena-step-hero h2 {
+    font-size: 27px;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-review-context,
+  .arena-shell.arena-shell-investigate .evidence-review-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-review-layout {
+    gap: 10px;
+    grid-template-areas:
+      "sidebar"
+      "main";
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-review-context {
+    gap: 6px;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-review-context div,
+  .arena-shell.arena-shell-investigate .evidence-balance-summary,
+  .arena-shell.arena-shell-investigate .claim-checklist-card,
+  .arena-shell.arena-shell-investigate .evidence-review-card {
+    border-radius: 14px;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-balance-summary {
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-balance-counts {
+    justify-content: flex-start;
+  }
+
+  .arena-shell.arena-shell-investigate .claim-checklist-sidebar {
+    position: static;
+  }
+
+  .arena-shell.arena-shell-investigate .claim-checklist-card-desktop {
+    display: none;
+  }
+
+  .arena-shell.arena-shell-investigate .claim-checklist-card-mobile {
+    display: block;
+  }
+
+  .arena-shell.arena-shell-investigate .claim-checklist-card:not([open]) > .claim-checklist-body {
+    display: none;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-review-card-header {
+    align-items: center;
+    flex-direction: row;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-classification-summary {
+    justify-items: end;
+    text-align: right;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-rating-row .rating-control {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .arena-shell.arena-shell-investigate .evidence-board-stage {
+    gap: 8px;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-board-stage .arena-step-hero {
+    padding: 12px 13px;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-board-stage .arena-step-hero h2 {
+    font-size: 24px;
+    line-height: 1.1;
+    margin-top: 6px;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-board-stage .arena-step-hero-summary {
+    font-size: 13.5px;
+    line-height: 1.38;
+    margin-top: 5px;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-review-card,
+  .arena-shell.arena-shell-investigate .claim-checklist-card,
+  .arena-shell.arena-shell-investigate .evidence-balance-summary {
+    padding: 12px;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-card-summary {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-summary-desktop,
+  .arena-shell.arena-shell-investigate .action-label-desktop {
+    display: none;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-summary-mobile,
+  .arena-shell.arena-shell-investigate .action-label-mobile {
+    display: inline;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-rating-row .rating-button {
+    flex-basis: auto;
+    min-height: 34px;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-board-actions {
+    gap: 10px;
+    padding-top: 12px;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-board-actions div {
+    gap: 8px;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-board-actions .primary-action {
+    white-space: nowrap;
   }
 }
 

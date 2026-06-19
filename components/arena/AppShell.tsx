@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 
 import { AiRevealPanel } from "@/components/arena/AiRevealPanel";
 import { BlindReadPanel } from "@/components/arena/BlindReadPanel";
@@ -57,8 +57,10 @@ export function AppShell({
       arenaReducer(state, action, cases),
     { cases, initialStage },
     ({ cases: initialCases, initialStage: nextInitialStage }) =>
-      createInitialStateWithSession(initialCases, nextInitialStage),
+      createInitialArenaState(initialCases, nextInitialStage),
   );
+  const sessionHydrationCheckedRef = useRef(false);
+  const sessionHydrationPendingRef = useRef(false);
   const [previewCaseId, setPreviewCaseId] = useState<string>();
   const [exportMessage, setExportMessage] = useState<string>();
 
@@ -77,10 +79,37 @@ export function AppShell({
   }, [activeStage, selectedCase?.id]);
 
   useEffect(() => {
+    const storedState = readArenaSessionState(cases);
+
+    if (storedState) {
+      sessionHydrationPendingRef.current = true;
+      rawDispatch({ type: "hydrateSession", ...storedState });
+    }
+
+    sessionHydrationCheckedRef.current = true;
+  }, [cases]);
+
+  useEffect(() => {
+    if (
+      !sessionHydrationCheckedRef.current ||
+      sessionHydrationPendingRef.current
+    ) {
+      return;
+    }
+
     persistArenaSessionState(arenaState);
   }, [arenaState]);
 
   useEffect(() => {
+    if (!sessionHydrationCheckedRef.current) {
+      return;
+    }
+
+    if (sessionHydrationPendingRef.current) {
+      sessionHydrationPendingRef.current = false;
+      return;
+    }
+
     const routeStage = getArenaStageForPathname(pathname);
     const protectedRouteStage = routeStage
       ? getProtectedArenaStage(routeStage, blindChoiceId, aiLabelRevealed)
@@ -299,21 +328,16 @@ export function AppShell({
   );
 }
 
-function createInitialStateWithSession(
-  cases: CaseFile[],
-  initialStage: ReturnType<typeof createInitialArenaState>["activeStage"],
-): ArenaUiState {
-  const fallbackState = createInitialArenaState(cases, initialStage);
-
+function readArenaSessionState(cases: CaseFile[]) {
   if (typeof window === "undefined") {
-    return fallbackState;
+    return undefined;
   }
 
   try {
     const storedState = window.sessionStorage.getItem(arenaSessionStateKey);
 
     if (!storedState) {
-      return fallbackState;
+      return undefined;
     }
 
     const parsedState = JSON.parse(storedState) as Partial<
@@ -324,15 +348,14 @@ function createInitialStateWithSession(
       typeof persistedSelectedCaseId === "string" &&
       cases.some((caseFile) => caseFile.id === persistedSelectedCaseId)
         ? persistedSelectedCaseId
-        : fallbackState.selectedCaseId;
+        : cases[0]?.id ?? "";
 
     return {
-      ...fallbackState,
       selectedCaseId,
-      reviewsByCase: parsedState.reviewsByCase ?? fallbackState.reviewsByCase,
+      reviewsByCase: parsedState.reviewsByCase,
     };
   } catch {
-    return fallbackState;
+    return undefined;
   }
 }
 
@@ -426,6 +449,7 @@ function renderStage({
       return (
         <EvidenceBoard
           caseFile={selectedCase}
+          reviewState={reviewState}
           evidenceRatings={evidenceRatings}
           balance={evidenceBalance}
           onRateEvidence={(evidenceId, rating) =>

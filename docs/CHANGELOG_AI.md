@@ -19,6 +19,71 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-19: Evidence Board Mobile Conversion Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Tiny final mobile/conversion polish pass on `/evidence-board`, preserving the current structure, content model, evidence cards, checklist, evidence balance, preselected classifications, and enabled CTA.
+- Files changed: `components/arena/EvidenceBoard.tsx`, `components/arena/WorkflowPrimitives.tsx`, `app/investigation-workflow.css`, and `docs/CHANGELOG_AI.md`.
+- Summary: Kept the desktop primary CTA as `Continue with 4 classifications` while showing `Compare labels` on mobile, tightened the mobile hero spacing and headline size slightly, and added mobile-only concise evidence summaries so cards scan as one decision sentence without changing desktop copy.
+- Decisions made: Used responsive inline labels/summaries instead of changing workflow state or evidence structure; left the four-option classification control, collapsed details, sticky checklist, and evidence balance untouched.
+- Checks run: `npx tsc --noEmit` passed; `npm test` passed with 35 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/EvidenceBoard.tsx components/arena/WorkflowPrimitives.tsx app/investigation-workflow.css` returned `[]`; Playwright verification against `http://localhost:3061` passed through `/blind-read` -> `/ai-reveal` -> `/evidence-board`, confirmed desktop CTA remains `Continue with 4 classifications`, mobile CTA shows `Compare labels` at 44px without wrapping, four classifications remain selected, mobile summaries switch to concise copy, no horizontal overflow appears, and a settled mobile screenshot has stage opacity 1. Screenshots saved to `/tmp/telemetry-evidence-board-mobile-conversion-desktop.png`, `/tmp/telemetry-evidence-board-mobile-conversion-mobile.png`, and `/tmp/telemetry-evidence-board-mobile-conversion-mobile-settled.png`.
+- Assumptions: The 620px breakpoint is the appropriate threshold for the shorter mobile CTA and compact summary treatment because it matches the existing Evidence Board mobile polish rules.
+- Risks/follow-ups: Responsive duplicate text is hidden with CSS, so future copy changes should update both desktop and mobile summary strings for the seeded IAM case.
+- Next recommended step: Verify the mobile guarded flow once more and then freeze this page direction.
+- Suggested commit message: `ux(arena): tighten evidence board mobile cta`
+
+## 2026-06-19: Evidence Board Final Visual Softening
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Visual-only polish pass on `/evidence-board` to make the existing structure feel calmer, lighter, and more premium without changing workflow, state model, card structure, sticky checklist, or CTA behavior.
+- Files changed: `components/arena/EvidenceBoard.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Lightened the top hero/context/balance treatment, changed the balance summary into one natural sentence, softened evidence card body typography and line-height, restyled `Show details →` as a subtle text-button disclosure, reduced segmented-control height and border weight, and made the sticky claim checklist more editorial.
+- Decisions made: Kept the preselected four classifications, enabled CTA, vertical evidence cards, collapsed details, mobile 2-column segmented controls, and sticky/compact claim checklist unchanged.
+- Checks run: `npx tsc --noEmit` passed; `npm test` passed with 35 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/EvidenceBoard.tsx app/investigation-workflow.css app/page.test.ts` returned `[]`; Playwright verification against `http://localhost:3060` passed through `/blind-read` -> `/ai-reveal` -> `/evidence-board`, confirmed the enabled default CTA, natural balance sentence, collapsed details, selected controls, desktop/mobile no horizontal overflow, mobile collapsed checklist, 2-column mobile controls, and successful transition to Label Duel. Screenshots saved to `/tmp/telemetry-evidence-board-final-visual-polish-desktop.png` and `/tmp/telemetry-evidence-board-final-visual-polish-mobile.png`.
+- Assumptions: This page is now in final polish mode, so only visual weight, rhythm, and copy-flow adjustments should be made unless future testing finds a concrete usability issue.
+- Risks/follow-ups: The mobile page remains a deliberate scroll because it still contains four evidence cards; further shortening would require content or workflow changes, which were out of scope for this pass.
+- Next recommended step: Review the final screenshots or `/evidence-board` at normal zoom and decide whether this visual direction is ready to freeze.
+- Suggested commit message: `ux(arena): soften evidence board visuals`
+
+## 2026-06-19: Evidence Board Final Polish And Classified Defaults
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Final `/evidence-board` polish pass focused on clarity, state consistency, premium UI details, and preserving the compact guided-review direction.
+- Files changed: `components/arena/EvidenceBoard.tsx`, `components/arena/AppShell.tsx`, `components/arena/WorkflowPrimitives.tsx`, `lib/arenaReviewState.ts`, `lib/arenaReviewState.test.ts`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Treated seeded evidence suggestions as the default classified state, changed the page to `4 of 4 classified`, enabled `Continue with 4 classifications` by default, added explicit copy that suggestions are preselected and editable, tightened hero/context/balance/checklist/card styling, moved the noise action into collapsed details, and removed the duplicate hero `Evidence Board` eyebrow. Also fixed saved-session hydration for guarded later-stage reloads so `/evidence-board` can reload without a dev overlay while direct unqualified access remains sealed.
+- Decisions made: Adopted Option A from the brief: default evidence ratings are active classifications until the reviewer changes them. Kept `Irrelevant / noise` in the data model but out of the primary four-option segmented control. Kept the route guard sealed server-side and hydrated saved review state only after the first matching client render to avoid SSR/client drift.
+- Checks run: `npx tsc --noEmit` passed; `npm test` passed with 35 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/EvidenceBoard.tsx components/arena/WorkflowPrimitives.tsx components/arena/AppShell.tsx lib/arenaReviewState.ts lib/arenaReviewState.test.ts app/investigation-workflow.css app/page.test.ts` returned `[]`; Playwright verification against `http://localhost:3058` passed through `/blind-read` -> `/ai-reveal` -> `/evidence-board`, confirmed `4 of 4 classified`, enabled default CTA, collapsed details, hidden noise action until details open, desktop sticky checklist, mobile collapsed checklist, 2-column mobile rating controls, no horizontal overflow, successful Label Duel transition, valid saved-session reload of `/evidence-board` without hydration warnings, and sealed direct `/evidence-board` access redirecting to `/blind-read` without AI-label leakage. Screenshots saved to `/tmp/telemetry-evidence-board-final-polish-desktop.png` and `/tmp/telemetry-evidence-board-final-polish-mobile.png`.
+- Assumptions: The seeded default ratings are intended to represent the system's suggested classification pass and are acceptable as editable defaults for the guided workflow.
+- Risks/follow-ups: Default-classified evidence shortens the workflow and should be revisited if future cases require a stricter manual-review gate.
+- Next recommended step: Review `/evidence-board` in the app at normal zoom and confirm the default-enabled CTA feels appropriate for the workshop flow.
+- Suggested commit message: `ux(arena): polish evidence board classified defaults`
+
+## 2026-06-18: Evidence Board Density And Mobile Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Second refinement pass on `/evidence-board` focused on reducing vertical length, improving mobile usability, and making the page feel less form-like while preserving the redesigned evidence-review direction.
+- Files changed: `components/arena/EvidenceBoard.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Compact hero copy now carries the single conclusion, cards default to title/status/summary/classification with deeper rationale and key signals hidden behind `Show details`, the main classification control is four options with `Irrelevant / noise` as a secondary action, the claim checklist is a light sticky sidebar on desktop and a collapsed summary near the top on mobile, and footer helper text is shorter.
+- Decisions made: Kept the existing evidence ratings data model, including the noise option, but removed it from the primary segmented control; kept the desktop two-column evidence/checklist layout while reordering the mobile experience around checklist, balance, then compact cards.
+- Checks run: `npx tsc --noEmit` passed; `npm test` passed with 33 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/EvidenceBoard.tsx app/investigation-workflow.css app/page.test.ts` returned `[]`; Playwright verification against `http://localhost:3057` passed through the guarded `/blind-read` -> `/ai-reveal` -> `/evidence-board` path at desktop and mobile sizes with no console errors, no horizontal overflow, collapsed evidence details by default, static desktop claim checklist, collapsed mobile claim checklist, 2-column mobile classification controls, disabled CTA before confirmations, enabled CTA after four confirmations, and successful transition to Label Duel. Screenshots saved to `/tmp/telemetry-evidence-board-refined-desktop.png` and `/tmp/telemetry-evidence-board-refined-mobile.png`.
+- Assumptions: Native disclosure controls are appropriate for progressive evidence detail because they preserve accessibility and avoid adding client state.
+- Risks/follow-ups: The mobile screenshot is intentionally still a full-page scroll because the workflow has four evidence items, but default collapsed details and the compact 2x2 controls substantially reduce the vertical load.
+- Next recommended step: Recheck `/evidence-board` on a real mobile viewport for perceived density after this compaction.
+- Suggested commit message: `ux(arena): compact evidence board review`
+
+## 2026-06-18: Evidence Board Guided Review Redesign
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Redesign `/evidence-board` into a calmer, premium, decision-oriented evidence review while preserving the 8-step workflow, route behavior, and evidence classification state model.
+- Files changed: `components/arena/EvidenceBoard.tsx`, `components/arena/AppShell.tsx`, `components/arena/arenaMeta.ts`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Rebuilt Evidence Board around the question `Does the evidence support the AI claim?`, added compact AI-claim/blind-read/overclaim context from AI Reveal, replaced the large map/card grid with a compact evidence balance summary, stacked neutral evidence review cards, suggested-versus-confirmed classifications, and a sticky claim checklist. The primary CTA now reads `Continue with 4 classifications` and remains disabled until all evidence items are explicitly confirmed.
+- Decisions made: Kept existing fixture data and rating/export types intact; treated default evidence ratings as suggested classifications and `reviewState.evidenceRatings` as reviewer confirmation; retained `Irrelevant / noise` as a fifth compact option because the product rules require that evidence remain classifiable as noise when needed.
+- Checks run: `npx tsc --noEmit` passed; `npm test` passed with 33 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/EvidenceBoard.tsx components/arena/AppShell.tsx components/arena/arenaMeta.ts app/investigation-workflow.css app/page.test.ts` returned `[]`; Playwright verification against the existing dev server at `http://localhost:3000` passed through the guarded `/blind-read` -> `/ai-reveal` -> `/evidence-board` path at desktop and mobile sizes with no console errors, no horizontal overflow, disabled CTA before confirmations, enabled CTA after four confirmations, and successful transition to Label Duel. Screenshots saved to `/tmp/telemetry-evidence-board-desktop.png` and `/tmp/telemetry-evidence-board-mobile.png`.
+- Assumptions: The seeded IAM overclaim case remains the target narrative for this page, so the copy can name IAM activity, missing downstream abuse, sensitive access, malicious intent, and the ambiguous PassRole-like probe without inventing evidence.
+- Risks/follow-ups: The `Irrelevant / noise` option remains available as a compact fifth segment to satisfy the product taxonomy, even though the current IAM case uses only weak support, contradictions, and needs-context classifications.
+- Next recommended step: Run focused visual review of `/evidence-board` after selecting Cloud resource discovery and revealing the AI label.
+- Suggested commit message: `ux(arena): redesign evidence board review flow`
+
 ## 2026-06-18: Global Workflow Chrome Migration
 
 - Agent/model: Codex (GPT-5)

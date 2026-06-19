@@ -115,33 +115,33 @@ export const evidenceRatingMeta: Record<
   }
 > = {
   supports_label: {
-    label: "Supports label",
+    label: "Supports",
     shortLabel: "Supports",
-    meterLabel: "Supporting evidence",
+    meterLabel: "Supports",
     className: "evidence-rating evidence-rating-supports",
   },
   weak_support: {
     label: "Weak support",
-    shortLabel: "Weak",
-    meterLabel: "Weak evidence",
+    shortLabel: "Weak support",
+    meterLabel: "Weak support",
     className: "evidence-rating evidence-rating-weak",
   },
   irrelevant_noise: {
-    label: "Noise / irrelevant",
-    shortLabel: "Noise",
-    meterLabel: "Noise",
+    label: "Irrelevant / noise",
+    shortLabel: "Irrelevant / noise",
+    meterLabel: "Irrelevant / noise",
     className: "evidence-rating evidence-rating-noise",
   },
   contradicts_label: {
-    label: "Contradicts label",
+    label: "Contradicts",
     shortLabel: "Contradicts",
-    meterLabel: "Contradictory evidence",
+    meterLabel: "Contradictions",
     className: "evidence-rating evidence-rating-contradicts",
   },
   needs_context: {
     label: "Needs context",
-    shortLabel: "Context",
-    meterLabel: "Context gaps",
+    shortLabel: "Needs context",
+    meterLabel: "Needs context",
     className: "evidence-rating evidence-rating-context",
   },
 };
@@ -149,9 +149,9 @@ export const evidenceRatingMeta: Record<
 export const evidenceRatingOptions: EvidenceRating[] = [
   "supports_label",
   "weak_support",
-  "irrelevant_noise",
   "contradicts_label",
   "needs_context",
+  "irrelevant_noise",
 ];
 
 export const duelReasonLabel: Record<DuelReason, string> = {

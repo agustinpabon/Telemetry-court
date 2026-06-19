@@ -39,6 +39,11 @@ export type ArenaUiState = {
 
 export type ArenaAction =
   | { type: "selectCase"; caseId: string }
+  | {
+      type: "hydrateSession";
+      selectedCaseId?: string;
+      reviewsByCase?: Partial<Record<string, CaseReviewState>>;
+    }
   | { type: "openCaseFile" }
   | { type: "startInvestigation" }
   | { type: "goToStage"; stage: ArenaStage }
@@ -86,6 +91,15 @@ export function arenaReducer(
   cases: CaseFile[],
 ): ArenaUiState {
   switch (action.type) {
+    case "hydrateSession":
+      return {
+        ...state,
+        selectedCaseId:
+          action.selectedCaseId && caseIdExists(cases, action.selectedCaseId)
+            ? action.selectedCaseId
+            : state.selectedCaseId,
+        reviewsByCase: action.reviewsByCase ?? state.reviewsByCase,
+      };
     case "selectCase":
       return {
         ...state,
@@ -208,13 +222,14 @@ export function getReviewCompletion(
   evidenceRatings: Record<string, EvidenceRating>,
   caseFile: CaseFile,
 ): number {
-  void evidenceRatings;
-  const userEvidenceRatings = reviewState.evidenceRatings ?? {};
+  const classifiedEvidenceCount = caseFile.evidenceItems.filter(
+    (evidence) => evidenceRatings[evidence.id],
+  ).length;
 
   return [
     reviewState.blindChoiceId,
     reviewState.aiLabelRevealed,
-    Object.keys(userEvidenceRatings).length >= caseFile.evidenceItems.length,
+    classifiedEvidenceCount >= caseFile.evidenceItems.length,
     reviewState.labelDuelWinnerId,
     reviewState.impostorSessionId,
     reviewState.finalVerdict,
@@ -226,15 +241,16 @@ export function getStageCompletionMap(
   reviewState: CaseReviewState,
   evidenceRatings: Record<string, EvidenceRating>,
 ): Record<ArenaStage, boolean> {
-  void evidenceRatings;
-  const userEvidenceRatings = reviewState.evidenceRatings ?? {};
+  const classifiedEvidenceCount = caseFile.evidenceItems.filter(
+    (evidence) => evidenceRatings[evidence.id],
+  ).length;
 
   return {
     landscape: true,
     case_file: true,
     blind_read: Boolean(reviewState.blindChoiceId),
     ai_reveal: Boolean(reviewState.aiLabelRevealed),
-    evidence_board: Object.keys(userEvidenceRatings).length >= caseFile.evidenceItems.length,
+    evidence_board: classifiedEvidenceCount >= caseFile.evidenceItems.length,
     label_duel: Boolean(reviewState.labelDuelWinnerId),
     impostor: Boolean(reviewState.impostorSessionId),
     verdict: Boolean(reviewState.finalVerdict),

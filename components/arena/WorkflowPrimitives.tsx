@@ -146,7 +146,7 @@ export function ArenaStatusBadge({
 }
 
 type ArenaStepHeroProps = {
-  eyebrow: string;
+  eyebrow?: string;
   status?: ReactNode;
   title: string;
   summary: ReactNode;
@@ -164,7 +164,7 @@ export function ArenaStepHero({
     <header className="arena-step-hero">
       <div className="arena-step-hero-copy">
         <div className="arena-step-hero-meta">
-          <p className="eyebrow">{eyebrow}</p>
+          {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
           {status}
         </div>
         <h2>{title}</h2>
@@ -176,7 +176,7 @@ export function ArenaStepHero({
 }
 
 type ArenaAction = {
-  label: string;
+  label: ReactNode;
   onClick: () => void;
   disabled?: boolean;
 };

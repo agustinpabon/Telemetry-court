@@ -415,12 +415,17 @@ test("later workflow panels use compact chrome and descriptive actions", () => {
 
   const evidenceRatings = getEvidenceRatings(selectedCase, {});
   const balance = getEvidenceBalance(selectedCase, evidenceRatings);
+  const confirmedEvidenceReviewState = {
+    blindChoiceId: "cloud-resource-discovery",
+    aiLabelRevealed: true,
+  };
   const markup = renderStaticMarkup(
     React.createElement(
       React.Fragment,
       null,
       React.createElement(EvidenceBoard, {
         caseFile: selectedCase,
+        reviewState: confirmedEvidenceReviewState,
         evidenceRatings,
         balance,
         onRateEvidence: () => undefined,
@@ -462,7 +467,25 @@ test("later workflow panels use compact chrome and descriptive actions", () => {
   assert.match(markup, /Step 6 of 8 · Label Duel/);
   assert.match(markup, /Step 7 of 8 · Impostor/);
   assert.match(markup, /Step 8 of 8 · Verdict/);
-  assert.match(markup, /Continue to label duel/);
+  assert.match(markup, /Does the evidence support the AI claim\?/);
+  assert.match(markup, /AI claim/);
+  assert.match(markup, /Suspicious IAM privilege escalation/);
+  assert.match(markup, /Your read/);
+  assert.match(markup, /Cloud resource discovery/);
+  assert.match(markup, /Evidence balance/);
+  assert.match(markup, /IAM activity is present, but malicious escalation is not proven\./);
+  assert.match(markup, /1 weak support · 2 contradictions · 1 needs context/);
+  assert.match(
+    markup,
+    /IAM activity is present, but downstream abuse, sensitive access, and malicious intent are missing\./,
+  );
+  assert.match(markup, /Suggested classifications are preselected/);
+  assert.match(markup, /4 of 4 classified/);
+  assert.match(markup, /Claim checklist/);
+  assert.match(markup, /Show details/);
+  assert.match(markup, /Mark irrelevant \/ noise/);
+  assert.match(markup, /Continue with 4 classifications/);
+  assert.doesNotMatch(markup, /disabled="">Continue with 4 classifications/);
   assert.match(markup, /Back to AI reveal/);
   assert.match(markup, /Continue to impostor review/);
   assert.match(markup, /Back to evidence board/);
