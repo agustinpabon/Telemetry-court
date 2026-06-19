@@ -11,6 +11,7 @@ import {
   getEvidenceRatings,
   getReviewCompletion,
   getSelectedCase,
+  getStageCompletionMap,
 } from "@/lib/arenaReviewState";
 import {
   buildReviewResultExport,
@@ -148,4 +149,53 @@ test("arena reducer drives the staged structured-choice happy path", () => {
   assert.equal(balance.total, targetCase.evidenceItems.length);
   assert.match(exportJson, /"arenaReview"/);
   assert.match(exportJson, /"partially_supported"/);
+});
+
+test("default evidence suggestions count as classified evidence", () => {
+  const targetCase = sampleCases[0];
+  assert.ok(targetCase);
+
+  const reviewState = {
+    blindChoiceId: "cloud-resource-discovery",
+    aiLabelRevealed: true,
+  };
+  const evidenceRatings = getEvidenceRatings(targetCase, reviewState);
+  const completionMap = getStageCompletionMap(
+    targetCase,
+    reviewState,
+    evidenceRatings,
+  );
+
+  assert.equal(Object.hasOwn(reviewState, "evidenceRatings"), false);
+  assert.equal(
+    targetCase.evidenceItems.every((evidence) => evidenceRatings[evidence.id]),
+    true,
+  );
+  assert.equal(getReviewCompletion(reviewState, evidenceRatings, targetCase), 3);
+  assert.equal(completionMap.evidence_board, true);
+});
+
+test("arena reducer hydrates persisted review state without changing the requested stage", () => {
+  const targetCase = sampleCases[0];
+  assert.ok(targetCase);
+
+  const reviewState = {
+    blindChoiceId: "cloud-resource-discovery",
+    aiLabelRevealed: true,
+  };
+  const arenaState = arenaReducer(
+    createInitialArenaState(sampleCases, "evidence_board"),
+    {
+      type: "hydrateSession",
+      selectedCaseId: targetCase.id,
+      reviewsByCase: {
+        [targetCase.id]: reviewState,
+      },
+    },
+    sampleCases,
+  );
+
+  assert.equal(arenaState.activeStage, "evidence_board");
+  assert.equal(arenaState.selectedCaseId, targetCase.id);
+  assert.deepEqual(getCurrentReviewState(arenaState), reviewState);
 });
