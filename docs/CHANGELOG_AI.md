@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-20: CasePackage v0.1 Contract Definition
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #47 by defining the `CasePackage v0.1` TypeScript contract without runtime validation, UI adapters, backend work, or sample-case conversion.
+- Files changed: `lib/types.ts`, `lib/casePackageV01.test.ts`, `docs/CASE_PACKAGE_CONTRACT.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added the canonical `CasePackageV01` boundary type with schema identity, case, dataset, cluster, pipeline, candidate label, claim, evidence, mapping, session, outlier/impostor, neighbor, metric, provenance, sanitization, and review-configuration structures. Added canonical future evidence-rating, verdict, and recommended-action vocabularies for compatibility with later `ReviewResult` work.
+- Decisions made: Kept existing static `CaseFile` behavior unchanged; represented metrics as available/unavailable envelopes for later validation; documented that Telemetry Court ingests safe package-shaped evidence rather than raw restricted telemetry.
+- Checks run: Targeted `npm test -- lib/casePackageV01.test.ts` passed. Full requested checks are recorded after completion of this issue work.
+- Assumptions: `case_package.v0.1` is the stable schema-version string for this first TypeScript contract; runtime validation remains deferred to issue #48.
+- Risks/follow-ups: Future issues still need runtime validation, sample fixture conversion, UI adapter work, `ReviewResult` export, and `EvaluationReport` aggregation.
+- Next recommended step: Implement issue #48, `Add runtime CasePackage validation`.
+- Suggested commit message: `feat(contract): define case package v0.1`
+
 ## 2026-06-20: Validation Bench Repository Realignment
 
 - Agent/model: Codex (GPT-5)
