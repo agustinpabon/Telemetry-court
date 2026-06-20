@@ -1,197 +1,100 @@
 # GitHub Planning
 
-This document defines how Telemetry Court uses GitHub labels, milestones, issues, PRs, and structured commits.
+## Planning Source
 
-## Current Planning Source
+`docs/ROADMAP.md` is the canonical roadmap. Planning must describe Telemetry Court as an evidence-based human-in-the-loop validation bench, not a frontend MVP, investigation platform, or generic backend application.
 
-`docs/ROADMAP.md` is the canonical roadmap. GitHub milestones should mirror that milestone structure, and GitHub issues should remain a small executable batch rather than a giant future backlog.
+## Milestones
 
-Current Evidence Arena milestones:
-
-| Milestone | Goal |
+| Milestone | Planning outcome |
 |---|---|
-| Milestone 0 — Evidence Arena Pivot Stabilization | Stabilize the pivot, remove outdated framing, ensure docs/tests/agents agree on the new direction. |
-| Milestone 1 — Polished Static Evidence Arena MVP | Make the synthetic vertical slice demo-ready and credible. |
-| Milestone 2 — Scientific Review Data Model | Make human review output useful as evaluation data, not just UI state. |
-| Milestone 3 — Telemetry Map + Case Exploration | Make the landscape, clusters, uncertainty, neighboring regions, and case navigation more informative. |
-| Milestone 4 — Pipeline Integration Readiness | Prepare import/export boundaries for Toponymy, DataMapPlot, generated cluster labels, and real telemetry-derived artifacts without requiring restricted data. |
-| Milestone 5 — Advanced Evidence Arena | Model debate, cross-examination, counterfactual map lab, live jury/demo mode, and research-grade interaction experiments. |
+| Milestone 0 - Current Static Validation Slice | Preserve the shipped synthetic review protocol as the baseline. |
+| Milestone 1 - Product Realignment And Documentation | Align repository identity, contracts, architecture, and contributor guidance. |
+| Milestone 2 - Case Package Contract And Validation Infrastructure | Define and validate the three versioned contracts and package-shaped fixtures. |
+| Milestone 3 - Evaluation Infrastructure | Persist, aggregate, and export multi-reviewer evaluation data. |
+| Milestone 4 - Toponymy / ACME4 Adapter Prototype | Convert one approved real or realistic cluster output into a case package. |
+| Milestone 5 - Evidence-Constrained AI Assistance | Add only evidence-citing, predefined assistance if it improves review quality. |
+| Milestone 6 - Research Validation Study | Prove useful upstream signals with multiple reviewers and real or realistic cases. |
 
-Historical pre-pivot milestones should be preserved for context, not deleted. If they no longer contain open work, close them as historical planning containers and move future work into the Evidence Arena milestone structure.
+Historical Evidence Arena and static MVP milestones may remain closed for recordkeeping, but new work must use the validation-bench roadmap.
 
-## Current Immediate Issue Batch
+## Immediate Planning Priority
 
-Do not create issues for every future idea. The current small batch is:
+Milestone 2 is the next implementation milestone. Its first issue batch should stay small and dependency ordered:
 
-### Milestone 0 — Evidence Arena Pivot Stabilization
+1. Resolve the `CasePackage v0.1`, `ReviewResult v0.1`, and `EvaluationReport v0.1` contract decisions (`human-in-the-loop`).
+2. Add runtime validation and invalid-package diagnostics (`AFK` after the contract is approved).
+3. Adapt one current synthetic fixture through the versioned package boundary (`AFK`).
+4. Version the current review export against its source package and protocol (`AFK`).
 
-- `docs: remove superseded label-validator framing`
-- `test: cover evidence arena happy path`
-- `chore: commit and document evidence arena pivot`
+Do not create issues yet for auth, production databases, admin UX, broad analytics dashboards, or enterprise features.
 
-### Milestone 1 — Polished Static Evidence Arena MVP
+## Issue Gate
 
-- `ux: polish telemetry landscape as primary entry point`
-- `ux: improve case file investigation hierarchy`
-- `ux: refine blind investigation and AI reveal flow`
-- `ux: make evidence classification feel active and clear`
-- `ux: refine label duel and impostor interactions`
-- `feat: add review progress and reset/navigation controls`
-- `a11y: improve keyboard and screen reader support for structured choices`
+Every issue must answer:
 
-### Milestone 2 — Scientific Review Data Model
+- Does this change support the validation-bench direction?
+- Does it preserve the distinction between `CasePackage`, `ReviewResult`, and `EvaluationReport`?
+- Does it avoid SIEM/SOC/dashboard, alert-triage, raw-search, chat-first, and gamification drift?
+- Does it improve evidence grounding, review structure, provenance, aggregation, or evaluation output?
+- Does it require backend work, and if so, is it blocked by or derived from the case package contract?
 
-- `schema: formalize structured review export`
-- `docs: define evaluation meaning of each verdict and failure mode`
-
-## Label Taxonomy
-
-Use labels as routing metadata. Tracks are labels, not milestones.
-
-### Team Labels
-
-- `team/ui-ux`: UI, layout, interaction, accessibility, and product clarity.
-- `team/telemetry-data`: Data model, fixtures, adapters, telemetry cases, and cluster inputs.
-- `team/ai-agents`: AI interpretation contracts, prompts, generated claims, and uncertainty handling.
-- `team/scoring-evaluation`: Support scoring, evaluation rubrics, evidence integrity, and validation logic.
-- `team/backend-platform`: Tooling, CI, workflow, storage boundaries, and platform structure.
-- `team/security-governance`: Data handling, auditability, release safety, and governance boundaries.
-
-### Type Labels
-
-- `type/docs`: Documentation-only changes.
-- `type/feat`: User-facing feature work.
-- `type/fix`: Bug fixes.
-- `type/refactor`: Code restructuring without intended behavior change.
-- `type/test`: Tests or test infrastructure.
-- `type/style`: Visual styling without behavior change.
-- `type/model`: Domain model, types, schema, or evidence-model changes.
-- `type/chore`: Maintenance, tooling, and repo operations.
-- `type/data`: Sample data, fixtures, and safe synthetic examples.
-
-### Priority Labels
-
-- `priority/p0`: Required for the active milestone.
-- `priority/p1`: Important, but not the first blocker.
-- `priority/p2`: Useful follow-up or lower urgency.
-
-### Status Labels
-
-- `status/ready`: Clear enough for an agent or human to start.
-- `status/blocked`: Cannot proceed without an external decision or dependency.
-- `status/needs-decision`: Needs product, design, architecture, or security judgment before implementation.
-
-### Scope Labels
-
-- `scope/mvp`: Work that contributes directly to the static MVP review flow.
-- `scope/foundation`: Repo, model, workflow, architecture, or testing foundation.
-- `scope/design-system`: Design tokens, visual system, accessibility, and UI standards.
-- `scope/evidence-model`: Claims, evidence, relations, support scores, verdicts, and audit concepts.
-- `scope/github-planning`: Roadmap, milestones, labels, issue templates, and planning hygiene.
-
-## Milestone Naming Rules
-
-- Milestones are ordered deliverables, not team buckets.
-- Use the format `Milestone N — <Deliverable Name>`.
-- Keep milestone goals outcome-oriented.
-- Do not create catch-all milestones such as "UI", "Backend", or "Ideas".
-- Do not create issues for every future milestone until that milestone is close enough for execution.
-
-## Issue Title Format
-
-Use simple, imperative titles. Prefer this current format:
-
-```text
-<type>: <short imperative task>
-```
-
-Use a scoped title only when it improves scanability:
-
-```text
-<type>(<scope>): <short imperative task>
-```
-
-Current examples:
-
-- `docs: remove superseded label-validator framing`
-- `test: cover evidence arena happy path`
-- `ux: polish telemetry landscape as primary entry point`
-- `ux: refine blind investigation and AI reveal flow`
-- `schema: formalize structured review export`
-
-## Issue Body Template
+## Issue Template
 
 ```md
-## Goal
+## Validation outcome
 
 ## Why this matters
+
+## Contract impact
+- CasePackage:
+- ReviewResult:
+- EvaluationReport:
 
 ## Scope
 
 ### In scope
-- 
+-
 
 ### Out of scope
-- 
+- SIEM/SOC/dashboard behavior
+- Raw telemetry ingestion or search
+- Generic CRUD, auth, or speculative database work
 
-## Required context
-
-Read:
-- 
-
-## Implementation notes
+## Evidence and provenance impact
 
 ## Acceptance criteria
-- [ ] 
-- [ ] 
-- [ ] 
+- [ ] The change advances evidence-based validation of AI-generated cluster interpretations.
+- [ ] Contract separation is preserved or an explicit decision updates it.
+- [ ] Broken evidence, IDs, versions, or provenance fail visibly where applicable.
+- [ ] Current and target capabilities are not conflated.
 
 ## Required checks
 - [ ] `npm test`
 - [ ] `npm run lint`
 - [ ] `npm run build`
 
-## Documentation updates
-- [ ] `docs/CHANGELOG_AI.md` updated, if required
-- [ ] Product/design/architecture/data docs updated, if required
+## Work type
+- [ ] `AFK`
+- [ ] `human-in-the-loop`
 
-## Suggested labels
-
-## Suggested milestone
-
-## Notes for AI agents
+## Blocked by
 ```
 
-## Issue Sizing Rules
+## Label Guidance
 
-- One issue should describe one executable task.
-- A single issue should be small enough for one focused branch and PR.
-- Do not combine styling, model changes, tests, backend work, and documentation unless the issue explicitly requires that combination.
-- Avoid vague notes such as "improve UI" or "make evidence better".
-- Split an issue when it has multiple independent acceptance paths.
-- Keep Milestone 1 focused on the polished static Evidence Arena MVP.
+- `AFK`: sufficiently specified for an agent to complete without product decisions.
+- `human-in-the-loop`: requires approval of a contract, research protocol, data-handling rule, or product judgment.
+- Preserve existing team, type, priority, and status labels where they remain useful.
+- Replace `scope/mvp` with validation-oriented scope labels when label maintenance is next performed.
 
-## How To Close Issues
+## Issue Sizing
 
-- Close an issue only when its acceptance criteria and required checks have been satisfied or the issue has been explicitly superseded.
-- Do not auto-close issues from unrelated commits.
-- Do not close planning issues just because documentation mentions them.
-- If an issue is no longer valid, comment with the reason before closing.
-- If an issue is partially complete, leave it open and document what remains.
+- Prefer thin vertical slices through contract, validation, fixture, UI compatibility, export, and tests where applicable.
+- Do not create horizontal "build the backend" or "design the database" issues.
+- One issue should produce one independently verifiable validation outcome.
+- Keep future adapter and research-study work in the roadmap until Milestone 2 proves the contract.
 
-## How To Connect Issues To PRs
+## PR Requirements
 
-- Use `Closes #<issue-number>` in PR descriptions when a PR fully satisfies the issue.
-- Use `Refs #<issue-number>` or `Part of #<issue-number>` when the PR is related but does not close the issue.
-- Every non-trivial PR should use `.github/pull_request_template.md`.
-- PRs should call out product impact, evidence model impact, design system impact, tests/checks, risks, and AI-agent notes.
-- UI PRs should include screenshots or recordings.
-
-## How To Use Structured Commits With Issues
-
-- Follow `docs/COMMIT_GUIDELINES.md` for non-trivial changes.
-- Match commit type and scope to the issue title when possible.
-- Mention the issue number in the commit body when useful.
-- Keep the commit title narrow and imperative.
-- Include validation status for `npm test`, `npm run lint`, and `npm run build`.
-- Keep `docs/CHANGELOG_AI.md` and the structured commit message aligned for AI-assisted work.
+Use `.github/pull_request_template.md`. PRs must state product identity impact, contract impact, evidence/provenance impact, current-versus-target capability, checks, and risks. UI changes require screenshots; contract and metric changes require examples and tests.

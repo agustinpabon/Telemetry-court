@@ -1,156 +1,56 @@
-# Telemetry Court - Technical Context
+# Telemetry Court Technical Context
 
-## Current Architecture
+## Current Implementation
 
-Telemetry Court is currently a static frontend Evidence Arena MVP.
+Telemetry Court currently uses Next.js App Router, TypeScript, Tailwind, synthetic fixture data, local React/session state, and the Node test runner with `tsx`.
 
-Expected stack:
+It is a static validation slice. There is no implemented `CasePackage` import boundary, runtime schema validator, production persistence, multi-reviewer service, `EvaluationReport` generator, Toponymy adapter, or ACME4 adapter.
 
-- Next.js App Router;
-- TypeScript;
-- Tailwind;
-- static synthetic sample data;
-- Node built-in test runner with `tsx`.
-
-No current production backend is assumed.
-
-## Current Non-Goals
-
-Do not add unless explicitly requested:
-
-- backend API;
-- database;
-- auth;
-- real telemetry ingestion;
-- persistent reviews;
-- live AI calls;
-- direct Toponymy execution;
-- new dependencies;
-- deployment complexity.
-
-## Important Folders And Files
-
-Likely repo structure:
+## Target Technical Boundary
 
 ```text
-app/
-  page.tsx
-  globals.css
-  page.test.ts
-
-components/
-  CaseSwitcher.tsx
-  ClaimLedger.tsx
-  ClaimPanel.tsx
-  EvidenceCard.tsx
-  EvidenceFilters.tsx
-  ReviewActions.tsx
-  ScorePanel.tsx
-  ...
-
-data/
-  sampleCases.ts
-
-lib/
-  types.ts
-  caseMetrics.ts
-  caseMetrics.test.ts
-  exportReview.ts
-  exportReview.test.ts
-
-docs/
-  PRODUCT_VISION.md
-  PROJECT_CONTEXT.md
-  ROADMAP.md
-  GITHUB_PLANNING.md
-  ARCHITECTURE.md
-  DATA_MODEL.md
-  DESIGN_SYSTEM.md
-  PROJECT_CONTEXT.md
-  PRODUCT_DECISIONS.md
-  AGENT_WORKFLOWS.md
-  DEVELOPMENT_WORKFLOW.md
-  COMMIT_GUIDELINES.md
-  TOPONYMY_NOTES.md
-  CHANGELOG_AI.md
+Adapter-produced CasePackage JSON
+-> runtime package validation
+-> current structured review UI
+-> versioned ReviewResult JSON
+-> deterministic multi-reviewer EvaluationReport
 ```
 
-## Canonical Data Rule
+The backend direction is evaluation infrastructure. Do not introduce generic APIs, databases, authentication, admin UX, or CRUD before a contract and evaluation requirement demands them.
 
-`evidenceRelations` is the canonical source of truth for claim-to-evidence links.
+## Current Domain Objects
 
-Do not create a second parallel link mechanism.
+The implemented code currently uses `CaseFile`, `Cluster`, `TopicLabel`, `Claim`, `EvidenceItem`, `EvidenceRelation`, `SupportScore`, `BlindInterpretationOption`, `CandidateLabel`, `RepresentativeSession`, `EvidenceArenaReview`, and `AnalystVerdict`.
 
-Every evidence relationship should be explainable as:
+These are current implementation types, not the approved `CasePackage v0.1` contract. Milestone 2 must define an explicit adapter or migration rather than silently renaming them.
 
-```text
-claimId
-evidenceId
-polarity: supports / contradicts / neutral
-strength: strong / moderate / weak
-explanation
-```
+`evidenceRelations` remains the current canonical claim-to-evidence link. Do not create a second link mechanism before the contract work resolves the mapping shape.
 
-## Core Domain Objects
+## Technical Priorities
 
-Expected conceptual objects:
+1. Define schema versions and compatibility rules.
+2. Validate package IDs, references, provenance, sanitization, metrics, and review configuration.
+3. Adapt one package-shaped fixture into the current UI.
+4. Bind review exports to source package and protocol versions.
+5. Aggregate compatible results with deterministic, tested metrics.
+6. Prototype one approved Toponymy or ACME4-style adapter only after the contract holds.
 
-```text
-CaseFile
-Cluster
-TopicLabel
-Claim
-EvidenceItem
-EvidenceRelation
-SupportScore
-BlindInterpretationOption
-CandidateLabel
-RepresentativeSession
-EvidenceArenaReview
-AnalystVerdict
-```
+## Data Safety
 
-## Evidence Arena Workflow State
-
-The current workflow uses structured local state for:
-
-- selected case;
-- blind choice;
-- AI label reveal;
-- evidence ratings;
-- label duel winner and reasons;
-- impostor/outlier session;
-- failure modes;
-- final verdict;
-- JSON preview/export visibility.
+Keep raw restricted telemetry outside the public or portable app. Adapters should produce minimal approved evidence and safe drill-down references with provenance and sanitization metadata.
 
 ## Test Strategy
 
-Keep testing lightweight:
-
-- helper/unit tests for data model behavior;
-- smoke tests for core Evidence Arena language;
-- export serialization tests;
-- static render tests for shared UI semantics.
-
-Avoid adding large test frameworks unless there is a clear reason.
+- Unit tests for contract and metric behavior.
+- Fixture tests for valid and invalid packages.
+- Export tests for package and protocol version traceability.
+- Existing smoke and interaction tests for blind review and structured choices.
+- Browser checks for user-visible workflow changes.
 
 ## Checks
-
-Run for code/config changes:
 
 ```bash
 npm test
 npm run lint
 npm run build
 ```
-
-Browser checks are important for UI/export behavior, especially:
-
-- copy JSON;
-- download JSON;
-- selected state;
-- case switching;
-- reveal behavior;
-- evidence rating controls;
-- console errors.

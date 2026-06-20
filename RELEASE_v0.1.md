@@ -1,35 +1,28 @@
 # Telemetry Court v0.1
 
-## Implemented Features
+This historical release is the current static validation slice. It demonstrates the review protocol; it is not complete validation infrastructure.
 
-- Generated Interpretation review workspace
-- Verdict summary and Court Record
-- Claim Ledger with claim-level evidence traceability
-- Evidence Workspace with stance filtering
-- Multiple synthetic review cases
-- Interpretation risks
-- Local review decisions
-- Responsive, premium product-oriented frontend
-- Strict TypeScript with passing lint and build
+## Implemented
 
-## Current Limitations
+- Synthetic telemetry landscape and case selection.
+- Blind review before AI-label reveal.
+- Claim-level evidence traceability and classification.
+- Candidate-label comparison.
+- Impostor or outlier review.
+- Structured verdict and local JSON export.
+- Responsive TypeScript interface with tests, lint, and build checks.
 
-- Synthetic data only
-- No telemetry ingestion
-- No model or Toponymy import pipeline yet
-- No persistence for review decisions
-- No backend, auth, or multi-user review workflows
+## Limitations
 
-## Future Roadmap
+- Synthetic fixtures only.
+- No versioned `CasePackage` import or runtime package validation.
+- No real Toponymy or ACME4 ingestion.
+- No durable `ReviewResult` persistence.
+- No multi-reviewer aggregation or `EvaluationReport` metrics.
+- No approved adapter for real or realistic cluster output.
 
-### Next
+## Next Milestone
 
-- Toponymy-compatible JSON import
-- Interpretation ingestion workflow
+Define `CasePackage v0.1`, `ReviewResult v0.1`, and `EvaluationReport v0.1`; add validation rules; and adapt the current fixtures through the package boundary without redesigning the UI.
 
-### Later
-
-- Automated claim extraction
-- Automated evidence mapping
-- Human review analytics
-- Validation benchmarking
+Authentication, production database design, admin UX, generic dashboards, and enterprise features are not the next milestone.

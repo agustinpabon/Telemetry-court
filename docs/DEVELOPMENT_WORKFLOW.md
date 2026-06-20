@@ -1,89 +1,55 @@
 # Development Workflow
 
-## Project Workflow
+## Product Gate
 
-Recommended flow:
+Before implementation, confirm that the task advances Telemetry Court as an evidence-based validation bench for AI-generated telemetry cluster interpretations.
 
-1. Define a narrow task.
-2. Create or use a focused branch.
-3. Agent reads required context files.
-4. Agent proposes a short plan.
-5. Agent makes the smallest safe change.
-6. Agent runs checks.
-7. Agent updates `docs/CHANGELOG_AI.md`.
-8. Agent provides a structured final summary.
-9. Human reviews.
-10. Human commits with structured message.
-11. Human opens PR if appropriate.
+Reject or rescope work that primarily adds generic dashboards, SIEM/SOC workflows, alert triage, raw telemetry search, chat-first UX, gamification, generic CRUD, authentication, or database infrastructure without a case package requirement.
 
-## Branch Naming
+## Standard Flow
 
-Prefer:
+1. Define one narrow validation outcome.
+2. Inspect git status and preserve unrelated work.
+3. Read the product and contract source documents.
+4. Identify whether the task affects `CasePackage`, `ReviewResult`, `EvaluationReport`, or only the current static interface.
+5. State scope, non-goals, and the evidence or evaluation benefit.
+6. Implement the smallest complete vertical slice.
+7. Run tests, lint, and build as applicable.
+8. Update `docs/CHANGELOG_AI.md` and any affected contract, architecture, or decision docs.
+9. Provide a structured handoff for human review.
 
-- `docs/<short-topic>`
-- `feat/<short-topic>`
-- `fix/<short-topic>`
-- `refactor/<short-topic>`
-- `test/<short-topic>`
-- `style/<short-topic>`
-- `model/<short-topic>`
-- `chore/<short-topic>`
+## Milestone Discipline
 
-Examples:
+- Milestone 0 is the current static validation slice.
+- Milestone 1 is repository realignment.
+- Milestone 2 is the next implementation milestone: Case Package Contract and Validation Infrastructure.
+- Do not create a generic backend milestone.
+- Do not pull persistence, auth, admin UX, or enterprise concerns ahead of the contract.
+- Keep issues narrow, independently verifiable, and tied to a roadmap outcome.
 
-- `docs/commit-guidelines`
-- `model/case-file-alignment`
-- `refactor/case-metrics`
-- `test/case-metrics`
-- `style/design-tokens`
-- `feat/claim-selection`
+## Backend Readiness Gate
 
-## Task Sizing
+Backend work must answer:
 
-- One conceptual change per task.
-- Avoid mixing model changes with visual redesign.
-- Avoid mixing tests with unrelated UI restyling.
-- Avoid broad prompts like "improve the app."
-- Prefer prompts that name files, constraints, and checks.
+- Which contract does it serve?
+- Which package or review integrity rule requires it?
+- How is schema versioning preserved?
+- How are provenance and sanitization handled?
+- How does it improve multi-reviewer aggregation or evaluation export?
 
-## Milestone And Issue Discipline
+If those questions have no concrete answer, the work is premature.
 
-- Tracks are labels.
-- Milestones are ordered deliverables.
-- Issues are small executable tasks.
-- Do not create huge multi-feature issues.
-- Do not use GitHub issues as vague notes.
-- Keep Milestone 0 focused on pivot stabilization.
-- Keep Milestone 1 focused on the polished static Evidence Arena MVP.
-- Keep future milestone ideas in the roadmap until they are close enough to execute.
+## Documentation Rules
 
-## Documentation Update Rules
-
-Update `docs/CHANGELOG_AI.md` when a change affects:
-
-- product context
-- architecture
-- domain model
-- evidence model
-- design system
-- agent workflow
-- tests/tooling
-- UI behavior
-- scoring/validation logic
-
-Update `docs/PRODUCT_DECISIONS.md` when a decision affects product direction.
-
-Update `docs/ARCHITECTURE.md` when a change affects structure, data flow, dependencies, or boundaries.
-
-Update `docs/DATA_MODEL.md` when types, sample data shape, evidence relations, scoring, or verdicts change.
-
-Update `docs/DESIGN_SYSTEM.md` when visual rules, tokens, hierarchy, accessibility, or interaction guidance changes.
-
-Update `docs/GITHUB_PLANNING.md` when milestones, issue strategy, or GitHub planning rules change.
+- Update `docs/PRODUCT_DECISIONS.md` for product or boundary decisions.
+- Update `docs/ARCHITECTURE.md` for system ownership, data flow, or integration changes.
+- Update `docs/CASE_PACKAGE_CONTRACT.md` for package, result, or report contract decisions.
+- Update `docs/EVALUATION_INFRASTRUCTURE.md` for aggregation or metric decisions.
+- Update `docs/DATA_MODEL.md` when implemented types or fixture shapes change.
+- Update `docs/GITHUB_PLANNING.md` when milestone or issue strategy changes.
+- Update `docs/CHANGELOG_AI.md` after material AI-assisted changes.
 
 ## Required Checks
-
-Before work is considered complete, run:
 
 ```bash
 npm test
@@ -91,73 +57,16 @@ npm run lint
 npm run build
 ```
 
-If a check is unavailable or fails for pre-existing reasons, document it clearly.
+For docs-only work, run these when reasonable because documentation can affect tests that protect product language. If a command is irrelevant, unavailable, or fails for a pre-existing reason, report that explicitly.
 
-## Agent Final Summary Format
+## Branch And Commit Discipline
 
-Use this exact final format:
+- Prefer one conceptual change per branch and PR.
+- Do not mix contract work with unrelated UI redesign.
+- Do not auto-commit unless explicitly asked.
+- Follow `docs/COMMIT_GUIDELINES.md` for suggested messages.
+- Never rewrite history without explicit instruction.
 
-````md
-**Files changed**
-- ...
+## Handoff Format
 
-**Summary**
-...
-
-**Decisions made**
-- ...
-
-**Checks run**
-- `npm test` — passed / failed / not run
-- `npm run lint` — passed / failed / not run
-- `npm run build` — passed / failed / not run
-
-**Assumptions**
-- ...
-
-**Risks / follow-up**
-- ...
-
-**Suggested commit message**
-```text
-<full structured commit message>
-```
-
-**Recommended next step**
-...
-````
-
-## PR Workflow
-
-PR descriptions should include:
-
-- Summary
-- Why this change exists
-- Files changed
-- Product impact
-- Evidence model impact
-- Design impact
-- Tests/checks
-- Risks/follow-ups
-- Screenshots if UI changed
-- AI-agent notes
-
-## Merge Policy
-
-Recommend:
-
-- Prefer squash merge for focused branches if the branch contains multiple small agent attempts.
-- Use a structured squash commit message.
-- Do not merge with failing checks.
-- Do not merge broad AI-generated changes without human review.
-
-## AI Handoff Rules
-
-Every agent should leave enough context for the next agent:
-
-- what changed
-- why it changed
-- what was intentionally not changed
-- what assumptions were made
-- which checks passed
-- what the next narrow task should be
+Include files changed, major positioning or contract changes, docs added and updated, old framing removed, commands and results, assumptions, remaining ambiguities or risks, and the recommended next milestone.

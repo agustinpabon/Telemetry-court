@@ -1,111 +1,72 @@
 # Design Direction
 
-Telemetry Court should feel like a serious, calm, evidence-first investigation environment.
+Telemetry Court is a serious, calm validation bench for AI-generated telemetry cluster interpretations. The UI exists to clarify evidence, claims, uncertainty, reviewer choices, and evaluation output.
 
-The visual direction remains Apple / Wealthsimple / Linear-inspired in spirit: premium restraint, warm neutral canvas, clear hierarchy, spacious cards, subtle borders, and carefully reserved semantic color. Do not copy any protected brand assets, slogans, exact layouts, icons, imagery, or proprietary visual identity.
+The visual direction uses premium restraint, warm neutral surfaces, clear hierarchy, spacious cards, subtle borders, and carefully reserved semantic color. Do not copy protected brand assets, slogans, exact layouts, icons, imagery, or proprietary identity.
 
-## Current Product Feel
+## Current Interface
 
-The Evidence Arena should feel:
+The current static validation slice uses a Telemetry Galaxy, case file, blind read, AI reveal, Evidence Board, Label Duel, impostor review, and verdict stages. These names describe the shipped interface. They do not make Telemetry Court a game, generic investigation environment, command center, or product category called an Evidence Arena.
+
+The court metaphor is acceptable only when it improves evidence-based review. Avoid theatrical, competitive, or playful framing.
+
+## Desired Feel
 
 - calm;
 - scientific;
 - trustworthy;
 - structured;
-- interactive without feeling gamey;
-- attractive for a workshop audience;
-- focused on evidence rather than threat drama.
+- interactive without feeling game-like;
+- focused on evidence rather than threat drama;
+- explicit about missing evidence and current limitations.
 
-## Immersive Evidence Arena Direction
-
-The app should open as a spatial Telemetry Galaxy with the five synthetic behavioural regions visible as the primary interaction. The map should use restrained visual encoding for model agreement, evidence strength, uncertainty, impurity, and overclaim risk.
-
-Selecting a behavioural region should update an investigation cockpit immediately. The cockpit should feel like a calm scientific instrument panel, with case title, hidden or revealed AI claim state, compact metadata, key metrics, top features, risk flags, progress, and the next structured action. Detailed evidence, neighbour, and session material belongs in the active stage rather than being duplicated in the inspector.
-
-The investigation workflow should be staged rather than a long vertical document:
+## Review Flow
 
 ```text
 Landscape
 -> Case File
--> Blind Read
+-> Blind Review
 -> AI Reveal
 -> Evidence Board
--> Label Duel
--> Impostor
--> Verdict
+-> Label Comparison
+-> Outlier Review
+-> Structured Verdict
+-> ReviewResult
 ```
 
-Only one stage should occupy the main workspace at a time. The review summary and JSON export should remain available as a drawer or judgment receipt rather than always consuming page space.
+The interface should preserve blind review before label reveal and present one decision stage at a time. Review JSON may remain in a drawer or receipt, but its language should identify it as a local structured result until the versioned contract exists.
 
-Motion should clarify state changes: selected cluster focus, cockpit updates, stage transitions, AI reveal, evidence-balance changes, and verdict receipt reveal. Motion must remain subtle, non-blocking, and compatible with `prefers-reduced-motion`.
+## Visual Hierarchy
 
-## Visual Excellence Constraints
-
-The immersive shell should read as a command-center composition rather than a stack of dashboard cards:
-
-- Top bar, stage rail, main stage, and inspector must fit common desktop viewports without clipped headings or horizontal overflow.
-- The stage rail should be persistent but visually quiet.
-- The Telemetry Galaxy should be the primary spatial object, using compact islands/nodes, halos, rings, and relationship lines rather than rectangular information cards.
-- The cockpit should remain a focused inspector and action surface, not a duplicated case document.
-- Each workflow stage should present one strong composition at a time, with secondary details compressed or moved into the review drawer when viewport height is limited.
-- JSON export must remain available, but it should not dominate the visual hierarchy.
-
-## Cinematic Spatial Composition
-
-The interface uses two spatial modes:
-
-- Explore / Galaxy Mode: the Telemetry Galaxy is the environment. It should feel frameless, layered, and alive, with ambient session points, region halos, relationship arcs, selected-cluster focus, and a floating contextual inspector.
-- Investigation Mode: the active stage becomes the focus, but a compact semantic mini-map keeps the selected behavioural region anchored in the larger galaxy.
-
-The shell should not depend on one fixed maximum width. It should adapt fluidly across viewport sizes and browser zoom levels using clamp-based spacing/type, fluid grid columns, compact stage rails, and responsive cockpit behavior.
-
-When a stage has naturally concise content, fill the space with purposeful scientific visualization structure rather than extra copy: sealed-claim indicators, comparison lanes, evidence balance instruments, label-duel lanes, session orbits, or judgment receipts.
+1. Case package and cluster context.
+2. Evidence visible before AI label.
+3. AI-generated label and explicit claims.
+4. Evidence-to-claim classification.
+5. Candidate-label comparison.
+6. Cluster purity and outlier selection.
+7. Failure modes and uncertainty.
+8. Structured verdict and result export.
 
 ## Avoid
 
-- Neon, Matrix green, cyberpunk, hacker, fake terminal, or SOC-wall aesthetics.
-- Dense dashboard grids that make the user scan everything at once.
-- Decorative visuals that do not clarify evidence, uncertainty, or review state.
+- Neon, Matrix green, cyberpunk, hacker, fake terminal, threat-wall, or SOC aesthetics.
+- Dense dashboard grids.
+- Command-center or live-operations framing.
+- Courtroom theater, scoring, leaderboards, or competitive gamification.
+- Decorative visuals that do not clarify evidence or uncertainty.
 - Generic chatbot-first layouts.
 - Required free-text fields in the main workflow.
 
 ## Preferred Patterns
 
-- Start with a telemetry landscape that communicates multiple behavioural regions.
-- Use case-file language for selected clusters.
+- Use the landscape as a case selector, not as a claim of raw telemetry exploration.
 - Reveal the AI label only after a blind structured choice.
-- Use evidence cards as reviewable objects with explicit classification controls.
-- Use candidate-label cards for the label duel.
-- Use representative-session cards for impostor/outlier selection.
-- Use chips for reasons and failure modes.
-- Use a structured verdict panel and JSON preview/export for review output.
+- Make evidence items explicitly classifiable against specific claims.
+- Use candidate-label cards for serious comparison.
+- Use representative sessions for cluster-coherence review.
+- Use structured failure modes, verdicts, and recommended actions.
+- Show provenance, sanitization, missing evidence, and unavailable metrics plainly when those fields exist.
 
-## Visual Hierarchy
+## Interaction And Accessibility
 
-Prioritize:
-
-1. Behavioural region / case context
-2. Evidence before AI label
-3. AI claim reveal
-4. Evidence classification
-5. Candidate label comparison
-6. Cluster purity / impostor session
-7. Failure modes
-8. Structured verdict and export
-
-## Color
-
-Use the tokens in `docs/DESIGN_SYSTEM.md`. Semantic color should clarify evidence state or review state:
-
-- Supported
-- Weak support
-- Contradicted
-- Unsupported / overclaimed
-- Impure
-- Uncertain
-
-Do not use color as decoration or rely on color alone.
-
-## Interaction
-
-The primary workflow is structured-choice first. Use buttons, segmented controls, chips, and selectable cards. Free text can be optional expert input later, but must not block review completion.
+Use buttons, segmented controls, chips, and selectable cards for the main workflow. Free text may be optional expert annotation. Preserve keyboard access, visible focus, reduced motion, text equivalents for visual encoding, and no color-only status.

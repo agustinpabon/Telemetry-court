@@ -2,140 +2,141 @@
 
 ## Project Identity
 
-Telemetry Court is an interactive evidence arena for AI-generated interpretations of cyber telemetry clusters.
-
-Core line:
+Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.
 
 ```text
-AI names the pattern. Humans test the evidence.
+AI names the cluster. Humans test the evidence.
 ```
 
 Core question:
 
 ```text
-Can AI prove what it claims?
+Given a telemetry cluster and an AI-generated label or explanation,
+is that interpretation actually supported by the evidence?
 ```
 
-The previous framing of Telemetry Court as a simple approve/reject label validator is superseded. Treat [docs/PRODUCT_VISION.md](./docs/PRODUCT_VISION.md) and [docs/PROJECT_CONTEXT.md](./docs/PROJECT_CONTEXT.md) as the current source of truth.
+Treat `docs/PRODUCT_VISION.md`, `docs/PRODUCT_POSITIONING.md`, and `docs/PROJECT_CONTEXT.md` as the current product source of truth. The older Evidence Arena identity and frontend-MVP framing are superseded. Current arena terminology may describe UI components, but it must not define the product.
 
-## Core Workflow
+## Current State And Next Milestone
+
+- The current application is a static validation slice with synthetic cases and local review export.
+- Real Toponymy ingestion, ACME4 ingestion, package validation, persistence, multi-reviewer aggregation, and evaluation reports are not implemented.
+- The next implementation milestone is Case Package Contract and Validation Infrastructure.
+- Backend work must start with `CasePackage`, `ReviewResult`, and `EvaluationReport` contracts, not generic APIs, databases, or authentication.
+
+## Product Boundary
+
+```text
+Upstream clustering and labeling systems
+-> versioned CasePackage JSON
+-> Telemetry Court validation and review
+-> ReviewResult JSON
+-> EvaluationReport metrics
+-> upstream pipeline improvement
+```
+
+Telemetry Court owns reviewability, evidence grounding, auditability, structured human verdicts, and evaluation output. It does not own raw telemetry processing, live detection, or operational response.
+
+## Core Review Workflow
 
 ```text
 Telemetry landscape
--> behavioural region / case file
--> blind investigation
+-> case package
+-> blind review
 -> AI label reveal
 -> evidence classification
--> label duel
+-> label comparison
 -> impostor / outlier selection
 -> structured verdict
--> review JSON export
+-> ReviewResult export
+-> multi-reviewer EvaluationReport
 ```
-
-## What This Project Is
-
-- An evidence-first investigation interface.
-- A trust layer for AI-assisted telemetry interpretation.
-- A structured human-in-the-loop evaluation environment.
-- A claim/evidence inspection interface.
-- A downstream companion to systems like Toponymy.
-- A way to produce structured review data about labels, evidence packets, prompts, and clusters.
-
-## What This Project Is Not
-
-- Not a generic AI chatbot.
-- Not a SIEM replacement.
-- Not a SOC dashboard.
-- Not a threat-intel dashboard.
-- Not a cyberpunk visualization.
-- Not primarily a label generator.
-- Not a place to add features unrelated to evidence validation.
-
-## Design Rules
-
-- Apple / Wealthsimple / Linear style principles: calm, premium, spacious, restrained.
-- Evidence hierarchy must be clear.
-- Avoid neon, cyberpunk, dense dashboards, fake terminal aesthetics, and Matrix green.
-- Prefer fewer elements with better hierarchy.
-- Show uncertainty clearly.
-- Make the interface interactive without making it unserious.
-
-## Design System
-
-Before UI or styling work, read:
-
-- `docs/DESIGN_SYSTEM.md`
-- `docs/DESIGN_DIRECTION.md`
-- `docs/DESIGN_REFERENCE_HIGH_TRUST_FINTECH.md`
-
-Telemetry Court uses a calm, premium, evidence-first visual language inspired by high-trust fintech/product design principles.
-
-Do not copy Wealthsimple or any other brand's protected assets, slogans, exact layouts, icons, imagery, or proprietary visual identity.
 
 ## Product Rules
 
 - Do not require typed text for the main workflow.
-- Use structured choices for blind interpretation, evidence classification, label duel, impostor selection, failure modes, and verdict.
-- Every generated claim must be inspectable.
-- Every claim should link to evidence or explicitly say evidence is missing.
-- Every evidence card should be classifiable as supports, weak support, irrelevant/noise, contradicts, or needs context.
-- Distinguish supported, weakly supported, contradicted, unsupported, overclaimed, impure, and uncertain states.
-- Do not hide uncertainty.
-- Do not invent evidence.
-- Do not invent telemetry fields unless using clearly marked sample data.
-- The official factual source for Toponymy in this repo is the `TutteInstitute/toponymy` GitHub repository: <https://github.com/TutteInstitute/toponymy>
-- Do not treat DeepWiki, generated summaries, or other third-party pages as authoritative for Toponymy facts.
+- Every generated claim must link to evidence or explicitly say evidence is missing.
+- Evidence must be classifiable as supports, weak support, irrelevant/noise, contradicts, insufficient, or needs more context.
+- Preserve uncertainty and incomplete judgments.
+- Keep `CasePackage`, `ReviewResult`, and `EvaluationReport` distinct.
+- Preserve stable IDs, evidence provenance, sanitization metadata, and claim-to-evidence traceability.
+- Package validation must fail loudly on broken IDs, links, versions, or required provenance.
+- Keep local sample data synthetic and safe.
+- The official factual source for Toponymy is the [TutteInstitute/toponymy](https://github.com/TutteInstitute/toponymy) repository.
 - Do not invent Toponymy APIs, workflows, capabilities, function signatures, supported models, or outputs.
+
+## Do Not Drift Toward
+
+- generic dashboards or telemetry explorers;
+- SIEM, SOC, EDR, alert-triage, or incident-response workflows;
+- raw log search or live telemetry ingestion;
+- chat-first UX or gamification;
+- auth-first backend work;
+- generic CRUD or database work without a case package contract;
+- speculative enterprise or SaaS features;
+- visual polish as a substitute for validation proof.
+
+## Implementation Priorities
+
+1. Case package schema and versioning.
+2. Runtime package validation.
+3. Evidence provenance and sanitization.
+4. Structured review results.
+5. Multi-reviewer aggregation.
+6. Evaluation exports and deterministic metrics.
+7. Toponymy and ACME4 adapter boundaries.
+
+## Design Rules
+
+- Follow `docs/DESIGN_SYSTEM.md`, `docs/DESIGN_DIRECTION.md`, and `docs/DESIGN_REFERENCE_HIGH_TRUST_FINTECH.md` for UI work.
+- Keep the interface calm, premium, spacious, restrained, and evidence-first.
+- Avoid neon, cyberpunk, fake terminal, threat-wall, dense dashboard, and theatrical courtroom aesthetics.
+- Prefer fewer elements with clear evidence hierarchy.
+- Do not copy protected brand assets, slogans, exact layouts, icons, imagery, or proprietary identity.
 
 ## Coding Rules
 
-- Prefer TypeScript.
+- Prefer TypeScript and existing repository patterns.
 - Prefer small, reviewable diffs.
 - Inspect existing files before editing.
-- Do not rewrite unrelated files.
+- Do not rewrite unrelated files or touch existing unstaged feature work.
 - Do not add dependencies without explaining why.
 - Keep components simple and composable.
-- Use clear names from the domain model.
-- Keep local sample data synthetic and safe.
+- Use domain language from the current contracts and data model.
+- Do not implement backend infrastructure unless the task explicitly reaches the relevant roadmap milestone.
 
-## Before Coding
+## Before Work
 
 1. Read this file.
 2. Read `docs/PRODUCT_VISION.md`.
-3. Read `docs/PROJECT_CONTEXT.md`.
-4. Read `docs/PRODUCT_DECISIONS.md`.
-5. Inspect relevant existing files.
-6. State the intended change.
+3. Read `docs/PRODUCT_POSITIONING.md`.
+4. Read `docs/PROJECT_CONTEXT.md`.
+5. Read `docs/PRODUCT_DECISIONS.md`.
+6. For contract or backend work, read `docs/CASE_PACKAGE_CONTRACT.md`, `docs/EVALUATION_INFRASTRUCTURE.md`, and `docs/ARCHITECTURE.md`.
+7. Inspect relevant existing files and git status.
+8. State the intended change.
 
-Before UI or styling work, also read `docs/DESIGN_SYSTEM.md`.
-
-## After Coding
+## After Work
 
 1. Run formatting if configured.
-2. Run tests.
-3. Run lint.
-4. Run build.
-5. Update `docs/CHANGELOG_AI.md`.
-6. Summarize changed files.
-7. Mention assumptions or risks.
+2. Run tests, lint, and build when applicable.
+3. Update `docs/CHANGELOG_AI.md` for product, architecture, workflow, model, test, or behavior changes.
+4. Summarize files changed, assumptions, risks, and validation results.
+5. Do not hide failures.
 
 ## Commit And Handoff Discipline
 
-- AI-assisted work must produce a structured final summary.
+- Do not commit unless the user explicitly asks.
+- Do not rewrite git history.
 - Any suggested commit must follow `docs/COMMIT_GUIDELINES.md`.
-- Update `docs/CHANGELOG_AI.md` for product, model, architecture, design, workflow, test, or behavior changes.
-- Do not suggest vague commit messages like "update files" or "fix stuff."
-- Prefer narrow tasks and small diffs.
-- Do not rewrite git history unless the user explicitly asks.
+- Keep handoffs explicit about current capability versus target capability.
 
-## Agent skills
+## Agent Skills
 
-- Use local markdown issue files under `./issues/`.
-- Use `$grill-me` before planning or coding.
-- Use `$to-prd` after the grilling session.
-- Use `$to-issues` to create vertical-slice / tracer-bullet issues.
-- Mark issues as `AFK` or `human-in-the-loop`.
+- Use local markdown issue files under `./issues/` when issue artifacts are requested.
+- Use `$grill-me` before planning or coding when a decision tree is unresolved.
+- Use `$to-prd` after a grilling session for implementation initiatives.
+- Use `$to-issues` to create vertical-slice issues and mark them `AFK` or `human-in-the-loop`.
 - Use `$tdd` for implementation work where practical.
 - Use fresh-context review before merge.
-- Do not touch existing unstaged feature files.
-- Do not commit anything.
+- Do not commit anything unless explicitly asked.

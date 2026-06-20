@@ -1,209 +1,91 @@
 # Telemetry Court Roadmap
 
-## Current Status
+## Direction
 
-Telemetry Court is a frontend-first Evidence Arena prototype using Next.js, TypeScript, Tailwind, and local synthetic fixture data.
-
-Core product line:
-
-```text
-AI names the pattern. Humans test the evidence.
-```
-
-The old passive approve/reject label-validator MVP is superseded. Claim/evidence inspection remains central, but it now lives inside a broader interactive investigation workflow.
-
-## Core Product Flow
-
-```text
-Telemetry clusters
--> AI-generated interpretation
--> evidence-first investigation
--> structured human verdict
--> evaluation data for better prompts, labels, embeddings, and cluster quality
-```
-
-## Active Vertical Slice
-
-The current app should let a user:
-
-1. Open a telemetry landscape.
-2. Select a behavioural region / case.
-3. Inspect case context and evidence.
-4. Make a blind interpretation from structured options before seeing the AI label.
-5. Reveal the AI label.
-6. Classify evidence cards.
-7. Compare candidate labels in a label duel.
-8. Pick an impostor / outlier session.
-9. Select structured failure modes and a final verdict.
-10. Export or view structured review JSON.
-
-The happy path must not require typed text. Free text can exist later only as optional expert annotation.
-
-## Work Tracks
-
-### Product / UX
-
-Make the arena investigative, calm, credible, and structured-choice first.
-
-### Evidence Model
-
-Keep claims, evidence items, evidence relations, support scores, candidate labels, representative sessions, evidence classifications, failure modes, and verdicts inspectable and exportable.
-
-### Synthetic Data
-
-Maintain safe local cases that demonstrate supported labels, overclaims, broad labels, impure clusters, and correct uncertainty.
-
-### Scientific Review Data
-
-Make review JSON useful as evaluation data for labels, prompts, evidence packets, embeddings, and cluster quality.
-
-### Future Import / Platform
-
-After the static arena is credible, define import/export boundaries for approved upstream artifacts from systems such as Toponymy-style naming workflows and DataMapPlot-style landscape outputs.
+Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations. The roadmap is organized around proving validation value, not adding generic product infrastructure.
 
 ## Milestone Overview
 
-| Milestone | Status | Goal |
+| Milestone | Status | Outcome |
 |---|---|---|
-| Milestone 0 — Evidence Arena Pivot Stabilization | Active | Stabilize the pivot, remove outdated framing, and ensure docs/tests/agents agree on the new direction. |
-| Milestone 1 — Polished Static Evidence Arena MVP | Active next | Make the synthetic vertical slice demo-ready and credible. |
-| Milestone 2 — Scientific Review Data Model | Planned | Make human review output useful as evaluation data, not just UI state. |
-| Milestone 3 — Telemetry Map + Case Exploration | Planned | Make the landscape, clusters, uncertainty, neighboring regions, and case navigation more informative. |
-| Milestone 4 — Pipeline Integration Readiness | Planned | Prepare import/export boundaries for Toponymy, DataMapPlot, generated cluster labels, and real telemetry-derived artifacts without requiring restricted data. |
-| Milestone 5 — Advanced Evidence Arena | Planned | Model debate, cross-examination, counterfactual map lab, live jury/demo mode, and research-grade interaction experiments. |
+| Milestone 0 - Current Static Validation Slice | Complete/current baseline | Synthetic interface demonstrates the review protocol without claiming real validation infrastructure. |
+| Milestone 1 - Product Realignment And Documentation | Complete | Repository language, planning, architecture, and agent guidance align around the validation-bench direction. |
+| Milestone 2 - Case Package Contract And Validation Infrastructure | Next | Versioned `CasePackage`, `ReviewResult`, and `EvaluationReport` contracts plus package validation. |
+| Milestone 3 - Evaluation Infrastructure | Planned | Durable structured reviews, multi-reviewer aggregation, and evaluation exports. |
+| Milestone 4 - Toponymy / ACME4 Adapter Prototype | Planned | One approved adapter converts a real or realistic cluster output into a case package. |
+| Milestone 5 - Evidence-Constrained AI Assistance | Optional/later | Predefined evidence-citing questions with explicit missing-evidence behavior. |
+| Milestone 6 - Research Validation Study | Target proof | Multiple reviewers demonstrate useful evaluation signals on real or realistic cases. |
 
-## Milestone 0 — Evidence Arena Pivot Stabilization
+## Milestone 0 - Current Static Validation Slice
 
-### Goal
+- Existing Next.js review interface and five synthetic cases.
+- Telemetry landscape, case file, blind review, AI reveal, evidence classification, label comparison, outlier selection, verdict, and local JSON export.
+- Useful for demonstrating and testing the review protocol.
+- Not real validation infrastructure: no package import, durable multi-reviewer results, or evaluation reports.
 
-Stabilize the pivot, remove outdated framing, ensure docs/tests/agents agree on the new direction.
+## Milestone 1 - Product Realignment And Documentation
 
-### Immediate Issues
+- Align repository identity, product language, architecture, roadmap, planning, and agent instructions.
+- Define current state, target state, data posture, and out-of-scope boundaries.
+- Remove positive framing as a frontend MVP, game-like arena, generic investigation environment, dashboard, or vague future backend.
+- Add positioning, case package contract, and evaluation infrastructure documents.
 
-- `docs: remove superseded label-validator framing`
-- `test: cover evidence arena happy path`
-- `chore: commit and document evidence arena pivot`
+Definition of done: contributors can identify the validation-bench purpose and limitations; the three core contracts are separated; architecture points to evaluation infrastructure; and templates block SIEM/SOC/dashboard drift.
 
-### Definition Of Done
+## Milestone 2 - Case Package Contract And Validation Infrastructure
 
-- Product docs and agent docs consistently describe Telemetry Court as an Evidence Arena.
-- Historical approve/reject-only language is preserved only as superseded context.
-- Tests protect the current structured-choice happy path.
-- Changelog and handoff material clearly explain the pivot and validation status.
+- Define `CasePackage v0.1`, `ReviewResult v0.1`, and `EvaluationReport v0.1`.
+- Specify required provenance, sanitization, stable IDs, evidence mappings, and safe drill-down references.
+- Add validation rules and actionable errors for broken packages.
+- Convert current sample cases into package-shaped fixtures or explicit adapters.
+- Preserve current UI behavior through a narrow compatibility boundary.
+- Test valid packages, unsupported versions, missing provenance, broken IDs, broken evidence links, and review export compatibility.
 
-## Milestone 1 — Polished Static Evidence Arena MVP
+Definition of done: one versioned package-shaped fixture passes runtime validation and drives the current flow; invalid packages fail before rendering; review export identifies the package and protocol versions; contract decisions precede database or auth work.
 
-### Goal
+## Milestone 3 - Evaluation Infrastructure
 
-Make the synthetic vertical slice demo-ready and credible.
+- Persist structured `ReviewResult` records.
+- Support multiple independent reviewers.
+- Aggregate compatible results.
+- Export deterministic `EvaluationReport` JSON/CSV.
+- Compare labels, prompts, models, embeddings, and evidence packages.
+- Calculate support, overclaim, unsupported claim, partial support, uncertainty, impurity, split/merge, evidence sufficiency, disagreement, reviewer agreement, label winner, and failure-mode metrics.
 
-### Immediate Issues
+Definition of done: multiple reviewers can review the same package without losing blind-review integrity; calculations are versioned, tested, and traceable; missing data is reported as unavailable.
 
-- `ux: polish telemetry landscape as primary entry point`
-- `ux: improve case file investigation hierarchy`
-- `ux: refine blind investigation and AI reveal flow`
-- `ux: make evidence classification feel active and clear`
-- `ux: refine label duel and impostor interactions`
-- `feat: add review progress and reset/navigation controls`
-- `a11y: improve keyboard and screen reader support for structured choices`
+## Milestone 4 - Toponymy / ACME4 Adapter Prototype
 
-### Definition Of Done
+- Build one script or notebook-level adapter for an approved real or realistic precomputed cluster output.
+- Emit minimal, auditable `CasePackage` JSON.
+- Preserve provenance and sanitization metadata.
+- Keep raw restricted telemetry outside the public or portable app.
 
-- The homepage starts with a telemetry landscape, not a form.
-- Five synthetic cases are available and credible as demo data.
-- Case files clearly distinguish context, claims, evidence, sessions, and uncertainty.
-- The reviewer can complete the full workflow without typing.
-- Evidence ratings, label duel, impostor selection, failure modes, verdict, and export feel connected.
-- Structured choice controls are accessible by keyboard and screen reader.
-- `npm test`, `npm run lint`, and `npm run build` pass.
+Definition of done: one adapter-generated package validates and completes the review-to-report path without inventing Toponymy APIs or ACME4 access.
 
-## Milestone 2 — Scientific Review Data Model
+## Milestone 5 - Evidence-Constrained AI Assistance
 
-### Goal
+- Offer predefined cross-examination questions only where they improve review quality.
+- Require responses to cite case-package evidence IDs and admit missing evidence.
+- Record model and prompt metadata for evaluation.
+- Do not add generic chatbot behavior.
 
-Make the human review output useful as evaluation data, not just UI state.
+## Milestone 6 - Research Validation Study
 
-### Immediate Issues
+- Run multiple reviewers across real or realistic cases.
+- Evaluate reviewer agreement, label support, evidence sufficiency, and common failure modes.
+- Compare at least one upstream variable such as label, prompt, model, embedding, or evidence extraction method.
+- Publish a reproducible evaluation report and limitations.
 
-- `schema: formalize structured review export`
-- `docs: define evaluation meaning of each verdict and failure mode`
+## Product-Level Definition Of Done
 
-### Candidate Later Issue
+Telemetry Court becomes a serious tool only when it can ingest a real or realistic precomputed cluster, accept a defensible evidence package, support multiple blind human reviews, store structured verdicts, aggregate judgments, and export metrics that improve labels, prompts, embeddings, or pipeline design.
 
-- `feat: add local review persistence`
+## Planning Guardrails
 
-### Definition Of Done
-
-- Review export schema is documented, versioned, and tested.
-- Export includes reviewer choices, evidence ratings, label duel result, impostor selection, failure modes, verdict, timestamps, and version metadata.
-- Verdicts and failure modes have clear evaluation meaning.
-- The docs explain how outputs can support prompt, label, embedding, evidence-packet, and cluster-quality evaluation.
-
-## Milestone 3 — Telemetry Map + Case Exploration
-
-### Goal
-
-Make the landscape, clusters, uncertainty, neighboring regions, and case navigation more informative.
-
-### Candidate Work
-
-- Improve cluster neighborhood explanations.
-- Show uncertainty and model agreement without dashboard clutter.
-- Add safer case navigation and review-state scanning.
-- Explore DataMapPlot-style import assumptions only after a safe contract exists.
-
-## Milestone 4 — Pipeline Integration Readiness
-
-### Goal
-
-Prepare import/export boundaries for Toponymy, DataMapPlot, generated cluster labels, and real telemetry-derived artifacts without requiring real restricted data.
-
-### Candidate Work
-
-- Define the approved evidence-packet input contract.
-- Define generated-label and generated-claim contracts.
-- Document Toponymy handoff assumptions using only the official repository as source of truth.
-- Add fixture validation for imported local JSON.
-- Keep real restricted telemetry out of the repo.
-
-## Milestone 5 — Advanced Evidence Arena
-
-### Goal
-
-Model debate, cross-examination, counterfactual map lab, live jury/demo mode, and research-grade interaction experiments.
-
-### Candidate Work
-
-- Model-vs-model label debate.
-- Cross-examination prompts tied to evidence cards.
-- Counterfactual map lab for cluster split/merge experiments.
-- Live jury/demo mode for workshops.
-- Research-grade interaction experiments around anchoring, uncertainty, and evidence quality.
-
-## Issue Creation Rule
-
-Create only a small immediate batch for the active milestone and the nearest follow-up. Do not turn every future idea into a GitHub issue. Candidate work remains planning inventory until it is close enough for execution.
-
-## Product Guardrails
-
-- Telemetry Court is an evidence-first investigation environment, not a chatbot wrapper.
-- It is not a SIEM, SOC dashboard, threat-intelligence dashboard, or cyberpunk visualization.
-- It is not just an approve/reject label validator.
-- Every generated claim must be inspectable.
-- Every evidence card should be classifiable as supports, weak support, irrelevant/noise, contradicts, or needs context.
-- Distinguish supported, weakly supported, contradicted, unsupported, overclaimed, impure, and uncertain states.
-- Do not hide uncertainty.
-- Do not invent evidence.
-- Do not require typing for the core workflow.
-- Do not introduce real telemetry, secrets, customer data, or incident claims.
-- Visual work must follow `docs/DESIGN_SYSTEM.md` and support evidence inspection.
-
-## Checks Required Before Closing Issues
-
-- `npm test`
-- `npm run lint`
-- `npm run build`
-- Documentation updated when product, model, architecture, workflow, design, test, or behavior context changes.
-- PR description follows `.github/pull_request_template.md`.
-- UI changes include screenshots or recordings.
-- Evidence-model changes explain claim, evidence, relation, score, verdict, review-data, and audit impact.
+- Do not create a generic backend milestone.
+- Do not start with auth, production database design, admin UX, user management, or generic CRUD.
+- Do not add SIEM, SOC, alert-triage, raw-search, or live-ingestion work.
+- Do not schedule UI polish as a substitute for package and evaluation proof.
+- Keep Milestone 2 as the next implementation milestone.
+- Create only a small executable issue batch for the active milestone and its immediate blocker.

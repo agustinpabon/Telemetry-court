@@ -1,248 +1,135 @@
-# Telemetry Court - Prompting Guide
+# Telemetry Court Prompting Guide
 
-This file gives durable prompting patterns.
+Use this guide for durable agent prompts. Do not include temporary PR, branch, or issue state unless the task needs it.
 
-It does not contain current PR numbers or temporary branch state.
-
-## Good Prompt Structure
-
-A good Codex prompt should include:
+## Required Product Context
 
 ```text
-Recommended model:
-<model>
+Telemetry Court is an evidence-based human-in-the-loop validation bench
+for AI-generated telemetry cluster interpretations.
 
+AI names the cluster. Humans test the evidence.
+
+Current state: static synthetic validation slice.
+Next milestone: Case Package Contract and Validation Infrastructure.
+```
+
+## Prompt Structure
+
+```text
 Task:
-<one narrow task>
+<one narrow validation outcome>
 
-Issue:
-#<number> <title>
+Before work:
+- inspect git status and current files
+- read AGENTS.md and canonical product docs
+- read CASE_PACKAGE_CONTRACT.md and EVALUATION_INFRASTRUCTURE.md for schema/backend work
+- preserve unrelated user changes
 
-Before coding:
-- inspect git status
-- inspect current branch
-- read relevant docs/files
-- identify unrelated dirty files and leave them alone
+Contract impact:
+- CasePackage
+- ReviewResult
+- EvaluationReport
 
 Scope:
-- what to change
+<what changes>
 
 Out of scope:
-- what not to change
-
-Constraints:
-- Evidence Arena direction
-- no backend unless explicitly scoped
-- no Toponymy integration unless explicitly scoped
-- no new dependencies unless necessary
-- preserve evidenceRelations
-- no invented evidence
-- no typed text required in the happy path
+- SIEM/SOC/EDR or alert-triage workflows
+- raw telemetry search or ingestion
+- generic dashboards or chatbot behavior
+- gamification
+- generic CRUD, auth, or database work without a contract requirement
+- invented evidence or Toponymy capabilities
 
 Required checks:
 - npm test
 - npm run lint
 - npm run build
 
-Commit / PR:
-- commit only if asked
-- use structured commit message
-- open draft PR if asked
-- link issue
-- do not merge
-
 Final response:
-- branch
-- commit hash if committed
-- PR URL if opened
 - files changed
-- checks run
+- positioning or contract impact
+- checks and results
 - assumptions
-- risks
-- working tree status
+- risks and remaining ambiguities
+- recommended next milestone
 ```
 
-## Prompt Template - Implement Issue
+## Implementation Prompt
 
 ```text
-You are working on Telemetry Court.
-
-Recommended model:
-<MODEL>
+You are working on Telemetry Court, an evidence-based human-in-the-loop
+validation bench for AI-generated telemetry cluster interpretations.
 
 Task:
-Implement issue #<ISSUE_NUMBER> and open a draft PR.
+Implement <narrow issue>.
 
-Issue:
-#<ISSUE_NUMBER> `<ISSUE_TITLE>`
-
-Before coding:
-- Run `git status -sb`.
-- Confirm current branch and upstream.
-- Inspect the issue body.
-- Inspect relevant files before editing.
-- Identify unrelated dirty files and leave them alone.
-
-Read before editing:
+Required context:
 - AGENTS.md
-- README.md
 - docs/PRODUCT_VISION.md
+- docs/PRODUCT_POSITIONING.md
 - docs/PROJECT_CONTEXT.md
 - docs/PRODUCT_DECISIONS.md
 - docs/ROADMAP.md
-- docs/GITHUB_PLANNING.md
 - docs/ARCHITECTURE.md
+- docs/CASE_PACKAGE_CONTRACT.md
+- docs/EVALUATION_INFRASTRUCTURE.md
 - docs/DATA_MODEL.md
-- docs/DESIGN_SYSTEM.md
-- docs/AGENT_WORKFLOWS.md
-- docs/DEVELOPMENT_WORKFLOW.md
-- docs/COMMIT_GUIDELINES.md
-- docs/CHANGELOG_AI.md
-- <TASK_SPECIFIC_FILES>
 
-Scope:
-- <SCOPE>
+Product gate:
+- Explain how this improves evidence grounding, structured review, provenance,
+  aggregation, or evaluation output.
+- Preserve CasePackage / ReviewResult / EvaluationReport separation.
+- If backend work is involved, identify the contract requirement that justifies it.
 
-Out of scope:
-- No backend/API/auth unless explicitly requested.
-- No Toponymy integration unless explicitly requested.
-- No new dependencies unless necessary and justified.
-- No broad redesign.
-- No unrelated rewrites.
-- Do not invent evidence.
-- Preserve `evidenceRelations` as canonical claim-to-evidence link.
-- Do not require typed text for the main Evidence Arena workflow.
+Constraints:
+- Make the smallest complete change.
+- Preserve blind review and structured choices.
+- Preserve stable evidence links and visible uncertainty.
+- Do not claim current Toponymy or ACME4 support unless implemented and verified.
+- Do not add generic infrastructure or redesign unrelated UI.
+- Update docs/CHANGELOG_AI.md.
 
-Required checks:
-- `npm test`
-- `npm run lint`
-- `npm run build`
-
-Commit instructions:
-- If asked to commit, use a structured commit message following docs/COMMIT_GUIDELINES.md.
-- If not asked to commit, leave changes unstaged and summarize them.
-
-Push / PR instructions:
-- Push the branch only if asked.
-- Open a draft PR into `main` only if asked.
-- Link the issue with `Closes #<ISSUE_NUMBER>` only when the PR fully satisfies it.
-- Do not merge the PR.
-
-Final response must include:
-- Recommended model used
-- Branch name
-- Commit hash if committed
-- PR URL if opened
-- Files changed
-- What changed
-- Checks run
-- Assumptions
-- Risks/follow-up
-- Whether working tree is clean
-- Whether branch was pushed
-- Whether PR is draft and unmerged
-```
-
-## Prompt Template - Review PR
-
-```text
-You are working on Telemetry Court.
-
-Recommended model:
-<MODEL>
-
-Task:
-Review PR #<PR_NUMBER> before it is marked ready or merged.
-
-PR:
-<PR_URL>
-
-Issue:
-#<ISSUE_NUMBER> `<ISSUE_TITLE>`
-
-Before reviewing:
-- Fetch latest remote state.
-- Run `git status -sb`.
-- Inspect PR metadata.
-- Inspect PR diff.
-- Inspect relevant files.
-
-Review goals:
-- Confirm PR matches issue scope.
-- Confirm no unrelated behavior changed.
-- Confirm no unexpected dependencies were added.
-- Confirm Evidence Arena structured-choice workflow is preserved.
-- Confirm `evidenceRelations` remains canonical if evidence is involved.
-- Confirm tests are useful.
-- Confirm changelog entry is accurate.
-- Confirm PR body links the issue when appropriate.
-
-Required checks:
+Run:
 - npm test
 - npm run lint
 - npm run build
 
-Do not:
-- Merge the PR.
-- Mark ready if blocking verification is missing.
-- Push new commits unless a real issue must be fixed.
-- Add dependencies.
-- Add backend/API/auth/persistence.
-- Add Toponymy integration.
-- Redesign unrelated UI.
-- Add required free-text steps to the happy path.
-
-If PR is good:
-- Leave it draft unless the user explicitly asks to mark ready.
-- Leave a short comment saying it is ready from your review perspective.
-- Do not merge.
-
-If PR needs fixes:
-- Keep as draft.
-- Make the smallest fix.
-- Run checks.
-- Commit fix if asked.
-- Push branch if asked.
-- Explain what changed.
-
-Final response must include:
-- Review verdict
-- Whether PR was marked ready
-- Whether commits were added
-- Checks run
-- Files reviewed
-- Risks
-- Recommended merge method
-- Whether PR remains unmerged
+Do not commit, push, or open a PR unless explicitly asked.
 ```
 
-## Prompt Template - Planning Next Issues
+## Review Prompt
 
 ```text
-You are working on Telemetry Court.
+Review this change for correctness and product drift.
 
-Recommended model:
-Codex - GPT-5 high
+Prioritize:
+- broken contract assumptions
+- evidence or provenance loss
+- blind-review leakage
+- incompatible ReviewResult aggregation
+- unsupported metrics
+- current-versus-target overclaims
+- SIEM/SOC/dashboard, raw-ingestion, chat-first, gamification, auth-first,
+  or generic-backend drift
+- missing tests
 
-Task:
-Plan the next small set of issues for the active milestone.
+Report findings first with file and line references.
+Run npm test, npm run lint, and npm run build when practical.
+Do not merge or commit unless explicitly asked.
+```
 
-Before planning:
-- Inspect `docs/ROADMAP.md`.
-- Inspect `docs/GITHUB_PLANNING.md`.
-- Inspect open GitHub issues and milestones.
-- Do not create a giant backlog.
+## Planning Prompt
 
-Constraints:
-- Preserve the Evidence Arena direction.
-- Prefer a small, high-quality batch of actionable issues.
-- Do not blindly close historical issues.
-- Keep old approve/reject label-validator language marked as superseded.
+```text
+Plan only the next small executable issue batch from docs/ROADMAP.md.
 
-Final response:
-- milestone state
-- proposed issues grouped by milestone
-- old issues needing triage
-- docs changed
-- checks run
+Milestone 2 is the next implementation milestone.
+Prefer thin vertical slices that connect contract, validation, fixture,
+UI compatibility, export, and tests where applicable.
+
+Do not create issues for auth, production databases, admin UX,
+generic dashboards, raw ingestion, or enterprise features.
+Mark unresolved contract decisions human-in-the-loop and fully specified work AFK.
 ```

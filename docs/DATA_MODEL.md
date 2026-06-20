@@ -1,6 +1,14 @@
 # Data Model
 
-This document defines the conceptual Evidence Arena domain model. The older claim/evidence validation model is still useful, but it now sits inside a broader case-review workflow.
+This document describes the domain model currently implemented by the static validation slice. It is not the approved `CasePackage v0.1` contract.
+
+The target model must separate:
+
+- `CasePackage`: the versioned upstream cluster interpretation and evidence under review;
+- `ReviewResult`: one human review of that package;
+- `EvaluationReport`: aggregated metrics across compatible review results.
+
+See `docs/CASE_PACKAGE_CONTRACT.md` before changing or renaming current types. Milestone 2 should introduce an explicit adapter or migration path rather than treating the current `CaseFile` shape as the final package contract.
 
 Current product flow:
 
@@ -213,9 +221,9 @@ interface CaseFile {
 }
 ```
 
-## Arena Review Export
+## Current Review Export
 
-The review export should preserve both the case evidence trail and the reviewer's structured arena choices:
+The current review export preserves the case evidence trail and the reviewer's structured UI choices:
 
 - blind choice;
 - AI label;
@@ -230,6 +238,8 @@ The review export should preserve both the case evidence trail and the reviewer'
 
 Typing must not be required to produce this export.
 
+The current export is not yet `ReviewResult v0.1`. It lacks an approved schema version, source package version, review protocol version, and multi-reviewer compatibility rules. Those are Milestone 2 decisions.
+
 ## Runtime Fixture
 
-Use `data/sampleCases.ts` as the concrete runtime fixture reference. It contains five synthetic arena cases and an integrity check for claim IDs, evidence IDs, candidate labels, seeded impostor sessions, default evidence ratings, and support scores.
+Use `data/sampleCases.ts` as the current runtime fixture reference. It contains five synthetic validation cases and an integrity check for claim IDs, evidence IDs, candidate labels, seeded impostor sessions, default evidence ratings, and support scores.

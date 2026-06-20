@@ -1,94 +1,73 @@
 # Architecture
 
-## Current Repo Status
+## Architectural Purpose
 
-Telemetry Court is currently a Next.js App Router project using TypeScript, Tailwind, and static sample data. The repository contains frontend components, Evidence Arena sample cases, shared helpers, and domain types.
-
-There is no backend, database, authentication layer, telemetry ingestion pipeline, or Toponymy integration.
-
-## Proposed Architecture
-
-For the MVP, keep the architecture frontend-first:
-
-- `app/`: Next.js App Router pages and layout.
-- `components/`: Small, composable review-workspace components.
-- `data/`: Synthetic case data only.
-- `lib/`: Shared TypeScript types and small utility functions.
-- `docs/`: Product context, architecture notes, agent workflows, and domain model.
-
-## Frontend-First MVP Approach
-
-The current implementation phase should prove the Evidence Arena with static data before adding infrastructure. Static sample data is enough to validate the product questions:
-
-- Can a reviewer explore multiple behavioural regions?
-- Can they inspect a selected case file?
-- Can they make a blind interpretation before seeing the AI label?
-- Can they classify evidence cards?
-- Can they compare candidate labels?
-- Can they identify an outlier session?
-- Can they issue and export a structured verdict?
-
-## Suggested Domain Model
-
-Use the domain model in `docs/DATA_MODEL.md` as the conceptual source of truth:
-
-- `Cluster`
-- `TopicLabel`
-- `Claim`
-- `EvidenceItem`
-- `EvidenceRelation`
-- `SupportScore`
-- `CandidateLabel`
-- `RepresentativeSession`
-- `EvidenceArenaReview`
-- `AnalystVerdict`
-- `CaseFile`
-
-Existing frontend types may evolve toward this model incrementally. Avoid broad rewrites unless a task explicitly scopes a data-model migration.
-
-## Data Flow
+Telemetry Court is the validation layer for AI-generated telemetry cluster interpretations. It does not own the full telemetry-processing stack.
 
 ```text
-Telemetry landscape
--> CaseFile
--> blind interpretation
--> AI label reveal
--> evidence ratings
--> label duel
--> impostor session
--> structured verdict
--> review export
+Upstream systems
+-> versioned CasePackage JSON
+-> Telemetry Court review interface and validation engine
+-> ReviewResult JSON
+-> EvaluationReport metrics
+-> upstream pipeline improvement
 ```
 
-1. A behavioural region is selected from the landscape.
-2. The selected case file exposes cluster context, claims, evidence, candidate labels, and sessions.
-3. The reviewer makes a blind structured choice before reveal.
-4. The AI label is revealed and compared with the blind choice.
-5. Evidence cards are classified by the reviewer.
-6. Candidate labels are compared in a label duel.
-7. A representative session is selected as the likely impostor / outlier.
-8. Failure modes and final verdict are selected.
-9. The review is exported as structured JSON.
+## Upstream
 
-## Suggested Future Backend Boundaries
+Potential upstream producers include Toponymy, notebooks and clustering pipelines, embedding and prompt-comparison experiments, ACME4-derived or CloudTrail-derived experiments, DataMapPlot or other cluster-map outputs, and synthetic, sanitized, or approved evidence-package generators.
 
-Future backend work can be separated into:
+Upstream systems own raw telemetry processing, sessionization, embeddings, clustering, and initial label generation. Telemetry Court must not invent those capabilities or require one specific upstream implementation.
 
-- Import boundary: Toponymy-style exports, CSV/JSON, or other cluster-label outputs.
-- Claim extraction boundary: generated explanation to claim ledger.
-- Evidence scoring boundary: evidence relation and score calculation.
-- Case storage boundary: saved reviews, audit trail, and analyst verdicts.
-- User/workspace boundary: authentication, permissions, and collaboration.
+## Boundary: CasePackage JSON
 
-Do not add these boundaries until product need is clear.
+The integration boundary is a validated, versioned `CasePackage`, not direct access to raw telemetry or an unspecified backend API.
 
-## Not Implemented Yet
+The package contains the cluster interpretation, claims, evidence, provenance, review configuration, and safe references needed for review. Adapters translate approved upstream output into this contract. See [CASE_PACKAGE_CONTRACT.md](./CASE_PACKAGE_CONTRACT.md).
 
-- Real telemetry ingestion.
-- Toponymy execution or Python services.
-- Automated claim extraction.
-- Automated support scoring.
-- Persistent case storage.
-- User accounts or authentication.
-- Production deployment workflow.
-- Full DataMapPlot-style map exploration.
+## Telemetry Court
+
+Telemetry Court owns:
+
+- package schema validation and compatibility checks;
+- blind-review protocol enforcement;
+- evidence-to-claim inspection;
+- structured evidence classifications;
+- candidate-label comparison;
+- outlier or impurity review;
+- structured verdict capture;
+- review result integrity;
+- multi-reviewer aggregation;
+- evaluation export and auditability.
+
+The current repository implements only the static review interface, local state, synthetic fixtures, helper logic, and local JSON export. It has no package import boundary, persistence layer, multi-reviewer service, evaluation report generator, Toponymy adapter, or ACME4 adapter yet.
+
+## Outputs
+
+`ReviewResult` contains one reviewer's versioned decisions about one case package. `EvaluationReport` aggregates compatible review results into agreement, disagreement, support, overclaim, uncertainty, impurity, split or merge, evidence sufficiency, label winner, and comparison metrics.
+
+## Downstream
+
+Outputs should support prompt improvement, label refinement, model and embedding comparison, evidence-extraction improvement, cluster split or merge decisions, research reports, and validation studies.
+
+## Data Handling Boundary
+
+The public or portable app should use synthetic, sanitized, or approved packages. Restricted telemetry should remain in its authorized environment. Adapter code may produce safe summaries and drill-down references, but Telemetry Court must not assume those references can be resolved in every deployment.
+
+Missing provenance, unsupported schema versions, broken evidence links, and invalid references are validation errors. They are not UI warnings to ignore.
+
+## Current Repository Structure
+
+- `app/`: Next.js App Router entry and route handling.
+- `components/`: Review workflow and visual components.
+- `data/`: Current synthetic fixtures.
+- `lib/`: Current TypeScript domain types, review state, metrics, and export helpers.
+- `docs/`: Product, contract, architecture, evaluation, and workflow guidance.
+
+These folders describe the present implementation, not the final service decomposition.
+
+## Next Architectural Milestone
+
+Milestone 2 must define and validate `CasePackage v0.1`, `ReviewResult v0.1`, and `EvaluationReport v0.1`, then adapt one package-shaped fixture through the existing UI and export path.
+
+Do not choose a production database, authentication system, workspace model, admin interface, or broad API surface before the contract and evaluation requirements are proven.

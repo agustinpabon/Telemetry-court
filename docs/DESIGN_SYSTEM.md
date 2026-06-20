@@ -1,10 +1,10 @@
 # Telemetry Court Design System
 
-This is the official design system for Telemetry Court. It defines how the product should feel, how UI decisions should be made, and how future visual work should support evidence inspection.
+This is the official design system for Telemetry Court, an evidence-based validation bench for AI-generated telemetry cluster interpretations. It defines how UI decisions support evidence inspection and structured human judgment.
 
 ## 1. Design Positioning
 
-Telemetry Court should feel calm, premium, spacious, trustworthy, evidence-first, analyst-friendly, minimal, and warm but serious. Its visual direction is high-trust fintech-inspired: Apple / Wealthsimple-class restraint, but not copied from either.
+Telemetry Court should feel calm, premium, spacious, trustworthy, evidence-first, analyst-friendly, minimal, and warm but serious. The interface must support a validation protocol, not imply a SIEM, game, or generic investigation product. Its visual direction is high-trust fintech-inspired: Apple / Wealthsimple-class restraint, but not copied from either.
 
 Telemetry Court's design goal is not to look like a SOC dashboard. It should not use cyberpunk, hacker, neon, terminal, or threat-map aesthetics. It should feel like a calm premium product UI for judging whether AI-generated interpretations are supported by evidence.
 

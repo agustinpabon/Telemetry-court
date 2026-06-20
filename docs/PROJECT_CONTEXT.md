@@ -1,106 +1,97 @@
 # Project Context
 
-## Product Summary
+_Last updated: 2026-06-20._
 
-Telemetry Court is an interactive evidence arena for AI-generated interpretations of cyber telemetry clusters.
+This document supersedes the older Evidence Arena framing as the repository's concise product context. `docs/PRODUCT_VISION.md` and `docs/PRODUCT_POSITIONING.md` define the current product direction.
 
-Core line:
+## Product Identity
 
-```text
-AI names the pattern. Humans test the evidence.
-```
-
-Core question:
+Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.
 
 ```text
-Can AI prove what it claims?
+AI names the cluster. Humans test the evidence.
 ```
 
-Core evaluation workflow:
+It turns generated cluster labels into testable claims and records structured human judgments that can improve labels, prompts, embeddings, evidence extraction, and clustering pipelines.
+
+## Current Truth
+
+- The current application is a static validation slice using synthetic cases.
+- It demonstrates the evidence-first review flow and local structured export.
+- It does not implement real Toponymy or ACME4 ingestion.
+- It does not persist multi-reviewer results or generate aggregated evaluation reports.
+- The next implementation milestone is the Case Package Contract and Validation Infrastructure, not generic backend work.
+
+## Intended Architecture
 
 ```text
-Telemetry clusters
--> AI-generated interpretation
--> evidence-first investigation
--> structured human verdict
--> evaluation data for better prompts, labels, embeddings, and cluster quality
+Upstream:
+  Toponymy, notebooks, clustering pipelines,
+  ACME4-derived or CloudTrail-derived experiments,
+  synthetic/sanitized generators
+
+Boundary:
+  versioned CasePackage JSON
+
+Telemetry Court:
+  package validation, blind review, evidence classification,
+  label comparison, outlier review, structured verdict capture,
+  multi-reviewer aggregation
+
+Outputs:
+  ReviewResult JSON and EvaluationReport JSON/CSV
+
+Downstream:
+  prompt improvement, label refinement, embedding comparison,
+  evidence extraction improvement, split/merge decisions,
+  research reports and validation studies
 ```
 
-## Current Source Of Truth
+Telemetry Court owns reviewability, auditability, evidence grounding, and human validation. It does not own the complete telemetry-processing stack.
 
-The current source of truth is the Evidence Arena vision in [docs/PRODUCT_VISION.md](./PRODUCT_VISION.md).
+## Core Contracts
 
-The older approve/reject label-validator framing is superseded. It can be discussed only as historical baseline:
+- `CasePackage`: what the upstream system produced and what is under review.
+- `ReviewResult`: what one human reviewer decided.
+- `EvaluationReport`: what Telemetry Court learns by aggregating compatible reviews.
 
-```text
-AI label -> evidence cards -> approve / reject
-```
+Do not collapse these objects into one generic case record. See [CASE_PACKAGE_CONTRACT.md](./CASE_PACKAGE_CONTRACT.md).
 
-The active product direction is:
+## Product Guardrails
 
-```text
-Telemetry landscape
--> behavioural region / case file
--> blind investigation
--> AI label reveal
--> evidence classification
--> label duel
--> impostor session selection
--> structured verdict
--> review JSON export
-```
+Do not drift toward:
 
-## Problem Statement
+- generic dashboards;
+- SIEM, SOC, EDR, or alert-triage workflows;
+- raw telemetry search or live ingestion;
+- chat-first UX or gamification;
+- authentication or database work before the contracts are defined;
+- generic CRUD or speculative enterprise features.
 
-AI systems can generate cluster labels that sound plausible while being unsupported, overly broad, overly specific, mixed, or uncertain. Analysts and researchers need an evidence-first environment for testing whether generated interpretations are defensible.
+Prioritize:
 
-Telemetry Court should make unsupported certainty visible. It should also reward good uncertainty when evidence is suggestive but incomplete.
+- case package schema and validation;
+- evidence provenance and sanitization;
+- stable claim-to-evidence mappings;
+- structured review results;
+- multi-reviewer aggregation;
+- evaluation exports;
+- Toponymy and ACME4 adapter boundaries.
 
-## Target User
+## Toponymy And ACME4
 
-The target user is a researcher, analyst, reviewer, or workshop participant evaluating whether an AI-generated telemetry interpretation is grounded in evidence.
+Telemetry Court starts after an upstream process has produced a cluster and candidate interpretation. Toponymy and ACME4-style workflows are future adapter sources, not current integrations. They should generate approved case packages rather than push raw restricted telemetry into the app.
 
-The user should not have to enjoy reading huge logs or writing labels from scratch. The workflow should be mostly selectable, visual, and structured.
-
-## MVP Scope
-
-- Use local synthetic fixture data.
-- Show a telemetry landscape with multiple behavioural regions.
-- Open a case file for a selected region.
-- Show evidence before revealing the AI label.
-- Let the user choose a blind interpretation from options.
-- Reveal the AI label and show agreement/disagreement.
-- Let the user classify evidence cards.
-- Let the user compare candidate labels.
-- Let the user choose an impostor / outlier session.
-- Let the user choose failure-mode chips and a structured verdict.
-- Export or view structured review JSON.
-
-## Non-Goals
-
-- No live telemetry ingestion.
-- No real incident claims.
-- No SIEM replacement.
-- No SOC-dashboard clone.
-- No generic chatbot wrapper.
-- No threat-intelligence dashboard.
-- No automated detection claims.
-- No required Toponymy, Python, database, auth, or backend integration in the MVP.
-
-## Relationship To Toponymy
-
-Telemetry Court starts after a cluster has been embedded, clustered, characterized, and named. Its job is to ask what the AI is claiming, what evidence supports or weakens that claim, whether the cluster is coherent, and what a human reviewer should conclude.
-
-The official [`TutteInstitute/toponymy`](https://github.com/TutteInstitute/toponymy) GitHub repository is the source of truth for factual Toponymy details used in this repo. Do not invent Toponymy APIs, workflows, capabilities, function signatures, supported models, or outputs.
+The official [TutteInstitute/toponymy](https://github.com/TutteInstitute/toponymy) repository is the authoritative source for factual Toponymy claims in this repo.
 
 ## Glossary
 
-- Behavioural region: A visible cluster or region in the telemetry landscape.
-- Case file: One behavioural region plus candidate interpretations, evidence, sessions, reviewer interactions, and verdict.
-- Blind interpretation: The user's structured choice before seeing the AI label.
-- AI label: The generated interpretation under test.
-- Evidence card: A synthetic evidence item that can be classified by the reviewer.
-- Label duel: A structured comparison among candidate labels from different sources.
-- Impostor session: A representative session that least belongs in the cluster.
-- Failure mode: A structured reason such as overclaimed, too broad, missing evidence, or mixed cluster.
-- Structured verdict: The final review outcome exported as evaluation data.
+- **Case package:** A versioned, provenance-bearing cluster interpretation and its reviewable evidence.
+- **Claim:** A specific assertion made by a generated label or explanation.
+- **Evidence item:** A stable, reviewable object that may support, weakly support, contradict, fail to address, or require more context for a claim.
+- **Blind interpretation:** A structured human choice made before the AI label is shown.
+- **Label comparison:** A structured choice among candidate labels; the current UI calls this a label duel.
+- **Outlier or impostor:** A representative session that may weaken cluster coherence.
+- **Structured verdict:** The reviewer's final judgment and recommended action.
+- **Review result:** One reviewer's versioned output.
+- **Evaluation report:** Aggregated judgments and metrics across compatible reviews.

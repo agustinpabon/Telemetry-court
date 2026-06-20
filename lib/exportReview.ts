@@ -43,7 +43,7 @@ export type LocalAnalystVerdict = Pick<
   Partial<Pick<AnalystVerdict, "summary" | "reviewer">>;
 
 const localVerdictSummary =
-  "Local static review decision recorded in the frontend demo.";
+  "Local structured review decision recorded in the static validation slice.";
 
 export function buildAnalystVerdictForExport(
   caseFile: CaseFile,

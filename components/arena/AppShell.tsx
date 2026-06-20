@@ -141,7 +141,7 @@ export function AppShell({
       <main className="arena-empty">
         <section>
           <p className="eyebrow">Telemetry Court</p>
-          <h1>No evidence arena cases are available</h1>
+          <h1>No validation cases are available</h1>
         </section>
       </main>
     );
