@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-20: Package-Shaped Synthetic Fixtures
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #49 by converting the current synthetic sample cases into valid `CasePackage v0.1`-shaped fixtures while preserving the existing static review UI behavior and avoiding ingestion, persistence, `ReviewResult`, `EvaluationReport`, Toponymy, ACME4, or backend API work.
+- Files changed: `data/sampleCaseSeedData.ts`, `data/sampleCases.ts`, `data/casePackageFixtures.ts`, `data/casePackageFixtures.test.ts`, `lib/casePackageV01ToCaseFile.ts`, `lib/types.ts`, `lib/casePackageValidation.ts`, `lib/casePackageValidation.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added validated `CasePackageV01` fixtures for all five current synthetic cases, including schema identity, package metadata, dataset and cluster metadata, candidate labels, claims, evidence, claim-evidence mappings, representative sessions, outlier/impostor candidates, neighbor context, metrics, provenance, sanitization, and canonical review configuration. Kept the app import surface stable by adapting the validated package fixtures back to the existing `CaseFile` shape.
+- Decisions made: Kept the legacy UI-only review seed data explicit rather than adding non-contract fields to `CasePackageV01`; exported canonical required review stage and reviewer-action constants so fixture tests and runtime validation share the same contract values.
+- Checks run: `npm test -- data/casePackageFixtures.test.ts` passed after a red adapter parity check; `npm test -- lib/casePackageV01.test.ts lib/casePackageValidation.test.ts` passed; `npx tsc --noEmit` passed after tightening a validator-test assertion helper; `npm test` passed with 66 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed.
+- Assumptions: The current synthetic `CaseFile` data remains the compatibility seed for UI-only fields that are not part of `CasePackageV01`, such as seeded default reviewer choices and old topic-label IDs.
+- Risks/follow-ups: The compatibility adapter is intentionally narrow and should be replaced or reduced as `ReviewResult v0.1` and later package-to-review UI contracts mature. No real Toponymy or ACME4 adapter, file import, persistence, multi-reviewer aggregation, or evaluation report work was added.
+- Next recommended step: Implement the next milestone slice for review-result contract/export grounding without expanding into backend platform work.
+- Suggested commit message: `feat(fixtures): add case package sample fixtures`
+
 ## 2026-06-20: CasePackage v0.1 Runtime Validation
 
 - Agent/model: Codex (GPT-5)

@@ -1,5 +1,7 @@
 import {
   CASE_PACKAGE_V01_EVIDENCE_RATINGS,
+  CASE_PACKAGE_V01_REQUIRED_REVIEWER_ACTIONS,
+  CASE_PACKAGE_V01_REQUIRED_REVIEW_STAGES,
   CASE_PACKAGE_V01_RECOMMENDED_ACTIONS,
   CASE_PACKAGE_V01_SCHEMA_VERSION,
   CASE_PACKAGE_V01_VERDICTS,
@@ -141,27 +143,6 @@ const SAFE_REFERENCE_TYPES = [
   "dashboard_link",
   "source_artifact_id",
   "internal_runbook",
-] as const;
-
-const REQUIRED_REVIEW_STAGES = [
-  "landscape",
-  "case_file",
-  "blind_review",
-  "ai_reveal",
-  "evidence_classification",
-  "label_comparison",
-  "outlier_impostor_review",
-  "structured_verdict",
-] as const;
-
-const REQUIRED_REVIEWER_ACTIONS = [
-  "choose_blind_interpretation",
-  "reveal_ai_label",
-  "rate_linked_evidence",
-  "choose_label_winner",
-  "choose_outlier_or_impostor",
-  "choose_final_verdict",
-  "choose_recommended_action",
 ] as const;
 
 const METRIC_INTERPRETATIONS = [
@@ -943,7 +924,7 @@ function validateReviewConfiguration(
     configuration,
     "required_review_stages",
     "$.review_configuration",
-    REQUIRED_REVIEW_STAGES,
+    CASE_PACKAGE_V01_REQUIRED_REVIEW_STAGES,
     errors,
   );
   validateRequiredEnumArray(
@@ -971,7 +952,7 @@ function validateReviewConfiguration(
     configuration,
     "required_reviewer_actions",
     "$.review_configuration",
-    REQUIRED_REVIEWER_ACTIONS,
+    CASE_PACKAGE_V01_REQUIRED_REVIEWER_ACTIONS,
     errors,
   );
 }
