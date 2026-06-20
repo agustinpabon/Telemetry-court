@@ -166,6 +166,18 @@ export const duelReasonLabel: Record<DuelReason, string> = {
   cluster_seems_mixed: "Cluster seems mixed",
 };
 
+export const verdictFailureReasonLabel: Partial<Record<DuelReason, string>> = {
+  better_supported: "Better label available",
+  less_overclaimed: "Overclaimed intent",
+  more_specific: "Too specific",
+  too_broad: "Too broad",
+  missing_evidence: "Missing evidence",
+  missing_malicious_intent: "Missing malicious intent",
+  missing_downstream_abuse: "Missing downstream abuse",
+  preserves_uncertainty: "Needs baseline context",
+  cluster_seems_mixed: "Cluster seems mixed",
+};
+
 export const finalVerdictLabel: Record<FinalVerdict, string> = {
   supported: "Supported",
   partially_supported: "Partially supported",
@@ -194,4 +206,14 @@ export function formatReasonList(reasons?: DuelReason[]): string | undefined {
   }
 
   return reasons.map((reason) => duelReasonLabel[reason]).join(", ");
+}
+
+export function formatVerdictReasonList(reasons?: DuelReason[]): string | undefined {
+  if (!reasons || reasons.length === 0) {
+    return undefined;
+  }
+
+  return reasons
+    .map((reason) => verdictFailureReasonLabel[reason] ?? duelReasonLabel[reason])
+    .join(", ");
 }

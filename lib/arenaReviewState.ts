@@ -79,10 +79,12 @@ export function createInitialArenaState(
   cases: CaseFile[],
   initialStage: ArenaStage = "landscape",
 ): ArenaUiState {
+  const selectedCaseId = cases[0]?.id ?? "";
+
   return {
-    selectedCaseId: cases[0]?.id ?? "",
+    selectedCaseId,
     activeStage: initialStage,
-    reviewsByCase: {},
+    reviewsByCase: getInitialReviewsByCase(cases, selectedCaseId, initialStage),
     reviewDrawerOpen: false,
   };
 }
@@ -93,15 +95,22 @@ export function arenaReducer(
   cases: CaseFile[],
 ): ArenaUiState {
   switch (action.type) {
-    case "hydrateSession":
+    case "hydrateSession": {
+      const hydratedSelectedCaseId =
+        action.selectedCaseId && caseIdExists(cases, action.selectedCaseId)
+          ? action.selectedCaseId
+          : state.selectedCaseId;
+
       return {
         ...state,
-        selectedCaseId:
-          action.selectedCaseId && caseIdExists(cases, action.selectedCaseId)
-            ? action.selectedCaseId
-            : state.selectedCaseId,
-        reviewsByCase: action.reviewsByCase ?? state.reviewsByCase,
+        selectedCaseId: hydratedSelectedCaseId,
+        reviewsByCase: mergeHydratedReviewsForVerdictDemo(
+          state,
+          hydratedSelectedCaseId,
+          action.reviewsByCase,
+        ),
       };
+    }
     case "selectCase":
       return {
         ...state,
@@ -159,6 +168,10 @@ export function arenaReducer(
     case "selectVerdict":
       return updateSelectedReview(state, {
         finalVerdict: action.verdict,
+        failureModes:
+          action.verdict === "supported"
+            ? []
+            : getCurrentReviewState(state).failureModes,
       });
     case "toggleFailureMode":
       return updateSelectedReview(state, {
@@ -308,7 +321,7 @@ export function buildArenaReview(
             "Reviewer-selected session recorded; no seeded outlier explanation is attached.",
         }
       : {}),
-    failureModes: reviewState.failureModes ?? [],
+    failureModes: getCompatibleFailureModes(reviewState),
     ...(reviewState.finalVerdict ? { finalVerdict: reviewState.finalVerdict } : {}),
   };
 }
@@ -358,6 +371,74 @@ function updateSelectedReview(
         ...state.reviewsByCase[state.selectedCaseId],
         ...nextReviewState,
       },
+    },
+  };
+}
+
+function getInitialReviewsByCase(
+  cases: CaseFile[],
+  selectedCaseId: string,
+  initialStage: ArenaStage,
+): ArenaUiState["reviewsByCase"] {
+  if (initialStage !== "verdict") {
+    return {};
+  }
+
+  const selectedCase = cases.find((caseFile) => caseFile.id === selectedCaseId);
+  const seededReview = getSeededVerdictDemoReview(selectedCase);
+
+  return seededReview && selectedCase ? { [selectedCase.id]: seededReview } : {};
+}
+
+function getSeededVerdictDemoReview(
+  caseFile: CaseFile | undefined,
+): CaseReviewState | undefined {
+  if (caseFile?.id !== "case-arena-001") {
+    return undefined;
+  }
+
+  return {
+    blindChoiceId: "cloud-resource-discovery",
+    aiLabelRevealed: true,
+    labelDuelWinnerId: "label-iam-baseline",
+    impostorSessionId: "iam-s-01",
+    failureModes: ["less_overclaimed", "missing_evidence"],
+    finalVerdict: "unsupported_overclaimed",
+  };
+}
+
+export function getCompatibleFailureModes(
+  reviewState: CaseReviewState,
+): DuelReason[] {
+  if (reviewState.finalVerdict === "supported") {
+    return [];
+  }
+
+  return reviewState.failureModes ?? [];
+}
+
+function mergeHydratedReviewsForVerdictDemo(
+  state: ArenaUiState,
+  selectedCaseId: string,
+  hydratedReviews?: ArenaUiState["reviewsByCase"],
+): ArenaUiState["reviewsByCase"] {
+  const reviewsByCase = hydratedReviews ?? state.reviewsByCase;
+  const seededReview = state.reviewsByCase[selectedCaseId];
+  const hydratedReview = reviewsByCase[selectedCaseId];
+
+  if (
+    state.activeStage !== "verdict" ||
+    !seededReview?.finalVerdict ||
+    hydratedReview?.finalVerdict
+  ) {
+    return reviewsByCase;
+  }
+
+  return {
+    ...reviewsByCase,
+    [selectedCaseId]: {
+      ...hydratedReview,
+      ...seededReview,
     },
   };
 }

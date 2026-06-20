@@ -19,6 +19,58 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-20: Verdict Evidence Consistency Fix
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Focused bug fix for `/verdict` semantic consistency between selected verdict, evidence balance, selected reasons, conclusion, and recommended action.
+- Files changed: `components/arena/VerdictPanel.tsx`, `components/arena/JudgmentReceipt.tsx`, `lib/arenaReviewState.ts`, `app/page.test.ts`, `lib/arenaReviewState.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Derived evidence-balance conclusion from evidence ratings instead of verdict label alone; made supported verdicts with conflicting evidence recommend reviewing conflicts rather than accepting the label; cleared negative failure-mode reasons when `Supported` is selected; and added tests that prevent seeded `/verdict` from selecting `Supported` for the overclaimed demo case.
+- Decisions made: Kept the demo seed as `unsupported_overclaimed` with `less_overclaimed` and `missing_evidence`; preserved the existing export schema; treated current failure-mode chips as incompatible with `Supported` rather than inventing new positive rationale data.
+- Checks run: `npm test -- app/page.test.ts lib/arenaReviewState.test.ts` passed with 30 tests; `npx tsc --noEmit` passed; `npm test` passed with 48 tests; `npm run lint` exited 0 with the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed; the Impeccable detector returned `[]`; browser verification on fresh `http://127.0.0.1:3077/verdict` confirmed cleared-storage direct load renders `Unsupported / overclaimed`, selected option is `Unsupported / overclaimed`, evidence conclusion is `Claim is not sufficiently supported`, recommended action does not say `Accept the label`, selecting/persisting `Supported` clears negative reasons and shows conflict-review action, and screenshot `/tmp/telemetry-verdict-consistent-unsupported.png`.
+- Assumptions: Positive rationale chips should wait for explicit domain/model support; for now, `Supported` simply clears negative failure-mode reasons.
+- Risks/follow-ups: None known.
+- Next recommended step: Review the fresh `http://localhost:3077/verdict` preview with storage cleared.
+- Suggested commit message: `fix(arena): align verdict with evidence balance`
+
+## 2026-06-20: Verdict Source-of-Truth State Fix
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Focused bug fix for `/verdict` mixed completed/unfinished rendering, especially direct-route demo hydration with stale partial session state.
+- Files changed: `components/arena/VerdictPanel.tsx`, `lib/arenaReviewState.ts`, `app/page.test.ts`, `lib/arenaReviewState.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Made `reviewState.finalVerdict` the explicit completion source for the verdict page; prevented partial persisted demo state from overwriting the seeded direct `/verdict` final verdict; added contradiction guards for `Ready to export` with `Verdict not selected`, `Review complete` with unfinished copy, enabled export without final verdict, and completed state without an active selected verdict.
+- Decisions made: Direct `/verdict` for `case-arena-001` now prefers the completed seeded demo state when hydrated session data lacks `finalVerdict`; explicitly persisted final verdicts are still preserved.
+- Checks run: `npm test -- app/page.test.ts lib/arenaReviewState.test.ts` passed with 28 tests; `npx tsc --noEmit` passed; `npm test` passed with 46 tests; `npm run lint` exited 0 with the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed; the Impeccable detector returned `[]`; browser verification on fresh `http://127.0.0.1:3077/verdict` confirmed both clean direct load and stale partial session state render the completed unsupported/overclaimed verdict with no mixed copy, no overflow, no console errors, and screenshot `/tmp/telemetry-verdict-fixed-3077.png`.
+- Assumptions: The direct demo route should showcase the completed judgment even if old partial session data exists; normal unfinished component state remains coherent when no `finalVerdict` is passed.
+- Risks/follow-ups: None known.
+- Next recommended step: Use the fresh `http://localhost:3077/verdict` preview for visual confirmation.
+- Suggested commit message: `fix(arena): prevent mixed verdict completion state`
+
+## 2026-06-20: Verdict Completion State Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Focused refinement of `/verdict` completion logic, hero hierarchy, selected-state clarity, and export readiness without redesigning the page again.
+- Files changed: `components/arena/VerdictPanel.tsx`, `components/arena/JudgmentReceipt.tsx`, `lib/arenaReviewState.ts`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Fixed contradictory selected/empty verdict states; changed the completed hero so the verdict itself is the largest message; seeded the static demo `/verdict` route with the current case's unsupported/overclaimed review state; made the selected verdict option visually explicit; emphasized the final verdict and recommended action rows; and clarified when `Ready to export` appears.
+- Decisions made: Kept the existing export schema and handlers unchanged; used existing sample/default review state mechanics for the demo completion state; kept empty-state export disabled until a verdict is chosen.
+- Checks run: `npm test -- app/page.test.ts` passed with 22 tests; `npx tsc --noEmit` passed; `npm test` passed with 43 tests; `npm run lint` exited 0 with the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed; the Impeccable detector returned `[]`; browser verification on `http://127.0.0.1:3078/verdict` confirmed completed-state hero/summary/active verdict, JSON drawer contents, export filename, verdict reselection, no desktop/mobile overflow, no console errors, and an intentionally unfinished session with export disabled and no `Ready to export` copy.
+- Assumptions: The seeded completed review is only for the direct demo arrival at `/verdict`; unfinished user/session state still renders as an internally consistent empty state.
+- Risks/follow-ups: None known for this polish pass.
+- Next recommended step: None after full verification passes.
+- Suggested commit message: `polish(arena): clarify verdict completion state`
+
+## 2026-06-20: Verdict Final Judgment Redesign
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Redesign only `/verdict` so the final workflow step feels like a calm, premium judgment screen with clearer evidence grounding and export actions.
+- Files changed: `components/arena/VerdictPanel.tsx`, `components/arena/JudgmentReceipt.tsx`, `components/arena/WorkflowPrimitives.tsx`, `components/arena/AppShell.tsx`, `components/arena/arenaMeta.ts`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Replaced the dark final-judgment banner and decorative verdict context map with a light verdict hero and compact evidence-balance card; grouped final verdict options into claim support, cluster quality, and evidence quality; renamed failure-mode chips to `Why this verdict?`; converted the receipt grid into a vertical review summary; simplified final actions around `View JSON` and `Export review result`; and removed contradictory `Awaiting review choice` copy after verdict selection.
+- Decisions made: Kept the review/export data model unchanged; reused existing evidence-balance counts and JSON export handlers; removed the redundant top-right verdict `Review data` menu because the footer now carries the final export path; kept copy/download JSON as subtle secondary actions in the summary.
+- Checks run: No formatter script is configured; `npm test -- app/page.test.ts` passed with 20 tests; `npx tsc --noEmit` passed; `npm test` passed with 41 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; the Impeccable detector returned `[]`; Playwright against a rebuilt production preview at `http://127.0.0.1:3077` verified the completed `/verdict` state, selected-verdict copy, evidence balance, JSON drawer, export download filename, verdict reselection, no old `Final judgment` / `Verdict context` / `Failure-mode chips` / `Awaiting review choice` text, no desktop/mobile horizontal overflow, and no console errors. Screenshots saved to `/tmp/telemetry-verdict-desktop.png` and `/tmp/telemetry-verdict-mobile.png`.
+- Assumptions: Export remains allowed when no failure reason is selected, so the summary uses `No failure reason selected.` rather than blocking export for missing reasons.
+- Risks/follow-ups: Direct `/verdict` still follows the existing guarded workflow behavior when no prior review state exists; this change does not alter route protection.
+- Next recommended step: Review the final screenshots with the rest of the 8-step flow to confirm the verdict now feels like a satisfying close rather than another form step.
+- Suggested commit message: `ux(arena): redesign verdict judgment screen`
+
 ## 2026-06-20: Impostor Micro Polish
 
 - Agent/model: Codex (GPT-5)
