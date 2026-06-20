@@ -15,7 +15,7 @@ upstream pipeline or notebook
 
 `CasePackage v0.1` is defined in `lib/types.ts` as `CasePackageV01`.
 
-This document explains the field intent for that TypeScript contract. It does not implement runtime validation, package import, UI adapters, persistence, Toponymy integration, ACME4 ingestion, or evaluation aggregation.
+This document explains the field intent for that TypeScript contract and the current runtime validation boundary. It does not implement package import, UI adapters, persistence, Toponymy integration, ACME4 ingestion, or evaluation aggregation.
 
 ## What A CasePackage Is
 
@@ -87,7 +87,7 @@ IDs are stable strings, not array indexes. Use deterministic, readable IDs where
 - evidence IDs: `evidence-...`
 - session IDs: `session-...`
 
-Future runtime validation will check ID uniqueness and references. For v0.1 contract authoring, adapters should already preserve those references explicitly:
+Runtime validation checks ID uniqueness and references. For v0.1 contract authoring, adapters should preserve those references explicitly:
 
 - candidate labels link to claims through `linked_claim_ids`;
 - claims link to evidence through `linked_evidence_ids`;
@@ -273,7 +273,7 @@ Unavailable metrics use:
 { status: "unavailable", reason: string }
 ```
 
-The v0.1 metrics object supports cluster coherence, feature distinctiveness, evidence coverage, model agreement, uncertainty, outlier score, and temporal stability. Runtime validation in a later issue will check bounds; this issue only defines the shape.
+The v0.1 metrics object supports cluster coherence, feature distinctiveness, evidence coverage, model agreement, uncertainty, outlier score, and temporal stability. Runtime validation checks that available metrics use the bounded `0..1` envelope and that unavailable metrics include a reason.
 
 ### Provenance Metadata
 
@@ -551,8 +551,63 @@ Realistic or adapter-produced packages are expected to provide:
 - safe references instead of embedded raw restricted telemetry;
 - explicit unavailable metrics rather than invented values.
 
-## Runtime Validation Is Later
+## Runtime Validation
 
-Runtime validation belongs to issue #48. Validation should later reject unsupported schema versions, broken IDs, missing provenance, invalid metric bounds, broken evidence links, unsafe drill-down references, and incomplete review configuration.
+`validateCasePackageV01` in `lib/casePackageValidation.ts` is the runtime guard for unknown package input:
 
-Issue #47 only defines the TypeScript contract, documentation, and minimal type/test coverage.
+```ts
+import { validateCasePackageV01 } from "@/lib/casePackageValidation";
+
+const result = validateCasePackageV01(input);
+```
+
+The validator accepts `unknown` input and returns a typed result rather than throwing for normal validation failures:
+
+```ts
+type CasePackageValidationResult =
+  | { ok: true; package: CasePackageV01 }
+  | { ok: false; errors: CasePackageValidationError[] };
+
+type CasePackageValidationError = {
+  path: string;
+  code: string;
+  message: string;
+};
+```
+
+Example failure shape:
+
+```json
+{
+  "ok": false,
+  "errors": [
+    {
+      "path": "$.claims[0].linked_evidence_ids[0]",
+      "code": "unknown_evidence_reference",
+      "message": "Claim references missing evidence ID: \"evidence-does-not-exist\"."
+    }
+  ]
+}
+```
+
+The v0.1 validator checks:
+
+- schema version identity;
+- required top-level package sections and required metadata fields;
+- candidate label, claim, evidence, representative session, outlier/impostor, and neighbor cluster ID integrity;
+- evidence-to-claim mapping references;
+- claim, label, evidence, session, and review-configuration references;
+- required evidence item structure, source references, provenance references, sanitization status, and safe reference types;
+- bounded metric envelopes and unavailable metric reasons;
+- dataset, pipeline, provenance, sanitization, and review configuration presence;
+- canonical evidence-rating, verdict, recommended-action, stage, and reviewer-action values.
+
+The validator intentionally does not yet:
+
+- convert current static `CaseFile` samples into `CasePackage` fixtures;
+- adapt `CasePackage` data into the existing UI;
+- produce or validate `ReviewResult` or `EvaluationReport`;
+- resolve safe references or fetch raw telemetry;
+- implement Toponymy, ACME4, persistence, auth, databases, or backend import services.
+
+Issue #49 should convert or add package-shaped fixtures that pass this boundary. Issue #50 should build the narrow `CasePackage`-to-current-UI adapter after fixture conversion is validated.

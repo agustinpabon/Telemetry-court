@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-20: CasePackage v0.1 Runtime Validation
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #48 by adding runtime validation for `CasePackage v0.1` without sample-case conversion, UI adapter work, `ReviewResult` export changes, `EvaluationReport` aggregation, or backend infrastructure.
+- Files changed: `lib/casePackageValidation.ts`, `lib/casePackageValidation.test.ts`, `lib/casePackageV01Fixture.ts`, `lib/casePackageV01.test.ts`, `docs/CASE_PACKAGE_CONTRACT.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added `validateCasePackageV01(input: unknown)` with typed success/failure results and actionable error paths/messages for schema identity, required sections, ID/reference integrity, evidence structure, metric envelopes, provenance, sanitization, and review configuration. Extracted the synthetic v0.1 package fixture for reuse across contract and validation tests.
+- Decisions made: Kept validation explicit and dependency-free; avoided changing app runtime behavior; preserved the `CasePackageV01` contract instead of weakening types for validation convenience.
+- Checks run: Targeted validation tests passed after an initial red run against the stub. Full requested checks are recorded after completion of this issue work.
+- Assumptions: `case_package.v0.1` remains the only supported runtime schema version; validator errors are intended for import/fixture boundaries before rendering, not as UI warning copy.
+- Risks/follow-ups: Issue #49 still needs package-shaped fixture conversion, and issue #50 still needs the narrow `CasePackage`-to-current-UI adapter. The validator does not resolve safe references or inspect raw telemetry.
+- Next recommended step: Convert one package-shaped synthetic fixture through this validation boundary.
+- Suggested commit message: `feat(contract): validate case package v0.1`
+
 ## 2026-06-20: CasePackage v0.1 Contract Definition
 
 - Agent/model: Codex (GPT-5)
