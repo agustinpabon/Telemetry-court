@@ -1,7 +1,8 @@
 import {
   finalVerdictLabel,
-  formatReasonList,
+  formatVerdictReasonList,
 } from "@/components/arena/arenaMeta";
+import { getCompatibleFailureModes } from "@/lib/arenaReviewState";
 import type { CaseReviewState, EvidenceBalance } from "@/lib/arenaReviewState";
 import type {
   BlindInterpretationOption,
@@ -38,43 +39,61 @@ export function JudgmentReceipt({
   const verdictLabel = reviewState.finalVerdict
     ? finalVerdictLabel[reviewState.finalVerdict]
     : undefined;
+  const failureModeSummary = formatVerdictReasonList(
+    getCompatibleFailureModes(reviewState),
+  );
+  const evidenceBalanceSummary = `${balance.supporting} support · ${balance.weak} weak · ${balance.contradictory} contradict · ${balance.contextGaps} context`;
+  const recommendedAction = getRecommendedAction(reviewState.finalVerdict, balance);
 
   return (
     <article className={`judgment-receipt ${verdictLabel ? "is-visible" : ""}`}>
       <div className="receipt-header">
         <div>
-          <p className="eyebrow">Judgment Receipt</p>
-          <h3>{verdictLabel ?? "Verdict pending"}</h3>
+          <p className="eyebrow">Review result</p>
+          <h3>Review summary</h3>
         </div>
         <span className="mono-value">{caseFile.id}</span>
       </div>
 
       <dl className="receipt-grid">
-        <ReceiptLine label="Blind choice" value={blindChoice?.label} />
-        <ReceiptLine label="AI claim" value={caseFile.topicLabel.name} />
-        <ReceiptLine label="Label duel winner" value={duelWinner?.label} />
-        <ReceiptLine label="Impostor choice" value={impostor?.title} />
         <ReceiptLine
-          label="Failure modes"
-          value={formatReasonList(reviewState.failureModes)}
+          label="Blind choice"
+          value={blindChoice?.label}
+          fallback="No blind choice recorded."
         />
-        <ReceiptLine label="Final verdict" value={verdictLabel} />
+        <ReceiptLine label="AI claim" value={caseFile.topicLabel.name} />
+        <ReceiptLine
+          label="Label duel winner"
+          value={duelWinner?.label}
+          fallback="No duel winner recorded."
+        />
+        <ReceiptLine
+          label="Impostor selected"
+          value={impostor?.title}
+          fallback="No impostor selected."
+        />
+        <ReceiptLine label="Evidence balance" value={evidenceBalanceSummary} />
+        <ReceiptLine
+          label="Reasons selected"
+          value={failureModeSummary}
+          fallback={
+            reviewState.finalVerdict
+              ? "No failure reason selected."
+              : "Select reasons after choosing a verdict."
+          }
+        />
+        <ReceiptLine
+          label="Final verdict"
+          value={verdictLabel}
+          fallback="Verdict not selected."
+          emphasis
+        />
+        <ReceiptLine
+          label="Recommended action"
+          value={recommendedAction}
+          emphasis
+        />
       </dl>
-
-      <div className="receipt-balance">
-        <span>
-          <strong>{balance.supporting}</strong> support
-        </span>
-        <span>
-          <strong>{balance.weak}</strong> weak
-        </span>
-        <span>
-          <strong>{balance.contradictory}</strong> contradict
-        </span>
-        <span>
-          <strong>{balance.contextGaps}</strong> context
-        </span>
-      </div>
 
       <div className="receipt-actions">
         {showJsonAction ? (
@@ -93,11 +112,49 @@ export function JudgmentReceipt({
   );
 }
 
-function ReceiptLine({ label, value }: { label: string; value?: string }) {
+function ReceiptLine({
+  label,
+  value,
+  fallback = "Not recorded.",
+  emphasis = false,
+}: {
+  label: string;
+  value?: string;
+  fallback?: string;
+  emphasis?: boolean;
+}) {
   return (
-    <div>
+    <div className={emphasis ? "is-emphasis" : undefined}>
       <dt>{label}</dt>
-      <dd>{value ?? "Awaiting review choice."}</dd>
+      <dd>{value ?? fallback}</dd>
     </div>
   );
+}
+
+function getRecommendedAction(
+  finalVerdict: CaseReviewState["finalVerdict"],
+  balance: EvidenceBalance,
+) {
+  switch (finalVerdict) {
+    case "supported":
+      return balance.supporting > balance.contradictory && balance.supporting > 0
+        ? "Accept the label and keep the evidence packet attached for audit."
+        : "Review evidence conflicts before accepting this label.";
+    case "partially_supported":
+      return "Keep the label only with caveats, or revise it to a weaker evidence-supported interpretation.";
+    case "unsupported_overclaimed":
+      return "Rename the label or request stronger evidence before accepting the AI claim.";
+    case "uncertain":
+      return "Collect more context before accepting or rejecting the AI claim.";
+    case "cluster_impure":
+      return "Inspect outliers and consider splitting the cluster.";
+    case "needs_split":
+      return "Split the cluster before accepting a label.";
+    case "needs_merge":
+      return "Compare neighbouring clusters before finalizing the label.";
+    case "needs_better_evidence":
+      return "Add stronger representative evidence before judging the label.";
+    default:
+      return "Choose a verdict to produce a recommended review action.";
+  }
 }

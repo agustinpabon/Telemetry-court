@@ -32,6 +32,175 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Next recommended step: Execute Milestone 2 by approving the three v0.1 contracts, adding runtime package validation, and adapting one synthetic fixture through the boundary without redesigning the UI.
 - Suggested commit message: `docs(product): realign repository around validation bench`
 
+## 2026-06-20: Workflow Screenshot Seed Integrity Fix
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Review PR #44, repair the screenshot seed, and verify that committed workflow captures reflect valid current review state.
+- Files changed: `scripts/screenshots.js`, `screenshots/01-landscape.png`, `screenshots/06-label-duel.png`, `screenshots/07-impostor.png`, `screenshots/08-verdict.png`, and `docs/CHANGELOG_AI.md`.
+- Summary: Replaced obsolete label, session, and verdict seed values with current domain IDs; made route redirects and Next.js error overlays fail screenshot generation; added a verdict consistency assertion; and regenerated the affected screenshots with a completed evidence-grounded review state.
+- Decisions made: Kept deterministic session-state seeding for the static workflow capture, but made invalid or internally contradictory screenshots hard failures instead of warnings.
+- Checks run: `npm test` passed with 48 tests; `npm run lint` passed with 0 errors and the existing 134 Impeccable warnings; `npm run build` passed; the screenshot script completed all eight routes against the production build; the Verdict capture shows a selected `Unsupported / overclaimed` verdict with matching summary and export state; `git diff --check` passed.
+- Assumptions: The first synthetic case remains the canonical deterministic workflow screenshot case.
+- Risks/follow-ups: The local `agent-browser` binary was unavailable, so browser verification used the repository's Playwright screenshot runner with added route, overlay, and verdict-state assertions.
+- Next recommended step: Merge PR #44, close issues #35-#37 and #41, then align the documentation realignment PR with the updated `main` branch.
+- Suggested commit message: `fix(screenshots): validate seeded review state`
+
+## 2026-06-20: Verdict Evidence Consistency Fix
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Focused bug fix for `/verdict` semantic consistency between selected verdict, evidence balance, selected reasons, conclusion, and recommended action.
+- Files changed: `components/arena/VerdictPanel.tsx`, `components/arena/JudgmentReceipt.tsx`, `lib/arenaReviewState.ts`, `app/page.test.ts`, `lib/arenaReviewState.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Derived evidence-balance conclusion from evidence ratings instead of verdict label alone; made supported verdicts with conflicting evidence recommend reviewing conflicts rather than accepting the label; cleared negative failure-mode reasons when `Supported` is selected; and added tests that prevent seeded `/verdict` from selecting `Supported` for the overclaimed demo case.
+- Decisions made: Kept the demo seed as `unsupported_overclaimed` with `less_overclaimed` and `missing_evidence`; preserved the existing export schema; treated current failure-mode chips as incompatible with `Supported` rather than inventing new positive rationale data.
+- Checks run: `npm test -- app/page.test.ts lib/arenaReviewState.test.ts` passed with 30 tests; `npx tsc --noEmit` passed; `npm test` passed with 48 tests; `npm run lint` exited 0 with the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed; the Impeccable detector returned `[]`; browser verification on fresh `http://127.0.0.1:3077/verdict` confirmed cleared-storage direct load renders `Unsupported / overclaimed`, selected option is `Unsupported / overclaimed`, evidence conclusion is `Claim is not sufficiently supported`, recommended action does not say `Accept the label`, selecting/persisting `Supported` clears negative reasons and shows conflict-review action, and screenshot `/tmp/telemetry-verdict-consistent-unsupported.png`.
+- Assumptions: Positive rationale chips should wait for explicit domain/model support; for now, `Supported` simply clears negative failure-mode reasons.
+- Risks/follow-ups: None known.
+- Next recommended step: Review the fresh `http://localhost:3077/verdict` preview with storage cleared.
+- Suggested commit message: `fix(arena): align verdict with evidence balance`
+
+## 2026-06-20: Verdict Source-of-Truth State Fix
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Focused bug fix for `/verdict` mixed completed/unfinished rendering, especially direct-route demo hydration with stale partial session state.
+- Files changed: `components/arena/VerdictPanel.tsx`, `lib/arenaReviewState.ts`, `app/page.test.ts`, `lib/arenaReviewState.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Made `reviewState.finalVerdict` the explicit completion source for the verdict page; prevented partial persisted demo state from overwriting the seeded direct `/verdict` final verdict; added contradiction guards for `Ready to export` with `Verdict not selected`, `Review complete` with unfinished copy, enabled export without final verdict, and completed state without an active selected verdict.
+- Decisions made: Direct `/verdict` for `case-arena-001` now prefers the completed seeded demo state when hydrated session data lacks `finalVerdict`; explicitly persisted final verdicts are still preserved.
+- Checks run: `npm test -- app/page.test.ts lib/arenaReviewState.test.ts` passed with 28 tests; `npx tsc --noEmit` passed; `npm test` passed with 46 tests; `npm run lint` exited 0 with the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed; the Impeccable detector returned `[]`; browser verification on fresh `http://127.0.0.1:3077/verdict` confirmed both clean direct load and stale partial session state render the completed unsupported/overclaimed verdict with no mixed copy, no overflow, no console errors, and screenshot `/tmp/telemetry-verdict-fixed-3077.png`.
+- Assumptions: The direct demo route should showcase the completed judgment even if old partial session data exists; normal unfinished component state remains coherent when no `finalVerdict` is passed.
+- Risks/follow-ups: None known.
+- Next recommended step: Use the fresh `http://localhost:3077/verdict` preview for visual confirmation.
+- Suggested commit message: `fix(arena): prevent mixed verdict completion state`
+
+## 2026-06-20: Verdict Completion State Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Focused refinement of `/verdict` completion logic, hero hierarchy, selected-state clarity, and export readiness without redesigning the page again.
+- Files changed: `components/arena/VerdictPanel.tsx`, `components/arena/JudgmentReceipt.tsx`, `lib/arenaReviewState.ts`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Fixed contradictory selected/empty verdict states; changed the completed hero so the verdict itself is the largest message; seeded the static demo `/verdict` route with the current case's unsupported/overclaimed review state; made the selected verdict option visually explicit; emphasized the final verdict and recommended action rows; and clarified when `Ready to export` appears.
+- Decisions made: Kept the existing export schema and handlers unchanged; used existing sample/default review state mechanics for the demo completion state; kept empty-state export disabled until a verdict is chosen.
+- Checks run: `npm test -- app/page.test.ts` passed with 22 tests; `npx tsc --noEmit` passed; `npm test` passed with 43 tests; `npm run lint` exited 0 with the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed; the Impeccable detector returned `[]`; browser verification on `http://127.0.0.1:3078/verdict` confirmed completed-state hero/summary/active verdict, JSON drawer contents, export filename, verdict reselection, no desktop/mobile overflow, no console errors, and an intentionally unfinished session with export disabled and no `Ready to export` copy.
+- Assumptions: The seeded completed review is only for the direct demo arrival at `/verdict`; unfinished user/session state still renders as an internally consistent empty state.
+- Risks/follow-ups: None known for this polish pass.
+- Next recommended step: None after full verification passes.
+- Suggested commit message: `polish(arena): clarify verdict completion state`
+
+## 2026-06-20: Verdict Final Judgment Redesign
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Redesign only `/verdict` so the final workflow step feels like a calm, premium judgment screen with clearer evidence grounding and export actions.
+- Files changed: `components/arena/VerdictPanel.tsx`, `components/arena/JudgmentReceipt.tsx`, `components/arena/WorkflowPrimitives.tsx`, `components/arena/AppShell.tsx`, `components/arena/arenaMeta.ts`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Replaced the dark final-judgment banner and decorative verdict context map with a light verdict hero and compact evidence-balance card; grouped final verdict options into claim support, cluster quality, and evidence quality; renamed failure-mode chips to `Why this verdict?`; converted the receipt grid into a vertical review summary; simplified final actions around `View JSON` and `Export review result`; and removed contradictory `Awaiting review choice` copy after verdict selection.
+- Decisions made: Kept the review/export data model unchanged; reused existing evidence-balance counts and JSON export handlers; removed the redundant top-right verdict `Review data` menu because the footer now carries the final export path; kept copy/download JSON as subtle secondary actions in the summary.
+- Checks run: No formatter script is configured; `npm test -- app/page.test.ts` passed with 20 tests; `npx tsc --noEmit` passed; `npm test` passed with 41 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; the Impeccable detector returned `[]`; Playwright against a rebuilt production preview at `http://127.0.0.1:3077` verified the completed `/verdict` state, selected-verdict copy, evidence balance, JSON drawer, export download filename, verdict reselection, no old `Final judgment` / `Verdict context` / `Failure-mode chips` / `Awaiting review choice` text, no desktop/mobile horizontal overflow, and no console errors. Screenshots saved to `/tmp/telemetry-verdict-desktop.png` and `/tmp/telemetry-verdict-mobile.png`.
+- Assumptions: Export remains allowed when no failure reason is selected, so the summary uses `No failure reason selected.` rather than blocking export for missing reasons.
+- Risks/follow-ups: Direct `/verdict` still follows the existing guarded workflow behavior when no prior review state exists; this change does not alter route protection.
+- Next recommended step: Review the final screenshots with the rest of the 8-step flow to confirm the verdict now feels like a satisfying close rather than another form step.
+- Suggested commit message: `ux(arena): redesign verdict judgment screen`
+
+## 2026-06-20: Impostor Micro Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Very small final polish pass on `/impostor`, preserving the approved ranked comparison structure and workflow logic while fixing footer truncation, metric spacing, and hero copy wrapping.
+- Files changed: `components/arena/ImpostorPanel.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, `issues/afk-impostor-decision-polish.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Changed the alternate-selection footer copy from “Stronger signal” to “Strongest signal,” removed the desktop footer ellipsis behavior so confirmation text wraps intentionally, kept CTA buttons stable on the right, widened the impostor hero copy lane, and gave the two session metric columns more room with non-wrapping desktop labels and values.
+- Decisions made: Kept session ranking, selection behavior, right-panel logic, route flow, and visual direction unchanged.
+- Checks run: `npm test -- app/page.test.ts` passed; `npm test` passed with 39 tests; `npx tsc --noEmit` passed; `npm run lint` exited 0 with the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed; the Impeccable detector returned `[]`; Playwright on a production server at `127.0.0.1:3068` verified `/impostor` at 1440px and 390px with no footer truncation, no footer/button collision, one-line desktop footer copy, intentional mobile footer wrapping, one-line desktop metric labels and values, one-line desktop hero summary, disabled CTA before selection, enabled CTA after selecting `iam-s-03`, and no horizontal overflow. Screenshots saved to `/tmp/telemetry-impostor-micro-polish-desktop.png` and `/tmp/telemetry-impostor-micro-polish-mobile.png`.
+- Assumptions: The approved structure should remain frozen; this slice only adjusts spacing, wrapping, alignment, and copy polish.
+- Risks/follow-ups: None expected.
+- Next recommended step: None.
+- Suggested commit message: `polish(arena): tighten impostor layout details`
+
+## 2026-06-20: Impostor Final UI Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Final refinement pass on `/impostor`, keeping the ranked comparison structure while making the screen lighter, more breathable, and clearer when the reviewer selects a non-strongest session.
+- Files changed: `components/arena/ImpostorPanel.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, `issues/prd-impostor-polish.md`, `issues/afk-impostor-decision-polish.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Reduced hero and summary-strip visual weight, lightened session rows and detail panels, tightened row spacing, refined the Strongest signal badge, made the effect panel feel integrated instead of alert-like, and added explicit non-strongest selection copy in the detail panel and footer.
+- Decisions made: Kept workflow logic, ranking, and review-state shape unchanged; used existing strongest-candidate data for mismatch copy; kept the reviewer’s non-strongest choice allowed but clearly contextualized.
+- Checks run: `npm test` passed with 39 tests; `npx tsc --noEmit` passed; `npm run build` passed; Playwright verified the real Label Duel-to-Impostor path at 1440px and 390px, including initial disabled CTA, non-strongest `iam-s-03` selection, stronger `iam-s-04` guidance, enabled CTA, and no horizontal overflow.
+- Assumptions: The final verdict should still accept a non-strongest session; the UI’s job is to explain the evidence mismatch, not block it.
+- Risks/follow-ups: None for this slice.
+- Next recommended step: None.
+- Suggested commit message: `polish(arena): lighten impostor decision UI`
+
+## 2026-06-19: Impostor Decision Interface Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Refine the ranked `/impostor` interface so it inherits the Label Duel choice, scans faster, uses a more useful decision panel, and confirms the selected session before the verdict.
+- Files changed: `components/arena/ImpostorPanel.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, `issues/prd-impostor-polish.md`, `issues/afk-impostor-decision-polish.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added an explicit missing-label recovery state; renamed purity language to Review status and Fit check; compressed the five ranked sessions into full-row controls with side-by-side higher-contrast metrics; replaced the helper pill with a criterion row; changed the recommendation treatment to a restrained Strongest signal state; added current-candidate guidance to the detail panel; and made the selected footer name the session and outlier risk.
+- Decisions made: Kept ranking and review-state semantics unchanged; treated the highest-risk session as guidance only; used the existing Label Duel winner as required context; and kept both metrics visible on narrow screens so the inverse relationship remains comparable.
+- Checks run: `npm test` passed with 39 tests; `npx tsc --noEmit` passed; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no application errors; `npm run build` passed; the Impeccable detector returned `[]`; `git diff --check` passed; and Playwright completed the real Label Duel-to-Impostor flow at 1440px and 390px with five 101px desktop rows, inherited label context, disabled/enabled CTA states, keyboard focus, selected feedback, no horizontal overflow, and no console errors.
+- Assumptions: Missing Label Duel context is invalid for this step and should be recovered before session comparison; no reducer or route restriction change is required because the panel now guards invalid hydrated or direct-stage state.
+- Risks/follow-ups: Session match labels and ranking remain presentation guidance based on existing synthetic scores; any future export or verdict semantics should be documented in the domain model first.
+- Next recommended step: None for this slice.
+- Suggested commit message: `polish(arena): refine impostor comparison flow`
+
+## 2026-06-19: Impostor Decision Interface Redesign
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Redesign `/impostor` as a clear Step 7 comparison-and-decision interface that carries forward the selected label and evidence read from `/label-duel`, makes the strongest outlier signal scannable without preselecting it, and explains how the reviewer choice affects the final verdict.
+- Files changed: `components/arena/ImpostorPanel.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Replaced the circular session orbit and low-value purity map with a compact hero, dynamic four-part decision summary, ranked five-session comparison list, explicit outlier-risk and cluster-match measures, useful initial guidance, recorded selected state, strong-candidate confirmation, neutral alternate-choice warning, and responsive action footer behavior.
+- Decisions made: Ranked sessions by descending outlier score with lower feature overlap as the tie-breaker; derived plain-language High/Medium/Low cluster-match labels from existing synthetic overlap values; kept the highest-risk session visibly prominent but unselected; used the existing session summaries and outlier reasons without adding telemetry or evidence fields.
+- Checks run: No formatter script is configured; `node --test --import tsx --test-name-pattern="impostor review teaches" app/page.test.ts` failed against the old orbit UI and passed after the first implementation slice; selected-state coverage passed; `npx tsc --noEmit` passed; `npm test` passed with 38 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; the Impeccable detector returned `[]`; Playwright against a fresh production server on `127.0.0.1:3064` completed the real `/blind-read` -> `/ai-reveal` -> `/evidence-board` -> `/label-duel` -> `/impostor` flow, confirmed five ranked cards, useful initial guidance, disabled CTA before selection, immediate detail-panel update, enabled CTA after selection, recorded state, strong-candidate explanation, no desktop/mobile horizontal overflow, and no console errors. Screenshots saved to `/tmp/telemetry-impostor-initial-desktop.png`, `/tmp/telemetry-impostor-selected-desktop.png`, and `/tmp/telemetry-impostor-selected-mobile.png`.
+- Assumptions: Cluster-match labels are presentation guidance only and do not change review data or verdict logic; the selected label should remain dynamic because reviewers may choose any Label Duel candidate.
+- Risks/follow-ups: The match-level thresholds are intentionally UI-only; if they later affect exported review semantics, they should move into the domain model with a documented product decision and dedicated tests.
+- Next recommended step: Validate the Step 7 wording with workshop participants before changing the session scoring or adding more comparison dimensions.
+- Suggested commit message: `ux(arena): redesign impostor decision flow`
+
+## 2026-06-19: Label Duel Final Tiny UI Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Tiny final UI polish pass on `/label-duel`, preserving the current structure, state behavior, cards, checklist handoff, evidence summary, and selected-label CTA.
+- Files changed: `components/arena/LabelDuelPanel.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Removed the redundant `Recommended` label from the primary recommendation, changed the primary card cue from `Select this label` to `Select label`, softened and clarified the disabled footer CTA state, added a slightly stronger but calm hover/focus affordance to the recommended card, and added a little more breathing room before `Other possible labels`.
+- Decisions made: Kept `Best supported` as the single evidence-based recommendation badge; did not add percentages, maps, new sections, routing changes, or workflow changes.
+- Checks run: No formatter script is configured; `npm test -- app/page.test.ts` failed first on the old recommendation copy, then passed after the patch; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/LabelDuelPanel.tsx app/investigation-workflow.css app/page.test.ts` returned `[]`; `npx tsc --noEmit` passed; `npm test` passed with 36 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; Playwright against a freshly built production server on `127.0.0.1:3002` confirmed the disabled CTA computed as muted/not-allowed, `Best supported` remained, `Recommended` and `Select this label` were absent, the primary card hover/focus affordance changed border/lift, selected state revealed reasons and enabled the CTA, no console issues appeared, and mobile had no horizontal overflow. Screenshots saved to `/tmp/telemetry-label-duel-tiny-polish-initial.png`, `/tmp/telemetry-label-duel-tiny-polish-selected.png`, and `/tmp/telemetry-label-duel-tiny-polish-mobile.png`.
+- Assumptions: The existing development server on port 3000 appeared stale for React interaction verification, so visual QA used the already-built app on a temporary production server at port 3002 and then stopped that server.
+- Risks/follow-ups: None known; this was intentionally limited to copy and scoped CSS state polish.
+- Next recommended step: Freeze `/label-duel` unless user testing surfaces a concrete comprehension issue.
+- Suggested commit message: `ux(arena): polish label duel microstates`
+
+## 2026-06-19: Label Duel Explicit Selection Micro-Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Final micro-polish pass on `/label-duel`, preserving the compact hero, evidence summary strip, recommended label card, contextual reasons, secondary alternatives, and footer CTA while improving state clarity and mobile-safe conversion copy.
+- Files changed: `components/arena/LabelDuelPanel.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Kept the recommended label unselected on initial load, kept reasons hidden until explicit selection, changed the CTA to `Continue with selected label`, moved the selected label into footer helper text, turned `Likely overclaim` into a subtle status pill, added `Other possible labels`, clarified the reason helper copy, softened the optional note placeholder, and made selected cards/chips clearer without adding dashboard noise.
+- Decisions made: Preserved the existing structured-choice state model and did not add percentages, maps, or new workflow steps. Kept `Select this label` as the primary card's action cue while using `Recommended` as the non-selected recommendation label.
+- Checks run: `npm test -- app/page.test.ts` passed; `npx tsc --noEmit` passed; `npm test` passed with 36 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/LabelDuelPanel.tsx app/investigation-workflow.css app/page.test.ts` returned `[]`; Playwright verification against `http://localhost:3000` passed through `/blind-read` -> `/ai-reveal` -> `/evidence-board` -> `/label-duel`, confirmed initial unselected recommendation, hidden reason panel, disabled `Continue with selected label`, calm `Likely overclaim` pill, selected badge after click, selected reason chip state, selected-label footer helper, active CTA, no support percentages, no duel map, no console issues, and no desktop/mobile horizontal overflow. Screenshots saved to `/tmp/telemetry-label-duel-micro-debug-viewport.png`, `/tmp/telemetry-label-duel-micro-polish-selected-desktop-settled.png`, and `/tmp/telemetry-label-duel-micro-polish-selected-mobile-settled.png`.
+- Assumptions: The current local dev server on port 3000 was already running and reflected the hot-reloaded source, so browser verification used that server.
+- Risks/follow-ups: The CTA no longer repeats the selected label, so the footer helper text now carries that specificity; future footer copy changes should keep the selected label visible nearby.
+- Next recommended step: Freeze `/label-duel` unless user testing shows a concrete comprehension issue.
+- Suggested commit message: `ux(arena): clarify label duel selection state`
+
+## 2026-06-19: Label Duel Final Premium Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Final senior UI/UX polish pass on `/label-duel`, preserving the current Step 6 structure, evidence summary, candidate-label decision flow, contextual reasons, and enabled route behavior while making the page feel more premium and interactive.
+- Files changed: `components/arena/LabelDuelPanel.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Tightened the Label Duel hero, softened the evidence summary strip away from an admin-table feel, added subtle surface hierarchy, hover, focus, selected, and action-cue states to candidate cards, rewrote the primary recommendation and alternative label copy to be more human and evidence-grounded, added visible `Select this label` / `Selected` affordances, and moved the reason panel directly under the selected recommended label.
+- Decisions made: Kept exact support percentages and the duel mini-map out of Step 6; preserved `Routine IAM role provisioning` as the seeded best-supported recommendation; kept the optional note and reason chips contextual after selection; used quiet neutral depth instead of introducing new colors, charts, or motion.
+- Checks run: `npx tsc --noEmit` passed; `npm test` passed with 36 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/LabelDuelPanel.tsx app/investigation-workflow.css app/page.test.ts` returned `[]`; Playwright verification against the existing `http://localhost:3000` dev server passed through `/blind-read` -> `/ai-reveal` -> `/evidence-board` -> `/label-duel`, confirmed the disabled CTA before selection, visible `Select this label` cue, selected-card badge, reason panel appearing before alternatives after selecting the recommendation, updated `Continue with Routine IAM role provisioning` CTA, no support percentages, no duel map, no console issues, and no desktop/mobile horizontal overflow. Screenshots saved to `/tmp/telemetry-label-duel-polish-before.png`, `/tmp/telemetry-label-duel-polish-selected-desktop.png`, and `/tmp/telemetry-label-duel-polish-selected-mobile.png`.
+- Assumptions: The existing local dev server on port 3000 reflected current source changes after hot reload, so it was used for browser verification instead of starting a competing Next dev server.
+- Risks/follow-ups: Because the reason panel opens directly below the selected recommendation, the secondary alternatives move lower after selection; this is intentional for the primary seeded path but should be watched if future cases commonly select a secondary label.
+- Next recommended step: Review the final selected-state screenshots alongside Evidence Board to confirm the Step 5 -> Step 6 handoff now feels calm and decisive.
+- Suggested commit message: `ux(arena): polish label duel decision affordance`
+
+## 2026-06-19: Label Duel Defensible Decision Redesign
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Redesign `/label-duel` as Step 6's decision bridge from Evidence Board classifications to the most defensible label, preserving workflow routing while reducing empty space, removing the decorative duel context map, de-emphasizing support percentages, and making reasons/CTA contextual.
+- Files changed: `components/arena/LabelDuelPanel.tsx`, `components/arena/AppShell.tsx`, `components/arena/arenaMeta.ts`, `lib/types.ts`, `lib/arenaReviewState.ts`, `lib/arenaReviewState.test.ts`, `lib/exportReview.ts`, `lib/exportReview.test.ts`, `app/investigation-workflow.css`, `app/page.test.ts`, `docs/DATA_MODEL.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Rebuilt Label Duel around `Choose the most defensible label`, added an evidence summary bar carrying forward the original AI claim, `1 weak support · 2 contradictions · 1 needs context`, and `Likely overclaim`, removed the mini-map and exact support-percentage cues, promoted `Routine IAM role provisioning` as the primary best-supported card, made the other labels secondary alternatives with human-readable fit badges, moved reason chips behind candidate selection, added an optional persisted duel note, and changed the CTA from a generic continue action to `Continue with [selected label]`.
+- Decisions made: Kept label selection as the only required Step 6 completion state; treated the note as optional structured review data persisted in session state and export JSON; added reason labels for missing malicious intent, missing downstream abuse, and preserving uncertainty so the chip language matches the evidence-review decision.
+- Checks run: `npx tsc --noEmit` passed; `npm test` passed with 36 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; `git diff --check` passed; `node .agents/skills/impeccable/scripts/detect.mjs --json components/arena/LabelDuelPanel.tsx app/investigation-workflow.css app/page.test.ts` returned `[]`; Playwright verification against `http://localhost:3062` passed through `/blind-read` -> `/ai-reveal` -> `/evidence-board` -> `/label-duel`, confirmed no mini-map, no support percentages, disabled CTA before selection, contextual reasons after selection, selected-label CTA, note persistence in session storage, successful navigation to `/impostor`, and no desktop/mobile horizontal overflow. Screenshots saved to `/tmp/telemetry-label-duel-redesign-desktop-before.png`, `/tmp/telemetry-label-duel-redesign-desktop-selected.png`, `/tmp/telemetry-label-duel-redesign-mobile-selected.png`, and `/tmp/telemetry-label-duel-redesign-mobile-selected-final.png`.
+- Assumptions: The seeded IAM case should intentionally prioritize `Routine IAM role provisioning` because it is already marked as `seededBestLabelId` and matches the Evidence Board conclusion that malicious escalation is not proven.
+- Risks/follow-ups: The new optional duel note is now exported, but downstream consumers of exported review JSON should tolerate the optional `duelNote` field.
+- Next recommended step: Review the new `/label-duel` desktop and mobile screenshots next to the finalized Evidence Board to confirm the narrative handoff feels continuous.
+- Suggested commit message: `ux(arena): redesign label duel decision flow`
+
 ## 2026-06-19: Evidence Board Mobile Conversion Polish
 
 - Agent/model: Codex (GPT-5)

@@ -264,20 +264,7 @@ export function AppShell({
 
   return (
     <main className={shellClassName}>
-      <ArenaHeader
-        actions={
-          activeStage === "verdict" ? (
-            <details className="arena-utility-menu">
-              <summary>Review data</summary>
-              <div className="arena-utility-menu-panel">
-                <button type="button" onClick={openReviewDrawer}>
-                  Review JSON
-                </button>
-              </div>
-            </details>
-          ) : null
-        }
-      />
+      <ArenaHeader />
 
       <div className="arena-layout">
         <section className="arena-workspace" aria-live="polite">
@@ -471,6 +458,7 @@ function renderStage({
           onToggleReason={(reason) =>
             dispatchArena({ type: "toggleDuelReason", reason })
           }
+          onSetDuelNote={(note) => dispatchArena({ type: "setDuelNote", note })}
           onBackToEvidenceBoard={() => navigateToStage("evidence_board")}
           onContinue={() => navigateToStage("impostor")}
           onSelectStage={navigateToStage}

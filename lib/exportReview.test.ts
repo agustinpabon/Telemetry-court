@@ -71,6 +71,7 @@ test("arena review export preserves structured reviewer choices", () => {
     labelDuelWinnerId: "label-iam-constrained",
     labelDuelWinnerLabel: "Routine IAM role provisioning",
     duelReasons: ["less_overclaimed", "missing_evidence"],
+    duelNote: "Routine provisioning best fits the evidence.",
     evidenceRatings: {
       "iam-e-01": "weak_support",
       "iam-e-02": "contradicts_label",

@@ -14,6 +14,7 @@ export type EvidenceArenaReview = {
   labelDuelWinnerId?: string;
   labelDuelWinnerLabel?: string;
   duelReasons: DuelReason[];
+  duelNote?: string;
   evidenceRatings: Record<string, EvidenceRating>;
   impostorSessionId?: string;
   impostorSessionTitle?: string;
