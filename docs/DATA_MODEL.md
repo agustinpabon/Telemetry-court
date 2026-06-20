@@ -163,6 +163,7 @@ interface EvidenceArenaReview {
   labelDuelWinnerId?: string;
   labelDuelWinnerLabel?: string;
   duelReasons: DuelReason[];
+  duelNote?: string;
   evidenceRatings: Record<string, EvidenceRating>;
   impostorSessionId?: string;
   impostorSessionTitle?: string;
@@ -221,6 +222,7 @@ The review export should preserve both the case evidence trail and the reviewer'
 - blind agreement/disagreement;
 - label duel winner;
 - duel reason chips;
+- optional label duel note;
 - evidence ratings;
 - impostor session;
 - failure modes;

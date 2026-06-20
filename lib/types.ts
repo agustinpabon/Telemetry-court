@@ -51,6 +51,9 @@ export type DuelReason =
   | "more_specific"
   | "too_broad"
   | "missing_evidence"
+  | "missing_malicious_intent"
+  | "missing_downstream_abuse"
+  | "preserves_uncertainty"
   | "cluster_seems_mixed";
 
 export type FinalVerdict =

@@ -25,6 +25,7 @@ export type CaseReviewState = {
   evidenceRatings?: Record<string, EvidenceRating>;
   labelDuelWinnerId?: string;
   duelReasons?: DuelReason[];
+  duelNote?: string;
   impostorSessionId?: string;
   failureModes?: DuelReason[];
   finalVerdict?: FinalVerdict;
@@ -58,6 +59,7 @@ export type ArenaAction =
     }
   | { type: "selectLabelDuelWinner"; candidateId: string }
   | { type: "toggleDuelReason"; reason: DuelReason }
+  | { type: "setDuelNote"; note: string }
   | { type: "selectImpostorSession"; sessionId: string }
   | { type: "selectVerdict"; verdict: FinalVerdict }
   | { type: "toggleFailureMode"; reason: DuelReason }
@@ -145,6 +147,10 @@ export function arenaReducer(
           getCurrentReviewState(state).duelReasons ?? [],
           action.reason,
         ),
+      });
+    case "setDuelNote":
+      return updateSelectedReview(state, {
+        duelNote: action.note.trim() ? action.note : undefined,
       });
     case "selectImpostorSession":
       return updateSelectedReview(state, {
@@ -291,6 +297,7 @@ export function buildArenaReview(
         }
       : {}),
     duelReasons: reviewState.duelReasons ?? [],
+    ...(reviewState.duelNote ? { duelNote: reviewState.duelNote } : {}),
     evidenceRatings,
     ...(impostor
       ? {

@@ -95,6 +95,11 @@ test("arena reducer drives the staged structured-choice happy path", () => {
     { type: "toggleDuelReason", reason: "better_supported" },
     sampleCases,
   );
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "setDuelNote", note: "Best supported by observed behavior." },
+    sampleCases,
+  );
 
   const impostor = targetCase.representativeSessions[0];
   assert.ok(impostor);
@@ -126,6 +131,7 @@ test("arena reducer drives the staged structured-choice happy path", () => {
 
   assert.equal(reviewState.labelDuelWinnerId, candidate.id);
   assert.deepEqual(reviewState.duelReasons, ["better_supported"]);
+  assert.equal(reviewState.duelNote, "Best supported by observed behavior.");
   assert.equal(reviewState.impostorSessionId, impostor.id);
   assert.equal(reviewState.finalVerdict, "partially_supported");
   assert.deepEqual(reviewState.failureModes, ["less_overclaimed"]);
@@ -144,10 +150,12 @@ test("arena reducer drives the staged structured-choice happy path", () => {
   assert.equal(arenaReview.blindChoiceId, blindChoice.id);
   assert.equal(arenaReview.aiLabel, targetCase.topicLabel.name);
   assert.equal(arenaReview.labelDuelWinnerId, candidate.id);
+  assert.equal(arenaReview.duelNote, "Best supported by observed behavior.");
   assert.equal(arenaReview.impostorSessionId, impostor.id);
   assert.equal(arenaReview.finalVerdict, "partially_supported");
   assert.equal(balance.total, targetCase.evidenceItems.length);
   assert.match(exportJson, /"arenaReview"/);
+  assert.match(exportJson, /"duelNote"/);
   assert.match(exportJson, /"partially_supported"/);
 });
 
