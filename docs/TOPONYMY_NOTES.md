@@ -27,21 +27,22 @@ Secondary pages may be mentioned only as non-authoritative navigation aids. They
 
 ## Telemetry Court Stance
 
-Telemetry Court treats Toponymy as upstream conceptual inspiration, not as a current implementation dependency.
+Telemetry Court treats Toponymy as a credible upstream producer category and future adapter source, not as a current implementation dependency.
 
 Use careful language:
 
-- "inspired by Toponymy"
-- "compatible with Toponymy-style exports"
-- "downstream of cluster naming"
-- "could validate outputs from systems like Toponymy"
+- "downstream of Toponymy-style cluster naming"
+- "a future adapter could convert approved Toponymy output into `CasePackage` JSON"
+- "Telemetry Court does not currently execute or integrate with Toponymy"
+- "Toponymy output assumptions remain unverified until grounded in the official repository"
 
 ## Explicit Guardrails
 
 - Do not claim current Toponymy integration.
-- Do not add Toponymy, Python, backend services, ingestion, auth, database work, or persistence under the banner of "Toponymy support" unless a future task explicitly scopes it.
-- Toponymy integration remains out of scope for the current MVP.
-- Telemetry Court remains a static downstream validation UI for AI-generated telemetry cluster interpretations.
+- Do not add direct Toponymy execution, raw ingestion, auth, database work, or persistence under the banner of "Toponymy support."
+- Define and validate the `CasePackage` boundary before implementing an adapter.
+- Keep raw restricted telemetry outside the public or portable application.
+- Telemetry Court currently remains a static downstream validation slice; Toponymy integration is a target capability.
 
 ## Working Rule For Agents
 

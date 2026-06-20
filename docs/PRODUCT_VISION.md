@@ -1,158 +1,113 @@
 # Product Vision
 
-Telemetry Court is an interactive evidence arena where AI-generated interpretations of cyber telemetry clusters are treated as testable claims, and humans judge whether the evidence actually supports them.
-
-Core product line:
+Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.
 
 ```text
-AI names the pattern. Humans test the evidence.
+AI names the cluster. Humans test the evidence.
 ```
 
-Core product question:
+The product asks:
 
 ```text
-Can AI prove what it claims?
+Given a telemetry cluster and an AI-generated label or explanation,
+is that interpretation actually supported by the evidence?
 ```
 
-Core evaluation workflow:
+## Product Thesis
+
+Generated cluster names are easy to accept when they sound coherent. That fluency can hide unsupported claims, overreach, mixed clusters, weak evidence coverage, or instability across models and prompts. Telemetry Court makes those interpretations reviewable and turns human judgment into evaluation data for the upstream pipeline.
 
 ```text
-Telemetry clusters
--> AI-generated interpretation
--> evidence-first investigation
+Precomputed cluster
+-> versioned CasePackage
+-> blind evidence review
+-> AI label and claim reveal
 -> structured human verdict
--> evaluation data for better prompts, labels, embeddings, and cluster quality
+-> ReviewResult
+-> multi-reviewer EvaluationReport
+-> upstream pipeline improvement
 ```
 
-## Product Pivot
+The current landscape, case file, evidence board, label comparison, outlier review, and verdict interface are interaction mechanisms inside this validation workflow. They are not the product identity by themselves.
 
-The previous framing of Telemetry Court as a simple approve/reject label validator is superseded.
+## Product Responsibilities
 
-Historical baseline:
+Telemetry Court is responsible for:
 
-```text
-AI label -> evidence cards -> approve / reject
-```
+- accepting validated case packages from upstream systems;
+- preserving package provenance and sanitization metadata;
+- exposing every generated claim and its linked evidence;
+- showing missing or broken evidence explicitly;
+- preserving blind review before AI-label reveal;
+- supporting structured evidence classification and verdicts;
+- collecting independent reviews from multiple people;
+- aggregating judgments and disagreement;
+- exporting evaluation data for labels, prompts, models, embeddings, evidence extraction, and cluster design.
 
-Current direction:
+Telemetry Court is not responsible for the full telemetry processing stack, live detection, operational alert response, or unrestricted raw data ingestion.
 
-```text
-Explore telemetry landscape
--> open behavioural region
--> inspect case evidence
--> make a blind interpretation
--> reveal the AI claim
--> classify evidence
--> compare candidate labels
--> identify outlier sessions
--> issue a structured verdict
--> export review data
-```
+## Core Review Protocol
 
-## Interaction Model
+1. Select or import a reviewable case package.
+2. Inspect cluster context and approved evidence without seeing the generated label.
+3. Choose a blind interpretation, including insufficient-evidence options.
+4. Reveal the AI label, explanation, and claims.
+5. Classify evidence against specific claims.
+6. Compare candidate labels.
+7. Identify outlier or impostor sessions that weaken cluster coherence.
+8. Record failure modes and uncertainty.
+9. Issue a structured verdict and recommended action.
+10. Export or save a versioned `ReviewResult`.
+11. Aggregate compatible results into an `EvaluationReport`.
 
-The main workflow is structured-choice first. Do not require typed text for the happy path.
+The happy path is structured-choice first. Optional expert notes may exist, but typed text must not be required to complete the review.
 
-Primary interactions:
+## Evidence And Verdict Language
 
-- Select between interpretation options.
-- Classify evidence cards as supports, weak support, irrelevant/noise, contradicts, or needs context.
-- Choose which candidate label is better supported.
-- Select an impostor or outlier session.
-- Choose reason and failure-mode chips.
-- Issue a structured verdict.
-- Export or view structured review JSON.
+Evidence classifications should distinguish supports, weak support, irrelevant or noise, contradicts, insufficient, and needs more context.
 
-Free text may exist later as optional expert input, but it must not block the core review flow.
+Verdicts should distinguish supported, partially supported, unsupported or overclaimed, uncertain, cluster impure, needs split, needs merge, and needs better evidence.
 
-## Experience Model
+Uncertainty is a valid result. Telemetry Court must not force certainty when the evidence cannot support it.
 
-The Evidence Arena should feel like entering a living telemetry map, opening a behavioural region as an investigation cockpit, interrogating evidence, and issuing a structured scientific verdict.
+## Current Static Validation Slice
 
-This is a UI/UX reboot of the existing Evidence Arena concept, not a product pivot or data-model rewrite. The current workflow remains:
+The current Next.js interface uses five synthetic cases and local state. It demonstrates the review protocol and structured JSON export. It does not yet prove real-world validation value, run Toponymy, ingest ACME4, persist results, support independent reviewers, or calculate evaluation reports.
 
-```text
-Telemetry landscape
--> behavioural region / case file
--> blind investigation
--> AI label reveal
--> evidence classification
--> label duel
--> impostor / outlier selection
--> structured verdict
--> review JSON export
-```
+Synthetic cases remain useful for UI and protocol testing, but they must be described as fixtures, not evidence that the product has completed its validation mission.
 
-The telemetry landscape should be the primary interaction, not a decorative section. Behavioural regions should communicate agreement, evidence strength, uncertainty, impurity, and overclaim risk. Opening a region should reveal a cockpit-like case context with dataset metadata, top features, risk flags, nearest neighbour, representative sessions, and the next structured action.
+## Definition Of Done For Real Usefulness
 
-The investigation flow should present one active stage at a time, with compact progress navigation and review JSON available from a drawer or receipt rather than occupying the main vertical page.
+Telemetry Court becomes a serious tool only when it can:
 
-## Product Flow
+- ingest a real or realistic precomputed cluster;
+- generate or accept a defensible evidence package;
+- let multiple humans review it;
+- preserve blind review before AI-label reveal;
+- store structured verdicts;
+- aggregate reviewer judgments;
+- export metrics that improve labels, prompts, embeddings, or pipeline design.
 
-### 1. Telemetry Landscape
-
-The user starts with a visual landscape of behavioural regions. Each region should communicate review status, model agreement, evidence strength, and uncertainty.
-
-### 2. Case File
-
-Opening a region creates an investigation file with cluster ID, dataset, session count, top features, risk flags, nearest neighbour, claims under test, and representative sessions.
-
-### 3. Blind Investigation
-
-Evidence appears before the AI label. The user answers: "Before seeing the AI label, what does the evidence suggest?" using selectable options including "not enough evidence" and "none of these."
-
-### 4. AI Label Reveal
-
-After the blind choice, the AI label is revealed and the UI shows whether the blind interpretation agrees or disagrees with it.
-
-### 5. Evidence Board
-
-Each evidence card is classifiable as:
-
-- Supports label
-- Weak support
-- Irrelevant / noise
-- Contradicts label
-- Need more context
-
-### 6. Label Duel
-
-The user compares candidate labels from sources such as baseline AI, evidence-constrained AI, human-style labels, and uncertainty-preserving labels.
-
-### 7. Find the Impostor
-
-The user chooses which representative session least belongs in the cluster. Seeded synthetic metadata should explain feature overlap and outlier score.
-
-### 8. Structured Verdict
-
-Final verdict options:
-
-- Supported
-- Partially supported
-- Unsupported / overclaimed
-- Uncertain
-- Cluster is impure
-- Needs split
-- Needs merge
-- Needs better evidence
-
-The review summary should include blind choice, AI label, label duel winner, evidence ratings, impostor choice, failure modes, final verdict, and export JSON.
+If it cannot do those things, it remains a polished interface rather than validation infrastructure.
 
 ## Non-Goals
 
-Telemetry Court is not:
-
-- a SIEM;
-- a SOC dashboard;
-- a generic chatbot;
-- a threat-intelligence dashboard;
-- an attack detector;
-- a raw log explorer;
-- a claim that AI labels are always wrong;
-- a place to copy restricted telemetry into a public demo.
+- SIEM, EDR, SOC, alert triage, incident response, or raw log search.
+- Generic cyber investigation or telemetry exploration.
+- Chat-first or open-ended agent workflows.
+- Gamification, leaderboards, or theatrical courtroom mechanics.
+- Generic CRUD, auth-first development, or speculative enterprise features.
+- Copying raw restricted telemetry into the public or portable app.
+- Claiming current Toponymy or ACME4 integration before an adapter exists.
 
 ## Data Posture
 
-Use local synthetic, toy, sanitized, or approved demo cases. The current MVP must run fully offline with sample fixture data.
+Public and portable deployments use synthetic, sanitized, or approved evidence packages. Restricted data should be transformed within its authorized environment, and case packages should carry provenance and sanitization metadata plus safe drill-down references where permitted.
 
-Do not introduce real restricted telemetry, secrets, customer data, or incident claims.
+## Source Documents
+
+- [Product positioning](./PRODUCT_POSITIONING.md)
+- [Project context](./PROJECT_CONTEXT.md)
+- [Case package contract](./CASE_PACKAGE_CONTRACT.md)
+- [Evaluation infrastructure](./EVALUATION_INFRASTRUCTURE.md)
+- [Roadmap](./ROADMAP.md)

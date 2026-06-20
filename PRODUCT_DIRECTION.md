@@ -1,31 +1,27 @@
-# Telemetry Court - Product And Design Direction
+# Telemetry Court Product And Design Direction
+
+## Product Direction
+
+Telemetry Court is a validation bench for AI-generated telemetry cluster interpretations. The interface exists to help reviewers test claims against evidence and produce structured evaluation output.
+
+```text
+AI names the cluster. Humans test the evidence.
+```
+
+The current landscape, case file, evidence board, label duel, impostor review, and verdict screens are useful review mechanisms. They are subordinate to the validation purpose and must not turn the product into a game, generic investigation environment, or visual demo.
 
 ## Desired Feel
-
-Telemetry Court should feel:
 
 - calm;
 - premium;
 - sparse;
 - trustworthy;
 - evidence-first;
-- product-grade;
+- serious;
 - readable by non-builders;
-- interactive without feeling unserious.
+- interactive without becoming theatrical.
 
-Good broad inspiration:
-
-- Apple clarity;
-- Wealthsimple calm trust;
-- Linear discipline.
-
-Do not copy protected layouts, assets, icons, illustrations, slogans, screenshots, imagery, or exact UI patterns. Use only broad principles: clarity, spacing, restraint, hierarchy, and trust.
-
-## Core Product Line
-
-```text
-AI names the pattern. Humans test the evidence.
-```
+Use broad principles of clarity, spacing, restraint, hierarchy, and trust. Do not copy protected layouts, assets, icons, illustrations, slogans, screenshots, imagery, or exact patterns.
 
 ## Design Principle
 
@@ -35,98 +31,32 @@ Evidence first, ornament last.
 
 ## Visual Direction
 
-Use:
+Use warm neutral surfaces, restrained borders and shadows, readable typography, calm semantic accents, generous whitespace, and structured-choice controls.
 
-- warm off-white canvas;
-- muted cards;
-- restrained borders;
-- subtle shadows;
-- rounded panels;
-- readable typography;
-- calm semantic accents;
-- generous whitespace;
-- structured-choice controls.
+Avoid cyberpunk, hacker styling, neon green, fake terminals, red-alert overload, dense SOC dashboards, decorative telemetry walls, courtroom theater, and generic AI-wrapper layouts.
 
-Avoid:
+## Information Hierarchy
 
-- cyberpunk;
-- hacker aesthetic;
-- neon green;
-- matrix styling;
-- fake terminal panels;
-- red alert overload;
-- dense SOC dashboards;
-- excessive tables on the first screen;
-- generic AI-wrapper layouts.
+1. Case package and cluster context.
+2. Evidence visible before AI-label reveal.
+3. AI-generated interpretation and explicit claims.
+4. Evidence-to-claim classifications.
+5. Candidate-label comparison.
+6. Cluster purity and outlier review.
+7. Failure modes and uncertainty.
+8. Structured verdict and `ReviewResult` export.
+9. Aggregated `EvaluationReport` when available.
 
-## Product Hierarchy
+## Ten-Second Rule
 
-The screen should communicate this order:
+A reviewer should understand which case is under review, whether the AI label is hidden or revealed, what evidence is available, which claims it supports or weakens, and what action comes next.
 
-1. Telemetry landscape and behavioural region.
-2. Case file context.
-3. Evidence visible before AI-label reveal.
-4. AI-generated interpretation and claims.
-5. Evidence classifications.
-6. Candidate label comparison.
-7. Cluster purity / impostor selection.
-8. Failure modes.
-9. Structured verdict and review export.
+## Language
 
-## 10-Second Rule
+Prefer validation bench, case package, evidence item, claim support, blind review, label comparison, outlier review, structured verdict, review result, and evaluation report.
 
-A first-time viewer should understand within around 10 seconds:
-
-- which case is being reviewed;
-- what evidence is available;
-- whether the AI label is hidden or revealed;
-- whether evidence supports, weakens, contradicts, or needs context;
-- what verdict or next review step is implied.
-
-## Language Style
-
-Use clear product language:
-
-- "Telemetry landscape"
-- "Case file"
-- "Blind investigation"
-- "AI label reveal"
-- "Evidence board"
-- "Label duel"
-- "Find the impostor"
-- "Structured verdict"
-- "Review JSON"
-
-Avoid vague or overhyped language:
-
-- "AI magic"
-- "autonomous detection"
-- "threat intelligence dashboard"
-- "cyber command center"
-- "real-time threat brain"
-
-## Status Language
-
-Useful user-facing states:
-
-- Supported
-- Weak support
-- Contradicted
-- Unsupported / overclaimed
-- Cluster impure
-- Uncertain
-- Needs better evidence
-
-Always use text labels, not color alone.
+Existing UI names such as Evidence Board, Label Duel, and Find the Impostor may remain when their controls are serious and unambiguous. Do not use game, player, score, win, jury spectacle, command center, autonomous detection, or threat brain as product framing.
 
 ## Review Behavior
 
-The reviewer should never have to guess:
-
-- which evidence supports which claim;
-- why a score exists;
-- whether evidence is missing;
-- whether the cluster appears mixed;
-- whether the AI label overclaims;
-- whether a verdict is local/demo-only;
-- what data will be exported.
+The reviewer should never have to guess which evidence supports which claim, why a metric exists, whether evidence or provenance is missing, whether the cluster appears mixed, whether the label overclaims, what data is exported, or whether a capability is only a future target.

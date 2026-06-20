@@ -1,115 +1,138 @@
 # Telemetry Court
 
-Telemetry Court is an interactive evidence arena for AI-generated interpretations of cyber telemetry clusters.
-
-Core product line:
+Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.
 
 ```text
-AI names the pattern. Humans test the evidence.
+AI names the cluster. Humans test the evidence.
 ```
 
-Core question:
+It exists to answer one question:
 
 ```text
-Can AI prove what it claims?
+Given a telemetry cluster and an AI-generated label or explanation,
+is that interpretation actually supported by the evidence?
 ```
+
+Telemetry Court turns generated labels into testable claims, exposes the evidence behind them, and records structured human judgments that can improve labels, prompts, embeddings, evidence extraction, and clustering pipelines.
+
+## Current State
+
+The repository currently contains a high-quality static validation slice built with Next.js, TypeScript, Tailwind, and synthetic cases. It demonstrates:
+
+- telemetry landscape and case selection;
+- blind review before the AI label is revealed;
+- claim-level evidence inspection and classification;
+- candidate-label comparison;
+- impostor or outlier selection;
+- structured verdicts and local JSON export.
+
+This slice demonstrates the review protocol. It does not yet ingest real Toponymy or ACME4-derived outputs, persist multi-reviewer results, or produce aggregated evaluation reports. Those are target capabilities, not current claims.
+
+## Product Boundary
+
+Telemetry Court starts after an upstream system has embedded, clustered, characterized, and named telemetry. Upstream systems may eventually include Toponymy, notebooks, clustering pipelines, ACME4-derived experiments, CloudTrail-derived experiments, or synthetic and sanitized generators.
+
+```text
+Upstream clustering or labeling pipeline
+-> versioned CasePackage JSON
+-> Telemetry Court review and validation
+-> ReviewResult JSON
+-> EvaluationReport metrics
+-> upstream pipeline improvement
+```
+
+Telemetry Court owns reviewability, evidence grounding, auditability, structured human judgment, and evaluation output. It does not own the full telemetry-processing stack.
 
 ## What It Is
 
-Telemetry Court helps a reviewer explore a synthetic telemetry landscape, open a behavioural region as a case file, inspect evidence before seeing the AI label, compare candidate interpretations, identify weak evidence or outlier sessions, and issue a structured verdict.
+- A validation bench for AI-generated cluster labels and explanations.
+- A structured human-in-the-loop evaluation environment.
+- A claim-to-evidence inspection interface.
+- A way to preserve blind review before AI-label reveal.
+- A way to collect multiple reviewers' structured verdicts.
+- A downstream companion to systems such as Toponymy.
+- Evaluation infrastructure for comparing labels, prompts, models, embeddings, evidence extraction, and cluster quality.
 
-The product treats an AI-generated label as a testable claim, not a finished answer.
+## What It Is Not
 
-## Current Vertical Slice
+- Not a SIEM, EDR, SOC dashboard, or alert-triage system.
+- Not a Splunk, Elastic, CrowdStrike, Sentinel, or Chronicle competitor.
+- Not a raw telemetry search or ingestion engine.
+- Not a generic cyber investigation platform.
+- Not a chatbot-first product.
+- Not a game-like review experience.
+- Not a generic CRUD backend or auth-first application.
+- Not merely a polished frontend with an undefined backend.
 
-The app is a frontend prototype using local synthetic data. The current Evidence Arena slice now opens as an immersive Telemetry Galaxy and staged investigation cockpit rather than a long static review page.
+The court metaphor may support evidence-based validation, but it must not make the product theatrical or unserious.
 
-The slice includes:
+## Core Review Flow
 
-- A full-screen telemetry galaxy with five behavioural regions as the primary interaction.
-- Case files exposed through an investigation cockpit with cluster context, top features, risk flags, nearest neighbour, claims, and representative sessions.
-- A compact stage rail for Landscape, Case File, Blind Read, AI Reveal, Evidence Board, Label Duel, Impostor, and Verdict.
-- Blind investigation choices before the AI label is revealed.
-- AI label reveal with agreement/disagreement feedback.
-- An evidence board with live balance across supports, weak support, irrelevant/noise, contradicts, and needs context.
-- Label duel across baseline AI, evidence-constrained AI, human-style, and uncertainty-preserving labels.
-- Find-the-impostor session selection with seeded outlier explanations and cluster purity context.
-- Structured verdict options, failure-mode chips, and a judgment receipt.
-- Review JSON preview, copy, and download actions from a drawer or receipt.
+```text
+Telemetry landscape
+-> case package
+-> blind interpretation
+-> AI label reveal
+-> evidence classification
+-> label comparison
+-> impostor / outlier selection
+-> structured verdict
+-> ReviewResult export
+-> multi-reviewer EvaluationReport
+```
 
-No typed text is required for the happy path. Optional expert notes may be added later, but structured choices are the primary interaction model.
+The main workflow is structured-choice first. Reviewers should classify evidence as supporting, weak support, irrelevant, contradictory, insufficient, or needing more context without being required to type.
 
-## Synthetic Cases
+## Definition Of Real Usefulness
 
-The bundled fixture data covers five demo scenarios:
+Telemetry Court becomes serious validation infrastructure only when it can:
 
-1. AI overclaims suspiciousness: suspicious IAM privilege escalation vs routine IAM role provisioning.
-2. Supported suspicious behaviour: encoded PowerShell with external communication.
-3. Cluster is impure: Windows service update activity with outlier sessions.
-4. Label is too broad: cloud administration activity vs S3 bucket enumeration after role assumption.
-5. Correct uncertainty: possible credential access preparation with insufficient proof for a stronger claim.
+- ingest a real or realistic precomputed cluster;
+- generate or accept a defensible evidence package;
+- let multiple humans review it;
+- preserve blind review before AI-label reveal;
+- store structured verdicts;
+- aggregate reviewer judgments;
+- export metrics that improve labels, prompts, embeddings, or pipeline design.
 
-The repo must not contain real restricted telemetry, secrets, customer data, or incident claims.
+Until then, the current application remains a polished static validation interface rather than complete validation infrastructure.
 
-## Relationship To Toponymy
+## Data Posture
 
-[Toponymy](https://github.com/TutteInstitute/toponymy) is useful upstream inspiration for cluster naming workflows. The official `TutteInstitute/toponymy` GitHub repository is the source of truth for factual Toponymy details in this repo.
+The public and portable application must not require raw restricted telemetry. Real or restricted datasets should be converted into approved, minimal, auditable case packages inside the appropriate environment. Local fixtures must remain synthetic, sanitized, or explicitly approved.
 
-Telemetry Court starts downstream of clustering and naming. It evaluates whether generated names and explanations are supported by evidence packets. The MVP does not depend on Toponymy, Python services, databases, authentication, or live telemetry ingestion.
+Toponymy and ACME4-style integrations should be adapters that produce versioned case packages. They must not turn Telemetry Court into a raw telemetry ingestion engine. The official [TutteInstitute/toponymy](https://github.com/TutteInstitute/toponymy) repository is the factual source of truth for Toponymy in this project.
 
-Do not treat DeepWiki, generated summaries, or other third-party pages as authoritative. See [docs/TOPONYMY_NOTES.md](./docs/TOPONYMY_NOTES.md).
+## Next Milestone
 
-## Development Philosophy
+The next implementation milestone is **Case Package Contract and Validation Infrastructure**, not a generic backend. It will define `CasePackage v0.1`, `ReviewResult v0.1`, and `EvaluationReport v0.1`, add package validation rules, and convert the current synthetic cases into package-shaped fixtures while preserving the review UI.
 
-- Evidence first: every generated claim should be inspectable against evidence or explicitly show missing evidence.
-- Structured-choice first: do not require typing for the main workflow.
-- Calm review flow: this is not a SIEM, SOC dashboard, chatbot wrapper, or cyberpunk visualization.
-- Small diffs: prefer focused, reviewable changes.
-- Synthetic data only until a safe import boundary is explicitly scoped.
-- Frontend first: use TypeScript, Next.js App Router, Tailwind, and static data for the current MVP.
+See:
 
-For product direction, see [docs/PRODUCT_VISION.md](./docs/PRODUCT_VISION.md). For UI guidance, see [docs/DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md) and [docs/DESIGN_DIRECTION.md](./docs/DESIGN_DIRECTION.md).
+- [Product positioning](./docs/PRODUCT_POSITIONING.md)
+- [Product vision](./docs/PRODUCT_VISION.md)
+- [Project context](./docs/PROJECT_CONTEXT.md)
+- [Case package contract](./docs/CASE_PACKAGE_CONTRACT.md)
+- [Evaluation infrastructure](./docs/EVALUATION_INFRASTRUCTURE.md)
+- [Architecture](./docs/ARCHITECTURE.md)
+- [Roadmap](./docs/ROADMAP.md)
+- [Product decisions](./docs/PRODUCT_DECISIONS.md)
+- [Agent instructions](./AGENTS.md)
 
 ## Development
 
-Install dependencies:
-
 ```bash
 npm install
-```
-
-Run locally:
-
-```bash
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
-
-Run checks:
 
 ```bash
 npm test
 npm run lint
 npm run build
 ```
-
-Workflow docs:
-
-- [docs/PRODUCT_VISION.md](./docs/PRODUCT_VISION.md)
-- [docs/PROJECT_CONTEXT.md](./docs/PROJECT_CONTEXT.md)
-- [docs/PRODUCT_DECISIONS.md](./docs/PRODUCT_DECISIONS.md)
-- [docs/ROADMAP.md](./docs/ROADMAP.md)
-- [docs/GITHUB_PLANNING.md](./docs/GITHUB_PLANNING.md)
-- [docs/DEVELOPMENT_WORKFLOW.md](./docs/DEVELOPMENT_WORKFLOW.md)
-- [docs/COMMIT_GUIDELINES.md](./docs/COMMIT_GUIDELINES.md)
-- [AGENTS.md](./AGENTS.md)
-
-## For AI Agents
-
-Before editing, read [AGENTS.md](./AGENTS.md), [docs/PRODUCT_VISION.md](./docs/PRODUCT_VISION.md), [docs/PROJECT_CONTEXT.md](./docs/PROJECT_CONTEXT.md), and [docs/PRODUCT_DECISIONS.md](./docs/PRODUCT_DECISIONS.md). Before UI or styling work, also read [docs/DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md).
-
-Agent work should preserve the Evidence Arena identity: Telemetry Court is where AI-generated telemetry interpretations are tested against evidence through structured human judgment.
 
 ## License
 

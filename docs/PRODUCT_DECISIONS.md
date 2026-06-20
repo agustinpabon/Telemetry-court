@@ -2,6 +2,23 @@
 
 This is the initial decision log for Telemetry Court. Add new entries when product direction, architecture, or evidence-model assumptions change.
 
+## 2026-06-20: Telemetry Court Realigns As A Validation Bench
+
+Decision: Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.
+
+Rationale: The project risks becoming a polished static interface or generic cyber dashboard unless its backend direction is grounded in evaluation infrastructure. The useful product validates whether generated cluster labels and explanations are supported by evidence and produces structured human review data for improving upstream AI/ML pipelines.
+
+Consequences:
+
+- The core line is "AI names the cluster. Humans test the evidence."
+- Backend work must start with a versioned `CasePackage`, `ReviewResult`, and `EvaluationReport` contract.
+- Raw telemetry ingestion is not the first backend milestone.
+- SIEM, SOC, EDR, alert-triage, raw-search, and generic dashboard features are out of scope.
+- Review exports, reviewer agreement, and evaluation metrics are core product outputs.
+- Toponymy and ACME4-style integration must use adapters that generate approved case packages.
+- The current interface is a static synthetic validation slice, not proof of real-world validation value.
+- The 2026-06-13 Evidence Arena decision remains relevant to the shipped interaction flow but is superseded as the product identity.
+
 ## 2026-06-13: Telemetry Court Pivots To Evidence Arena
 
 Decision: Telemetry Court is now an interactive evidence arena, not a passive approve/reject label validator.
