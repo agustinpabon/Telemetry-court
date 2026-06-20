@@ -184,6 +184,7 @@ type ArenaAction = {
 type ArenaActionFooterProps = {
   microcopy: ReactNode;
   primaryAction: ArenaAction;
+  auxiliaryActions?: ArenaAction[];
   secondaryAction?: ArenaAction;
   ariaLabel?: string;
   className?: string;
@@ -192,6 +193,7 @@ type ArenaActionFooterProps = {
 export function ArenaActionFooter({
   microcopy,
   primaryAction,
+  auxiliaryActions = [],
   secondaryAction,
   ariaLabel = "Workflow actions",
   className,
@@ -213,6 +215,17 @@ export function ArenaActionFooter({
             {secondaryAction.label}
           </button>
         ) : null}
+        {auxiliaryActions.map((action, index) => (
+          <button
+            key={`auxiliary-action-${index}`}
+            type="button"
+            className="secondary-action"
+            disabled={action.disabled}
+            onClick={action.onClick}
+          >
+            {action.label}
+          </button>
+        ))}
         <button
           type="button"
           className="primary-action"

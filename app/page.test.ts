@@ -28,6 +28,9 @@ import {
 } from "@/lib/arenaRoutes";
 import { getRelationsForEvidence } from "@/lib/caseMetrics";
 import {
+  arenaReducer,
+  createInitialArenaState,
+  getCurrentReviewState,
   getEvidenceBalance,
   getEvidenceRatings,
 } from "@/lib/arenaReviewState";
@@ -74,8 +77,48 @@ function renderBlindReadPageText(): string {
   return html.replace(/\s+/g, " ");
 }
 
+function renderVerdictPageText(): string {
+  const html = renderToStaticMarkup(
+    React.createElement(AppShell, {
+      cases: sampleCases,
+      landscapeContextNodes: sampleLandscapeContextNodes,
+      initialStage: "verdict",
+      pathname: "/verdict",
+      onNavigatePath: () => undefined,
+    }),
+  );
+
+  return html.replace(/\s+/g, " ");
+}
+
 function renderStaticMarkup(element: React.ReactElement): string {
   return renderToStaticMarkup(element).replace(/\s+/g, " ");
+}
+
+function assertNoMixedVerdictState(markup: string): void {
+  const showsReady = markup.includes("Ready to export");
+  const showsVerdictMissing = markup.includes("Verdict not selected.");
+  const showsReviewComplete = markup.includes("Review complete");
+  const showsChooseVerdict = markup.includes("Choose a verdict to finish the review");
+
+  assert.equal(
+    showsReady && showsVerdictMissing,
+    false,
+    "Ready to export cannot appear with Verdict not selected.",
+  );
+  assert.equal(
+    showsReviewComplete && showsChooseVerdict,
+    false,
+    "Review complete cannot appear with unfinished verdict copy.",
+  );
+
+  if (showsReady) {
+    assert.match(markup, /class="verdict-button is-selected"/);
+  }
+
+  if (showsVerdictMissing) {
+    assert.match(markup, /disabled="">Export review result/);
+  }
 }
 
 test("home page static review flow exposes the core Telemetry Court concepts", () => {
@@ -437,12 +480,14 @@ test("later workflow panels use compact chrome and descriptive actions", () => {
         reviewState: { labelDuelWinnerId: selectedCase.candidateLabels[0]?.id },
         onSelectWinner: () => undefined,
         onToggleReason: () => undefined,
+        onSetDuelNote: () => undefined,
         onBackToEvidenceBoard: () => undefined,
         onContinue: () => undefined,
       }),
       React.createElement(ImpostorPanel, {
         caseFile: selectedCase,
         reviewState: {
+          labelDuelWinnerId: selectedCase.candidateLabels[0]?.id,
           impostorSessionId: selectedCase.representativeSessions[0]?.id,
         },
         onSelectSession: () => undefined,
@@ -487,14 +532,566 @@ test("later workflow panels use compact chrome and descriptive actions", () => {
   assert.match(markup, /Continue with 4 classifications/);
   assert.doesNotMatch(markup, /disabled="">Continue with 4 classifications/);
   assert.match(markup, /Back to AI reveal/);
-  assert.match(markup, /Continue to impostor review/);
+  assert.match(markup, /Continue with selected label/);
   assert.match(markup, /Back to evidence board/);
   assert.match(markup, /Continue to verdict/);
   assert.match(markup, /Back to label duel/);
-  assert.match(markup, /Open review JSON/);
-  assert.match(markup, /Back to impostor review/);
+  assert.match(markup, /Export review result/);
+  assert.match(markup, /View JSON/);
+  assert.match(markup, /Back/);
+  assert.doesNotMatch(markup, /Open review JSON/);
   assert.doesNotMatch(markup, /Open review summary/);
   assert.doesNotMatch(markup, />Next<\/button>/);
+});
+
+test("verdict page reads as a final judgment and preserves export actions", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const evidenceRatings = getEvidenceRatings(selectedCase, {});
+  const balance = getEvidenceBalance(selectedCase, evidenceRatings);
+  const markup = renderStaticMarkup(
+    React.createElement(VerdictPanel, {
+      caseFile: selectedCase,
+      reviewState: {
+        blindChoiceId: "cloud-resource-discovery",
+        aiLabelRevealed: true,
+        labelDuelWinnerId: "label-iam-baseline",
+        impostorSessionId: "iam-s-01",
+        failureModes: [
+          "less_overclaimed",
+          "missing_evidence",
+          "better_supported",
+        ],
+        finalVerdict: "unsupported_overclaimed",
+      },
+      balance,
+      onSelectVerdict: () => undefined,
+      onToggleFailureMode: () => undefined,
+      onBackToImpostor: () => undefined,
+      onOpenReviewDrawer: () => undefined,
+      onCopyJson: () => undefined,
+      onDownloadJson: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /Step 8 of 8 · Verdict/);
+  assert.match(markup, /Structured Verdict · Review complete/);
+  assert.match(markup, /Unsupported \/ overclaimed/);
+  assert.match(markup, /The AI claim overstates what the evidence supports\./);
+  assert.match(
+    markup,
+    /The reviewed evidence points to cloud resource discovery, but does not establish suspicious IAM privilege escalation\./,
+  );
+  assert.match(
+    markup,
+    /Evidence balance: 0 support · 1 weak · 2 contradict · 1 context/,
+  );
+  assert.match(markup, /Status: Review complete · Ready to export/);
+  assert.match(markup, /Strong support<\/dt><dd>0/);
+  assert.match(markup, /Weak support<\/dt><dd>1/);
+  assert.match(markup, /Contradict<\/dt><dd>2/);
+  assert.match(markup, /Needs context<\/dt><dd>1/);
+  assert.match(markup, /Conclusion: Claim is not sufficiently supported\./);
+  assert.match(markup, /Claim support/);
+  assert.match(markup, /Cluster quality/);
+  assert.match(markup, /Evidence quality/);
+  assert.match(markup, /Why this verdict\?/);
+  assert.match(markup, /Overclaimed intent/);
+  assert.match(markup, /Missing evidence/);
+  assert.match(markup, /Better label available/);
+  assert.match(
+    markup,
+    /class="verdict-button is-selected"[^>]*aria-pressed="true"[^>]*><span class="verdict-button-label">Unsupported \/ overclaimed/,
+  );
+  assert.match(markup, /Review summary/);
+  assert.match(markup, /Blind choice/);
+  assert.match(markup, /Cloud resource discovery/);
+  assert.match(markup, /AI claim/);
+  assert.match(markup, /Suspicious IAM privilege escalation/);
+  assert.match(markup, /Label duel winner/);
+  assert.match(markup, /Impostor selected/);
+  assert.match(markup, /Role created for analytics connector/);
+  assert.match(markup, /0 support · 1 weak · 2 contradict · 1 context/);
+  assert.match(markup, /Final verdict<\/dt><dd>Unsupported \/ overclaimed/);
+  assert.match(
+    markup,
+    /Rename the label or request stronger evidence before accepting the AI claim\./,
+  );
+  assert.match(markup, /Review complete\. Export the structured result/);
+  assert.match(markup, /View JSON/);
+  assert.match(markup, /Copy JSON/);
+  assert.match(markup, /Download JSON/);
+  assert.match(markup, /Export review result/);
+  assert.doesNotMatch(markup, /Verdict context/);
+  assert.doesNotMatch(markup, /Final judgment/);
+  assert.doesNotMatch(markup, /Failure-mode chips/);
+  assert.doesNotMatch(markup, /Open review JSON/);
+  assert.doesNotMatch(markup, /Awaiting review choice/);
+  assert.doesNotMatch(markup, /Verdict not selected/);
+  assert.doesNotMatch(markup, /Select a verdict to close the review/);
+  assert.doesNotMatch(markup, /Make the final call/);
+  assertNoMixedVerdictState(markup);
+});
+
+test("verdict selection updates the displayed outcome through review state", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const evidenceRatings = getEvidenceRatings(selectedCase, {});
+  const balance = getEvidenceBalance(selectedCase, evidenceRatings);
+  const initialState = createInitialArenaState([selectedCase], "verdict");
+  const updatedState = arenaReducer(
+    initialState,
+    { type: "selectVerdict", verdict: "supported" },
+    [selectedCase],
+  );
+  const markup = renderStaticMarkup(
+    React.createElement(VerdictPanel, {
+      caseFile: selectedCase,
+      reviewState: getCurrentReviewState(updatedState),
+      balance,
+      onSelectVerdict: () => undefined,
+      onToggleFailureMode: () => undefined,
+      onBackToImpostor: () => undefined,
+      onOpenReviewDrawer: () => undefined,
+      onCopyJson: () => undefined,
+      onDownloadJson: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /Structured Verdict · Review complete/);
+  assert.match(markup, /<h2 id="verdict-hero-title">Supported<\/h2>/);
+  assert.match(markup, /Final verdict<\/dt><dd>Supported/);
+  assert.match(markup, /Status: Review complete · Ready to export/);
+  assert.match(markup, /Conclusion: Claim is not sufficiently supported\./);
+  assert.match(markup, /Reasons selected<\/dt><dd>No failure reason selected\./);
+  assert.match(
+    markup,
+    /Recommended action<\/dt><dd>Review evidence conflicts before accepting this label\./,
+  );
+  assert.match(
+    markup,
+    /class="verdict-button is-selected"[^>]*aria-pressed="true"[^>]*><span class="verdict-button-label">Supported/,
+  );
+  assert.doesNotMatch(markup, /<h2 id="verdict-hero-title">Unsupported \/ overclaimed<\/h2>/);
+  assert.doesNotMatch(markup, /Awaiting review choice/);
+  assert.doesNotMatch(markup, /Verdict not selected/);
+  assert.doesNotMatch(markup, /Conclusion: Claim is supported\./);
+  assert.doesNotMatch(markup, /Accept the label and keep the evidence packet attached for audit\./);
+  assert.doesNotMatch(markup, /Selected: Overclaimed intent/);
+  assertNoMixedVerdictState(markup);
+});
+
+test("verdict empty state stays internally consistent and softens export", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const evidenceRatings = getEvidenceRatings(selectedCase, {});
+  const balance = getEvidenceBalance(selectedCase, evidenceRatings);
+  const markup = renderStaticMarkup(
+    React.createElement(VerdictPanel, {
+      caseFile: selectedCase,
+      reviewState: {},
+      balance,
+      onSelectVerdict: () => undefined,
+      onToggleFailureMode: () => undefined,
+      onBackToImpostor: () => undefined,
+      onOpenReviewDrawer: () => undefined,
+      onCopyJson: () => undefined,
+      onDownloadJson: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /Structured Verdict · Awaiting verdict/);
+  assert.match(markup, /Make the final call/);
+  assert.match(markup, /Choose a verdict to finish the review\./);
+  assert.match(markup, /Conclusion: Claim is not sufficiently supported\./);
+  assert.match(markup, /Final verdict<\/dt><dd>Verdict not selected\./);
+  assert.match(
+    markup,
+    /Recommended action<\/dt><dd>Choose a verdict to produce a recommended review action\./,
+  );
+  assert.match(markup, /disabled="">Export review result/);
+  assert.match(markup, /View JSON/);
+  assert.doesNotMatch(markup, /Verdict selected/);
+  assert.doesNotMatch(markup, /Structured Verdict · Review complete/);
+  assert.doesNotMatch(markup, /Ready to export/);
+  assert.doesNotMatch(markup, /class="verdict-button is-selected"/);
+  assertNoMixedVerdictState(markup);
+});
+
+test("verdict cannot mix completed cues with missing-verdict summary", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const evidenceRatings = getEvidenceRatings(selectedCase, {});
+  const balance = getEvidenceBalance(selectedCase, evidenceRatings);
+  const unfinishedMarkup = renderStaticMarkup(
+    React.createElement(VerdictPanel, {
+      caseFile: selectedCase,
+      reviewState: {
+        blindChoiceId: "cloud-resource-discovery",
+        aiLabelRevealed: true,
+        labelDuelWinnerId: "label-iam-baseline",
+        impostorSessionId: "iam-s-01",
+        failureModes: ["less_overclaimed", "missing_evidence"],
+      },
+      balance,
+      onSelectVerdict: () => undefined,
+      onToggleFailureMode: () => undefined,
+      onBackToImpostor: () => undefined,
+      onOpenReviewDrawer: () => undefined,
+      onCopyJson: () => undefined,
+      onDownloadJson: () => undefined,
+    }),
+  );
+
+  assert.match(unfinishedMarkup, /Make the final call/);
+  assert.match(unfinishedMarkup, /Verdict not selected\./);
+  assert.match(unfinishedMarkup, /disabled="">Export review result/);
+  assert.doesNotMatch(unfinishedMarkup, /Ready to export/);
+  assert.doesNotMatch(unfinishedMarkup, /Structured Verdict · Review complete/);
+  assert.doesNotMatch(unfinishedMarkup, /class="verdict-button is-selected"/);
+  assertNoMixedVerdictState(unfinishedMarkup);
+
+  const completedMarkup = renderStaticMarkup(
+    React.createElement(VerdictPanel, {
+      caseFile: selectedCase,
+      reviewState: {
+        blindChoiceId: "cloud-resource-discovery",
+        aiLabelRevealed: true,
+        labelDuelWinnerId: "label-iam-baseline",
+        impostorSessionId: "iam-s-01",
+        failureModes: ["less_overclaimed", "missing_evidence"],
+        finalVerdict: "unsupported_overclaimed",
+      },
+      balance,
+      onSelectVerdict: () => undefined,
+      onToggleFailureMode: () => undefined,
+      onBackToImpostor: () => undefined,
+      onOpenReviewDrawer: () => undefined,
+      onCopyJson: () => undefined,
+      onDownloadJson: () => undefined,
+    }),
+  );
+
+  assert.match(completedMarkup, /Ready to export/);
+  assert.match(completedMarkup, /Final verdict<\/dt><dd>Unsupported \/ overclaimed/);
+  assert.match(completedMarkup, /Overclaimed intent, Missing evidence/);
+  assert.match(completedMarkup, /class="verdict-button is-selected"/);
+  assert.doesNotMatch(completedMarkup, /Verdict not selected\./);
+  assert.doesNotMatch(completedMarkup, /Choose a verdict to finish the review/);
+  assert.doesNotMatch(completedMarkup, /disabled="">Export review result/);
+  assertNoMixedVerdictState(completedMarkup);
+});
+
+test("supported verdict with conflicting evidence clears negative reasons and avoids accept copy", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const evidenceRatings = getEvidenceRatings(selectedCase, {});
+  const balance = getEvidenceBalance(selectedCase, evidenceRatings);
+  const markup = renderStaticMarkup(
+    React.createElement(VerdictPanel, {
+      caseFile: selectedCase,
+      reviewState: {
+        blindChoiceId: "cloud-resource-discovery",
+        aiLabelRevealed: true,
+        labelDuelWinnerId: "label-iam-baseline",
+        impostorSessionId: "iam-s-01",
+        failureModes: ["less_overclaimed", "missing_evidence"],
+        finalVerdict: "supported",
+      },
+      balance,
+      onSelectVerdict: () => undefined,
+      onToggleFailureMode: () => undefined,
+      onBackToImpostor: () => undefined,
+      onOpenReviewDrawer: () => undefined,
+      onCopyJson: () => undefined,
+      onDownloadJson: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /<h2 id="verdict-hero-title">Supported<\/h2>/);
+  assert.match(markup, /Final verdict<\/dt><dd>Supported/);
+  assert.match(markup, /Reasons selected<\/dt><dd>No failure reason selected\./);
+  assert.match(markup, /Conclusion: Claim is not sufficiently supported\./);
+  assert.match(
+    markup,
+    /Recommended action<\/dt><dd>Review evidence conflicts before accepting this label\./,
+  );
+  assert.match(
+    markup,
+    /class="verdict-button is-selected"[^>]*aria-pressed="true"[^>]*><span class="verdict-button-label">Supported/,
+  );
+  assert.doesNotMatch(markup, /Selected: Overclaimed intent/);
+  assert.doesNotMatch(markup, /Reasons selected<\/dt><dd>Overclaimed intent, Missing evidence/);
+  assert.doesNotMatch(markup, /Accept the label and keep the evidence packet attached for audit\./);
+  assert.doesNotMatch(markup, /Conclusion: Claim is supported\./);
+  assertNoMixedVerdictState(markup);
+});
+
+test("verdict route opens the demo case as a completed structured judgment", () => {
+  const pageText = renderVerdictPageText();
+
+  assert.match(pageText, /Step 8 of 8 · Verdict/);
+  assert.match(pageText, /Structured Verdict · Review complete/);
+  assert.match(pageText, /<h2 id="verdict-hero-title">Unsupported \/ overclaimed<\/h2>/);
+  assert.match(pageText, /Overclaimed intent/);
+  assert.match(pageText, /Missing evidence/);
+  assert.match(pageText, /Status: Review complete · Ready to export/);
+  assert.match(pageText, /Final verdict<\/dt><dd>Unsupported \/ overclaimed/);
+  assert.match(
+    pageText,
+    /class="verdict-button is-selected"[^>]*aria-pressed="true"[^>]*><span class="verdict-button-label">Unsupported \/ overclaimed/,
+  );
+  assert.match(pageText, /Conclusion: Claim is not sufficiently supported\./);
+  assert.match(
+    pageText,
+    /Recommended action<\/dt><dd>Rename the label or request stronger evidence before accepting the AI claim\./,
+  );
+  assert.match(pageText, /Export review result/);
+  assert.doesNotMatch(pageText, /<h2 id="verdict-hero-title">Supported<\/h2>/);
+  assert.doesNotMatch(pageText, /Final verdict<\/dt><dd>Supported/);
+  assert.doesNotMatch(pageText, /Accept the label and keep the evidence packet attached for audit\./);
+  assert.doesNotMatch(pageText, /Conclusion: Claim is supported\./);
+  assert.doesNotMatch(pageText, /Verdict not selected/);
+  assert.doesNotMatch(pageText, /Select a verdict to close the review/);
+  assertNoMixedVerdictState(pageText);
+});
+
+test("label duel turns evidence balance into a defensible label decision", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const emptyMarkup = renderStaticMarkup(
+    React.createElement(LabelDuelPanel, {
+      caseFile: selectedCase,
+      reviewState: {
+        blindChoiceId: "cloud-resource-discovery",
+        aiLabelRevealed: true,
+      },
+      onSelectWinner: () => undefined,
+      onToggleReason: () => undefined,
+      onSetDuelNote: () => undefined,
+      onBackToEvidenceBoard: () => undefined,
+      onContinue: () => undefined,
+    }),
+  );
+
+  assert.match(emptyMarkup, /Choose the most defensible label/);
+  assert.match(
+    emptyMarkup,
+    /Your evidence suggests the original AI claim may be too strong/,
+  );
+  assert.match(emptyMarkup, /Original AI claim/);
+  assert.match(emptyMarkup, /Suspicious IAM privilege escalation/);
+  assert.match(emptyMarkup, /Your evidence read/);
+  assert.match(emptyMarkup, /1 weak support · 2 contradictions · 1 needs context/);
+  assert.match(emptyMarkup, /Current signal/);
+  assert.match(emptyMarkup, /Likely overclaim/);
+  assert.match(emptyMarkup, /Candidate labels/);
+  assert.match(emptyMarkup, /Select the label that is best supported by the evidence/);
+  assert.match(emptyMarkup, /Best supported/);
+  assert.match(
+    emptyMarkup,
+    /Best matches the observed IAM activity without assuming malicious escalation/,
+  );
+  assert.match(emptyMarkup, /Select label/);
+  assert.doesNotMatch(emptyMarkup, /Recommended/);
+  assert.doesNotMatch(emptyMarkup, /Selected/);
+  assert.match(emptyMarkup, /Original AI claim/);
+  assert.match(emptyMarkup, /Too strong/);
+  assert.match(emptyMarkup, /Other possible labels/);
+  assert.match(emptyMarkup, /More specific label/);
+  assert.match(emptyMarkup, /Plausible but narrow/);
+  assert.match(emptyMarkup, /Uncertainty label/);
+  assert.match(emptyMarkup, /Safer but vague/);
+  assert.doesNotMatch(emptyMarkup, /Support 86%/);
+  assert.doesNotMatch(emptyMarkup, /Semantic evidence atlas/);
+  assert.doesNotMatch(emptyMarkup, /Why this label\?/);
+  assert.match(emptyMarkup, /Select one label to continue\./);
+  assert.match(emptyMarkup, /disabled="">Continue with selected label/);
+
+  const selectedMarkup = renderStaticMarkup(
+    React.createElement(LabelDuelPanel, {
+      caseFile: selectedCase,
+      reviewState: {
+        blindChoiceId: "cloud-resource-discovery",
+        aiLabelRevealed: true,
+        labelDuelWinnerId: "label-iam-constrained",
+        duelReasons: ["less_overclaimed", "missing_downstream_abuse"],
+        duelNote: "Routine provisioning best fits the current evidence.",
+      },
+      onSelectWinner: () => undefined,
+      onToggleReason: () => undefined,
+      onSetDuelNote: () => undefined,
+      onBackToEvidenceBoard: () => undefined,
+      onContinue: () => undefined,
+    }),
+  );
+
+  assert.match(selectedMarkup, /Why this label\?/);
+  assert.match(selectedMarkup, /Selected/);
+  assert.match(
+    selectedMarkup,
+    /Select one or more reasons, or add a short note/,
+  );
+  assert.match(selectedMarkup, /Less overclaimed/);
+  assert.match(selectedMarkup, /Missing malicious intent/);
+  assert.match(selectedMarkup, /Missing downstream abuse/);
+  assert.match(selectedMarkup, /Better supported/);
+  assert.match(selectedMarkup, /Cluster seems mixed/);
+  assert.match(selectedMarkup, /Add a short note, optional/);
+  assert.match(selectedMarkup, /Optional note for the final review/);
+  assert.match(
+    selectedMarkup,
+    /Selected: Routine IAM role provisioning\. It will be compared against the impostor label next\./,
+  );
+  assert.match(
+    selectedMarkup,
+    /Continue with selected label/,
+  );
+  assert.doesNotMatch(
+    selectedMarkup,
+    /disabled="">Continue with selected label/,
+  );
+});
+
+test("impostor review teaches the comparison before a session is selected", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const markup = renderStaticMarkup(
+    React.createElement(ImpostorPanel, {
+      caseFile: selectedCase,
+      reviewState: {
+        labelDuelWinnerId: "label-iam-uncertain",
+      },
+      onSelectSession: () => undefined,
+      onBackToLabelDuel: () => undefined,
+      onContinue: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /Find the weakest-fit session/);
+  assert.match(
+    markup,
+    /Compare the five representative sessions and choose the one that least matches the cluster pattern\./,
+  );
+  assert.match(markup, /Selected label/);
+  assert.match(markup, /IAM administration with unknown intent/);
+  assert.match(markup, /Evidence read/);
+  assert.match(markup, /Review status/);
+  assert.match(markup, /Needs review/);
+  assert.match(markup, /Fit check/);
+  assert.match(
+    markup,
+    /Weakest fit = high outlier risk \+ low cluster pattern match/,
+  );
+  assert.match(markup, /Strongest signal/);
+  assert.match(markup, /What to look for/);
+  assert.match(markup, /High outlier risk/);
+  assert.match(markup, /Low cluster pattern match/);
+  assert.match(markup, /Behavior that does not match the other sessions/);
+  assert.match(markup, /iam-s-04 currently has the strongest outlier signal\./);
+  assert.match(markup, /Select a session to see how it affects the final verdict\./);
+  assert.match(markup, /82% outlier risk/);
+  assert.match(markup, /Cluster pattern match/);
+  assert.match(markup, /Low · 29%/);
+  assert.ok(
+    markup.indexOf("iam-s-04") < markup.indexOf("iam-s-03"),
+    "sessions should be ordered by outlier risk",
+  );
+  assert.match(
+    markup,
+    /Choose the session with the weakest match to the cluster before continuing\./,
+  );
+  assert.match(markup, /disabled="">Continue to verdict/);
+  assert.doesNotMatch(markup, /aria-pressed="true"/);
+});
+
+test("impostor review guards the workflow when no label was selected", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const markup = renderStaticMarkup(
+    React.createElement(ImpostorPanel, {
+      caseFile: selectedCase,
+      reviewState: {},
+      onSelectSession: () => undefined,
+      onBackToLabelDuel: () => undefined,
+      onContinue: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /Choose a label before the fit check/);
+  assert.match(markup, /Return to label duel/);
+  assert.doesNotMatch(markup, /No label recorded/);
+  assert.doesNotMatch(markup, /Compare session fit/);
+  assert.doesNotMatch(markup, /Continue to verdict/);
+});
+
+test("impostor review explains the strength of the selected session", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const strongestMarkup = renderStaticMarkup(
+    React.createElement(ImpostorPanel, {
+      caseFile: selectedCase,
+      reviewState: {
+        labelDuelWinnerId: "label-iam-uncertain",
+        impostorSessionId: "iam-s-04",
+      },
+      onSelectSession: () => undefined,
+      onBackToLabelDuel: () => undefined,
+      onContinue: () => undefined,
+    }),
+  );
+
+  assert.match(strongestMarkup, /Selection recorded/);
+  assert.match(strongestMarkup, /Cross-account PassRole probe/);
+  assert.match(strongestMarkup, /Cluster pattern match/);
+  assert.match(strongestMarkup, /Low · 29%/);
+  assert.match(strongestMarkup, /Outlier risk/);
+  assert.match(strongestMarkup, /Effect on final verdict/);
+  assert.match(
+    strongestMarkup,
+    /This is a strong impostor candidate because it has the highest outlier risk and weakest match to the cluster\./,
+  );
+  assert.match(
+    strongestMarkup,
+    /Selected: Cross-account PassRole probe · 82% outlier risk/,
+  );
+  assert.match(strongestMarkup, /aria-pressed="true"/);
+  assert.doesNotMatch(strongestMarkup, /disabled="">Continue to verdict/);
+
+  const alternateMarkup = renderStaticMarkup(
+    React.createElement(ImpostorPanel, {
+      caseFile: selectedCase,
+      reviewState: {
+        labelDuelWinnerId: "label-iam-uncertain",
+        impostorSessionId: "iam-s-03",
+      },
+      onSelectSession: () => undefined,
+      onBackToLabelDuel: () => undefined,
+      onContinue: () => undefined,
+    }),
+  );
+
+  assert.match(
+    alternateMarkup,
+    /Selection recorded, but iam-s-04 has stronger outlier evidence: 82% outlier risk and lower cluster match\./,
+  );
+  assert.match(
+    alternateMarkup,
+    /Selected: Role validation checks · 28% outlier risk\. Strongest signal: iam-s-04 · 82%\./,
+  );
+  assert.doesNotMatch(
+    alternateMarkup,
+    /This is a strong impostor candidate because it has the highest outlier risk/,
+  );
 });
 
 test("blind interpretation choices render as accessible radio cards", () => {

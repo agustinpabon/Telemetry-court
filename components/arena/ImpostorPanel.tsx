@@ -1,25 +1,20 @@
 import type { CSSProperties } from "react";
 
-import { SemanticMiniMap } from "@/components/arena/SemanticMiniMap";
 import {
   ArenaActionFooter,
   ArenaStatusBadge,
   ArenaStepHero,
   ArenaStepProgress,
   ArenaWorkflowShell,
-  SectionHeader,
 } from "@/components/arena/WorkflowPrimitives";
 import { formatSupportScore } from "@/lib/caseMetrics";
-import type { ArenaStage, CaseReviewState } from "@/lib/arenaReviewState";
-import type { CaseFile } from "@/lib/types";
-
-const orbitPositions = [
-  { x: "50%", y: "16%" },
-  { x: "76%", y: "36%" },
-  { x: "68%", y: "72%" },
-  { x: "32%", y: "72%" },
-  { x: "24%", y: "36%" },
-];
+import {
+  getEvidenceBalance,
+  getEvidenceRatings,
+  type ArenaStage,
+  type CaseReviewState,
+} from "@/lib/arenaReviewState";
+import type { CaseFile, RepresentativeSession } from "@/lib/types";
 
 type ImpostorPanelProps = {
   caseFile: CaseFile;
@@ -30,9 +25,9 @@ type ImpostorPanelProps = {
   onSelectStage?: (stage: ArenaStage) => void;
 };
 
-type SessionStyle = CSSProperties & {
-  "--session-x": string;
-  "--session-y": string;
+type SessionCardStyle = CSSProperties & {
+  "--outlier-risk": string;
+  "--cluster-match": string;
 };
 
 export function ImpostorPanel({
@@ -46,95 +41,180 @@ export function ImpostorPanel({
   const selectedSession = caseFile.representativeSessions.find(
     (session) => session.id === reviewState.impostorSessionId,
   );
+  const selectedLabel = caseFile.candidateLabels.find(
+    (candidate) => candidate.id === reviewState.labelDuelWinnerId,
+  );
+
+  if (!selectedLabel) {
+    return (
+      <ArenaWorkflowShell className="impostor-stage" ariaLabel="Impostor check">
+        <ArenaStepProgress currentStage="impostor" onSelectStage={onSelectStage} />
+
+        <ArenaStepHero
+          status={<ArenaStatusBadge tone="uncertain">Fit check</ArenaStatusBadge>}
+          title="Choose a label before the fit check"
+          summary="This comparison depends on the label selected in the previous step. Return to Label Duel to choose the interpretation you want to test."
+        />
+
+        <section className="impostor-label-guard" aria-labelledby="label-guard-title">
+          <span>Label selection required</span>
+          <h3 id="label-guard-title">The comparison is waiting for context</h3>
+          <p>
+            Once a label is selected, the five representative sessions can be compared
+            against that interpretation.
+          </p>
+        </section>
+
+        <ArenaActionFooter
+          className="impostor-actions"
+          ariaLabel="Impostor recovery actions"
+          microcopy="Choose the most defensible label before checking session fit."
+          primaryAction={{
+            label: "Return to label duel",
+            disabled: !onBackToLabelDuel,
+            onClick: onBackToLabelDuel ?? (() => undefined),
+          }}
+        />
+      </ArenaWorkflowShell>
+    );
+  }
+
+  const evidenceRatings = getEvidenceRatings(caseFile, reviewState);
+  const evidenceBalance = getEvidenceBalance(caseFile, evidenceRatings);
+  const rankedSessions = [...caseFile.representativeSessions].sort(
+    (left, right) =>
+      right.outlierScore - left.outlierScore ||
+      left.featureOverlap - right.featureOverlap,
+  );
+  const strongestCandidate = rankedSessions[0];
 
   return (
-    <ArenaWorkflowShell className="impostor-stage" ariaLabel="Find the Impostor">
+    <ArenaWorkflowShell className="impostor-stage" ariaLabel="Impostor check">
       <ArenaStepProgress currentStage="impostor" onSelectStage={onSelectStage} />
 
       <ArenaStepHero
-        eyebrow="Find the Impostor"
         status={
           <ArenaStatusBadge tone="uncertain">
-            {caseFile.representativeSessions.length} representative sessions
+            Impostor check · {caseFile.representativeSessions.length} representative
+            sessions
           </ArenaStatusBadge>
         }
-        title="Which representative session least belongs?"
-        summary="Test cluster purity by selecting the session with the weakest fit against the behavioural region."
+        title="Find the weakest-fit session"
+        summary="Compare the five representative sessions and choose the one that least matches the cluster pattern."
       />
 
-      <div className="impostor-context-row">
-        <SemanticMiniMap caseFile={caseFile} label="Purity context" />
-        <SectionHeader
-          title="Session fit map"
-          description="Outlier score and feature overlap help explain whether the cluster is coherent or mixed."
-        />
-      </div>
-
-      <div className="impostor-layout">
-        <div className="session-orbit" aria-label="Representative session orbit">
-          <div className="orbit-core" aria-hidden="true">
-            <span>Cluster core</span>
-          </div>
-          {caseFile.representativeSessions.map((session, index) => {
-            const position = orbitPositions[index % orbitPositions.length];
-            const isSelected = session.id === reviewState.impostorSessionId;
-            const style: SessionStyle = {
-              "--session-x": position.x,
-              "--session-y": position.y,
-            };
-
-            return (
-              <button
-                key={session.id}
-                type="button"
-                className={`session-orbit-card ${isSelected ? "is-selected" : ""}`}
-                style={style}
-                onClick={() => onSelectSession(session.id)}
-                aria-pressed={isSelected}
-              >
-                <span>{session.id}</span>
-                <strong>{session.title}</strong>
-                <em>outlier {formatSupportScore(session.outlierScore)}</em>
-              </button>
-            );
-          })}
+      <section className="impostor-evidence-summary" aria-label="Decision context">
+        <div>
+          <span>Selected label</span>
+          <strong>{selectedLabel.label}</strong>
         </div>
+        <div>
+          <span>Evidence read</span>
+          <strong>{formatEvidenceBalance(evidenceBalance)}</strong>
+        </div>
+        <div>
+          <span>Review status</span>
+          <strong className="impostor-review-pill">Needs review</strong>
+        </div>
+        <div>
+          <span>Decision</span>
+          <strong>Fit check</strong>
+        </div>
+      </section>
 
-        <article className="impostor-detail">
-          {selectedSession ? (
-            <>
-              <span className="mono-value">{selectedSession.id}</span>
-              <h3>{selectedSession.title}</h3>
-              <p>{selectedSession.summary}</p>
-              <dl className="session-detail-metrics">
-                <div>
-                  <dt>Feature overlap</dt>
-                  <dd>{formatSupportScore(selectedSession.featureOverlap)}</dd>
-                </div>
-                <div>
-                  <dt>Outlier score</dt>
-                  <dd>{formatSupportScore(selectedSession.outlierScore)}</dd>
-                </div>
-              </dl>
-              <div className="outlier-explanation">
-                <span>Confidence impact</span>
-                <p>
-                  {selectedSession.outlierReason ??
-                    "This reviewer-selected session is recorded in the JSON export, but it is not the seeded outlier for this synthetic case."}
-                </p>
-              </div>
-            </>
-          ) : (
-            <>
-              <span className="mono-value">Purity test</span>
-              <h3>Cluster purity unresolved</h3>
+      <div className="impostor-decision-layout">
+        <section className="session-comparison" aria-labelledby="session-comparison-title">
+          <div className="impostor-section-heading">
+            <div>
+              <h3 id="session-comparison-title">Compare session fit</h3>
               <p>
-                The final purity judgment needs the session with the weakest feature
-                overlap and highest outlier pressure.
+                Compare the same two signals across every session.
               </p>
-            </>
-          )}
-        </article>
+            </div>
+          </div>
+
+          <div
+            className="impostor-criterion-row"
+            aria-label="Weakest fit = high outlier risk + low cluster pattern match"
+          >
+            <strong>Weakest fit</strong>
+            <span>High outlier risk</span>
+            <i aria-hidden="true">+</i>
+            <span>Low cluster pattern match</span>
+          </div>
+
+          <ol className="session-comparison-list">
+            {rankedSessions.map((session, index) => {
+              const isSelected = session.id === reviewState.impostorSessionId;
+              const isStrongestCandidate = session.id === strongestCandidate?.id;
+              const matchLevel = getClusterMatchLevel(session.featureOverlap);
+              const style: SessionCardStyle = {
+                "--outlier-risk": formatSupportScore(session.outlierScore),
+                "--cluster-match": formatSupportScore(session.featureOverlap),
+              };
+
+              return (
+                <li key={session.id}>
+                  <button
+                    type="button"
+                    className={`session-comparison-card ${
+                      isStrongestCandidate ? "is-strongest" : ""
+                    } ${isSelected ? "is-selected" : ""}`}
+                    style={style}
+                    onClick={() => onSelectSession(session.id)}
+                    aria-pressed={isSelected}
+                  >
+                    <span className="session-rank" aria-hidden="true">
+                      {index + 1}
+                    </span>
+                    <span className="session-card-content">
+                      <span className="session-card-topline">
+                        <span className="mono-value">{session.id}</span>
+                        {isStrongestCandidate ? (
+                          <span className="strongest-candidate-badge">
+                            Strongest signal
+                          </span>
+                        ) : null}
+                        <span className="session-selection-state" aria-hidden="true">
+                          {isSelected ? "Selected" : "Select"}
+                        </span>
+                      </span>
+                      <strong className="session-card-title">{session.title}</strong>
+                      <span className="session-card-summary">{session.summary}</span>
+                      <span className="session-card-metrics">
+                        <span className="session-card-metric session-card-metric-risk">
+                          <span>Outlier risk</span>
+                          <strong aria-label={`${formatSupportScore(
+                            session.outlierScore,
+                          )} outlier risk`}>
+                            {formatSupportScore(session.outlierScore)} outlier risk
+                          </strong>
+                          <span className="session-meter" aria-hidden="true">
+                            <span />
+                          </span>
+                        </span>
+                        <span className="session-card-metric session-card-metric-match">
+                          <span>Cluster pattern match</span>
+                          <strong>
+                            {matchLevel} · {formatSupportScore(session.featureOverlap)}
+                          </strong>
+                          <span className="session-meter" aria-hidden="true">
+                            <span />
+                          </span>
+                        </span>
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+
+        <ImpostorDetailPanel
+          selectedSession={selectedSession}
+          strongestCandidate={strongestCandidate}
+        />
       </div>
 
       <ArenaActionFooter
@@ -142,8 +222,8 @@ export function ImpostorPanel({
         ariaLabel="Impostor actions"
         microcopy={
           selectedSession
-            ? "Use the weakest-fit session to inform the final verdict."
-            : "Select the least representative session before continuing."
+            ? formatImpostorFooterMicrocopy(selectedSession, strongestCandidate)
+            : "Choose the session with the weakest match to the cluster before continuing."
         }
         secondaryAction={
           onBackToLabelDuel
@@ -161,4 +241,158 @@ export function ImpostorPanel({
       />
     </ArenaWorkflowShell>
   );
+}
+
+function ImpostorDetailPanel({
+  selectedSession,
+  strongestCandidate,
+}: {
+  selectedSession?: RepresentativeSession;
+  strongestCandidate?: RepresentativeSession;
+}) {
+  if (!selectedSession) {
+    return (
+      <aside className="impostor-detail impostor-detail-guide" aria-live="polite">
+        <span className="impostor-detail-label">Fit check</span>
+        <h3>What to look for</h3>
+        <ul className="impostor-criteria-list">
+          <li>
+            <strong>High outlier risk</strong>
+            <span>The behavior is unusual within this group.</span>
+          </li>
+          <li>
+            <strong>Low cluster pattern match</strong>
+            <span>The session shares fewer features with the cluster.</span>
+          </li>
+          <li>
+            <strong>Behavior that does not match the other sessions</strong>
+            <span>Look for a different action, actor, or timing pattern.</span>
+          </li>
+        </ul>
+        {strongestCandidate ? (
+          <section className="impostor-current-candidate" aria-label="Current strongest candidate">
+            <span>Current strongest candidate</span>
+            <div>
+              <span className="mono-value">{strongestCandidate.id}</span>
+              <strong>{strongestCandidate.title}</strong>
+            </div>
+            <dl>
+              <div>
+                <dt>Outlier risk</dt>
+                <dd>{formatSupportScore(strongestCandidate.outlierScore)}</dd>
+              </div>
+              <div>
+                <dt>Cluster match</dt>
+                <dd>{formatSupportScore(strongestCandidate.featureOverlap)}</dd>
+              </div>
+            </dl>
+            <p>{strongestCandidate.id} currently has the strongest outlier signal.</p>
+          </section>
+        ) : null}
+        <p className="impostor-detail-helper">
+          Select a session to see how it affects the final verdict.
+        </p>
+      </aside>
+    );
+  }
+
+  const isStrongestCandidate = selectedSession.id === strongestCandidate?.id;
+  const alternateCandidateNote = strongestCandidate
+    ? `Selection recorded, but ${strongestCandidate.id} has stronger outlier evidence: ${formatSupportScore(
+        strongestCandidate.outlierScore,
+      )} outlier risk and lower cluster match.`
+    : "This selection will be recorded, but another session has stronger outlier evidence.";
+
+  return (
+    <aside className="impostor-detail is-resolved" aria-live="polite">
+      <div className="impostor-detail-topline">
+        <span className="impostor-detail-label">Selection recorded</span>
+        <span className="impostor-recorded-indicator">Recorded</span>
+      </div>
+      <span className="mono-value">{selectedSession.id}</span>
+      <h3>{selectedSession.title}</h3>
+      <p>{selectedSession.summary}</p>
+      <dl className="session-detail-metrics">
+        <div>
+          <dt>Cluster pattern match</dt>
+          <dd>
+            {getClusterMatchLevel(selectedSession.featureOverlap)} ·{" "}
+            {formatSupportScore(selectedSession.featureOverlap)}
+          </dd>
+        </div>
+        <div>
+          <dt>Outlier risk</dt>
+          <dd>{formatSupportScore(selectedSession.outlierScore)}</dd>
+        </div>
+      </dl>
+      <div
+        className={`outlier-explanation ${
+          isStrongestCandidate ? "is-strong-candidate" : "is-neutral-warning"
+        }`}
+      >
+        <span>Effect on final verdict</span>
+        <p>
+          {isStrongestCandidate
+            ? "This is a strong impostor candidate because it has the highest outlier risk and weakest match to the cluster."
+            : alternateCandidateNote}
+        </p>
+      </div>
+      {selectedSession.outlierReason ? (
+        <p className="impostor-evidence-note">{selectedSession.outlierReason}</p>
+      ) : null}
+    </aside>
+  );
+}
+
+function getClusterMatchLevel(featureOverlap: number) {
+  if (featureOverlap >= 0.72) {
+    return "High";
+  }
+
+  if (featureOverlap >= 0.45) {
+    return "Medium";
+  }
+
+  return "Low";
+}
+
+function formatImpostorFooterMicrocopy(
+  selectedSession: RepresentativeSession,
+  strongestCandidate?: RepresentativeSession,
+) {
+  const selectedCopy = `Selected: ${selectedSession.title} · ${formatSupportScore(
+    selectedSession.outlierScore,
+  )} outlier risk`;
+
+  if (!strongestCandidate || selectedSession.id === strongestCandidate.id) {
+    return selectedCopy;
+  }
+
+  return `${selectedCopy}. Strongest signal: ${strongestCandidate.id} · ${formatSupportScore(
+    strongestCandidate.outlierScore,
+  )}.`;
+}
+
+function formatEvidenceBalance(balance: ReturnType<typeof getEvidenceBalance>) {
+  const parts = [
+    { value: balance.supporting, singular: "support", plural: "supports" },
+    { value: balance.weak, singular: "weak support", plural: "weak support" },
+    {
+      value: balance.contradictory,
+      singular: "contradiction",
+      plural: "contradictions",
+    },
+    {
+      value: balance.contextGaps,
+      singular: "needs context",
+      plural: "need context",
+    },
+  ].filter((part) => part.value > 0);
+
+  return parts
+    .map(
+      (part) =>
+        `${part.value} ${part.value === 1 ? part.singular : part.plural}`,
+    )
+    .join(" · ");
 }

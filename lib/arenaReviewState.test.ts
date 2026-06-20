@@ -95,6 +95,11 @@ test("arena reducer drives the staged structured-choice happy path", () => {
     { type: "toggleDuelReason", reason: "better_supported" },
     sampleCases,
   );
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "setDuelNote", note: "Best supported by observed behavior." },
+    sampleCases,
+  );
 
   const impostor = targetCase.representativeSessions[0];
   assert.ok(impostor);
@@ -126,6 +131,7 @@ test("arena reducer drives the staged structured-choice happy path", () => {
 
   assert.equal(reviewState.labelDuelWinnerId, candidate.id);
   assert.deepEqual(reviewState.duelReasons, ["better_supported"]);
+  assert.equal(reviewState.duelNote, "Best supported by observed behavior.");
   assert.equal(reviewState.impostorSessionId, impostor.id);
   assert.equal(reviewState.finalVerdict, "partially_supported");
   assert.deepEqual(reviewState.failureModes, ["less_overclaimed"]);
@@ -144,11 +150,43 @@ test("arena reducer drives the staged structured-choice happy path", () => {
   assert.equal(arenaReview.blindChoiceId, blindChoice.id);
   assert.equal(arenaReview.aiLabel, targetCase.topicLabel.name);
   assert.equal(arenaReview.labelDuelWinnerId, candidate.id);
+  assert.equal(arenaReview.duelNote, "Best supported by observed behavior.");
   assert.equal(arenaReview.impostorSessionId, impostor.id);
   assert.equal(arenaReview.finalVerdict, "partially_supported");
   assert.equal(balance.total, targetCase.evidenceItems.length);
   assert.match(exportJson, /"arenaReview"/);
+  assert.match(exportJson, /"duelNote"/);
   assert.match(exportJson, /"partially_supported"/);
+});
+
+test("selecting supported clears negative failure modes from state and export", () => {
+  const targetCase = sampleCases[0];
+  assert.ok(targetCase);
+
+  let arenaState = createInitialArenaState(sampleCases, "verdict");
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "toggleFailureMode", reason: "less_overclaimed" },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "toggleFailureMode", reason: "missing_evidence" },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "selectVerdict", verdict: "supported" },
+    sampleCases,
+  );
+
+  const reviewState = getCurrentReviewState(arenaState);
+  const evidenceRatings = getEvidenceRatings(targetCase, reviewState);
+  const arenaReview = buildArenaReview(targetCase, reviewState, evidenceRatings);
+
+  assert.equal(reviewState.finalVerdict, "supported");
+  assert.deepEqual(reviewState.failureModes, []);
+  assert.deepEqual(arenaReview.failureModes, []);
 });
 
 test("default evidence suggestions count as classified evidence", () => {
@@ -198,4 +236,62 @@ test("arena reducer hydrates persisted review state without changing the request
   assert.equal(arenaState.activeStage, "evidence_board");
   assert.equal(arenaState.selectedCaseId, targetCase.id);
   assert.deepEqual(getCurrentReviewState(arenaState), reviewState);
+});
+
+test("direct verdict hydration keeps the seeded demo final verdict when persisted state is partial", () => {
+  const targetCase = sampleCases[0];
+  assert.ok(targetCase);
+
+  const partialReviewState = {
+    blindChoiceId: "cloud-resource-discovery",
+    aiLabelRevealed: true,
+    labelDuelWinnerId: "label-iam-baseline",
+    impostorSessionId: "iam-s-01",
+  };
+  const arenaState = arenaReducer(
+    createInitialArenaState(sampleCases, "verdict"),
+    {
+      type: "hydrateSession",
+      selectedCaseId: targetCase.id,
+      reviewsByCase: {
+        [targetCase.id]: partialReviewState,
+      },
+    },
+    sampleCases,
+  );
+  const hydratedReview = getCurrentReviewState(arenaState);
+
+  assert.equal(arenaState.activeStage, "verdict");
+  assert.equal(hydratedReview.finalVerdict, "unsupported_overclaimed");
+  assert.deepEqual(hydratedReview.failureModes, [
+    "less_overclaimed",
+    "missing_evidence",
+  ]);
+  assert.equal(hydratedReview.blindChoiceId, "cloud-resource-discovery");
+});
+
+test("direct verdict hydration preserves an explicitly persisted final verdict", () => {
+  const targetCase = sampleCases[0];
+  assert.ok(targetCase);
+
+  const persistedReviewState = {
+    blindChoiceId: "cloud-resource-discovery",
+    aiLabelRevealed: true,
+    finalVerdict: "supported" as const,
+    failureModes: [],
+  };
+  const arenaState = arenaReducer(
+    createInitialArenaState(sampleCases, "verdict"),
+    {
+      type: "hydrateSession",
+      selectedCaseId: targetCase.id,
+      reviewsByCase: {
+        [targetCase.id]: persistedReviewState,
+      },
+    },
+    sampleCases,
+  );
+
+  assert.equal(getCurrentReviewState(arenaState).finalVerdict, "supported");
+  assert.deepEqual(getCurrentReviewState(arenaState).failureModes, []);
 });
