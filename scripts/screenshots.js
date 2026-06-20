@@ -4,6 +4,20 @@ async function captureScreenshots() {
   const { chromium } = await import("playwright");
   const baseUrl = process.env.TELEMETRY_COURT_BASE_URL ?? "http://localhost:3000";
   const screenshotDir = path.resolve(process.cwd(), "screenshots");
+  const seededState = {
+    selectedCaseId: "case-arena-001",
+    reviewsByCase: {
+      "case-arena-001": {
+        blindChoiceId: "none-of-these",
+        aiLabelRevealed: true,
+        evidenceRatings: {},
+        labelDuelWinnerId: "label-iam-constrained",
+        impostorSessionId: "iam-s-04",
+        failureModes: ["less_overclaimed", "missing_evidence"],
+        finalVerdict: "unsupported_overclaimed",
+      },
+    },
+  };
   const routes = [
     { path: "/", fileName: "01-landscape.png" },
     { path: "/case-file", fileName: "02-case-file.png" },
@@ -27,22 +41,12 @@ async function captureScreenshots() {
     await page.goto(baseUrl, { waitUntil: "networkidle" });
     
     // Seed the required state to bypass route guards
-    await page.evaluate(() => {
-      const state = {
-        selectedCaseId: "case-arena-001",
-        reviewsByCase: {
-          "case-arena-001": {
-            blindChoiceId: "none-of-these",
-            aiLabelRevealed: true,
-            evidenceRatings: {},
-            labelDuelWinnerId: "candidate-0",
-            impostorSessionId: "session-5-impostor",
-            finalVerdict: "accept"
-          }
-        }
-      };
-      window.sessionStorage.setItem("telemetry-court-arena-state-v1", JSON.stringify(state));
-    });
+    await page.evaluate((state) => {
+      window.sessionStorage.setItem(
+        "telemetry-court-arena-state-v1",
+        JSON.stringify(state),
+      );
+    }, seededState);
 
     for (const route of routes) {
       console.log(`Capturing ${route.fileName} on route ${route.path}...`);
@@ -51,9 +55,46 @@ async function captureScreenshots() {
       await page.goto(url, { waitUntil: "networkidle" });
       
       const currentUrl = new URL(page.url());
-      if (currentUrl.pathname !== route.path && currentUrl.pathname !== route.path + '/') {
-         console.warn(`Warning: Expected to be on ${route.path} but was redirected to ${currentUrl.pathname}`);
+      if (
+        currentUrl.pathname !== route.path &&
+        currentUrl.pathname !== `${route.path}/`
+      ) {
+        throw new Error(
+          `Expected ${route.path} but was redirected to ${currentUrl.pathname}`,
+        );
       }
+
+      const errorOverlay = await page.locator("[data-nextjs-dialog]").count();
+
+      if (errorOverlay > 0) {
+        throw new Error(`Next.js error overlay detected on ${route.path}`);
+      }
+
+      if (route.path === "/verdict") {
+        const verdictState = await page.evaluate(() => {
+          const pageText = document.body.innerText;
+
+          return {
+            ready: pageText.includes("Ready to export"),
+            verdictMissing: pageText.includes("Verdict not selected"),
+            selectedVerdict: Boolean(
+              document.querySelector('.verdict-button[aria-pressed="true"]'),
+            ),
+          };
+        });
+
+        if (
+          !verdictState.ready ||
+          verdictState.verdictMissing ||
+          !verdictState.selectedVerdict
+        ) {
+          throw new Error(
+            `Inconsistent verdict screenshot state: ${JSON.stringify(verdictState)}`,
+          );
+        }
+      }
+
+      await page.waitForTimeout(250);
 
       await page.screenshot({
         path: path.join(screenshotDir, route.fileName),

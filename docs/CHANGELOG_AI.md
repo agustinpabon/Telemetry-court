@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-20: Workflow Screenshot Seed Integrity Fix
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Review PR #44, repair the screenshot seed, and verify that committed workflow captures reflect valid current review state.
+- Files changed: `scripts/screenshots.js`, `screenshots/01-landscape.png`, `screenshots/06-label-duel.png`, `screenshots/07-impostor.png`, `screenshots/08-verdict.png`, and `docs/CHANGELOG_AI.md`.
+- Summary: Replaced obsolete label, session, and verdict seed values with current domain IDs; made route redirects and Next.js error overlays fail screenshot generation; added a verdict consistency assertion; and regenerated the affected screenshots with a completed evidence-grounded review state.
+- Decisions made: Kept deterministic session-state seeding for the static workflow capture, but made invalid or internally contradictory screenshots hard failures instead of warnings.
+- Checks run: `npm test` passed with 48 tests; `npm run lint` passed with 0 errors and the existing 134 Impeccable warnings; `npm run build` passed; the screenshot script completed all eight routes against the production build; the Verdict capture shows a selected `Unsupported / overclaimed` verdict with matching summary and export state; `git diff --check` passed.
+- Assumptions: The first synthetic case remains the canonical deterministic workflow screenshot case.
+- Risks/follow-ups: The local `agent-browser` binary was unavailable, so browser verification used the repository's Playwright screenshot runner with added route, overlay, and verdict-state assertions.
+- Next recommended step: Merge PR #44, close issues #35-#37 and #41, then align the documentation realignment PR with the updated `main` branch.
+- Suggested commit message: `fix(screenshots): validate seeded review state`
+
 ## 2026-06-20: Verdict Evidence Consistency Fix
 
 - Agent/model: Codex (GPT-5)
