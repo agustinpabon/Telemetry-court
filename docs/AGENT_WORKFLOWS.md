@@ -1,151 +1,103 @@
 # Agent Workflows
 
-## How To Ask AI Agents For Changes
+## Orientation
 
-Give agents narrow, concrete tasks. Name the relevant file or product surface when possible. Tell the agent whether the task is documentation, data model, UI, or verification work.
+Every agent task must preserve the product identity: Telemetry Court is validation infrastructure for AI-generated telemetry cluster interpretations.
 
-Good tasks include a clear expected output and remind the agent that Telemetry Court is an Evidence Arena investigation workflow, not a generic dashboard.
+The current static interface is a protocol demonstration. The next implementation work begins with the case package and evaluation contracts, not generic backend development.
 
-## Good Task Prompt Template
+## Required Context
 
-```txt
-You are working on Telemetry Court.
+Before product, architecture, data, or backend work, read:
 
-This is not a generic AI dashboard. It is an evidence-first investigation environment for testing AI-generated telemetry interpretations.
+- `AGENTS.md`
+- `docs/PRODUCT_VISION.md`
+- `docs/PRODUCT_POSITIONING.md`
+- `docs/PROJECT_CONTEXT.md`
+- `docs/PRODUCT_DECISIONS.md`
+- `docs/ROADMAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/CASE_PACKAGE_CONTRACT.md`
+- `docs/EVALUATION_INFRASTRUCTURE.md`
+- `docs/DATA_MODEL.md`
 
-Core line:
-AI names the pattern. Humans test the evidence.
+## Task Prompt Template
 
-Before coding, read:
-- AGENTS.md
-- docs/PRODUCT_VISION.md
-- docs/PROJECT_CONTEXT.md
-- docs/PRODUCT_DECISIONS.md
-- docs/ARCHITECTURE.md
-- docs/DATA_MODEL.md
+```text
+You are working on Telemetry Court, an evidence-based human-in-the-loop
+validation bench for AI-generated telemetry cluster interpretations.
+
+The current app is a static synthetic validation slice.
+The next backend direction is Case Package Contract and Evaluation Infrastructure.
 
 Task:
-<insert narrow task here>
+<narrow task>
+
+Product checks:
+- Does this improve evidence grounding, review structure, or evaluation output?
+- Does it preserve CasePackage / ReviewResult / EvaluationReport separation?
+- Does it avoid SIEM, SOC, dashboard, raw-ingestion, chat-first, and generic-backend drift?
+- If backend work is involved, is the case package contract defined first?
 
 Constraints:
 - Make the smallest safe change.
-- Do not redesign unrelated areas.
-- Preserve Apple / Wealthsimple visual discipline.
-- Preserve the structured-choice Evidence Arena workflow.
-- Every claim must connect to evidence or explicitly show missing evidence.
-- Use existing domain model names.
-- Any factual Toponymy statement must be grounded in the official `TutteInstitute/toponymy` GitHub repository, not DeepWiki or generated summaries.
-- Update docs/CHANGELOG_AI.md after changes.
+- Preserve evidence provenance and claim-to-evidence traceability.
+- Do not invent evidence or Toponymy capabilities.
+- Keep the main review workflow structured-choice first.
+- Update docs/CHANGELOG_AI.md when required.
 
 Expected output:
 - Files changed
-- What changed
+- Major decisions
 - Checks run
 - Assumptions
-- Suggested commit message
-- Suggested next step
+- Risks and follow-up
 ```
 
-## Bad Prompt Examples
+## Good Tasks
 
-- "Make the app better."
-- "Redesign the dashboard."
-- "Add AI features."
-- "Integrate Toponymy end to end."
-- "Make it look more cybersecurity."
-- "Add real telemetry samples."
+- Define one contract decision for `CasePackage v0.1`.
+- Add runtime validation for broken evidence-to-claim references.
+- Adapt one synthetic fixture through a package boundary.
+- Version the `ReviewResult` export.
+- Define and test one deterministic evaluation metric.
+- Document a Toponymy or ACME4 adapter boundary without implementing raw ingestion.
 
-These are too broad, conflict with product direction, or risk introducing unsafe data and unreviewable changes.
+## Bad Tasks
+
+- "Connect a backend."
+- "Build an admin dashboard."
+- "Add user accounts first."
+- "Turn this into a telemetry explorer."
+- "Add live alert triage."
+- "Add an AI chatbot."
+- "Make the court experience more game-like."
+- "Integrate Toponymy end to end" without a verified source contract.
 
 ## Small-Diff Workflow
 
-1. Human defines a narrow issue.
-2. Agent reads `AGENTS.md` and relevant docs.
-3. Agent inspects the existing files.
-4. Agent states the intended change.
-5. Agent makes the smallest safe change.
-6. Agent runs available checks.
-7. Agent updates `docs/CHANGELOG_AI.md`.
-8. Agent summarizes changes, checks, assumptions, and risks.
+1. Confirm the issue supports the validation-bench direction.
+2. Read required context and inspect git status.
+3. Inspect task-relevant files and existing tests.
+4. State the intended change and explicit non-goals.
+5. Implement one narrow vertical slice.
+6. Run applicable checks.
+7. Update `docs/CHANGELOG_AI.md` and contract docs when behavior or boundaries change.
+8. Summarize current capability without overclaiming future targets.
 
-## Branch / PR Workflow
+## Issue And PR Review Questions
 
-- Create a focused branch for each task.
-- Keep commits scoped to one product or technical concern.
-- Use the pull request template.
-- Include screenshots for UI changes.
-- Call out evidence model impact, even if the answer is "None."
-- Human review should check product fit, evidence traceability, visual discipline, and build health.
-
-## GitHub Issue Workflow
-
-- Issues should be created from `docs/ROADMAP.md`.
-- Only the active milestone and the nearest follow-up should have detailed issues by default.
-- Every issue should have a clear goal, scope, out-of-scope list, acceptance criteria, checks, and agent notes.
-- Agents should work from one issue at a time.
-- Agents should not combine issues unless explicitly asked.
-- PRs should link issues using `Closes #<issue-number>` when appropriate.
-- Every non-trivial PR should include the structured context required by `.github/pull_request_template.md`.
+- Does the change support the validation-bench direction?
+- Does it preserve the distinction between `CasePackage`, `ReviewResult`, and `EvaluationReport`?
+- Does it improve evidence grounding, structured review, provenance, aggregation, or evaluation output?
+- Does it avoid SIEM/SOC/dashboard, raw-search, chat-first, and gamification drift?
+- If it requires backend work, is that work blocked by or derived from the case package contract?
+- Does it keep restricted telemetry outside the public or portable app?
 
 ## Toponymy Source Rule
 
-- The official source of truth for factual Toponymy information in this repo is <https://github.com/TutteInstitute/toponymy>.
-- DeepWiki, generated summaries, blog posts, and other third-party pages are non-authoritative and must not be used as proof of Toponymy capabilities or integration details.
-- Agents must not invent Toponymy APIs, workflows, capabilities, outputs, or supported models.
-- If an agent cannot confirm a Toponymy detail from the official repo README or source files, it should omit the detail or mark it explicitly as unknown.
+Use the official [TutteInstitute/toponymy](https://github.com/TutteInstitute/toponymy) repository for factual claims. Do not infer APIs, outputs, models, or workflows from third-party summaries or memory. If a detail cannot be verified, omit it or mark it unknown.
 
-## Commit And Handoff Workflow
+## Required Handoff
 
-- Task prompts should require a suggested commit message.
-- Agents should not auto-commit unless explicitly asked.
-- Final answers should include a structured commit body, not only a one-line title.
-- `docs/CHANGELOG_AI.md` and the suggested commit message should agree on scope and terminology.
-- Commit messages should stay compact; `docs/CHANGELOG_AI.md` can hold more detail.
-- Human reviewers should reject vague commit titles such as "update files" or "fix stuff."
-
-## When To Escalate To Stronger Models
-
-Escalate gradually when:
-
-- A previous attempt failed.
-- The bug is ambiguous.
-- The change affects architecture or the domain model.
-- Evidence scoring or structured review export logic is involved.
-- A wrong answer would waste significant review time.
-- Security, auth, database migrations, or production bugs are in scope.
-
-Do not use maximum reasoning by default.
-
-## Required Post-Change Summary
-
-Agents should finish with:
-
-````md
-**Files changed**
-- <file>
-
-**Summary**
-<short summary>
-
-**Decisions made**
-- <decision>
-
-**Checks run**
-- `npm test` — passed / failed / not run
-- `npm run lint` — passed / failed / not run
-- `npm run build` — passed / failed / not run
-
-**Assumptions**
-- <assumption>
-
-**Risks / follow-up**
-- <risk or suggested next step>
-
-**Suggested commit message**
-```text
-<full structured commit message>
-```
-
-**Recommended next step**
-<next narrow task>
-````
+Report files changed, positioning or contract impact, checks and results, assumptions, risks, deferred work, and the recommended next roadmap milestone. Do not commit unless explicitly asked.

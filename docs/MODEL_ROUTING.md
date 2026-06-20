@@ -24,10 +24,10 @@ Data model changes, architecture, evidence scoring, complex state management:
 - Use a stronger reasoning model.
 - Examples: changing `Claim` or `EvidenceRelation`, adding score calculation logic, restructuring case data.
 
-Security, auth, database migrations, production bugs:
+Contract design, package validation, evaluation metrics, security, auth, database migrations, production bugs:
 
 - Use a high-reasoning model.
-- These changes are not MVP defaults and should be explicitly scoped.
+- Use stronger reasoning for contract and metric semantics. Auth and database work must also be explicitly justified by the case package or evaluation contract.
 
 ## Escalation Rules
 

@@ -1,6 +1,6 @@
 # Telemetry Court - Model Selection Guide
 
-When asking Codex or another coding agent to work on the repo, include a model recommendation and the relevant Evidence Arena context.
+When asking Codex or another coding agent to work on the repo, include a model recommendation and the validation-bench context.
 
 ## Small Docs-Only Tasks
 
@@ -71,7 +71,7 @@ Codex - GPT-5 medium
 
 Examples:
 
-- Evidence Arena happy-path smoke tests;
+- validation workflow smoke tests;
 - broken builds;
 - TypeScript errors;
 - data model bugs;

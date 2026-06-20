@@ -1,88 +1,45 @@
 # Start Here For Agents
 
-You are assisting Agus with Telemetry Court.
-
-Before doing anything, understand this:
-
-Telemetry Court is an interactive Evidence Arena for AI-generated interpretations of cyber telemetry clusters.
-
-Core product line:
+Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.
 
 ```text
-AI names the pattern. Humans test the evidence.
+AI names the cluster. Humans test the evidence.
 ```
 
-Core question:
+The current application is a static synthetic validation slice. The target product ingests versioned case packages, supports blind structured review by multiple people, and exports evaluation metrics that improve upstream AI/ML pipelines.
 
-```text
-Can AI prove what it claims?
-```
-
-The previous simple approve/reject label-validator framing is superseded. The active product direction is evidence-first investigation with structured human verdicts.
-
-## Current Workflow
-
-```text
-Telemetry landscape
--> behavioural region / case file
--> blind investigation
--> AI label reveal
--> evidence classification
--> label duel
--> impostor / outlier selection
--> structured verdict
--> review JSON export
-```
-
-## Product Boundaries
-
-Do not expand the product into:
-
-- a SIEM;
-- a SOC dashboard;
-- a threat detection engine;
-- a chatbot wrapper;
-- a real Toponymy integration;
-- a backend/database/auth platform;
-- a place to add real restricted telemetry;
-- a cyberpunk visualization.
-
-The project is about evidence-based investigation of AI-generated telemetry interpretations.
-
-## First Thing To Do In A New Session
-
-Read these files:
+## Read First
 
 ```text
 AGENTS.md
 README.md
 docs/PRODUCT_VISION.md
+docs/PRODUCT_POSITIONING.md
 docs/PROJECT_CONTEXT.md
 docs/PRODUCT_DECISIONS.md
 docs/ROADMAP.md
-docs/GITHUB_PLANNING.md
 docs/ARCHITECTURE.md
+docs/CASE_PACKAGE_CONTRACT.md
+docs/EVALUATION_INFRASTRUCTURE.md
 docs/DATA_MODEL.md
-docs/DESIGN_SYSTEM.md
-docs/DESIGN_DIRECTION.md
-docs/AGENT_WORKFLOWS.md
-docs/DEVELOPMENT_WORKFLOW.md
-docs/COMMIT_GUIDELINES.md
-docs/TOPONYMY_NOTES.md
-docs/CHANGELOG_AI.md
 ```
 
-Then inspect the actual task-relevant repo files, usually including:
+For UI work, also read the design documents. For planning and handoff work, read `docs/GITHUB_PLANNING.md`, `docs/AGENT_WORKFLOWS.md`, `docs/DEVELOPMENT_WORKFLOW.md`, and `docs/CHANGELOG_AI.md`.
+
+## Boundary To Preserve
 
 ```text
-app/page.tsx
-app/page.test.ts
-app/globals.css
-data/sampleCases.ts
-lib/types.ts
-lib/caseMetrics.ts
-lib/exportReview.ts
-package.json
+Upstream cluster output
+-> CasePackage
+-> Telemetry Court review
+-> ReviewResult
+-> EvaluationReport
 ```
 
-Do not assume live task state from context files. For current issues, PRs, branches, and blockers, inspect GitHub and the local repo.
+Do not turn the project into a SIEM, SOC dashboard, raw telemetry explorer, alert-triage tool, generic chatbot, generic CRUD backend, or auth-first application.
+
+## Next Implementation Milestone
+
+Define and validate `CasePackage v0.1`, `ReviewResult v0.1`, and `EvaluationReport v0.1`; adapt current fixtures without redesigning the UI; and fail loudly on broken evidence, IDs, versions, or provenance.
+
+Before modifying code, inspect git status and the task-relevant files. Do not assume current branch, issues, or capabilities from documentation alone.

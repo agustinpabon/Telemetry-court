@@ -2,25 +2,23 @@
 
 <!-- What changed? -->
 
-## Why
+## Validation-Bench Impact
 
-<!-- Why does this change exist? -->
+<!-- How does this improve evidence grounding, structured review, provenance, aggregation, or evaluation output? -->
 
-## Files Changed
+## Current Versus Target Capability
 
-<!-- List the main files touched. -->
+<!-- State what works now and what remains a target. Do not overclaim adapters, persistence, or evaluation metrics. -->
 
-## Product Impact
+## Contract Impact
 
-<!-- How does this affect the Telemetry Court evidence-review workflow? Write "None" if unchanged. -->
+- `CasePackage`:
+- `ReviewResult`:
+- `EvaluationReport`:
 
-## Evidence Model Impact
+## Evidence And Provenance Impact
 
-<!-- Note changes to clusters, labels, claims, evidence items, scoring, verdicts, or audit trail. Write "None" if unchanged. -->
-
-## Design System Impact
-
-<!-- Describe design-system or UI impact. Confirm the calm Apple / Wealthsimple direction is preserved, or write "None". -->
+<!-- Note changes to claims, evidence mappings, IDs, provenance, sanitization, review protocol, or validation failures. -->
 
 ## Tests / Checks
 
@@ -28,9 +26,9 @@
 - [ ] `npm run lint`
 - [ ] `npm run build`
 
-## Screenshots / Recordings
+## Screenshots / Examples
 
-Required for UI changes.
+Required for UI changes. Contract or metric changes should include valid and invalid examples.
 
 ## AI-Agent Notes
 
@@ -39,14 +37,16 @@ Required for UI changes.
 - Changelog entry updated:
 - Suggested commit followed `docs/COMMIT_GUIDELINES.md`:
 
-## Risks / Follow-ups
+## Risks / Follow-Ups
 
-<!-- Call out known limitations, deferred work, or reviewer attention areas. -->
+<!-- Call out deferred contract decisions, data-handling risks, or compatibility concerns. -->
 
 ## Review Checklist
 
-- [ ] The change is narrowly scoped.
-- [ ] No real telemetry, secrets, or incident claims were introduced.
-- [ ] Claims remain inspectable against evidence IDs or explicit missing-evidence states.
-- [ ] Uncertainty is visible rather than hidden.
-- [ ] No unrelated redesigns or broad refactors are included.
+- [ ] This change does not reframe Telemetry Court as a SIEM, SOC dashboard, or generic telemetry explorer.
+- [ ] This change preserves the product identity as a validation bench.
+- [ ] Documentation remains consistent with `CasePackage` / `ReviewResult` / `EvaluationReport` separation.
+- [ ] Any new workflow supports evidence-based validation of AI-generated telemetry cluster interpretations.
+- [ ] The change does not introduce raw restricted telemetry, invented evidence, or unverified Toponymy claims.
+- [ ] Backend work is derived from the case package or evaluation contract rather than generic infrastructure.
+- [ ] Current capabilities and future targets are clearly distinguished.
