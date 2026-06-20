@@ -6005,6 +6005,849 @@
   }
 }
 
+/* Impostor comparison and decision pass */
+.arena-shell.arena-shell-investigate .impostor-stage {
+  gap: 8px;
+}
+
+.arena-shell.arena-shell-investigate .impostor-stage .arena-step-hero {
+  background: rgba(251, 250, 247, 0.58);
+  border-color: rgba(50, 48, 47, 0.04);
+  box-shadow: none;
+  padding: 8px 14px;
+}
+
+.arena-shell.arena-shell-investigate .impostor-stage .arena-step-hero-copy {
+  max-width: 920px;
+  width: 100%;
+}
+
+.arena-shell.arena-shell-investigate .impostor-stage .arena-step-hero h2 {
+  font-size: 27px;
+  line-height: 1.12;
+  margin-top: 5px;
+}
+
+.arena-shell.arena-shell-investigate .impostor-stage .arena-step-hero-summary {
+  color: rgba(50, 48, 47, 0.72);
+  font-size: 13.5px;
+  font-weight: 560;
+  line-height: 1.38;
+  margin-top: 4px;
+  max-width: 82ch;
+}
+
+.arena-shell.arena-shell-investigate .impostor-evidence-summary {
+  background: rgba(251, 250, 247, 0.48);
+  border: 1px solid rgba(50, 48, 47, 0.04);
+  border-radius: 14px;
+  box-shadow: none;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: 1.25fr 1fr 0.68fr 0.72fr;
+  padding: 3px;
+}
+
+.arena-shell.arena-shell-investigate .impostor-evidence-summary > div {
+  min-width: 0;
+  padding: 8px 10px;
+  position: relative;
+}
+
+.arena-shell.arena-shell-investigate
+  .impostor-evidence-summary
+  > div
+  + div::before {
+  background: rgba(50, 48, 47, 0.042);
+  bottom: 22%;
+  content: "";
+  left: -2px;
+  position: absolute;
+  top: 22%;
+  width: 1px;
+}
+
+.arena-shell.arena-shell-investigate .impostor-evidence-summary span {
+  color: rgba(50, 48, 47, 0.54);
+  display: block;
+  font-size: 11px;
+  font-weight: 740;
+  line-height: 1.2;
+}
+
+.arena-shell.arena-shell-investigate .impostor-evidence-summary strong {
+  color: var(--workflow-ink);
+  display: block;
+  font-size: 12.5px;
+  font-weight: 730;
+  line-height: 1.32;
+  margin-top: 4px;
+  text-wrap: pretty;
+}
+
+.arena-shell.arena-shell-investigate
+  .impostor-evidence-summary
+  .impostor-review-pill {
+  align-items: center;
+  background: rgba(154, 106, 47, 0.085);
+  border: 1px solid rgba(154, 106, 47, 0.16);
+  border-radius: 999px;
+  color: #725126;
+  display: inline-flex;
+  min-height: 24px;
+  padding: 0 9px;
+}
+
+.arena-shell.arena-shell-investigate .impostor-decision-layout {
+  align-items: start;
+  display: grid;
+  gap: 15px;
+  grid-template-columns: minmax(0, 1.45fr) minmax(296px, 0.74fr);
+}
+
+.arena-shell.arena-shell-investigate .session-comparison {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.arena-shell.arena-shell-investigate .impostor-section-heading {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 2px 2px 0;
+}
+
+.arena-shell.arena-shell-investigate .impostor-section-heading h3 {
+  color: var(--workflow-ink);
+  font-size: 18px;
+  font-weight: 790;
+  line-height: 1.22;
+  margin: 0;
+}
+
+.arena-shell.arena-shell-investigate .impostor-section-heading p {
+  color: rgba(50, 48, 47, 0.66);
+  font-size: 13px;
+  font-weight: 520;
+  line-height: 1.42;
+  margin: 4px 0 0;
+  text-wrap: pretty;
+}
+
+.arena-shell.arena-shell-investigate .impostor-criterion-row {
+  align-items: center;
+  color: rgba(50, 48, 47, 0.62);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 11.5px;
+  gap: 6px;
+  line-height: 1.3;
+  padding: 0 2px 1px;
+}
+
+.arena-shell.arena-shell-investigate .impostor-criterion-row strong {
+  color: var(--workflow-ink);
+  font-weight: 780;
+}
+
+.arena-shell.arena-shell-investigate .impostor-criterion-row i {
+  color: rgba(50, 48, 47, 0.38);
+  font-style: normal;
+  font-weight: 760;
+}
+
+.arena-shell.arena-shell-investigate .session-comparison-list {
+  display: grid;
+  gap: 5px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.arena-shell.arena-shell-investigate .session-comparison-card {
+  background: rgba(251, 250, 247, 0.6);
+  border: 1px solid rgba(50, 48, 47, 0.065);
+  border-radius: 13px;
+  color: var(--workflow-ink);
+  cursor: pointer;
+  display: grid;
+  gap: 9px;
+  grid-template-columns: 26px minmax(0, 1fr);
+  min-height: 78px;
+  padding: 9px 10px;
+  text-align: left;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+  width: 100%;
+}
+
+.arena-shell.arena-shell-investigate .session-comparison-card:hover {
+  background: rgba(255, 253, 249, 0.9);
+  border-color: rgba(95, 111, 82, 0.28);
+  transform: translateY(-1px);
+}
+
+.arena-shell.arena-shell-investigate .session-comparison-card:focus-visible {
+  outline: 3px solid rgba(95, 111, 82, 0.24);
+  outline-offset: 3px;
+}
+
+.arena-shell.arena-shell-investigate .session-comparison-card.is-strongest {
+  background: rgba(252, 253, 249, 0.9);
+  border-color: rgba(95, 111, 82, 0.42);
+}
+
+.arena-shell.arena-shell-investigate .session-comparison-card.is-selected {
+  background: rgba(246, 248, 243, 0.84);
+  border-color: rgba(95, 111, 82, 0.58);
+  box-shadow: inset 0 0 0 1px rgba(95, 111, 82, 0.1);
+}
+
+.arena-shell.arena-shell-investigate .session-rank {
+  align-items: center;
+  background: rgba(50, 48, 47, 0.045);
+  border-radius: 999px;
+  color: rgba(50, 48, 47, 0.5);
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 800;
+  height: 26px;
+  justify-content: center;
+  width: 26px;
+}
+
+.arena-shell.arena-shell-investigate
+  .session-comparison-card.is-strongest
+  .session-rank {
+  background: rgba(95, 111, 82, 0.1);
+  color: var(--workflow-focus);
+}
+
+.arena-shell.arena-shell-investigate
+  .session-comparison-card.is-selected
+  .session-rank {
+  background: var(--workflow-focus);
+  color: var(--workflow-surface);
+}
+
+.arena-shell.arena-shell-investigate .session-card-content {
+  align-items: center;
+  column-gap: 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(292px, 0.86fr);
+  row-gap: 2px;
+  min-width: 0;
+}
+
+.arena-shell.arena-shell-investigate .session-card-topline {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+  grid-column: 1;
+}
+
+.arena-shell.arena-shell-investigate .session-card-topline .mono-value {
+  color: rgba(50, 48, 47, 0.54);
+  font-size: 10.5px;
+  font-weight: 760;
+}
+
+.arena-shell.arena-shell-investigate .strongest-candidate-badge,
+.arena-shell.arena-shell-investigate .session-selection-state {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 10.5px;
+  font-weight: 760;
+  line-height: 1.2;
+  min-height: 20px;
+  padding: 0 7px;
+}
+
+.arena-shell.arena-shell-investigate .strongest-candidate-badge {
+  background: rgba(95, 111, 82, 0.06);
+  border: 1px solid rgba(95, 111, 82, 0.18);
+  color: var(--workflow-focus);
+}
+
+.arena-shell.arena-shell-investigate .strongest-candidate-badge::before {
+  background: currentColor;
+  border-radius: 999px;
+  content: "";
+  height: 5px;
+  margin-right: 5px;
+  width: 5px;
+}
+
+.arena-shell.arena-shell-investigate .session-selection-state {
+  background: transparent;
+  color: rgba(50, 48, 47, 0.56);
+  font-weight: 720;
+  margin-left: auto;
+  padding-right: 1px;
+}
+
+.arena-shell.arena-shell-investigate .session-selection-state::after {
+  border-right: 1.5px solid currentColor;
+  border-top: 1.5px solid currentColor;
+  content: "";
+  height: 5px;
+  margin-left: 7px;
+  transform: rotate(45deg);
+  width: 5px;
+}
+
+.arena-shell.arena-shell-investigate
+  .session-comparison-card.is-selected
+  .session-selection-state {
+  color: var(--workflow-focus);
+}
+
+.arena-shell.arena-shell-investigate
+  .session-comparison-card.is-selected
+  .session-selection-state::after {
+  background: var(--workflow-focus);
+  border: 0;
+  border-radius: 999px;
+  height: 6px;
+  transform: none;
+  width: 6px;
+}
+
+.arena-shell.arena-shell-investigate .session-card-title {
+  color: var(--workflow-ink);
+  font-size: 15px;
+  font-weight: 780;
+  line-height: 1.22;
+  text-wrap: balance;
+  grid-column: 1;
+}
+
+.arena-shell.arena-shell-investigate .session-card-summary {
+  color: rgba(50, 48, 47, 0.63);
+  display: -webkit-box;
+  font-size: 12px;
+  font-weight: 460;
+  line-height: 1.3;
+  overflow: hidden;
+  text-wrap: pretty;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  grid-column: 1;
+}
+
+.arena-shell.arena-shell-investigate .session-card-metrics {
+  display: grid;
+  gap: 0;
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  grid-template-columns: minmax(132px, 1fr) minmax(150px, 1fr);
+  min-width: 0;
+}
+
+.arena-shell.arena-shell-investigate .session-card-metric {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.arena-shell.arena-shell-investigate .session-card-metric + .session-card-metric {
+  border-left: 1px solid rgba(50, 48, 47, 0.06);
+  margin-left: 12px;
+  padding-left: 12px;
+}
+
+.arena-shell.arena-shell-investigate .session-card-metric > span:first-child {
+  color: rgba(50, 48, 47, 0.58);
+  font-size: 10.5px;
+  font-weight: 730;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.arena-shell.arena-shell-investigate .session-card-metric strong {
+  color: rgba(50, 48, 47, 0.86);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 760;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.arena-shell.arena-shell-investigate .session-meter {
+  background: rgba(50, 48, 47, 0.1);
+  border-radius: 999px;
+  display: block;
+  height: 4px;
+  margin-top: 4px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.arena-shell.arena-shell-investigate .session-meter > span {
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+}
+
+.arena-shell.arena-shell-investigate .session-card-metric-risk .session-meter > span {
+  background: rgba(50, 48, 47, 0.7);
+  width: var(--outlier-risk);
+}
+
+.arena-shell.arena-shell-investigate .session-card-metric-match .session-meter > span {
+  background: rgba(95, 111, 82, 0.78);
+  width: var(--cluster-match);
+}
+
+.arena-shell.arena-shell-investigate .impostor-detail {
+  align-self: start;
+  background: rgba(251, 250, 247, 0.58);
+  border: 1px solid rgba(50, 48, 47, 0.065);
+  border-radius: 15px;
+  box-shadow: none;
+  display: grid;
+  gap: 8px;
+  min-height: 398px;
+  padding: 16px;
+  position: sticky;
+  top: 14px;
+}
+
+.arena-shell.arena-shell-investigate .impostor-detail-label {
+  color: rgba(50, 48, 47, 0.58);
+  font-size: 11px;
+  font-weight: 780;
+  line-height: 1.2;
+}
+
+.arena-shell.arena-shell-investigate .impostor-detail h3 {
+  color: var(--workflow-ink);
+  font-size: 21px;
+  font-weight: 790;
+  line-height: 1.22;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.arena-shell.arena-shell-investigate .impostor-detail > p {
+  color: rgba(50, 48, 47, 0.68);
+  font-size: 12.5px;
+  line-height: 1.45;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.arena-shell.arena-shell-investigate .impostor-criteria-list {
+  display: grid;
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+}
+
+.arena-shell.arena-shell-investigate .impostor-criteria-list li {
+  display: grid;
+  gap: 3px;
+  padding: 7px 0;
+}
+
+.arena-shell.arena-shell-investigate .impostor-criteria-list li + li {
+  border-top: 1px solid rgba(50, 48, 47, 0.065);
+}
+
+.arena-shell.arena-shell-investigate .impostor-criteria-list strong {
+  color: var(--workflow-ink);
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1.3;
+}
+
+.arena-shell.arena-shell-investigate .impostor-criteria-list span {
+  color: rgba(50, 48, 47, 0.62);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.arena-shell.arena-shell-investigate .impostor-detail .impostor-detail-helper {
+  border-top: 1px solid rgba(50, 48, 47, 0.055);
+  color: rgba(50, 48, 47, 0.72);
+  font-size: 12.5px;
+  font-weight: 640;
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.arena-shell.arena-shell-investigate .impostor-current-candidate {
+  border-top: 1px solid rgba(50, 48, 47, 0.06);
+  display: grid;
+  gap: 7px;
+  margin-top: 2px;
+  padding-top: 12px;
+}
+
+.arena-shell.arena-shell-investigate .impostor-current-candidate > span {
+  color: rgba(50, 48, 47, 0.58);
+  font-size: 10.5px;
+  font-weight: 780;
+  line-height: 1.2;
+}
+
+.arena-shell.arena-shell-investigate .impostor-current-candidate > div {
+  display: grid;
+  gap: 3px;
+}
+
+.arena-shell.arena-shell-investigate .impostor-current-candidate > div strong {
+  color: var(--workflow-ink);
+  font-size: 13.5px;
+  font-weight: 780;
+  line-height: 1.3;
+}
+
+.arena-shell.arena-shell-investigate .impostor-current-candidate dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.arena-shell.arena-shell-investigate .impostor-current-candidate dl div {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+}
+
+.arena-shell.arena-shell-investigate .impostor-current-candidate dl div + div {
+  border-left: 1px solid rgba(50, 48, 47, 0.07);
+  margin-left: 10px;
+  padding-left: 10px;
+}
+
+.arena-shell.arena-shell-investigate .impostor-current-candidate dt {
+  color: rgba(50, 48, 47, 0.56);
+  font-size: 10.5px;
+  font-weight: 720;
+}
+
+.arena-shell.arena-shell-investigate .impostor-current-candidate dd {
+  color: var(--workflow-ink);
+  font-size: 14.5px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 790;
+  margin: 3px 0 0;
+}
+
+.arena-shell.arena-shell-investigate .impostor-current-candidate p {
+  color: rgba(50, 48, 47, 0.72);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.arena-shell.arena-shell-investigate .impostor-label-guard {
+  background: rgba(251, 250, 247, 0.78);
+  border: 1px solid rgba(50, 48, 47, 0.08);
+  border-radius: 16px;
+  display: grid;
+  gap: 7px;
+  padding: 22px;
+}
+
+.arena-shell.arena-shell-investigate .impostor-label-guard > span {
+  color: rgba(50, 48, 47, 0.58);
+  font-size: 11px;
+  font-weight: 780;
+}
+
+.arena-shell.arena-shell-investigate .impostor-label-guard h3 {
+  color: var(--workflow-ink);
+  font-size: 19px;
+  margin: 0;
+}
+
+.arena-shell.arena-shell-investigate .impostor-label-guard p {
+  color: rgba(50, 48, 47, 0.68);
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 0;
+  max-width: 68ch;
+}
+
+.arena-shell.arena-shell-investigate .impostor-detail-topline {
+  align-items: center;
+  display: flex;
+  gap: 7px;
+  justify-content: space-between;
+}
+
+.arena-shell.arena-shell-investigate .impostor-recorded-indicator {
+  align-items: center;
+  background: rgba(95, 111, 82, 0.075);
+  border: 1px solid rgba(95, 111, 82, 0.14);
+  border-radius: 999px;
+  color: var(--workflow-focus);
+  display: inline-flex;
+  font-size: 10.5px;
+  font-weight: 780;
+  gap: 5px;
+  min-height: 22px;
+  padding: 0 7px;
+}
+
+.arena-shell.arena-shell-investigate .impostor-recorded-indicator::before {
+  background: var(--workflow-focus);
+  border-radius: 999px;
+  content: "";
+  height: 6px;
+  width: 6px;
+}
+
+.arena-shell.arena-shell-investigate .impostor-detail .mono-value {
+  color: rgba(50, 48, 47, 0.6);
+  font-size: 11px;
+  font-weight: 780;
+}
+
+.arena-shell.arena-shell-investigate .session-detail-metrics {
+  border-bottom: 1px solid rgba(50, 48, 47, 0.055);
+  border-top: 1px solid rgba(50, 48, 47, 0.055);
+  display: grid;
+  gap: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 1px 0;
+  padding: 10px 0;
+}
+
+.arena-shell.arena-shell-investigate .session-detail-metrics div {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+}
+
+.arena-shell.arena-shell-investigate .session-detail-metrics div + div {
+  border-left: 1px solid rgba(50, 48, 47, 0.065);
+  margin-left: 11px;
+  padding-left: 11px;
+}
+
+.arena-shell.arena-shell-investigate .session-detail-metrics dt {
+  color: rgba(50, 48, 47, 0.56);
+  font-size: 10.5px;
+  font-weight: 720;
+  line-height: 1.25;
+}
+
+.arena-shell.arena-shell-investigate .session-detail-metrics dd {
+  color: var(--workflow-ink);
+  font-size: 14.5px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 780;
+  line-height: 1.3;
+  margin: 5px 0 0;
+}
+
+.arena-shell.arena-shell-investigate .outlier-explanation {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  border-top: 1px solid rgba(50, 48, 47, 0.06);
+  display: grid;
+  gap: 5px;
+  padding: 12px 0 0;
+}
+
+.arena-shell.arena-shell-investigate .outlier-explanation.is-strong-candidate {
+  border-color: rgba(95, 111, 82, 0.16);
+}
+
+.arena-shell.arena-shell-investigate .outlier-explanation.is-neutral-warning {
+  border-color: rgba(154, 106, 47, 0.16);
+}
+
+.arena-shell.arena-shell-investigate .outlier-explanation > span {
+  color: rgba(50, 48, 47, 0.58);
+  font-size: 10.5px;
+  font-weight: 780;
+  line-height: 1.2;
+}
+
+.arena-shell.arena-shell-investigate .outlier-explanation p {
+  color: rgba(50, 48, 47, 0.78);
+  font-size: 12.5px;
+  font-weight: 620;
+  line-height: 1.45;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.arena-shell.arena-shell-investigate .outlier-explanation.is-neutral-warning p {
+  color: #664b28;
+}
+
+.arena-shell.arena-shell-investigate .outlier-explanation.is-strong-candidate p {
+  color: rgba(72, 86, 61, 0.95);
+}
+
+.arena-shell.arena-shell-investigate .impostor-detail .impostor-evidence-note {
+  color: rgba(50, 48, 47, 0.6);
+  font-size: 11.8px;
+  line-height: 1.42;
+}
+
+.arena-shell.arena-shell-investigate .impostor-actions {
+  align-items: center;
+  margin-top: 0;
+  padding-top: 12px;
+}
+
+.arena-shell.arena-shell-investigate .impostor-actions > p {
+  flex: 1 1 auto;
+  max-width: none;
+  min-width: 0;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.arena-shell.arena-shell-investigate .impostor-actions > div {
+  flex: 0 0 auto;
+}
+
+.arena-shell.arena-shell-investigate .impostor-actions .primary-action:disabled,
+.arena-shell.arena-shell-investigate .impostor-actions .primary-action:disabled:hover {
+  background: rgba(50, 48, 47, 0.095);
+  border-color: rgba(50, 48, 47, 0.07);
+  box-shadow: none;
+  color: rgba(50, 48, 47, 0.38);
+  cursor: not-allowed;
+  opacity: 1;
+  transform: none;
+}
+
+@media (max-width: 980px) {
+  .arena-shell.arena-shell-investigate .impostor-evidence-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .arena-shell.arena-shell-investigate
+    .impostor-evidence-summary
+    > div:nth-child(3)::before {
+    bottom: auto;
+    height: 1px;
+    left: 12px;
+    right: 12px;
+    top: -2px;
+    width: auto;
+  }
+
+  .arena-shell.arena-shell-investigate .impostor-decision-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .arena-shell.arena-shell-investigate .impostor-detail {
+    min-height: 0;
+    position: static;
+  }
+
+  .arena-shell.arena-shell-investigate .impostor-detail-guide {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .arena-shell.arena-shell-investigate .impostor-stage {
+    gap: 9px;
+  }
+
+  .arena-shell.arena-shell-investigate .impostor-stage .arena-step-hero {
+    padding: 8px 10px;
+  }
+
+  .arena-shell.arena-shell-investigate .impostor-stage .arena-step-hero h2 {
+    font-size: 24px;
+    line-height: 1.1;
+  }
+
+  .arena-shell.arena-shell-investigate .impostor-stage .arena-step-hero-summary {
+    font-size: 13.5px;
+    line-height: 1.4;
+  }
+
+  .arena-shell.arena-shell-investigate .impostor-evidence-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .arena-shell.arena-shell-investigate .impostor-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .arena-shell.arena-shell-investigate .session-comparison-card {
+    gap: 9px;
+    grid-template-columns: 26px minmax(0, 1fr);
+    min-height: 0;
+    padding: 12px;
+  }
+
+  .arena-shell.arena-shell-investigate .session-rank {
+    height: 26px;
+    width: 26px;
+  }
+
+  .arena-shell.arena-shell-investigate .session-card-content {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 4px;
+  }
+
+  .arena-shell.arena-shell-investigate .session-card-metrics {
+    border-top: 1px solid rgba(50, 48, 47, 0.065);
+    grid-column: 1;
+    grid-row: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 3px;
+    padding-top: 8px;
+  }
+
+  .arena-shell.arena-shell-investigate .session-card-metric + .session-card-metric {
+    border-left: 1px solid rgba(50, 48, 47, 0.06);
+    border-top: 0;
+    margin: 0 0 0 9px;
+    padding: 0 0 0 9px;
+  }
+
+  .arena-shell.arena-shell-investigate .impostor-detail {
+    padding: 14px;
+  }
+
+  .arena-shell.arena-shell-investigate .impostor-actions > p {
+    max-width: none;
+    white-space: normal;
+  }
+
+  .arena-shell.arena-shell-investigate .impostor-actions {
+    gap: 10px;
+    padding-top: 12px;
+  }
+
+  .arena-shell.arena-shell-investigate .impostor-actions div {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .arena-shell.arena-shell-investigate .impostor-actions button {
+    width: 100%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .arena-shell-investigate *,
   .arena-shell-explore * {

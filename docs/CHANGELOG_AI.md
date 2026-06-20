@@ -19,6 +19,58 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-20: Impostor Micro Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Very small final polish pass on `/impostor`, preserving the approved ranked comparison structure and workflow logic while fixing footer truncation, metric spacing, and hero copy wrapping.
+- Files changed: `components/arena/ImpostorPanel.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, `issues/afk-impostor-decision-polish.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Changed the alternate-selection footer copy from “Stronger signal” to “Strongest signal,” removed the desktop footer ellipsis behavior so confirmation text wraps intentionally, kept CTA buttons stable on the right, widened the impostor hero copy lane, and gave the two session metric columns more room with non-wrapping desktop labels and values.
+- Decisions made: Kept session ranking, selection behavior, right-panel logic, route flow, and visual direction unchanged.
+- Checks run: `npm test -- app/page.test.ts` passed; `npm test` passed with 39 tests; `npx tsc --noEmit` passed; `npm run lint` exited 0 with the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed; the Impeccable detector returned `[]`; Playwright on a production server at `127.0.0.1:3068` verified `/impostor` at 1440px and 390px with no footer truncation, no footer/button collision, one-line desktop footer copy, intentional mobile footer wrapping, one-line desktop metric labels and values, one-line desktop hero summary, disabled CTA before selection, enabled CTA after selecting `iam-s-03`, and no horizontal overflow. Screenshots saved to `/tmp/telemetry-impostor-micro-polish-desktop.png` and `/tmp/telemetry-impostor-micro-polish-mobile.png`.
+- Assumptions: The approved structure should remain frozen; this slice only adjusts spacing, wrapping, alignment, and copy polish.
+- Risks/follow-ups: None expected.
+- Next recommended step: None.
+- Suggested commit message: `polish(arena): tighten impostor layout details`
+
+## 2026-06-20: Impostor Final UI Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Final refinement pass on `/impostor`, keeping the ranked comparison structure while making the screen lighter, more breathable, and clearer when the reviewer selects a non-strongest session.
+- Files changed: `components/arena/ImpostorPanel.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, `issues/prd-impostor-polish.md`, `issues/afk-impostor-decision-polish.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Reduced hero and summary-strip visual weight, lightened session rows and detail panels, tightened row spacing, refined the Strongest signal badge, made the effect panel feel integrated instead of alert-like, and added explicit non-strongest selection copy in the detail panel and footer.
+- Decisions made: Kept workflow logic, ranking, and review-state shape unchanged; used existing strongest-candidate data for mismatch copy; kept the reviewer’s non-strongest choice allowed but clearly contextualized.
+- Checks run: `npm test` passed with 39 tests; `npx tsc --noEmit` passed; `npm run build` passed; Playwright verified the real Label Duel-to-Impostor path at 1440px and 390px, including initial disabled CTA, non-strongest `iam-s-03` selection, stronger `iam-s-04` guidance, enabled CTA, and no horizontal overflow.
+- Assumptions: The final verdict should still accept a non-strongest session; the UI’s job is to explain the evidence mismatch, not block it.
+- Risks/follow-ups: None for this slice.
+- Next recommended step: None.
+- Suggested commit message: `polish(arena): lighten impostor decision UI`
+
+## 2026-06-19: Impostor Decision Interface Polish
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Refine the ranked `/impostor` interface so it inherits the Label Duel choice, scans faster, uses a more useful decision panel, and confirms the selected session before the verdict.
+- Files changed: `components/arena/ImpostorPanel.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, `issues/prd-impostor-polish.md`, `issues/afk-impostor-decision-polish.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added an explicit missing-label recovery state; renamed purity language to Review status and Fit check; compressed the five ranked sessions into full-row controls with side-by-side higher-contrast metrics; replaced the helper pill with a criterion row; changed the recommendation treatment to a restrained Strongest signal state; added current-candidate guidance to the detail panel; and made the selected footer name the session and outlier risk.
+- Decisions made: Kept ranking and review-state semantics unchanged; treated the highest-risk session as guidance only; used the existing Label Duel winner as required context; and kept both metrics visible on narrow screens so the inverse relationship remains comparable.
+- Checks run: `npm test` passed with 39 tests; `npx tsc --noEmit` passed; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no application errors; `npm run build` passed; the Impeccable detector returned `[]`; `git diff --check` passed; and Playwright completed the real Label Duel-to-Impostor flow at 1440px and 390px with five 101px desktop rows, inherited label context, disabled/enabled CTA states, keyboard focus, selected feedback, no horizontal overflow, and no console errors.
+- Assumptions: Missing Label Duel context is invalid for this step and should be recovered before session comparison; no reducer or route restriction change is required because the panel now guards invalid hydrated or direct-stage state.
+- Risks/follow-ups: Session match labels and ranking remain presentation guidance based on existing synthetic scores; any future export or verdict semantics should be documented in the domain model first.
+- Next recommended step: None for this slice.
+- Suggested commit message: `polish(arena): refine impostor comparison flow`
+
+## 2026-06-19: Impostor Decision Interface Redesign
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Redesign `/impostor` as a clear Step 7 comparison-and-decision interface that carries forward the selected label and evidence read from `/label-duel`, makes the strongest outlier signal scannable without preselecting it, and explains how the reviewer choice affects the final verdict.
+- Files changed: `components/arena/ImpostorPanel.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Replaced the circular session orbit and low-value purity map with a compact hero, dynamic four-part decision summary, ranked five-session comparison list, explicit outlier-risk and cluster-match measures, useful initial guidance, recorded selected state, strong-candidate confirmation, neutral alternate-choice warning, and responsive action footer behavior.
+- Decisions made: Ranked sessions by descending outlier score with lower feature overlap as the tie-breaker; derived plain-language High/Medium/Low cluster-match labels from existing synthetic overlap values; kept the highest-risk session visibly prominent but unselected; used the existing session summaries and outlier reasons without adding telemetry or evidence fields.
+- Checks run: No formatter script is configured; `node --test --import tsx --test-name-pattern="impostor review teaches" app/page.test.ts` failed against the old orbit UI and passed after the first implementation slice; selected-state coverage passed; `npx tsc --noEmit` passed; `npm test` passed with 38 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable` and no app errors; `npm run build` passed; the Impeccable detector returned `[]`; Playwright against a fresh production server on `127.0.0.1:3064` completed the real `/blind-read` -> `/ai-reveal` -> `/evidence-board` -> `/label-duel` -> `/impostor` flow, confirmed five ranked cards, useful initial guidance, disabled CTA before selection, immediate detail-panel update, enabled CTA after selection, recorded state, strong-candidate explanation, no desktop/mobile horizontal overflow, and no console errors. Screenshots saved to `/tmp/telemetry-impostor-initial-desktop.png`, `/tmp/telemetry-impostor-selected-desktop.png`, and `/tmp/telemetry-impostor-selected-mobile.png`.
+- Assumptions: Cluster-match labels are presentation guidance only and do not change review data or verdict logic; the selected label should remain dynamic because reviewers may choose any Label Duel candidate.
+- Risks/follow-ups: The match-level thresholds are intentionally UI-only; if they later affect exported review semantics, they should move into the domain model with a documented product decision and dedicated tests.
+- Next recommended step: Validate the Step 7 wording with workshop participants before changing the session scoring or adding more comparison dimensions.
+- Suggested commit message: `ux(arena): redesign impostor decision flow`
+
 ## 2026-06-19: Label Duel Final Tiny UI Polish
 
 - Agent/model: Codex (GPT-5)

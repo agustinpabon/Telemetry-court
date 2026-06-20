@@ -444,6 +444,7 @@ test("later workflow panels use compact chrome and descriptive actions", () => {
       React.createElement(ImpostorPanel, {
         caseFile: selectedCase,
         reviewState: {
+          labelDuelWinnerId: selectedCase.candidateLabels[0]?.id,
           impostorSessionId: selectedCase.representativeSessions[0]?.id,
         },
         onSelectSession: () => undefined,
@@ -593,6 +594,141 @@ test("label duel turns evidence balance into a defensible label decision", () =>
   assert.doesNotMatch(
     selectedMarkup,
     /disabled="">Continue with selected label/,
+  );
+});
+
+test("impostor review teaches the comparison before a session is selected", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const markup = renderStaticMarkup(
+    React.createElement(ImpostorPanel, {
+      caseFile: selectedCase,
+      reviewState: {
+        labelDuelWinnerId: "label-iam-uncertain",
+      },
+      onSelectSession: () => undefined,
+      onBackToLabelDuel: () => undefined,
+      onContinue: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /Find the weakest-fit session/);
+  assert.match(
+    markup,
+    /Compare the five representative sessions and choose the one that least matches the cluster pattern\./,
+  );
+  assert.match(markup, /Selected label/);
+  assert.match(markup, /IAM administration with unknown intent/);
+  assert.match(markup, /Evidence read/);
+  assert.match(markup, /Review status/);
+  assert.match(markup, /Needs review/);
+  assert.match(markup, /Fit check/);
+  assert.match(
+    markup,
+    /Weakest fit = high outlier risk \+ low cluster pattern match/,
+  );
+  assert.match(markup, /Strongest signal/);
+  assert.match(markup, /What to look for/);
+  assert.match(markup, /High outlier risk/);
+  assert.match(markup, /Low cluster pattern match/);
+  assert.match(markup, /Behavior that does not match the other sessions/);
+  assert.match(markup, /iam-s-04 currently has the strongest outlier signal\./);
+  assert.match(markup, /Select a session to see how it affects the final verdict\./);
+  assert.match(markup, /82% outlier risk/);
+  assert.match(markup, /Cluster pattern match/);
+  assert.match(markup, /Low · 29%/);
+  assert.ok(
+    markup.indexOf("iam-s-04") < markup.indexOf("iam-s-03"),
+    "sessions should be ordered by outlier risk",
+  );
+  assert.match(
+    markup,
+    /Choose the session with the weakest match to the cluster before continuing\./,
+  );
+  assert.match(markup, /disabled="">Continue to verdict/);
+  assert.doesNotMatch(markup, /aria-pressed="true"/);
+});
+
+test("impostor review guards the workflow when no label was selected", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const markup = renderStaticMarkup(
+    React.createElement(ImpostorPanel, {
+      caseFile: selectedCase,
+      reviewState: {},
+      onSelectSession: () => undefined,
+      onBackToLabelDuel: () => undefined,
+      onContinue: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /Choose a label before the fit check/);
+  assert.match(markup, /Return to label duel/);
+  assert.doesNotMatch(markup, /No label recorded/);
+  assert.doesNotMatch(markup, /Compare session fit/);
+  assert.doesNotMatch(markup, /Continue to verdict/);
+});
+
+test("impostor review explains the strength of the selected session", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const strongestMarkup = renderStaticMarkup(
+    React.createElement(ImpostorPanel, {
+      caseFile: selectedCase,
+      reviewState: {
+        labelDuelWinnerId: "label-iam-uncertain",
+        impostorSessionId: "iam-s-04",
+      },
+      onSelectSession: () => undefined,
+      onBackToLabelDuel: () => undefined,
+      onContinue: () => undefined,
+    }),
+  );
+
+  assert.match(strongestMarkup, /Selection recorded/);
+  assert.match(strongestMarkup, /Cross-account PassRole probe/);
+  assert.match(strongestMarkup, /Cluster pattern match/);
+  assert.match(strongestMarkup, /Low · 29%/);
+  assert.match(strongestMarkup, /Outlier risk/);
+  assert.match(strongestMarkup, /Effect on final verdict/);
+  assert.match(
+    strongestMarkup,
+    /This is a strong impostor candidate because it has the highest outlier risk and weakest match to the cluster\./,
+  );
+  assert.match(
+    strongestMarkup,
+    /Selected: Cross-account PassRole probe · 82% outlier risk/,
+  );
+  assert.match(strongestMarkup, /aria-pressed="true"/);
+  assert.doesNotMatch(strongestMarkup, /disabled="">Continue to verdict/);
+
+  const alternateMarkup = renderStaticMarkup(
+    React.createElement(ImpostorPanel, {
+      caseFile: selectedCase,
+      reviewState: {
+        labelDuelWinnerId: "label-iam-uncertain",
+        impostorSessionId: "iam-s-03",
+      },
+      onSelectSession: () => undefined,
+      onBackToLabelDuel: () => undefined,
+      onContinue: () => undefined,
+    }),
+  );
+
+  assert.match(
+    alternateMarkup,
+    /Selection recorded, but iam-s-04 has stronger outlier evidence: 82% outlier risk and lower cluster match\./,
+  );
+  assert.match(
+    alternateMarkup,
+    /Selected: Role validation checks · 28% outlier risk\. Strongest signal: iam-s-04 · 82%\./,
+  );
+  assert.doesNotMatch(
+    alternateMarkup,
+    /This is a strong impostor candidate because it has the highest outlier risk/,
   );
 });
 
