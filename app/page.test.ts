@@ -437,6 +437,7 @@ test("later workflow panels use compact chrome and descriptive actions", () => {
         reviewState: { labelDuelWinnerId: selectedCase.candidateLabels[0]?.id },
         onSelectWinner: () => undefined,
         onToggleReason: () => undefined,
+        onSetDuelNote: () => undefined,
         onBackToEvidenceBoard: () => undefined,
         onContinue: () => undefined,
       }),
@@ -487,7 +488,7 @@ test("later workflow panels use compact chrome and descriptive actions", () => {
   assert.match(markup, /Continue with 4 classifications/);
   assert.doesNotMatch(markup, /disabled="">Continue with 4 classifications/);
   assert.match(markup, /Back to AI reveal/);
-  assert.match(markup, /Continue to impostor review/);
+  assert.match(markup, /Continue with selected label/);
   assert.match(markup, /Back to evidence board/);
   assert.match(markup, /Continue to verdict/);
   assert.match(markup, /Back to label duel/);
@@ -495,6 +496,104 @@ test("later workflow panels use compact chrome and descriptive actions", () => {
   assert.match(markup, /Back to impostor review/);
   assert.doesNotMatch(markup, /Open review summary/);
   assert.doesNotMatch(markup, />Next<\/button>/);
+});
+
+test("label duel turns evidence balance into a defensible label decision", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const emptyMarkup = renderStaticMarkup(
+    React.createElement(LabelDuelPanel, {
+      caseFile: selectedCase,
+      reviewState: {
+        blindChoiceId: "cloud-resource-discovery",
+        aiLabelRevealed: true,
+      },
+      onSelectWinner: () => undefined,
+      onToggleReason: () => undefined,
+      onSetDuelNote: () => undefined,
+      onBackToEvidenceBoard: () => undefined,
+      onContinue: () => undefined,
+    }),
+  );
+
+  assert.match(emptyMarkup, /Choose the most defensible label/);
+  assert.match(
+    emptyMarkup,
+    /Your evidence suggests the original AI claim may be too strong/,
+  );
+  assert.match(emptyMarkup, /Original AI claim/);
+  assert.match(emptyMarkup, /Suspicious IAM privilege escalation/);
+  assert.match(emptyMarkup, /Your evidence read/);
+  assert.match(emptyMarkup, /1 weak support · 2 contradictions · 1 needs context/);
+  assert.match(emptyMarkup, /Current signal/);
+  assert.match(emptyMarkup, /Likely overclaim/);
+  assert.match(emptyMarkup, /Candidate labels/);
+  assert.match(emptyMarkup, /Select the label that is best supported by the evidence/);
+  assert.match(emptyMarkup, /Best supported/);
+  assert.match(
+    emptyMarkup,
+    /Best matches the observed IAM activity without assuming malicious escalation/,
+  );
+  assert.match(emptyMarkup, /Select label/);
+  assert.doesNotMatch(emptyMarkup, /Recommended/);
+  assert.doesNotMatch(emptyMarkup, /Selected/);
+  assert.match(emptyMarkup, /Original AI claim/);
+  assert.match(emptyMarkup, /Too strong/);
+  assert.match(emptyMarkup, /Other possible labels/);
+  assert.match(emptyMarkup, /More specific label/);
+  assert.match(emptyMarkup, /Plausible but narrow/);
+  assert.match(emptyMarkup, /Uncertainty label/);
+  assert.match(emptyMarkup, /Safer but vague/);
+  assert.doesNotMatch(emptyMarkup, /Support 86%/);
+  assert.doesNotMatch(emptyMarkup, /Semantic evidence atlas/);
+  assert.doesNotMatch(emptyMarkup, /Why this label\?/);
+  assert.match(emptyMarkup, /Select one label to continue\./);
+  assert.match(emptyMarkup, /disabled="">Continue with selected label/);
+
+  const selectedMarkup = renderStaticMarkup(
+    React.createElement(LabelDuelPanel, {
+      caseFile: selectedCase,
+      reviewState: {
+        blindChoiceId: "cloud-resource-discovery",
+        aiLabelRevealed: true,
+        labelDuelWinnerId: "label-iam-constrained",
+        duelReasons: ["less_overclaimed", "missing_downstream_abuse"],
+        duelNote: "Routine provisioning best fits the current evidence.",
+      },
+      onSelectWinner: () => undefined,
+      onToggleReason: () => undefined,
+      onSetDuelNote: () => undefined,
+      onBackToEvidenceBoard: () => undefined,
+      onContinue: () => undefined,
+    }),
+  );
+
+  assert.match(selectedMarkup, /Why this label\?/);
+  assert.match(selectedMarkup, /Selected/);
+  assert.match(
+    selectedMarkup,
+    /Select one or more reasons, or add a short note/,
+  );
+  assert.match(selectedMarkup, /Less overclaimed/);
+  assert.match(selectedMarkup, /Missing malicious intent/);
+  assert.match(selectedMarkup, /Missing downstream abuse/);
+  assert.match(selectedMarkup, /Better supported/);
+  assert.match(selectedMarkup, /Cluster seems mixed/);
+  assert.match(selectedMarkup, /Add a short note, optional/);
+  assert.match(selectedMarkup, /Optional note for the final review/);
+  assert.match(
+    selectedMarkup,
+    /Selected: Routine IAM role provisioning\. It will be compared against the impostor label next\./,
+  );
+  assert.match(
+    selectedMarkup,
+    /Continue with selected label/,
+  );
+  assert.doesNotMatch(
+    selectedMarkup,
+    /disabled="">Continue with selected label/,
+  );
 });
 
 test("blind interpretation choices render as accessible radio cards", () => {

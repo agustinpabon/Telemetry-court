@@ -160,6 +160,9 @@ export const duelReasonLabel: Record<DuelReason, string> = {
   more_specific: "More specific",
   too_broad: "Too broad",
   missing_evidence: "Missing evidence",
+  missing_malicious_intent: "Missing malicious intent",
+  missing_downstream_abuse: "Missing downstream abuse",
+  preserves_uncertainty: "Preserves uncertainty",
   cluster_seems_mixed: "Cluster seems mixed",
 };
 

@@ -471,6 +471,7 @@ function renderStage({
           onToggleReason={(reason) =>
             dispatchArena({ type: "toggleDuelReason", reason })
           }
+          onSetDuelNote={(note) => dispatchArena({ type: "setDuelNote", note })}
           onBackToEvidenceBoard={() => navigateToStage("evidence_board")}
           onContinue={() => navigateToStage("impostor")}
           onSelectStage={navigateToStage}
