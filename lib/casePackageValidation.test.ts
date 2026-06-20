@@ -31,7 +31,9 @@ function objectField(
   return value as Record<string, unknown>;
 }
 
-function assertValid(result: CasePackageValidationResult) {
+function assertValid(
+  result: CasePackageValidationResult,
+): asserts result is Extract<CasePackageValidationResult, { ok: true }> {
   if (!result.ok) {
     assert.fail(`Expected package to validate, got ${JSON.stringify(result.errors)}`);
   }

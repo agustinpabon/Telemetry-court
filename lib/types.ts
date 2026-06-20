@@ -250,6 +250,27 @@ export const CASE_PACKAGE_V01_RECOMMENDED_ACTIONS = [
   "mark_uncertain",
 ] as const;
 
+export const CASE_PACKAGE_V01_REQUIRED_REVIEW_STAGES = [
+  "landscape",
+  "case_file",
+  "blind_review",
+  "ai_reveal",
+  "evidence_classification",
+  "label_comparison",
+  "outlier_impostor_review",
+  "structured_verdict",
+] as const;
+
+export const CASE_PACKAGE_V01_REQUIRED_REVIEWER_ACTIONS = [
+  "choose_blind_interpretation",
+  "reveal_ai_label",
+  "rate_linked_evidence",
+  "choose_label_winner",
+  "choose_outlier_or_impostor",
+  "choose_final_verdict",
+  "choose_recommended_action",
+] as const;
+
 export type CasePackageV01SchemaVersion =
   typeof CASE_PACKAGE_V01_SCHEMA_VERSION;
 export type CasePackageEvidenceRatingV01 =
@@ -258,6 +279,10 @@ export type CasePackageVerdictV01 =
   (typeof CASE_PACKAGE_V01_VERDICTS)[number];
 export type CasePackageRecommendedActionV01 =
   (typeof CASE_PACKAGE_V01_RECOMMENDED_ACTIONS)[number];
+export type CasePackageRequiredReviewStageV01 =
+  (typeof CASE_PACKAGE_V01_REQUIRED_REVIEW_STAGES)[number];
+export type CasePackageRequiredReviewerActionV01 =
+  (typeof CASE_PACKAGE_V01_REQUIRED_REVIEWER_ACTIONS)[number];
 
 export type CasePackageJsonValue =
   | string
@@ -388,25 +413,6 @@ export type CasePackageSafeReferenceTypeV01 =
   | "dashboard_link"
   | "source_artifact_id"
   | "internal_runbook";
-
-export type CasePackageRequiredReviewStageV01 =
-  | "landscape"
-  | "case_file"
-  | "blind_review"
-  | "ai_reveal"
-  | "evidence_classification"
-  | "label_comparison"
-  | "outlier_impostor_review"
-  | "structured_verdict";
-
-export type CasePackageRequiredReviewerActionV01 =
-  | "choose_blind_interpretation"
-  | "reveal_ai_label"
-  | "rate_linked_evidence"
-  | "choose_label_winner"
-  | "choose_outlier_or_impostor"
-  | "choose_final_verdict"
-  | "choose_recommended_action";
 
 export type CasePackageMetricV01 =
   | {
