@@ -1,6 +1,6 @@
 ---
 name: Telemetry Court
-description: AI names the pattern. Humans test the evidence.
+description: AI names the cluster. Humans test the evidence.
 colors:
   ink: "#32302f"
   canvas: "#f4f2ee"
@@ -109,11 +109,11 @@ components:
 
 ## 1. Overview
 
-**Creative North Star: "The Evidence Dossier Arena"**
+**Creative North Star: "The Evidence Validation Bench"**
 
-Telemetry Court combines a calm high-trust product shell with a spatial investigation arena. The system should feel like a scientific review instrument: restrained, precise, and quiet enough for careful judgment, while still making the telemetry landscape feel alive and interactive.
+Telemetry Court combines a calm high-trust product shell with a spatial validation workspace. The system should feel like a scientific review instrument: restrained, precise, and quiet enough for careful judgment, while still making the synthetic telemetry landscape legible and interactive.
 
-The design has two coordinated surface modes. The global product context uses warm neutral canvas, soft surfaces, muted borders, and system sans typography. The Evidence Arena uses a darker spatial cockpit for staged review work, while the Explore / Galaxy mode can return to a lighter semantic atlas when readability and evidence inspection need priority.
+The design has two coordinated surface modes. The global product context uses warm neutral canvas, soft surfaces, muted borders, and system sans typography. The staged validation workflow uses a darker spatial workspace, while the Explore / Galaxy mode can return to a lighter semantic atlas when readability and evidence inspection need priority.
 
 It rejects threat-wall drama, fake terminal styling, neon cyber aesthetics, generic AI decoration, and dense dashboard grids. Semantic color exists to clarify evidence status, uncertainty, contradiction, impurity, and overclaim risk.
 

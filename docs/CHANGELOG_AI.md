@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-20: Validation Bench Repository Realignment
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Audit and realign the repository around Telemetry Court as an evidence-based human-in-the-loop validation bench before backend implementation.
+- Files changed: `README.md`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `PRODUCT.md`, `PRODUCT_DIRECTION.md`, `PROJECT_CONTEXT.md`, `TECHNICAL_CONTEXT.md`, `START_HERE_FOR_AGENTS.md`, `PROMPTING_GUIDE.md`, `MODEL_SELECTION.md`, `DESIGN.md`, `RELEASE_v0.1.md`, `.github/copilot-instructions.md`, `.github/pull_request_template.md`, `docs/PRODUCT_POSITIONING.md`, `docs/PRODUCT_VISION.md`, `docs/PROJECT_CONTEXT.md`, `docs/CASE_PACKAGE_CONTRACT.md`, `docs/EVALUATION_INFRASTRUCTURE.md`, `docs/ARCHITECTURE.md`, `docs/ROADMAP.md`, `docs/PRODUCT_DECISIONS.md`, `docs/DATA_MODEL.md`, `docs/DESIGN_DIRECTION.md`, `docs/DESIGN_SYSTEM.md`, `docs/AGENT_WORKFLOWS.md`, `docs/DEVELOPMENT_WORKFLOW.md`, `docs/GITHUB_PLANNING.md`, `docs/MODEL_ROUTING.md`, `docs/TOPONYMY_NOTES.md`, `components/arena/AppShell.tsx`, `lib/exportReview.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Replaced the Evidence Arena and frontend-MVP identity with the validation-bench definition, documented the current static synthetic slice without overclaiming it, and aligned architecture, roadmap, planning, agent instructions, templates, design language, release notes, and direct user-facing copy around a versioned case-package boundary and evaluation output.
+- Decisions made: The backend direction is evaluation infrastructure; `CasePackage`, `ReviewResult`, and `EvaluationReport` remain distinct versioned contracts; the next milestone is Case Package Contract and Validation Infrastructure; Toponymy and ACME4-style integrations enter through approved adapters rather than raw telemetry ingestion; SIEM/SOC, alert triage, raw search, generic dashboards, chat-first UX, gamification, auth-first work, generic CRUD, and speculative enterprise features are out of scope.
+- Checks run: repository-wide legacy-framing searches completed; `npm test` passed with 35 tests; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed.
+- Assumptions: Existing UI component and type names containing `arena` remain implementation details until a separately scoped migration; historical changelog and decision entries remain intact but are explicitly superseded by the 2026-06-20 decision.
+- Risks/follow-ups: `CasePackage v0.1`, `ReviewResult v0.1`, and `EvaluationReport v0.1` are documentation contracts only and still require human-approved schema decisions, runtime validation, package-shaped fixtures, and tests. No real Toponymy or ACME4 integration exists.
+- Next recommended step: Execute Milestone 2 by approving the three v0.1 contracts, adding runtime package validation, and adapting one synthetic fixture through the boundary without redesigning the UI.
+- Suggested commit message: `docs(product): realign repository around validation bench`
+
 ## 2026-06-19: Evidence Board Mobile Conversion Polish
 
 - Agent/model: Codex (GPT-5)
