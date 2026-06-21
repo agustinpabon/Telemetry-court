@@ -16,11 +16,51 @@ import {
 export const EVALUATION_REPORT_V01_SCHEMA_VERSION =
   "evaluation_report.v0.1" as const;
 export const EVALUATION_REPORT_V01_CALCULATION_VERSION =
-  "review_result_aggregation.v0.1" as const;
+  "review_result_aggregation.v0.2" as const;
+
+export const EVALUATION_REPORT_V01_COMPARISON_DIMENSIONS = [
+  "selected_label_id",
+  "package_id",
+  "package_revision",
+  "pipeline_id",
+  "pipeline_run_id",
+  "upstream_tool",
+  "pipeline_version",
+  "embedding_model",
+  "clustering_method",
+  "dimensionality_reduction_method",
+  "naming_model",
+  "prompt_id",
+  "prompt_version",
+  "prompt_digest",
+] as const;
 
 type CountDistribution<Value extends string> = Record<Value, number>;
 type FailureModeV01 = ReviewResultV01["decisions"]["failure_modes"][number];
 type ReviewedCasePackageReferenceV01 = ReviewResultV01["case_package"];
+export type ComparisonDimensionV01 =
+  (typeof EVALUATION_REPORT_V01_COMPARISON_DIMENSIONS)[number];
+export type ComparisonRollupGroupV01 = {
+  value: string;
+  review_count: number;
+  evidence_decision_count: number;
+  verdict_distribution: CountDistribution<CasePackageVerdictV01>;
+  evidence_rating_distribution: CountDistribution<CasePackageEvidenceRatingV01>;
+};
+export type ComparisonRollupV01 =
+  | {
+      dimension: ComparisonDimensionV01;
+      status: "available";
+      missing_review_count: number;
+      groups: ComparisonRollupGroupV01[];
+    }
+  | {
+      dimension: ComparisonDimensionV01;
+      status: "unavailable";
+      reason: string;
+      missing_review_count: number;
+      groups: [];
+    };
 type CasePackageReferenceFieldV01 = Exclude<
   keyof ReviewedCasePackageReferenceV01,
   "pipeline"
@@ -49,6 +89,74 @@ const PIPELINE_REFERENCE_FIELDS = {
   generated_at: true,
 } satisfies Record<keyof ReviewedCasePackageReferenceV01["pipeline"], true>;
 
+const COMPARISON_DIMENSION_DEFINITIONS: ReadonlyArray<{
+  dimension: ComparisonDimensionV01;
+  getValue: (reviewResult: ReviewResultV01) => string | undefined;
+}> = [
+  {
+    dimension: "selected_label_id",
+    getValue: (reviewResult) =>
+      reviewResult.decisions.label_comparison.selected_label_id,
+  },
+  {
+    dimension: "package_id",
+    getValue: (reviewResult) => reviewResult.case_package.package_id,
+  },
+  {
+    dimension: "package_revision",
+    getValue: (reviewResult) => reviewResult.case_package.package_revision,
+  },
+  {
+    dimension: "pipeline_id",
+    getValue: (reviewResult) => reviewResult.case_package.pipeline.pipeline_id,
+  },
+  {
+    dimension: "pipeline_run_id",
+    getValue: (reviewResult) => reviewResult.case_package.pipeline.run_id,
+  },
+  {
+    dimension: "upstream_tool",
+    getValue: (reviewResult) => reviewResult.case_package.pipeline.upstream_tool,
+  },
+  {
+    dimension: "pipeline_version",
+    getValue: (reviewResult) =>
+      reviewResult.case_package.pipeline.pipeline_version,
+  },
+  {
+    dimension: "embedding_model",
+    getValue: (reviewResult) =>
+      reviewResult.case_package.pipeline.embedding_model,
+  },
+  {
+    dimension: "clustering_method",
+    getValue: (reviewResult) =>
+      reviewResult.case_package.pipeline.clustering_method,
+  },
+  {
+    dimension: "dimensionality_reduction_method",
+    getValue: (reviewResult) =>
+      reviewResult.case_package.pipeline.dimensionality_reduction_method,
+  },
+  {
+    dimension: "naming_model",
+    getValue: (reviewResult) => reviewResult.case_package.pipeline.naming_model,
+  },
+  {
+    dimension: "prompt_id",
+    getValue: (reviewResult) => reviewResult.case_package.pipeline.prompt_id,
+  },
+  {
+    dimension: "prompt_version",
+    getValue: (reviewResult) =>
+      reviewResult.case_package.pipeline.prompt_version,
+  },
+  {
+    dimension: "prompt_digest",
+    getValue: (reviewResult) => reviewResult.case_package.pipeline.prompt_digest,
+  },
+];
+
 export type EvaluationReportV01 = {
   schema_version: typeof EVALUATION_REPORT_V01_SCHEMA_VERSION;
   calculation_version: typeof EVALUATION_REPORT_V01_CALCULATION_VERSION;
@@ -66,6 +174,7 @@ export type EvaluationReportV01 = {
     failure_mode: FailureModeV01;
     count: number;
   }>;
+  comparison_rollups: ComparisonRollupV01[];
   disagreement: {
     has_any_disagreement: boolean;
     verdict: boolean;
@@ -206,11 +315,72 @@ export function aggregateReviewResultsV01(
     label_winner_distribution: sortedCounts(labelWinnerCounts, "label_id"),
     evidence_rating_distribution: evidenceRatingDistribution,
     failure_mode_counts: sortedCounts(failureModeCounts, "failure_mode"),
+    comparison_rollups: COMPARISON_DIMENSION_DEFINITIONS.map(
+      ({ dimension, getValue }) =>
+        buildComparisonRollup(dimension, reviewResults, getValue),
+    ),
     disagreement: {
       has_any_disagreement: Object.values(disagreement).some(Boolean),
       ...disagreement,
       evidence_ids: evidenceIdsWithDisagreement,
     },
+  };
+}
+
+function buildComparisonRollup(
+  dimension: ComparisonDimensionV01,
+  reviewResults: readonly ReviewResultV01[],
+  getValue: (reviewResult: ReviewResultV01) => string | undefined,
+): ComparisonRollupV01 {
+  const groups = new Map<string, ComparisonRollupGroupV01>();
+  let missingReviewCount = 0;
+
+  for (const reviewResult of reviewResults) {
+    const value = getValue(reviewResult);
+
+    if (typeof value !== "string" || value.trim() === "") {
+      missingReviewCount += 1;
+      continue;
+    }
+
+    const group = groups.get(value) ?? {
+      value,
+      review_count: 0,
+      evidence_decision_count: 0,
+      verdict_distribution: createCountDistribution(REVIEW_RESULT_V01_VERDICTS),
+      evidence_rating_distribution: createCountDistribution(
+        REVIEW_RESULT_V01_EVIDENCE_RATINGS,
+      ),
+    };
+
+    group.review_count += 1;
+    group.verdict_distribution[reviewResult.decisions.final_verdict] += 1;
+
+    for (const evidenceRating of reviewResult.decisions.evidence_ratings) {
+      group.evidence_decision_count += 1;
+      group.evidence_rating_distribution[evidenceRating.rating] += 1;
+    }
+
+    groups.set(value, group);
+  }
+
+  if (groups.size === 0) {
+    return {
+      dimension,
+      status: "unavailable",
+      reason: `Metadata "${dimension}" is missing from all compact CasePackage references.`,
+      missing_review_count: missingReviewCount,
+      groups: [],
+    };
+  }
+
+  return {
+    dimension,
+    status: "available",
+    missing_review_count: missingReviewCount,
+    groups: [...groups.values()].sort((left, right) =>
+      compareStrings(left.value, right.value),
+    ),
   };
 }
 

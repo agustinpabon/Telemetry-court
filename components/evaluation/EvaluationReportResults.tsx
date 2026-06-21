@@ -5,7 +5,10 @@ import {
   SectionHeader,
 } from "@/components/arena/WorkflowPrimitives";
 import { EvaluationReportExportActions } from "@/components/evaluation/EvaluationReportExportActions";
-import type { EvaluationReportV01 } from "@/lib/evaluationReportV01";
+import type {
+  ComparisonDimensionV01,
+  EvaluationReportV01,
+} from "@/lib/evaluationReportV01";
 import type {
   CasePackageEvidenceRatingV01,
   CasePackageVerdictV01,
@@ -33,6 +36,23 @@ const evidenceRatingLabels: Record<CasePackageEvidenceRatingV01, string> = {
   contradicts: "Contradicts",
   insufficient: "Insufficient",
   needs_more_context: "Needs more context",
+};
+
+const comparisonDimensionLabels: Record<ComparisonDimensionV01, string> = {
+  selected_label_id: "Selected label",
+  package_id: "Evidence package",
+  package_revision: "Evidence package revision",
+  pipeline_id: "Pipeline",
+  pipeline_run_id: "Pipeline run",
+  upstream_tool: "Upstream tool",
+  pipeline_version: "Pipeline version",
+  embedding_model: "Embedding model",
+  clustering_method: "Clustering method",
+  dimensionality_reduction_method: "Dimensionality reduction",
+  naming_model: "Naming model",
+  prompt_id: "Prompt",
+  prompt_version: "Prompt version",
+  prompt_digest: "Prompt digest",
 };
 
 export function EvaluationReportResults({ report }: EvaluationReportResultsProps) {
@@ -155,6 +175,11 @@ export function EvaluationReportResults({ report }: EvaluationReportResultsProps
         total={evidenceRatingTotal}
       />
 
+      <ComparisonRollupsSection
+        report={report}
+        hasReviewerOutput={hasReviewerOutput}
+      />
+
       <section
         className="evaluation-report-section evaluation-report-disagreement"
         aria-label="Disagreement indicators"
@@ -200,6 +225,87 @@ export function EvaluationReportResults({ report }: EvaluationReportResultsProps
         )}
       </section>
     </ArenaWorkflowShell>
+  );
+}
+
+function ComparisonRollupsSection({
+  report,
+  hasReviewerOutput,
+}: {
+  report: EvaluationReportV01;
+  hasReviewerOutput: boolean;
+}) {
+  return (
+    <section
+      className="evaluation-report-section"
+      aria-label="Metadata comparison rollups"
+    >
+      <SectionHeader
+        title="Metadata comparison rollups"
+        description="Descriptive reviewer signals grouped by metadata already present in ReviewResults. Single-value groups provide context, not a cross-variant ranking."
+      />
+      {hasReviewerOutput && report.comparison_rollups.length > 0 ? (
+        <div className="evaluation-comparison-list">
+          {report.comparison_rollups.map((rollup) => (
+            <article
+              className="evaluation-comparison-row"
+              key={rollup.dimension}
+            >
+              <header>
+                <strong>{comparisonDimensionLabels[rollup.dimension]}</strong>
+                <span>
+                  {rollup.status === "unavailable"
+                    ? "Unavailable"
+                    : formatComparisonValueCount(rollup.groups.length)}
+                </span>
+              </header>
+              {rollup.status === "unavailable" ? (
+                <p>{rollup.reason}</p>
+              ) : (
+                <div className="evaluation-comparison-groups">
+                  {rollup.groups.map((group) => (
+                    <div key={group.value}>
+                      <strong>{group.value}</strong>
+                      <p>
+                        {formatCount(group.review_count, "review", "reviews")};{" "}
+                        {formatCount(
+                          group.evidence_decision_count,
+                          "evidence decision",
+                          "evidence decisions",
+                        )}
+                      </p>
+                      <p>
+                        Verdicts: {formatNonzeroDistribution(
+                          group.verdict_distribution,
+                          verdictLabels,
+                        )}
+                      </p>
+                      <p>
+                        Evidence ratings: {formatNonzeroDistribution(
+                          group.evidence_rating_distribution,
+                          evidenceRatingLabels,
+                        )}
+                      </p>
+                    </div>
+                  ))}
+                  {rollup.missing_review_count > 0 ? (
+                    <p>
+                      Missing metadata: {formatCount(
+                        rollup.missing_review_count,
+                        "review",
+                        "reviews",
+                      )}
+                    </p>
+                  ) : null}
+                </div>
+              )}
+            </article>
+          ))}
+        </div>
+      ) : (
+        <UnavailableState label="Comparison rollups unavailable" />
+      )}
+    </section>
   );
 }
 
@@ -274,6 +380,25 @@ function UnavailableState({ label }: { label: string }) {
 
 function sumCounts(distribution: Record<string, number>) {
   return Object.values(distribution).reduce((total, count) => total + count, 0);
+}
+
+function formatComparisonValueCount(count: number) {
+  return count === 1 ? "Single value in this report" : `${count} values in this report`;
+}
+
+function formatNonzeroDistribution(
+  distribution: Record<string, number>,
+  labels: Record<string, string>,
+) {
+  const entries = Object.entries(distribution).filter(([, count]) => count > 0);
+
+  if (entries.length === 0) {
+    return "None reported";
+  }
+
+  return entries
+    .map(([value, count]) => `${labels[value] ?? value}: ${count}`)
+    .join(", ");
 }
 
 function getReportStatus(

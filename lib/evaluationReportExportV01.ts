@@ -1,4 +1,8 @@
-import type { EvaluationReportV01 } from "@/lib/evaluationReportV01";
+import {
+  EVALUATION_REPORT_V01_COMPARISON_DIMENSIONS,
+  type ComparisonRollupV01,
+  type EvaluationReportV01,
+} from "@/lib/evaluationReportV01";
 import {
   REVIEW_RESULT_V01_EVIDENCE_RATINGS,
   REVIEW_RESULT_V01_RECOMMENDED_ACTIONS,
@@ -115,10 +119,49 @@ function buildEvaluationReportJsonExportV01(
     failure_mode_counts: [...report.failure_mode_counts].sort((left, right) =>
       compareStrings(left.failure_mode, right.failure_mode),
     ),
+    comparison_rollups: [...report.comparison_rollups]
+      .sort(
+        (left, right) =>
+          EVALUATION_REPORT_V01_COMPARISON_DIMENSIONS.indexOf(left.dimension) -
+          EVALUATION_REPORT_V01_COMPARISON_DIMENSIONS.indexOf(right.dimension),
+      )
+      .map(normalizeComparisonRollup),
     disagreement: {
       ...report.disagreement,
       evidence_ids: [...report.disagreement.evidence_ids].sort(),
     },
+  };
+}
+
+function normalizeComparisonRollup(
+  rollup: ComparisonRollupV01,
+): ComparisonRollupV01 {
+  if (rollup.status === "unavailable") {
+    return {
+      ...rollup,
+      groups: [],
+    };
+  }
+
+  return {
+    ...rollup,
+    groups: [...rollup.groups]
+      .sort((left, right) => compareStrings(left.value, right.value))
+      .map((group) => ({
+        ...group,
+        verdict_distribution: Object.fromEntries(
+          REVIEW_RESULT_V01_VERDICTS.map((verdict) => [
+            verdict,
+            group.verdict_distribution[verdict],
+          ]),
+        ) as EvaluationReportV01["verdict_distribution"],
+        evidence_rating_distribution: Object.fromEntries(
+          REVIEW_RESULT_V01_EVIDENCE_RATINGS.map((rating) => [
+            rating,
+            group.evidence_rating_distribution[rating],
+          ]),
+        ) as EvaluationReportV01["evidence_rating_distribution"],
+      })),
   };
 }
 
@@ -230,6 +273,73 @@ function buildEvaluationReportCsvRowsV01(
         status: reviewerOutputStatus,
       }),
     );
+  }
+
+  for (const rollup of report.comparison_rollups) {
+    if (rollup.status === "unavailable") {
+      rows.push(
+        createCsvRow(report, {
+          section: "comparison_metadata",
+          key: rollup.dimension,
+          value: rollup.reason,
+          count: rollup.missing_review_count,
+          status: "unavailable",
+        }),
+      );
+      continue;
+    }
+
+    rows.push(
+      createCsvRow(report, {
+        section: "comparison_missing_review_count",
+        key: rollup.dimension,
+        count: rollup.missing_review_count,
+        status: "available",
+      }),
+    );
+
+    for (const group of rollup.groups) {
+      rows.push(
+        createCsvRow(report, {
+          section: "comparison_review_count",
+          key: rollup.dimension,
+          value: group.value,
+          count: group.review_count,
+          status: "available",
+        }),
+        createCsvRow(report, {
+          section: "comparison_evidence_decision_count",
+          key: rollup.dimension,
+          value: group.value,
+          count: group.evidence_decision_count,
+          status: "available",
+        }),
+      );
+
+      for (const verdict of REVIEW_RESULT_V01_VERDICTS) {
+        rows.push(
+          createCsvRow(report, {
+            section: `comparison_verdict_distribution:${verdict}`,
+            key: rollup.dimension,
+            value: group.value,
+            count: group.verdict_distribution[verdict],
+            status: "available",
+          }),
+        );
+      }
+
+      for (const rating of REVIEW_RESULT_V01_EVIDENCE_RATINGS) {
+        rows.push(
+          createCsvRow(report, {
+            section: `comparison_evidence_rating_distribution:${rating}`,
+            key: rollup.dimension,
+            value: group.value,
+            count: group.evidence_rating_distribution[rating],
+            status: "available",
+          }),
+        );
+      }
+    }
   }
 
   rows.push(

@@ -51,12 +51,23 @@ test("evaluation report results view shows reviewer distributions and disagreeme
   assert.match(markup, /Evidence ratings/);
   assert.match(markup, /evidence-2/);
   assert.match(markup, /stable references only/);
+  assert.match(markup, /Metadata comparison rollups/);
+  assert.match(markup, /Selected label/);
+  assert.match(markup, /2 values in this report/);
+  assert.match(markup, /Embedding model/);
+  assert.match(markup, /synthetic-embedding-a/);
+  assert.match(markup, /Single value in this report/);
+  assert.match(markup, /Clustering method/);
+  assert.match(markup, /Unavailable/);
+  assert.match(markup, /clustering_method/);
+  assert.doesNotMatch(markup, /best model/i);
+  assert.doesNotMatch(markup, /score/i);
 });
 
 test("evaluation report results view marks unavailable aggregate data explicitly", () => {
   const unavailableReport: EvaluationReportV01 = {
     schema_version: "evaluation_report.v0.1",
-    calculation_version: "review_result_aggregation.v0.1",
+    calculation_version: "review_result_aggregation.v0.2",
     case_package: createReviewResult().case_package,
     source_review_ids: [],
     reviewer_count: 0,
@@ -92,6 +103,7 @@ test("evaluation report results view marks unavailable aggregate data explicitly
       needs_more_context: 0,
     },
     failure_mode_counts: [],
+    comparison_rollups: [],
     disagreement: {
       has_any_disagreement: false,
       verdict: false,
@@ -109,6 +121,7 @@ test("evaluation report results view marks unavailable aggregate data explicitly
   assert.match(markup, /Label winner distribution unavailable/);
   assert.match(markup, /Evidence rating distribution unavailable/);
   assert.match(markup, /Disagreement indicators unavailable/);
+  assert.match(markup, /Comparison rollups unavailable/);
   assert.doesNotMatch(markup, /No disagreement detected/);
   assert.doesNotMatch(markup, /Aligned/);
   assert.doesNotMatch(markup, /0%/);
@@ -149,6 +162,12 @@ function createReviewResult({
         pipeline_id: "pipeline-synthetic-evaluation",
         run_id: "run-synthetic-evaluation-001",
         upstream_tool: "synthetic-evaluation-fixture",
+        pipeline_version: "pipeline-v1",
+        embedding_model: "synthetic-embedding-a",
+        naming_model: "synthetic-naming-model-a",
+        prompt_id: "prompt-a",
+        prompt_version: "1",
+        prompt_digest: "sha256:synthetic-a",
         generated_at: "2026-06-21T11:00:00.000Z",
       },
     },
