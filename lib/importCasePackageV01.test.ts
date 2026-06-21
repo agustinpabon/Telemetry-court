@@ -56,7 +56,7 @@ test("valid CasePackage JSON imports and opens as review state", () => {
   assert.equal(getSelectedCase(cases, arenaState)?.id, importResult.caseFile.id);
 });
 
-test("invalid JSON is rejected before entering review", () => {
+test("malformed JSON shows parse diagnostics and cannot produce a review case", () => {
   const importResult = importCasePackageV01Json("{not-json");
 
   assert.equal(importResult.ok, false);
@@ -64,12 +64,65 @@ test("invalid JSON is rejected before entering review", () => {
     return;
   }
 
-  assert.equal(importResult.reason, "invalid_json");
+  assert.equal(importResult.reason, "malformed_json");
+  assert.equal(Object.hasOwn(importResult, "caseFile"), false);
   assert.equal(importResult.errors[0]?.code, "invalid_json");
-  assert.match(importResult.message, /Invalid JSON/);
+  assert.match(importResult.title, /Malformed JSON/);
+  assert.match(importResult.summary, /review cannot start/i);
+  assert.match(importResult.suggestedFix, /JSON syntax/);
 });
 
-test("structurally invalid CasePackage JSON is rejected", () => {
+test("missing or unsupported schema version shows schema diagnostics", () => {
+  const packageWithoutSchemaVersion = structuredClone(
+    casePackageFixtures[0],
+  ) as Record<string, unknown>;
+  delete packageWithoutSchemaVersion.schema_version;
+
+  const missingVersionResult = importCasePackageV01Json(
+    JSON.stringify(packageWithoutSchemaVersion),
+  );
+
+  assert.equal(missingVersionResult.ok, false);
+  if (missingVersionResult.ok) {
+    return;
+  }
+
+  assert.equal(missingVersionResult.reason, "schema_version");
+  assert.match(missingVersionResult.title, /schema version/i);
+  assert.equal(
+    missingVersionResult.errors.some(
+      (error) =>
+        error.path === "$.schema_version" &&
+        error.code === "missing_required_field",
+    ),
+    true,
+  );
+
+  const unsupportedPackage = structuredClone(casePackageFixtures[0]) as Record<
+    string,
+    unknown
+  >;
+  unsupportedPackage.schema_version = "case_package.v9";
+
+  const unsupportedVersionResult = importCasePackageV01Json(
+    JSON.stringify(unsupportedPackage),
+  );
+
+  assert.equal(unsupportedVersionResult.ok, false);
+  if (unsupportedVersionResult.ok) {
+    return;
+  }
+
+  assert.equal(unsupportedVersionResult.reason, "schema_version");
+  assert.equal(
+    unsupportedVersionResult.errors.some(
+      (error) => error.code === "unsupported_schema_version",
+    ),
+    true,
+  );
+});
+
+test("structurally invalid CasePackage JSON shows validation diagnostics", () => {
   const invalidPackage = structuredClone(casePackageFixtures[0]) as Record<
     string,
     unknown
@@ -83,12 +136,51 @@ test("structurally invalid CasePackage JSON is rejected", () => {
     return;
   }
 
-  assert.equal(importResult.reason, "invalid_case_package");
+  assert.equal(importResult.reason, "validation");
+  assert.match(importResult.title, /validation failed/i);
+  assert.match(importResult.summary, /package validation/i);
   assert.equal(
     importResult.errors.some(
       (error) =>
         error.code === "missing_required_field" &&
         error.path.includes("provenance"),
+    ),
+    true,
+  );
+});
+
+test("contract-valid packages that cannot enter review show readiness diagnostics", () => {
+  const unreadablePackage = structuredClone(casePackageFixtures[0]);
+  unreadablePackage.neighbor_clusters = [];
+  unreadablePackage.cluster.embedding_map = undefined;
+  unreadablePackage.representative_sessions = [];
+  unreadablePackage.outlier_impostor_candidates = [];
+  unreadablePackage.metrics.model_agreement = {
+    status: "unavailable",
+    reason: "Not included in this otherwise valid package.",
+  };
+  unreadablePackage.candidate_labels = unreadablePackage.candidate_labels.map(
+    (label) => ({ ...label, source: "human_baseline" as const }),
+  );
+
+  const importResult = importCasePackageV01Json(
+    JSON.stringify(unreadablePackage),
+  );
+
+  assert.equal(importResult.ok, false);
+  if (importResult.ok) {
+    return;
+  }
+
+  assert.equal(importResult.reason, "adapter_readiness");
+  assert.match(importResult.title, /review cannot start/i);
+  assert.equal(
+    importResult.errors.some((error) => error.code === "ui_missing_ai_label"),
+    true,
+  );
+  assert.equal(
+    importResult.errors.some(
+      (error) => error.code === "ui_missing_neighbor_cluster",
     ),
     true,
   );
@@ -112,27 +204,21 @@ test("existing demo fixture flow still renders from package fixtures", () => {
   );
 });
 
-test("import does not bypass CasePackage schema version validation", () => {
-  const unsupportedPackage = structuredClone(casePackageFixtures[0]) as Record<
-    string,
-    unknown
-  >;
-  unsupportedPackage.schema_version = "case_package.v9";
+test("a valid package can replace a failed import attempt", () => {
+  const failedResult = importCasePackageV01Json("{not-json");
+  assert.equal(failedResult.ok, false);
 
-  const importResult = importCasePackageV01Json(
-    JSON.stringify(unsupportedPackage),
+  const recoveredResult = importCasePackageV01Json(
+    JSON.stringify(casePackageFixtures[0]),
   );
 
-  assert.equal(importResult.ok, false);
-  if (importResult.ok) {
+  assert.equal(recoveredResult.ok, true);
+  if (!recoveredResult.ok) {
     return;
   }
 
-  assert.equal(importResult.reason, "invalid_case_package");
   assert.equal(
-    importResult.errors.some(
-      (error) => error.code === "unsupported_schema_version",
-    ),
-    true,
+    recoveredResult.caseFile.casePackageReference?.package_id,
+    casePackageFixtures[0].package_id,
   );
 });
