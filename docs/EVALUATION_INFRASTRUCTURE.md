@@ -75,9 +75,9 @@ choose a consensus. Evidence disagreement also lists the stable evidence IDs
 that received more than one rating.
 
 The utility rejects empty input, unsupported ReviewResult or CasePackage schema
-versions, mixed package IDs or revisions, and missing required review, package,
-pipeline, reviewer, or protocol metadata. It uses no database, server, file IO,
-or account system.
+versions, mixed package IDs or revisions, mismatched compact package references,
+and missing required review, package, pipeline, reviewer, or protocol metadata.
+It uses no database, server, file IO, or account system.
 
 ## Current State And Next Proof
 

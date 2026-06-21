@@ -217,6 +217,22 @@ test("aggregation rejects unsupported ReviewResult schema versions", () => {
   );
 });
 
+test("aggregation rejects unsupported CasePackage schema versions", () => {
+  const review = createReviewResult();
+  const unsupportedReview = {
+    ...review,
+    case_package: {
+      ...review.case_package,
+      schema_version: "case_package.v0.2",
+    },
+  } as unknown as ReviewResultV01;
+
+  assert.throws(
+    () => aggregateReviewResultsV01([unsupportedReview]),
+    /unsupported CasePackage schema version "case_package.v0.2"/,
+  );
+});
+
 test("aggregation rejects missing required reviewer metadata", () => {
   const review = createReviewResult({
     reviewerId: "",
@@ -244,5 +260,24 @@ test("aggregation rejects mixed revisions of the same CasePackage", () => {
   assert.throws(
     () => aggregateReviewResultsV01([reviewA, reviewB]),
     /mixed CasePackage revisions/,
+  );
+});
+
+test("aggregation rejects mismatched CasePackage reference metadata", () => {
+  const reviewA = createReviewResult();
+  const reviewB: ReviewResultV01 = {
+    ...createReviewResult({
+      reviewId: "review-b",
+      reviewerId: "reviewer-b",
+    }),
+    case_package: {
+      ...reviewA.case_package,
+      case_id: "case-synthetic-evaluation-002",
+    },
+  };
+
+  assert.throws(
+    () => aggregateReviewResultsV01([reviewA, reviewB]),
+    /mismatched CasePackage reference metadata/,
   );
 });

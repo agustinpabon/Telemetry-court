@@ -20,6 +20,34 @@ export const EVALUATION_REPORT_V01_CALCULATION_VERSION =
 
 type CountDistribution<Value extends string> = Record<Value, number>;
 type FailureModeV01 = ReviewResultV01["decisions"]["failure_modes"][number];
+type ReviewedCasePackageReferenceV01 = ReviewResultV01["case_package"];
+type CasePackageReferenceFieldV01 = Exclude<
+  keyof ReviewedCasePackageReferenceV01,
+  "pipeline"
+>;
+
+const CASE_PACKAGE_REFERENCE_FIELDS = {
+  schema_version: true,
+  package_id: true,
+  package_revision: true,
+  case_id: true,
+  cluster_id: true,
+} satisfies Record<CasePackageReferenceFieldV01, true>;
+
+const PIPELINE_REFERENCE_FIELDS = {
+  pipeline_id: true,
+  run_id: true,
+  upstream_tool: true,
+  pipeline_version: true,
+  embedding_model: true,
+  clustering_method: true,
+  dimensionality_reduction_method: true,
+  naming_model: true,
+  prompt_id: true,
+  prompt_version: true,
+  prompt_digest: true,
+  generated_at: true,
+} satisfies Record<keyof ReviewedCasePackageReferenceV01["pipeline"], true>;
 
 export type EvaluationReportV01 = {
   schema_version: typeof EVALUATION_REPORT_V01_SCHEMA_VERSION;
@@ -94,6 +122,17 @@ export function aggregateReviewResultsV01(
     if (reviewResult.case_package.package_revision !== packageRevision) {
       throw new Error(
         "Cannot aggregate EvaluationReport v0.1 with mixed CasePackage revisions.",
+      );
+    }
+
+    if (
+      !hasMatchingCasePackageReference(
+        firstReview.case_package,
+        reviewResult.case_package,
+      )
+    ) {
+      throw new Error(
+        "Cannot aggregate EvaluationReport v0.1 with mismatched CasePackage reference metadata.",
       );
     }
   }
@@ -208,6 +247,25 @@ function compareStrings(left: string, right: string) {
   }
 
   return 0;
+}
+
+function hasMatchingCasePackageReference(
+  left: ReviewedCasePackageReferenceV01,
+  right: ReviewedCasePackageReferenceV01,
+) {
+  const casePackageFields = Object.keys(
+    CASE_PACKAGE_REFERENCE_FIELDS,
+  ) as CasePackageReferenceFieldV01[];
+  const pipelineFields = Object.keys(PIPELINE_REFERENCE_FIELDS) as Array<
+    keyof ReviewedCasePackageReferenceV01["pipeline"]
+  >;
+
+  return (
+    casePackageFields.every((field) => left[field] === right[field]) &&
+    pipelineFields.every(
+      (field) => left.pipeline[field] === right.pipeline[field],
+    )
+  );
 }
 
 function assertRequiredMetadata(reviewResult: ReviewResultV01) {
