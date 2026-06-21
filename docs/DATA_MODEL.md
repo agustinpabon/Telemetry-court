@@ -243,9 +243,10 @@ The current review export emits `ReviewResultV01` with schema version
 Typing must not be required to produce this export.
 
 The export does not include the full cluster, claims, evidence items, support
-scores, or raw telemetry. It is one local review artifact; persistence,
-multi-reviewer aggregation, confidence capture, and `EvaluationReport` remain
-future work.
+scores, or raw telemetry. It is one local review artifact. The current app can
+persist that artifact in browser-local storage by CasePackage ID after copy or
+download, but durable backend storage, report workflows, confidence capture,
+and broader `EvaluationReport` production remain future work.
 
 ## Runtime Fixture
 

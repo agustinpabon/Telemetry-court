@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-21: Local ReviewResult Persistence
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Start GitHub issue #56 only by adding the smallest local persistence boundary for `ReviewResultV01` artifacts by CasePackage ID, without backend APIs, databases, auth/accounts, admin UX, generic CRUD, upload/import flow, raw telemetry storage, scoring, adjudication, consensus, Toponymy/ACME4 adapter work, chatbot behavior, SIEM/SOC behavior, or UI redesign.
+- Files changed: `lib/reviewResultStorageV01.ts`, `lib/reviewResultStorageV01.test.ts`, `components/arena/AppShell.tsx`, `docs/REVIEW_RESULT_CONTRACT.md`, `docs/EVALUATION_INFRASTRUCTURE.md`, `docs/ARCHITECTURE.md`, `docs/DATA_MODEL.md`, `docs/PRODUCT_VISION.md`, `docs/PROJECT_CONTEXT.md`, `docs/PRODUCT_DECISIONS.md`, `docs/ROADMAP.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a pure `ReviewResultV01` local-store helper over a minimal `getItem` / `setItem` storage interface. The store uses a versioned envelope, indexes saved ReviewResults by `case_package.package_id`, preserves schema/protocol/timestamp/reviewer-session/package-reference metadata, rejects unsupported or incompatible artifacts, and upserts repeated exports from the same reviewer/session. Wired the existing copy/download export actions to save the built ReviewResult to browser `localStorage` without changing the exported JSON shape.
+- Decisions made: Persisted only `ReviewResultV01` artifacts rather than full CasePackages, claims, evidence content, support scores, raw references, or raw telemetry; reused the existing local review-session compatibility checks instead of inventing a backend model; treated this as a portable validation-slice capability, not target enterprise infrastructure.
+- Checks run: Red storage test first failed with missing `reviewResultStorageV01`; targeted `npm test -- lib/reviewResultStorageV01.test.ts lib/reviewSessionV01.test.ts lib/evaluationReportV01.test.ts lib/exportReview.test.ts app/page.test.ts` passed with 50 tests; `npm test` passed with 93 tests; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `npx tsc --noEmit` passed; `git diff --check` passed.
+- Assumptions: The smallest useful persistence boundary is browser-local storage triggered by existing export actions; a future report/import workflow can retrieve compatible results by CasePackage ID from the helper without introducing server infrastructure yet.
+- Risks/follow-ups: Local browser storage is not durable multi-user study infrastructure, has no cross-device synchronization, no reviewer account model, and no report UI. Future work still needs explicit storage requirements for reviewer privacy, auditability, retention, concurrency, and evaluation exports before choosing backend infrastructure.
+- Next recommended step: Review and merge this focused PR before starting later durable storage, report, adapter, or multi-reviewer workflow issues.
+- Suggested commit message: `feat(review): persist review results locally`
+
 ## 2026-06-21: Invalid Package Render State
 
 - Agent/model: Codex (GPT-5)

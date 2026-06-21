@@ -20,8 +20,9 @@ Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-g
 
 - Existing Next.js review interface and five synthetic cases.
 - Telemetry landscape, case file, blind review, AI reveal, evidence classification, label comparison, outlier selection, verdict, and local JSON export.
+- Browser-local `ReviewResult` persistence keyed by CasePackage ID for exported review artifacts.
 - Useful for demonstrating and testing the review protocol.
-- Not real validation infrastructure: no package import, durable multi-reviewer results, or evaluation reports.
+- Not real validation infrastructure: no package import, durable multi-user review storage, or evaluation reports.
 
 ## Milestone 1 - Product Realignment And Documentation
 
@@ -45,7 +46,7 @@ Definition of done: one versioned package-shaped fixture passes runtime validati
 
 ## Milestone 3 - Evaluation Infrastructure
 
-- Persist structured `ReviewResult` records.
+- Harden structured `ReviewResult` persistence beyond the current browser-local store.
 - Support multiple independent reviewers.
 - Aggregate compatible results.
 - Export deterministic `EvaluationReport` JSON/CSV.

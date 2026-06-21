@@ -159,9 +159,32 @@ review state per review session, accepts compatible `ReviewResultV01`
 submissions, and rejects duplicate reviewer/session submissions or incompatible
 package references before aggregation.
 
+## Local Persistence Boundary
+
+`lib/reviewResultStorageV01.ts` is the current lightweight persistence boundary.
+It stores only `ReviewResultV01` artifacts in browser-local storage under a
+versioned local-store envelope and indexes them by
+`case_package.package_id`.
+
+The helper:
+
+- saves and loads compatible `ReviewResultV01` objects by CasePackage ID;
+- preserves the result schema version, protocol version, creation timestamp,
+  reviewer ID, review-session ID, and compact CasePackage reference;
+- rejects unsupported ReviewResult schemas, unsupported protocol versions,
+  unsupported CasePackage schemas, and incompatible package references;
+- upserts the same reviewer/session for a package so repeated local exports do
+  not create accidental duplicate reviews;
+- does not persist the full `CasePackage`, claims, evidence content, support
+  scores, raw references, raw telemetry, accounts, teams, or permissions.
+
+The current UI saves the built ReviewResult to this local store when the user
+copies or downloads the structured JSON export. This is a convenience boundary
+for the portable validation slice, not target enterprise infrastructure.
+
 ## Deferred Work
 
-This contract does not implement persistence, reviewer accounts, package
-uploads, a reviewer selector UI, real Toponymy or ACME4 adapters, or raw
-telemetry ingestion. The separate aggregation utility does not add those
+This contract does not implement backend persistence, reviewer accounts,
+package uploads, a reviewer selector UI, real Toponymy or ACME4 adapters, or
+raw telemetry ingestion. The separate aggregation utility does not add those
 capabilities.
