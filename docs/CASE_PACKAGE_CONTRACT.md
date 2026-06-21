@@ -22,11 +22,19 @@ package.
 
 This document explains the field intent for that TypeScript contract and the current runtime validation boundary. It does not implement package import, UI adapters, persistence, Toponymy integration, ACME4 ingestion, or evaluation aggregation.
 
+For the upstream adapter boundary, including Toponymy, DataMapPlot,
+ACME4-style, CloudTrail-style, and synthetic/sanitized producer categories, see
+[`ADAPTER_BOUNDARY.md`](./ADAPTER_BOUNDARY.md).
+
 ## What A CasePackage Is
 
 A `CasePackage` is a versioned, provenance-bearing object under review. It contains a precomputed cluster, candidate labels, generated claims, reviewable evidence, explicit evidence-to-claim mappings, representative sessions, comparison context, metrics, provenance, sanitization metadata, and review configuration.
 
 It is designed for packages produced by Toponymy-style workflows, DataMapPlot-adjacent workflows, notebooks, embedding and clustering experiments, ACME4-style sanitized experiments, CloudTrail-style sanitized experiments, and synthetic package generators.
+
+Those sources are future or external producers of approved package-shaped JSON.
+They are not claims that Telemetry Court currently runs Toponymy, executes
+DataMapPlot, ingests ACME4, or imports raw restricted telemetry.
 
 ## What A CasePackage Is Not
 
