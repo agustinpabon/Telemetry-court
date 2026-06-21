@@ -715,6 +715,31 @@ integration exists.
 }
 ```
 
+## Local Synthetic Toponymy-Style Fixture
+
+Issue #63 adds one local fixture at
+`data/syntheticToponymyStyleCasePackageFixture.ts` that exercises this boundary
+without implementing a real adapter. It contains a Telemetry Court-owned,
+synthetic Toponymy/DataMapPlot-style input artifact and a fixture-only helper
+that emits one `CasePackage v0.1` object.
+
+The fixture is intentionally non-authoritative:
+
+- it does not execute Toponymy or DataMapPlot;
+- it is not official Toponymy output, official DataMapPlot output, ACME4
+  output, or a supported import format;
+- it does not define or imply upstream APIs, function signatures, models,
+  workflows, or output schemas;
+- it includes only synthetic summaries, synthetic map positions, synthetic
+  labels, safe source-artifact references, provenance metadata, and
+  sanitization metadata;
+- it validates through `validateCasePackageV01` before tests use it.
+
+This fixture is useful for proving that a Toponymy/DataMapPlot-style precomputed
+artifact can be represented at the `CasePackage` boundary. It is not a general
+adapter framework, upload flow, backend import service, raw telemetry ingestion
+path, or claim of current Toponymy support.
+
 ## Handoff To Telemetry Court
 
 Once an adapter emits a package, Telemetry Court should treat the package as an

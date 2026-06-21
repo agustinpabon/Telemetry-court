@@ -33,6 +33,12 @@ The broader adapter boundary for Toponymy, DataMapPlot, ACME4-style,
 CloudTrail-style, and synthetic/sanitized producers is documented in
 [`ADAPTER_BOUNDARY.md`](./ADAPTER_BOUNDARY.md).
 
+The local fixture in
+`data/syntheticToponymyStyleCasePackageFixture.ts` is a synthetic,
+non-authoritative boundary exercise only. It does not execute Toponymy, encode
+official Toponymy output, define a Toponymy schema, or change the current
+integration status.
+
 Use careful language:
 
 - "downstream of Toponymy-style cluster naming"
