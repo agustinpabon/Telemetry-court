@@ -53,9 +53,9 @@ The current repository implements the static review interface, local state,
 synthetic fixtures, package validation, `ReviewResultV01` export, browser-local
 ReviewResult storage keyed by CasePackage ID, and a pure in-memory
 `EvaluationReportV01` aggregation utility with a fixture-backed read-only
-results view. It has no package upload flow, server-side persistence layer,
-multi-reviewer service, durable report workflow, Toponymy adapter, or ACME4
-adapter yet.
+results view and JSON/CSV export helpers. It has no package upload flow,
+server-side persistence layer, multi-reviewer service, durable report workflow,
+Toponymy adapter, or ACME4 adapter yet.
 
 ## Outputs
 

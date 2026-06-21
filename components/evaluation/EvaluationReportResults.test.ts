@@ -43,6 +43,8 @@ test("evaluation report results view shows reviewer distributions and disagreeme
   assert.match(markup, /Supports/);
   assert.match(markup, /Contradicts/);
   assert.match(markup, /Insufficient/);
+  assert.match(markup, /Download JSON/);
+  assert.match(markup, /Download CSV/);
   assert.match(markup, /Disagreement detected/);
   assert.match(markup, /Verdict/);
   assert.match(markup, /Label winner/);

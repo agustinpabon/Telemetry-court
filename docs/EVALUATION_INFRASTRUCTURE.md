@@ -118,12 +118,34 @@ disagreement indicators from an already-built report.
 The view is intentionally presentation-only. It distinguishes reviewer output
 from upstream CasePackage evidence, shows unavailable aggregate data as
 unavailable rather than as zero-confidence truth, and does not expose claims,
-evidence content, raw telemetry, package import, report export, scoring,
-adjudication, or consensus behavior.
+evidence content, raw telemetry, package import, scoring, adjudication, or
+consensus behavior.
 
 This is the current local capability for reading an EvaluationReport shape. It
 is not a generic dashboard, BI surface, backend API, durable multi-user report
 workflow, account system, admin surface, or adapter implementation.
+
+## EvaluationReport Export v0.1
+
+`lib/evaluationReportExportV01.ts` serializes an existing
+`EvaluationReportV01` as deterministic JSON and long-form CSV. The helper does
+not aggregate ReviewResults, recalculate metrics, load storage, persist files,
+or fetch upstream package evidence.
+
+The JSON export preserves the report schema version, calculation version,
+compact CasePackage reference, sorted source review IDs, reviewer count,
+canonical count distributions, label-winner counts, evidence-rating counts,
+failure-mode counts, and disagreement flags. The CSV export repeats compact
+package and pipeline provenance on each row, uses stable headers, emits rows in
+canonical or sorted order, escapes CSV cells, and marks unavailable aggregate
+sections explicitly instead of treating zero or false values as factual
+conclusions when reviewer output is unavailable.
+
+The `/results` fixture view offers JSON and CSV downloads for the already-built
+fixture report. This is a portable artifact export for the static validation
+slice, not a durable report-generation workflow, backend API, BI dashboard,
+raw telemetry export, model-comparison export, scoring system, adjudication
+system, or consensus mechanism.
 
 ## Local ReviewResult Persistence v0.1
 
@@ -155,9 +177,10 @@ structured JSON record from synthetic fixtures, and can save ReviewResult
 artifacts in browser-local storage by CasePackage ID. The repository now
 provides CasePackage validation, local ReviewResult persistence, and
 deterministic in-memory aggregation of compatible ReviewResult objects, plus a
-fixture-backed read-only results view for an EvaluationReport. It does not yet
-provide package uploads, durable server-side review storage, a multi-reviewer
-service, a report-generation workflow, or research-grade metrics.
+fixture-backed read-only results view with JSON/CSV export for an
+EvaluationReport. It does not yet provide package uploads, durable server-side
+review storage, a multi-reviewer service, a report-generation workflow, or
+research-grade metrics.
 
 The next proof after this contract slice is a narrow end-to-end exercise with a
 realistic package: complete independent reviews, retain the resulting artifacts,
