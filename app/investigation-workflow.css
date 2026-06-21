@@ -7286,6 +7286,165 @@
   }
 }
 
+.arena-shell.arena-shell-investigate.evaluation-report-page .arena-layout {
+  max-width: 1180px;
+}
+
+.arena-shell .evaluation-report-stage {
+  gap: 16px;
+  margin: 0 auto;
+  max-width: 1180px;
+}
+
+.arena-shell .evaluation-report-hero,
+.arena-shell .evaluation-report-boundary,
+.arena-shell .evaluation-report-section,
+.arena-shell .evaluation-unavailable {
+  background: var(--workflow-panel);
+  border: 1px solid var(--workflow-border);
+  border-radius: 18px;
+}
+
+.arena-shell .evaluation-report-hero {
+  align-items: flex-start;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  padding: clamp(20px, 2.4vw, 30px);
+}
+
+.arena-shell .evaluation-report-hero h2 {
+  color: var(--workflow-ink);
+  font-size: clamp(28px, 3vw, 42px);
+  font-weight: 780;
+  line-height: 1.08;
+  margin: 6px 0 0;
+  text-wrap: balance;
+}
+
+.arena-shell .evaluation-report-hero p:not(.eyebrow),
+.arena-shell .evaluation-report-boundary p,
+.arena-shell .evaluation-reference-note,
+.arena-shell .evaluation-unavailable p {
+  color: var(--workflow-muted);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 8px 0 0;
+  max-width: 70ch;
+}
+
+.arena-shell .evaluation-report-boundary {
+  padding: 16px;
+}
+
+.arena-shell .evaluation-report-boundary strong {
+  color: var(--workflow-ink);
+  display: block;
+  font-size: 16px;
+  font-weight: 780;
+}
+
+.arena-shell .evaluation-report-metrics {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.arena-shell .evaluation-report-section {
+  padding: 16px;
+}
+
+.arena-shell .evaluation-report-list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.arena-shell .evaluation-report-list li,
+.arena-shell .evaluation-disagreement-flag {
+  align-items: center;
+  background: var(--workflow-surface);
+  border: 1px solid var(--workflow-border);
+  border-radius: 14px;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: 11px 12px;
+}
+
+.arena-shell .evaluation-report-list span,
+.arena-shell .evaluation-disagreement-flag span {
+  color: var(--workflow-ink);
+  font-size: 13px;
+  font-weight: 720;
+  line-height: 1.25;
+}
+
+.arena-shell .evaluation-report-list strong,
+.arena-shell .evaluation-disagreement-flag strong {
+  color: var(--workflow-muted);
+  font-size: 12px;
+  font-weight: 780;
+  line-height: 1.2;
+  text-align: right;
+}
+
+.arena-shell .evaluation-disagreement-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.arena-shell .evaluation-disagreement-flag.is-disagree {
+  background: var(--workflow-contradicted-soft);
+  border-color: rgba(155, 61, 53, 0.24);
+}
+
+.arena-shell .evaluation-disagreement-flag.is-disagree strong {
+  color: var(--workflow-contradicted);
+}
+
+.arena-shell .evaluation-disagreement-flag.is-stable {
+  background: var(--workflow-supported-soft);
+  border-color: rgba(63, 125, 85, 0.2);
+}
+
+.arena-shell .evaluation-disagreement-flag.is-stable strong {
+  color: var(--workflow-supported);
+}
+
+.arena-shell .evaluation-unavailable {
+  padding: 14px;
+}
+
+.arena-shell .evaluation-unavailable strong {
+  color: var(--workflow-ink);
+  font-size: 14px;
+  font-weight: 780;
+}
+
+@media (max-width: 860px) {
+  .arena-shell .evaluation-report-hero,
+  .arena-shell .evaluation-report-list li,
+  .arena-shell .evaluation-disagreement-flag {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .arena-shell .evaluation-report-metrics,
+  .arena-shell .evaluation-disagreement-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .arena-shell .evaluation-report-list strong,
+  .arena-shell .evaluation-disagreement-flag strong {
+    text-align: left;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .arena-shell-investigate *,
   .arena-shell-explore * {
