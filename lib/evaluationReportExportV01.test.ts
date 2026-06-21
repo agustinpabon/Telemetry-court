@@ -41,26 +41,73 @@ test("evaluation report JSON export preserves versioned report metadata", () => 
 test("evaluation report CSV export includes deterministic audit rows", () => {
   const csvExport = serializeEvaluationReportCsvV01(sampleEvaluationReportV01);
   const rows = csvExport.trimEnd().split("\n");
+  const headers = rows[0].split(",");
+  const reviewerCountRow = rows[1].split(",");
 
-  assert.deepEqual(rows.slice(0, 4), [
-    "schema_version,calculation_version,package_id,package_revision,case_id,cluster_id,pipeline_id,pipeline_run_id,upstream_tool,pipeline_generated_at,source_review_ids,reviewer_count,section,key,value,count,status",
-    "evaluation_report.v0.1,review_result_aggregation.v0.1,pkg-synthetic-evaluation-001,r1,case-synthetic-evaluation-001,cluster-synthetic-evaluation-001,pipeline-synthetic-evaluation,run-synthetic-evaluation-001,synthetic-evaluation-fixture,2026-06-21T11:00:00.000Z,review-a;review-b,2,report_metadata,reviewer_count,,2,available",
-    "evaluation_report.v0.1,review_result_aggregation.v0.1,pkg-synthetic-evaluation-001,r1,case-synthetic-evaluation-001,cluster-synthetic-evaluation-001,pipeline-synthetic-evaluation,run-synthetic-evaluation-001,synthetic-evaluation-fixture,2026-06-21T11:00:00.000Z,review-a;review-b,2,report_metadata,source_review_ids,review-a;review-b,2,available",
-    "evaluation_report.v0.1,review_result_aggregation.v0.1,pkg-synthetic-evaluation-001,r1,case-synthetic-evaluation-001,cluster-synthetic-evaluation-001,pipeline-synthetic-evaluation,run-synthetic-evaluation-001,synthetic-evaluation-fixture,2026-06-21T11:00:00.000Z,review-a;review-b,2,verdict_distribution,supported,,1,available",
+  assert.deepEqual(headers, [
+    "schema_version",
+    "calculation_version",
+    "case_package_schema_version",
+    "package_id",
+    "package_revision",
+    "case_id",
+    "cluster_id",
+    "pipeline_id",
+    "pipeline_run_id",
+    "upstream_tool",
+    "pipeline_version",
+    "embedding_model",
+    "clustering_method",
+    "dimensionality_reduction_method",
+    "naming_model",
+    "prompt_id",
+    "prompt_version",
+    "prompt_digest",
+    "pipeline_generated_at",
+    "source_review_ids",
+    "reviewer_count",
+    "section",
+    "key",
+    "value",
+    "count",
+    "status",
+  ]);
+  assert.equal(
+    reviewerCountRow[headers.indexOf("case_package_schema_version")],
+    "case_package.v0.1",
+  );
+  assert.equal(
+    reviewerCountRow[headers.indexOf("package_id")],
+    "pkg-synthetic-evaluation-001",
+  );
+  assert.equal(
+    reviewerCountRow[headers.indexOf("pipeline_run_id")],
+    "run-synthetic-evaluation-001",
+  );
+  assert.equal(
+    reviewerCountRow[headers.indexOf("source_review_ids")],
+    "review-a;review-b",
+  );
+  assert.deepEqual(reviewerCountRow.slice(-5), [
+    "report_metadata",
+    "reviewer_count",
+    "",
+    "2",
+    "available",
   ]);
   assert.ok(
-    rows.includes(
-      "evaluation_report.v0.1,review_result_aggregation.v0.1,pkg-synthetic-evaluation-001,r1,case-synthetic-evaluation-001,cluster-synthetic-evaluation-001,pipeline-synthetic-evaluation,run-synthetic-evaluation-001,synthetic-evaluation-fixture,2026-06-21T11:00:00.000Z,review-a;review-b,2,label_winner_distribution,label-b,,1,available",
+    rows.some((row) =>
+      row.endsWith(",label_winner_distribution,label-b,,1,available"),
     ),
   );
   assert.ok(
-    rows.includes(
-      "evaluation_report.v0.1,review_result_aggregation.v0.1,pkg-synthetic-evaluation-001,r1,case-synthetic-evaluation-001,cluster-synthetic-evaluation-001,pipeline-synthetic-evaluation,run-synthetic-evaluation-001,synthetic-evaluation-fixture,2026-06-21T11:00:00.000Z,review-a;review-b,2,evidence_rating_distribution,contradicts,,1,available",
+    rows.some((row) =>
+      row.endsWith(",evidence_rating_distribution,contradicts,,1,available"),
     ),
   );
   assert.ok(
-    rows.includes(
-      "evaluation_report.v0.1,review_result_aggregation.v0.1,pkg-synthetic-evaluation-001,r1,case-synthetic-evaluation-001,cluster-synthetic-evaluation-001,pipeline-synthetic-evaluation,run-synthetic-evaluation-001,synthetic-evaluation-fixture,2026-06-21T11:00:00.000Z,review-a;review-b,2,disagreement_evidence_ids,evidence-2,,1,available",
+    rows.some((row) =>
+      row.endsWith(",disagreement_evidence_ids,evidence-2,,1,available"),
     ),
   );
   assert.equal(csvExport.endsWith("\n"), true);
@@ -76,6 +123,14 @@ test("evaluation report CSV export escapes cells and uses a stable filename", ()
       pipeline: {
         ...sampleEvaluationReportV01.case_package.pipeline,
         upstream_tool: "synthetic, tool \"quoted\"",
+        pipeline_version: "v1\nline two",
+        embedding_model: "embedding-v1",
+        clustering_method: "cluster-v1",
+        dimensionality_reduction_method: "projection-v1",
+        naming_model: "naming-v1",
+        prompt_id: "prompt-v1",
+        prompt_version: "1",
+        prompt_digest: "sha256:fixture",
       },
     },
   };
@@ -88,6 +143,17 @@ test("evaluation report CSV export escapes cells and uses a stable filename", ()
     "case-synthetic-evaluation-001-evaluation-report.csv",
   );
   assert.match(csvExport, /"synthetic, tool ""quoted"""/);
+  assert.match(csvExport, /"v1\nline two"/);
+  for (const provenanceValue of [
+    "embedding-v1",
+    "cluster-v1",
+    "projection-v1",
+    "naming-v1",
+    "prompt-v1",
+    "sha256:fixture",
+  ]) {
+    assert.equal(csvExport.includes(provenanceValue), true);
+  }
 });
 
 test("evaluation report export normalizes row ordering without mutating the report", () => {
@@ -169,23 +235,19 @@ test("evaluation report CSV export marks unavailable aggregate rows explicitly",
   const rows = csvExport.trimEnd().split("\n");
 
   assert.ok(
-    rows.includes(
-      "evaluation_report.v0.1,review_result_aggregation.v0.1,pkg-synthetic-evaluation-001,r1,case-synthetic-evaluation-001,cluster-synthetic-evaluation-001,pipeline-synthetic-evaluation,run-synthetic-evaluation-001,synthetic-evaluation-fixture,2026-06-21T11:00:00.000Z,,0,report_metadata,reviewer_count,,,unavailable",
+    rows.some((row) => row.endsWith(",report_metadata,reviewer_count,,,unavailable")),
+  );
+  assert.ok(
+    rows.some((row) => row.endsWith(",verdict_distribution,supported,,,unavailable")),
+  );
+  assert.ok(
+    rows.some((row) =>
+      row.endsWith(",label_winner_distribution,unavailable,,,unavailable"),
     ),
   );
   assert.ok(
-    rows.includes(
-      "evaluation_report.v0.1,review_result_aggregation.v0.1,pkg-synthetic-evaluation-001,r1,case-synthetic-evaluation-001,cluster-synthetic-evaluation-001,pipeline-synthetic-evaluation,run-synthetic-evaluation-001,synthetic-evaluation-fixture,2026-06-21T11:00:00.000Z,,0,verdict_distribution,supported,,,unavailable",
-    ),
-  );
-  assert.ok(
-    rows.includes(
-      "evaluation_report.v0.1,review_result_aggregation.v0.1,pkg-synthetic-evaluation-001,r1,case-synthetic-evaluation-001,cluster-synthetic-evaluation-001,pipeline-synthetic-evaluation,run-synthetic-evaluation-001,synthetic-evaluation-fixture,2026-06-21T11:00:00.000Z,,0,label_winner_distribution,unavailable,,,unavailable",
-    ),
-  );
-  assert.ok(
-    rows.includes(
-      "evaluation_report.v0.1,review_result_aggregation.v0.1,pkg-synthetic-evaluation-001,r1,case-synthetic-evaluation-001,cluster-synthetic-evaluation-001,pipeline-synthetic-evaluation,run-synthetic-evaluation-001,synthetic-evaluation-fixture,2026-06-21T11:00:00.000Z,,0,disagreement,has_any_disagreement,,,unavailable",
+    rows.some((row) =>
+      row.endsWith(",disagreement,has_any_disagreement,,,unavailable"),
     ),
   );
 });
