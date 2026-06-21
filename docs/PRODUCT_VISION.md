@@ -76,7 +76,7 @@ failure-mode reason codes are defined in
 
 ## Current Static Validation Slice
 
-The current Next.js interface uses five synthetic cases and local state. It demonstrates the review protocol, structured JSON export, and browser-local `ReviewResult` persistence keyed by CasePackage ID. It does not yet prove real-world validation value, run Toponymy, ingest ACME4, provide durable server-side persistence, support a multi-reviewer report workflow, or calculate evaluation reports.
+The current Next.js interface uses five synthetic cases and local state. It demonstrates the review protocol, structured JSON export, browser-local `ReviewResult` persistence keyed by CasePackage ID, deterministic in-memory `EvaluationReport` aggregation, and a fixture-backed read-only results view. It does not yet prove real-world validation value, run Toponymy, ingest ACME4, provide durable server-side persistence, or support a multi-reviewer report workflow.
 
 Synthetic cases remain useful for UI and protocol testing, but they must be described as fixtures, not evidence that the product has completed its validation mission.
 

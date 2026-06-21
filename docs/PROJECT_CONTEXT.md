@@ -21,8 +21,10 @@ It turns generated cluster labels into testable claims and records structured hu
   browser-local `ReviewResult` persistence by CasePackage ID.
 - It does not implement real Toponymy or ACME4 ingestion.
 - It includes a deterministic in-memory `EvaluationReportV01` aggregation utility,
-  but does not provide durable server-side review storage, multi-user
-  persistence, or a report workflow.
+  plus a fixture-backed read-only results view for inspecting reviewer
+  distributions and disagreement.
+- It does not provide durable server-side review storage, multi-user
+  persistence, package import, or a real report workflow.
 - The next implementation milestone is the Case Package Contract and Validation Infrastructure, not generic backend work.
 
 ## Intended Architecture

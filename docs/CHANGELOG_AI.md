@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-21: EvaluationReport Results View
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Start GitHub issue #58 only by adding the smallest `EvaluationReportV01` results view for aggregated reviewer output, without building a generic dashboard, backend persistence, auth/accounts, upload/import flow, CSV/JSON export, scoring/adjudication, consensus logic, chatbot behavior, Toponymy/ACME4 adapters, raw telemetry search, or broad UI redesign.
+- Files changed: `app/results/page.tsx`, `app/results/page.test.ts`, `components/evaluation/EvaluationReportResults.tsx`, `components/evaluation/EvaluationReportResults.test.ts`, `data/evaluationReportFixtures.ts`, `app/investigation-workflow.css`, `README.md`, `docs/PRODUCT_VISION.md`, `docs/PROJECT_CONTEXT.md`, `docs/ARCHITECTURE.md`, `docs/EVALUATION_INFRASTRUCTURE.md`, `docs/DATA_MODEL.md`, `docs/ROADMAP.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a fixture-backed `/results` route and pure `EvaluationReportResults` presentation component. The view shows reviewer count, verdict distribution, label-winner distribution, evidence-rating distribution, and disagreement indicators from an existing `EvaluationReportV01`, while explicitly distinguishing reviewer output from upstream CasePackage evidence and showing unavailable aggregate sections as unavailable.
+- Decisions made: Kept the view read-only and presentation-only; reused existing workflow primitives and scoped styles; fed the route with a deterministic synthetic EvaluationReport fixture containing reviewer disagreement; did not wire localStorage retrieval, imports, exports, backend storage, new metrics, scoring, adjudication, consensus, or dashboard navigation.
+- Checks run: Red component test first failed with missing `EvaluationReportResults`; red page test then failed with missing `/results` page; targeted `npm test -- components/evaluation/EvaluationReportResults.test.ts app/results/page.test.ts lib/evaluationReportV01.test.ts lib/reviewResultStorageV01.test.ts app/page.test.ts` passed with 41 tests; `npm test` passed with 96 tests; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed and generated `/results` as a static route; `npx tsc --noEmit` passed; `git diff --check` passed.
+- Assumptions: The smallest useful issue #58 view is a deterministic report reader over an already-built `EvaluationReportV01`, not a retrieval, import, export, or durable multi-user report workflow.
+- Risks/follow-ups: The results route uses a synthetic fixture and does not load browser-local ReviewResults, aggregate user-selected packages, persist reports, export reports, resolve label/evidence IDs to upstream package content, calculate research-grade rates, or coordinate multiple real reviewers. Future work should define the report-generation workflow and durable storage requirements before choosing infrastructure.
+- Next recommended step: Review and merge this focused PR before starting durable report workflow, export, adapter, or evaluation-metric expansion issues.
+- Suggested commit message: `feat(evaluation): add results view`
+
 ## 2026-06-21: Local ReviewResult Persistence
 
 - Agent/model: Codex (GPT-5)

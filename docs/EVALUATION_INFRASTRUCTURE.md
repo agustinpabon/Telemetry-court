@@ -108,6 +108,23 @@ versions, mixed package IDs or revisions, mismatched compact package references,
 and missing required review, package, pipeline, reviewer, or protocol metadata.
 It uses no database, server, file IO, or account system.
 
+## Read-Only Results View v0.1
+
+The first results view is the `/results` route backed by a deterministic
+synthetic `EvaluationReportV01` fixture. It renders reviewer count, verdict
+distribution, label-winner distribution, evidence-rating distribution, and
+disagreement indicators from an already-built report.
+
+The view is intentionally presentation-only. It distinguishes reviewer output
+from upstream CasePackage evidence, shows unavailable aggregate data as
+unavailable rather than as zero-confidence truth, and does not expose claims,
+evidence content, raw telemetry, package import, report export, scoring,
+adjudication, or consensus behavior.
+
+This is the current local capability for reading an EvaluationReport shape. It
+is not a generic dashboard, BI surface, backend API, durable multi-user report
+workflow, account system, admin surface, or adapter implementation.
+
 ## Local ReviewResult Persistence v0.1
 
 The first persistence boundary is `lib/reviewResultStorageV01.ts`. It is a pure
@@ -137,9 +154,10 @@ The current application stores review state locally, exports a single
 structured JSON record from synthetic fixtures, and can save ReviewResult
 artifacts in browser-local storage by CasePackage ID. The repository now
 provides CasePackage validation, local ReviewResult persistence, and
-deterministic in-memory aggregation of compatible ReviewResult objects. It does
-not yet provide package uploads, durable server-side review storage, a
-multi-reviewer service or report UI, or research-grade metrics.
+deterministic in-memory aggregation of compatible ReviewResult objects, plus a
+fixture-backed read-only results view for an EvaluationReport. It does not yet
+provide package uploads, durable server-side review storage, a multi-reviewer
+service, a report-generation workflow, or research-grade metrics.
 
 The next proof after this contract slice is a narrow end-to-end exercise with a
 realistic package: complete independent reviews, retain the resulting artifacts,
