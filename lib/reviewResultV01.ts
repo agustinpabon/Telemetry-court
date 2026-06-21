@@ -51,8 +51,13 @@ export type ReviewResultV01 = {
     outlier_impostor: {
       selected_session_id: string;
     };
+    confidence?: {
+      level: "low" | "medium" | "high";
+      rationale?: string;
+    };
     failure_modes: DuelReason[];
     final_verdict: CasePackageVerdictV01;
     recommended_action: CasePackageRecommendedActionV01;
+    notes?: string[];
   };
 };

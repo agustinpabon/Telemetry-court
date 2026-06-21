@@ -71,14 +71,21 @@ The current export records:
   rationale already supported by the label-comparison note;
 - one canonical rating for every evidence ID in the reviewed package;
 - selected outlier or impostor session ID;
+- optional reviewer confidence, when a protocol captures it;
 - structured failure modes;
 - canonical final verdict;
 - canonical recommended action.
+- optional reviewer notes.
 
 The current synthetic UI does not have a separate recommended-action picker.
 For v0.1, the exporter deterministically derives the canonical action from the
 reviewer's final verdict. It does not add a new screen or claim that an
 independent action choice was collected.
+
+The current synthetic UI also does not have separate controls for reviewer
+confidence or free-form notes. The `ReviewResultV01` contract allows those
+fields for compatible future protocols, but the local exporter omits them
+instead of fabricating values.
 
 ## Canonical Values
 
@@ -155,6 +162,6 @@ package references before aggregation.
 ## Deferred Work
 
 This contract does not implement persistence, reviewer accounts, package
-uploads, confidence capture, a reviewer selector UI, real Toponymy or ACME4
-adapters, or raw telemetry ingestion. The separate aggregation utility does not
-add those capabilities.
+uploads, a reviewer selector UI, real Toponymy or ACME4 adapters, or raw
+telemetry ingestion. The separate aggregation utility does not add those
+capabilities.

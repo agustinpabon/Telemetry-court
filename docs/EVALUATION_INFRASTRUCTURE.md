@@ -74,6 +74,30 @@ objects and returns:
 - sorted selected failure-mode counts;
 - simple verdict, action, label, and per-evidence rating disagreement flags.
 
+The v0.1 report represents cluster impurity, split, merge, and recommended
+follow-up signals through those canonical distributions rather than through
+separate scoring fields:
+
+- `verdict_distribution.cluster_impure` is the direct cluster-impurity signal;
+- `verdict_distribution.needs_split` and
+  `recommended_action_distribution.split_cluster` are split recommendation
+  counts;
+- `verdict_distribution.needs_merge` and
+  `recommended_action_distribution.merge_cluster` are merge recommendation
+  counts;
+- `recommended_action_distribution` is the recommended follow-up action
+  rollup;
+- `failure_mode_counts` captures common selected failure-mode reason codes,
+  including cluster-quality reasons such as `cluster_seems_mixed`;
+- the compact `case_package` reference and `source_review_ids` preserve the
+  metadata rollup needed to audit which package, revision, pipeline, and reviews
+  were aggregated.
+
+Named rates are intentionally not materialized by the first utility. Future
+rate calculations must define numerators, denominators, incomplete-review
+treatment, compatible schema versions, and calculation versions before they are
+added to an export.
+
 The disagreement fields report whether reviewers selected different values;
 they do not adjudicate a correct answer, calculate statistical agreement, or
 choose a consensus. Evidence disagreement also lists the stable evidence IDs

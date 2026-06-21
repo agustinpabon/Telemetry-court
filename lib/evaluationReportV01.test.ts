@@ -145,6 +145,13 @@ test("compatible reviews aggregate deterministic counts and disagreement", () =>
     },
   });
   assert.deepEqual(aggregateReviewResultsV01([reviewB, reviewA]), report);
+
+  assert.equal(report.verdict_distribution.cluster_impure, 0);
+  assert.equal(report.verdict_distribution.needs_split, 0);
+  assert.equal(report.verdict_distribution.needs_merge, 0);
+  assert.equal(report.recommended_action_distribution.split_cluster, 0);
+  assert.equal(report.recommended_action_distribution.merge_cluster, 0);
+  assert.equal(report.recommended_action_distribution.collect_more_evidence, 0);
 });
 
 test("aggregation rejects an empty ReviewResult list", () => {
