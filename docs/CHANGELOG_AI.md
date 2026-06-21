@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-21: Synthetic Toponymy-Style CasePackage Fixture
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Start GitHub issue #63 only by adding one safe synthetic Toponymy/DataMapPlot-style fixture that validates through the existing `CasePackage v0.1` boundary, without relying on real Toponymy APIs, executing Toponymy or DataMapPlot, ingesting restricted telemetry, adding ACME4 fixture work, adding an adapter framework, runtime import UI, backend persistence, upload flow, auth, SIEM/SOC behavior, chatbot behavior, scoring/adjudication, consensus logic, or UI redesign.
+- Files changed: `data/syntheticToponymyStyleCasePackageFixture.ts`, `data/syntheticToponymyStyleCasePackageFixture.test.ts`, `docs/ADAPTER_BOUNDARY.md`, `docs/TOPONYMY_NOTES.md`, `docs/CASE_PACKAGE_CONTRACT.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a Telemetry Court-owned synthetic adapter-input fixture and fixture-only converter that emits one validated `CasePackageV01` object. The package includes synthetic map positions, synthetic labels and claims, safe evidence summaries, explicit evidence-to-claim mappings, representative sessions, neighbor and outlier context, provenance, sanitization metadata, and canonical review configuration values.
+- Decisions made: Kept the helper explicitly fixture-only and named it as a synthetic converter rather than a production adapter; used the documented Toponymy/DataMapPlot-style input shape as guidance without claiming official support; self-validated the exported package at module load; preserved raw-free source-artifact references and `raw_drilldown_allowed: false`.
+- Checks run: Red `npm test -- data/syntheticToponymyStyleCasePackageFixture.test.ts` failed before the fixture module existed; targeted `npm test -- data/syntheticToponymyStyleCasePackageFixture.test.ts` passed with 4 tests after implementation; targeted fixture/validation/adapter set `npm test -- data/syntheticToponymyStyleCasePackageFixture.test.ts data/casePackageFixtures.test.ts lib/casePackageV01.test.ts lib/casePackageValidation.test.ts lib/casePackageV01ToCaseFile.test.ts` passed with 27 tests; `npm test` passed with 117 tests; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `npx tsc --noEmit` passed; `git diff --check` passed.
+- Assumptions: A small synthetic fixture is enough to exercise the boundary for issue #63 because real adapter behavior, official Toponymy compatibility, DataMapPlot execution, and restricted-data handling remain future work.
+- Risks/follow-ups: This fixture is non-authoritative and should not be promoted as real Toponymy support. Future real adapter work still needs approved upstream artifacts, source-specific validation, and an end-to-end review-to-report proof.
+- Next recommended step: Review and merge this focused fixture PR before starting ACME4 fixture work or any real adapter prototype.
+- Suggested commit message: `feat(fixtures): add synthetic toponymy-style package`
+
 ## 2026-06-21: Toponymy/DataMapPlot Adapter Input Shape
 
 - Agent/model: Codex (GPT-5)
