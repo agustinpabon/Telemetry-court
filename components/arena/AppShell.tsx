@@ -33,6 +33,7 @@ import {
   getReviewResultExportFilename,
   serializeReviewResultExport,
 } from "@/lib/exportReview";
+import { saveReviewResultToLocalStoreV01 } from "@/lib/reviewResultStorageV01";
 import type { CaseFile, LandscapeContextNode } from "@/lib/types";
 
 type AppShellProps = {
@@ -226,7 +227,12 @@ export function AppShell({
 
     try {
       await navigator.clipboard.writeText(exportJson);
-      setExportMessage("Copied structured review JSON.");
+      setExportMessage(
+        formatExportActionMessage(
+          "Copied structured review JSON.",
+          trySaveReviewResultLocally(),
+        ),
+      );
     } catch {
       setExportMessage("Clipboard copy failed. Use Download JSON.");
     }
@@ -248,7 +254,34 @@ export function AppShell({
     downloadLink.click();
     downloadLink.remove();
     URL.revokeObjectURL(exportUrl);
-    setExportMessage("Downloaded structured review JSON.");
+    setExportMessage(
+      formatExportActionMessage(
+        "Downloaded structured review JSON.",
+        trySaveReviewResultLocally(),
+      ),
+    );
+  }
+
+  function trySaveReviewResultLocally(): string | undefined {
+    if (!exportResult.ok) {
+      return exportError;
+    }
+
+    if (typeof window === "undefined" || !window.localStorage) {
+      return "Local ReviewResult storage is unavailable.";
+    }
+
+    try {
+      saveReviewResultToLocalStoreV01(
+        window.localStorage,
+        exportResult.reviewResult,
+      );
+      return undefined;
+    } catch (error) {
+      return error instanceof Error
+        ? `Local ReviewResult save failed: ${error.message}`
+        : "Local ReviewResult save failed.";
+    }
   }
 
   function openReviewDrawer() {
@@ -340,6 +373,14 @@ function tryBuildReviewResultExport(
           : "ReviewResult v0.1 export is unavailable.",
     };
   }
+}
+
+function formatExportActionMessage(actionMessage: string, saveError?: string) {
+  if (saveError) {
+    return `${actionMessage} ${saveError}`;
+  }
+
+  return `${actionMessage} Saved ReviewResult locally.`;
 }
 
 function readArenaSessionState(cases: CaseFile[]) {

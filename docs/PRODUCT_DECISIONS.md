@@ -2,6 +2,27 @@
 
 This is the initial decision log for Telemetry Court. Add new entries when product direction, architecture, or evidence-model assumptions change.
 
+## 2026-06-21: Persist ReviewResults Locally Before Backend Infrastructure
+
+Decision: Telemetry Court's first persistence step is a browser-local
+`ReviewResultV01` store keyed by CasePackage ID.
+
+Rationale: Issue #56 needs ReviewResults to survive the immediate review
+session and be retrievable for evaluation without turning the product into an
+auth, database, admin, or generic CRUD project before the review/evaluation
+contracts have proven their shape.
+
+Consequences:
+
+- The current app can save exported ReviewResult artifacts to local browser
+  storage after copy/download actions.
+- The local store persists only ReviewResults, not full CasePackages, evidence
+  content, raw references, raw telemetry, accounts, teams, or permissions.
+- Compatibility checks still reject unsupported ReviewResult, protocol, or
+  CasePackage versions and incompatible package references.
+- Durable server-side storage, reviewer accounts, package import, report UI,
+  consensus, adjudication, and enterprise workflows remain deferred.
+
 ## 2026-06-20: Telemetry Court Realigns As A Validation Bench
 
 Decision: Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.

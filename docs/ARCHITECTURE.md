@@ -50,10 +50,11 @@ Telemetry Court owns:
 - evaluation export and auditability.
 
 The current repository implements the static review interface, local state,
-synthetic fixtures, package validation, `ReviewResultV01` export, and a pure
-in-memory `EvaluationReportV01` aggregation utility. It has no package upload
-flow, persistence layer, multi-reviewer service, report UI, Toponymy adapter,
-or ACME4 adapter yet.
+synthetic fixtures, package validation, `ReviewResultV01` export, browser-local
+ReviewResult storage keyed by CasePackage ID, and a pure in-memory
+`EvaluationReportV01` aggregation utility. It has no package upload flow,
+server-side persistence layer, multi-reviewer service, report UI, Toponymy
+adapter, or ACME4 adapter yet.
 
 ## Outputs
 

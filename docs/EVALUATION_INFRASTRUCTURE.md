@@ -108,13 +108,38 @@ versions, mixed package IDs or revisions, mismatched compact package references,
 and missing required review, package, pipeline, reviewer, or protocol metadata.
 It uses no database, server, file IO, or account system.
 
+## Local ReviewResult Persistence v0.1
+
+The first persistence boundary is `lib/reviewResultStorageV01.ts`. It is a pure
+helper over a minimal `getItem` / `setItem` storage interface and is wired to
+browser `localStorage` only from the existing copy/download export actions.
+
+The local store persists `ReviewResultV01` artifacts by
+`case_package.package_id`. It does not persist full CasePackages, claim text,
+evidence content, support scores, raw references, or raw telemetry. It preserves
+the ReviewResult schema version, protocol version, creation timestamp,
+reviewer/session identity, and compact CasePackage reference already present in
+the export contract.
+
+Compatibility remains explicit. Saves and loads reject unsupported
+ReviewResult, review-protocol, or CasePackage versions, and reject incompatible
+package references for the same package ID. Re-exporting from the same local
+reviewer/session replaces that reviewer/session's stored result instead of
+creating duplicate local submissions.
+
+This is a portable validation-slice capability. It is not a backend API,
+database, auth/account system, admin workflow, generic CRUD surface, or durable
+multi-user study store.
+
 ## Current State And Next Proof
 
-The current application stores review state locally and exports a single
-structured JSON record from synthetic fixtures. The repository now provides
-CasePackage validation and deterministic in-memory aggregation of compatible
-ReviewResult objects. It does not yet provide package uploads, durable review
-storage, a multi-reviewer service or report UI, or research-grade metrics.
+The current application stores review state locally, exports a single
+structured JSON record from synthetic fixtures, and can save ReviewResult
+artifacts in browser-local storage by CasePackage ID. The repository now
+provides CasePackage validation, local ReviewResult persistence, and
+deterministic in-memory aggregation of compatible ReviewResult objects. It does
+not yet provide package uploads, durable server-side review storage, a
+multi-reviewer service or report UI, or research-grade metrics.
 
 The next proof after this contract slice is a narrow end-to-end exercise with a
 realistic package: complete independent reviews, retain the resulting artifacts,
