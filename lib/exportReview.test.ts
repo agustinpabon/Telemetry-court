@@ -159,6 +159,53 @@ test("review result export fails loudly for missing package metadata or decision
   );
 });
 
+test("review result export rejects incomplete required decisions", () => {
+  const caseFile = sampleCases[0];
+  const evidenceRatings = { ...caseFile.defaultEvidenceRatings };
+  delete evidenceRatings[caseFile.evidenceItems[0].id];
+
+  assert.throws(
+    () =>
+      buildReviewResultExport({
+        caseFile,
+        exportTimestamp: "2026-06-12T12:00:00.000Z",
+        arenaReview: completeArenaReview(caseFile, {
+          finalVerdict: undefined,
+        }),
+      }),
+    /without final verdict/,
+  );
+  assert.throws(
+    () =>
+      buildReviewResultExport({
+        caseFile,
+        exportTimestamp: "2026-06-12T12:00:00.000Z",
+        arenaReview: completeArenaReview(caseFile, { evidenceRatings }),
+      }),
+    /without rating for evidence/,
+  );
+});
+
+test("review result export rejects mismatched package IDs", () => {
+  const caseFile = sampleCases[0];
+
+  assert.throws(
+    () =>
+      buildReviewResultExport({
+        caseFile: {
+          ...caseFile,
+          casePackageReference: {
+            ...caseFile.casePackageReference!,
+            case_id: "case-does-not-match",
+          },
+        },
+        exportTimestamp: "2026-06-12T12:00:00.000Z",
+        arenaReview: completeArenaReview(caseFile),
+      }),
+    /mismatched CasePackage references/,
+  );
+});
+
 test("serialized review export is readable JSON with a stable filename", () => {
   const caseFile = sampleCases[1];
   const exportResult = buildReviewResultExport({
