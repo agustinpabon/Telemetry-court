@@ -247,8 +247,12 @@ scores, or raw telemetry. It is one local review artifact. The current app can
 persist that artifact in browser-local storage by CasePackage ID after copy or
 download. The current app also includes a fixture-backed read-only
 `EvaluationReport` results view with JSON/CSV downloads for the existing report
-artifact, but durable backend storage, real report workflows, confidence
-capture, and broader `EvaluationReport` production remain future work.
+artifact. The report includes deterministic descriptive rollups grouped by
+selected label ID and compact package/pipeline metadata, with absent optional
+metadata recorded as unavailable. Exact package-reference compatibility means
+non-label metadata remains single-value context; durable backend storage, real
+cross-package report workflows, confidence capture, and broader
+`EvaluationReport` production remain future work.
 
 ## Runtime Fixture
 

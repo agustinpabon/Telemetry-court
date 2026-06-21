@@ -65,13 +65,16 @@ The infrastructure must preserve:
 `aggregateReviewResultsV01` utility accepts compatible `ReviewResultV01`
 objects and returns:
 
-- `evaluation_report.v0.1` schema identity and a separate calculation version;
+- `evaluation_report.v0.1` schema identity and the separate
+  `review_result_aggregation.v0.2` calculation version;
 - the reviewed CasePackage reference and sorted source review IDs;
 - reviewer count;
 - canonical verdict and recommended-action count distributions;
 - sorted candidate-label winner counts;
 - canonical evidence-rating counts across all evidence decisions;
 - sorted selected failure-mode counts;
+- deterministic comparison rollups for selected label IDs and available compact
+  CasePackage/pipeline metadata;
 - simple verdict, action, label, and per-evidence rating disagreement flags.
 
 The v0.1 report represents cluster impurity, split, merge, and recommended
@@ -108,12 +111,54 @@ versions, mixed package IDs or revisions, mismatched compact package references,
 and missing required review, package, pipeline, reviewer, or protocol metadata.
 It uses no database, server, file IO, or account system.
 
+### Comparison Rollups
+
+`comparison_rollups` is a fixed-order list of descriptive groups. It reads only
+metadata already carried by `ReviewResultV01`: selected label ID, package ID and
+revision, pipeline ID and run ID, upstream tool, pipeline version, embedding
+model, clustering and dimensionality-reduction methods, naming model, and
+prompt ID, version, and digest. It does not resolve label text, copy evidence
+content, inspect raw telemetry, or infer missing upstream metadata.
+
+For each available metadata value:
+
+- `review_count` is the number of compatible ReviewResults with that exact
+  value;
+- `evidence_decision_count` is the number of evidence-rating decisions in
+  those ReviewResults;
+- `verdict_distribution` counts one canonical final verdict per included
+  ReviewResult;
+- `evidence_rating_distribution` counts every canonical evidence-rating
+  decision in those ReviewResults.
+
+`missing_review_count` records how many input ReviewResults lack the dimension.
+When every input lacks it, the rollup uses `status: "unavailable"`, retains the
+missing count and a reason, and emits no groups. Missing metadata is never
+coerced to an empty group or zero-valued upstream variable.
+
+Dimension order is the contract order declared by
+`EVALUATION_REPORT_V01_COMPARISON_DIMENSIONS`. Available group values are sorted
+by exact string value, while verdict and evidence-rating keys stay in canonical
+contract order. Input order therefore does not change the report.
+
+These counts are descriptive. They do not calculate a quality score, rank a
+model or prompt, adjudicate reviewer choices, or identify a best configuration.
+The v0.1 compatibility rule still requires one exact compact CasePackage
+reference per report. As a result, selected label IDs can form multiple groups,
+while package, pipeline, model, embedding, and prompt dimensions currently form
+one available group or an explicit unavailable entry. Cross-package or
+cross-pipeline benchmarking needs a later report-set contract; it must not be
+implied by these single-package rollups.
+
 ## Read-Only Results View v0.1
 
 The first results view is the `/results` route backed by a deterministic
 synthetic `EvaluationReportV01` fixture. It renders reviewer count, verdict
 distribution, label-winner distribution, evidence-rating distribution, and
-disagreement indicators from an already-built report.
+disagreement indicators from an already-built report. It also renders the
+comparison rollups as descriptive groups, marks single-value dimensions as
+context rather than cross-variant comparison, and shows missing dimensions as
+unavailable.
 
 The view is intentionally presentation-only. It distinguishes reviewer output
 from upstream CasePackage evidence, shows unavailable aggregate data as
@@ -135,17 +180,19 @@ or fetch upstream package evidence.
 The JSON export preserves the report schema version, calculation version,
 compact CasePackage reference, sorted source review IDs, reviewer count,
 canonical count distributions, label-winner counts, evidence-rating counts,
-failure-mode counts, and disagreement flags. The CSV export repeats compact
-package and pipeline provenance on each row, uses stable headers, emits rows in
-canonical or sorted order, escapes CSV cells, and marks unavailable aggregate
-sections explicitly instead of treating zero or false values as factual
-conclusions when reviewer output is unavailable.
+failure-mode counts, comparison rollups, and disagreement flags. The CSV export
+repeats compact package and pipeline provenance on each row, uses stable
+headers, emits rows in canonical or sorted order, escapes CSV cells, and marks
+unavailable aggregate sections explicitly instead of treating zero or false
+values as factual conclusions when reviewer output is unavailable. Comparison
+rows preserve review and evidence-decision denominators, canonical
+verdict/evidence counts, missing-review counts, and unavailable reasons.
 
 The `/results` fixture view offers JSON and CSV downloads for the already-built
 fixture report. This is a portable artifact export for the static validation
 slice, not a durable report-generation workflow, backend API, BI dashboard,
-raw telemetry export, model-comparison export, scoring system, adjudication
-system, or consensus mechanism.
+raw telemetry export, live model evaluation, cross-package benchmark workflow,
+scoring system, adjudication system, or consensus mechanism.
 
 ## Local ReviewResult Persistence v0.1
 

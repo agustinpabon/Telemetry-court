@@ -7462,6 +7462,60 @@
   font-weight: 780;
 }
 
+.arena-shell .evaluation-comparison-list {
+  display: grid;
+}
+
+.arena-shell .evaluation-comparison-row {
+  border-top: 1px solid var(--workflow-border);
+  padding: 14px 0;
+}
+
+.arena-shell .evaluation-comparison-row:last-child {
+  padding-bottom: 0;
+}
+
+.arena-shell .evaluation-comparison-row > header {
+  align-items: baseline;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.arena-shell .evaluation-comparison-row > header strong,
+.arena-shell .evaluation-comparison-groups strong {
+  color: var(--workflow-ink);
+  font-size: 13px;
+  font-weight: 780;
+  overflow-wrap: anywhere;
+}
+
+.arena-shell .evaluation-comparison-row > header span {
+  color: var(--workflow-muted);
+  font-size: 12px;
+  font-weight: 720;
+  text-align: right;
+}
+
+.arena-shell .evaluation-comparison-row p {
+  color: var(--workflow-muted);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 6px 0 0;
+  max-width: 75ch;
+}
+
+.arena-shell .evaluation-comparison-groups {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.arena-shell .evaluation-comparison-groups > div + div {
+  border-top: 1px solid var(--workflow-border);
+  padding-top: 12px;
+}
+
 @media (max-width: 860px) {
   .arena-shell .evaluation-report-hero,
   .arena-shell .evaluation-report-list li,
@@ -7485,6 +7539,16 @@
   }
 
   .arena-shell .evaluation-report-export-actions p {
+    text-align: left;
+  }
+
+  .arena-shell .evaluation-comparison-row > header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .arena-shell .evaluation-comparison-row > header span {
     text-align: left;
   }
 

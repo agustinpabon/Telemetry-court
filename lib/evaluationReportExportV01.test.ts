@@ -24,7 +24,7 @@ test("evaluation report JSON export preserves versioned report metadata", () => 
   assert.equal(parsedExport.schema_version, "evaluation_report.v0.1");
   assert.equal(
     parsedExport.calculation_version,
-    "review_result_aggregation.v0.1",
+    "review_result_aggregation.v0.2",
   );
   assert.deepEqual(parsedExport.case_package, sampleEvaluationReportV01.case_package);
   assert.deepEqual(parsedExport.source_review_ids, ["review-a", "review-b"]);
@@ -32,6 +32,10 @@ test("evaluation report JSON export preserves versioned report metadata", () => 
   assert.deepEqual(
     parsedExport.verdict_distribution,
     sampleEvaluationReportV01.verdict_distribution,
+  );
+  assert.deepEqual(
+    parsedExport.comparison_rollups,
+    sampleEvaluationReportV01.comparison_rollups,
   );
   assert.equal("claims" in parsedExport, false);
   assert.equal("evidence_items" in parsedExport, false);
@@ -110,6 +114,18 @@ test("evaluation report CSV export includes deterministic audit rows", () => {
       row.endsWith(",disagreement_evidence_ids,evidence-2,,1,available"),
     ),
   );
+  assert.ok(
+    rows.some((row) =>
+      row.endsWith(",comparison_review_count,embedding_model,synthetic-embedding-a,2,available"),
+    ),
+  );
+  assert.ok(
+    rows.some((row) =>
+      row.endsWith(
+        ",comparison_metadata,clustering_method,\"Metadata \"\"clustering_method\"\" is missing from all compact CasePackage references.\",2,unavailable",
+      ),
+    ),
+  );
   assert.equal(csvExport.endsWith("\n"), true);
   assert.equal(csvExport.includes("evidence_items"), false);
   assert.equal(csvExport.includes("raw_telemetry"), false);
@@ -180,6 +196,13 @@ test("evaluation report export normalizes row ordering without mutating the repo
       ...sampleEvaluationReportV01.disagreement,
       evidence_ids: ["evidence-z", "evidence-a"],
     },
+    comparison_rollups: [...sampleEvaluationReportV01.comparison_rollups]
+      .reverse()
+      .map((rollup) =>
+        rollup.status === "available"
+          ? { ...rollup, groups: [...rollup.groups].reverse() }
+          : rollup,
+      ),
   };
 
   const parsedExport = JSON.parse(
@@ -200,6 +223,16 @@ test("evaluation report export normalizes row ordering without mutating the repo
     "evidence-a",
     "evidence-z",
   ]);
+  assert.deepEqual(
+    parsedExport.comparison_rollups.slice(0, 2).map((rollup) => rollup.dimension),
+    ["selected_label_id", "package_id"],
+  );
+  assert.deepEqual(
+    parsedExport.comparison_rollups[0].status === "available"
+      ? parsedExport.comparison_rollups[0].groups.map((group) => group.value)
+      : [],
+    ["label-a", "label-b"],
+  );
   assert.deepEqual(Object.keys(parsedExport.verdict_distribution), [
     "supported",
     "partially_supported",
@@ -225,6 +258,10 @@ test("evaluation report export normalizes row ordering without mutating the repo
   assert.ok(
     csvExport.indexOf("disagreement_evidence_ids,evidence-a") <
       csvExport.indexOf("disagreement_evidence_ids,evidence-z"),
+  );
+  assert.ok(
+    csvExport.indexOf("comparison_review_count,selected_label_id,label-a") <
+      csvExport.indexOf("comparison_review_count,selected_label_id,label-b"),
   );
   assert.deepEqual(unsortedReport.source_review_ids, ["review-b", "review-a"]);
 });

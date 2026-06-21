@@ -22,10 +22,13 @@ It turns generated cluster labels into testable claims and records structured hu
 - It does not implement real Toponymy or ACME4 ingestion.
 - It includes a deterministic in-memory `EvaluationReportV01` aggregation utility,
   plus a fixture-backed read-only results view for inspecting reviewer
-  distributions and disagreement with JSON/CSV downloads for the existing
-  fixture report.
+  distributions, disagreement, and descriptive compact-metadata comparison
+  rollups with JSON/CSV downloads for the existing fixture report.
 - It does not provide durable server-side review storage, multi-user
   persistence, package import, or a real report workflow.
+- Because one report still requires one exact compact CasePackage reference,
+  package/pipeline/model/prompt/embedding rollups are currently single-value
+  context or explicitly unavailable, not cross-run rankings.
 - The next implementation milestone is the Case Package Contract and Validation Infrastructure, not generic backend work.
 
 ## Intended Architecture

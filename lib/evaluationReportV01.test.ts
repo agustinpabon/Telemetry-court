@@ -90,10 +90,11 @@ test("compatible reviews aggregate deterministic counts and disagreement", () =>
   });
 
   const report = aggregateReviewResultsV01([reviewA, reviewB]);
+  const { comparison_rollups: comparisonRollups, ...baseReport } = report;
 
-  assert.deepEqual(report, {
+  assert.deepEqual(baseReport, {
     schema_version: "evaluation_report.v0.1",
-    calculation_version: "review_result_aggregation.v0.1",
+    calculation_version: "review_result_aggregation.v0.2",
     case_package: reviewA.case_package,
     source_review_ids: ["review-a", "review-b"],
     reviewer_count: 2,
@@ -144,6 +145,7 @@ test("compatible reviews aggregate deterministic counts and disagreement", () =>
       evidence_ids: ["evidence-2"],
     },
   });
+  assert.equal(comparisonRollups.length > 0, true);
   assert.deepEqual(aggregateReviewResultsV01([reviewB, reviewA]), report);
 
   assert.equal(report.verdict_distribution.cluster_impure, 0);
@@ -152,6 +154,183 @@ test("compatible reviews aggregate deterministic counts and disagreement", () =>
   assert.equal(report.recommended_action_distribution.split_cluster, 0);
   assert.equal(report.recommended_action_distribution.merge_cluster, 0);
   assert.equal(report.recommended_action_distribution.collect_more_evidence, 0);
+});
+
+test("comparison rollups group reviewer signals by selected label ID", () => {
+  const report = aggregateReviewResultsV01([
+    createReviewResult({
+      reviewId: "review-z",
+      reviewerId: "reviewer-z",
+      selectedLabelId: "label-z",
+      evidenceTwoRating: "contradicts",
+      finalVerdict: "unsupported_or_overclaimed",
+      recommendedAction: "rename_label",
+    }),
+    createReviewResult(),
+  ]);
+
+  assert.deepEqual(report.comparison_rollups[0], {
+    dimension: "selected_label_id",
+    status: "available",
+    missing_review_count: 0,
+    groups: [
+      {
+        value: "label-a",
+        review_count: 1,
+        evidence_decision_count: 2,
+        verdict_distribution: {
+          supported: 1,
+          partially_supported: 0,
+          unsupported_or_overclaimed: 0,
+          uncertain: 0,
+          cluster_impure: 0,
+          needs_split: 0,
+          needs_merge: 0,
+          needs_better_evidence: 0,
+        },
+        evidence_rating_distribution: {
+          supports: 2,
+          weak_support: 0,
+          irrelevant: 0,
+          contradicts: 0,
+          insufficient: 0,
+          needs_more_context: 0,
+        },
+      },
+      {
+        value: "label-z",
+        review_count: 1,
+        evidence_decision_count: 2,
+        verdict_distribution: {
+          supported: 0,
+          partially_supported: 0,
+          unsupported_or_overclaimed: 1,
+          uncertain: 0,
+          cluster_impure: 0,
+          needs_split: 0,
+          needs_merge: 0,
+          needs_better_evidence: 0,
+        },
+        evidence_rating_distribution: {
+          supports: 1,
+          weak_support: 0,
+          irrelevant: 0,
+          contradicts: 1,
+          insufficient: 0,
+          needs_more_context: 0,
+        },
+      },
+    ],
+  });
+});
+
+test("comparison rollups preserve available compact package metadata in stable order", () => {
+  const review = createReviewResult();
+  const reviewWithMetadata: ReviewResultV01 = {
+    ...review,
+    case_package: {
+      ...review.case_package,
+      pipeline: {
+        ...review.case_package.pipeline,
+        pipeline_version: "pipeline-v2",
+        embedding_model: "synthetic-embedding-b",
+        clustering_method: "synthetic-clustering-a",
+        dimensionality_reduction_method: "synthetic-projection-a",
+        naming_model: "synthetic-naming-model-b",
+        prompt_id: "prompt-b",
+        prompt_version: "2",
+        prompt_digest: "sha256:synthetic-b",
+      },
+    },
+  };
+
+  const report = aggregateReviewResultsV01([reviewWithMetadata]);
+
+  assert.deepEqual(
+    report.comparison_rollups.map((rollup) => rollup.dimension),
+    [
+      "selected_label_id",
+      "package_id",
+      "package_revision",
+      "pipeline_id",
+      "pipeline_run_id",
+      "upstream_tool",
+      "pipeline_version",
+      "embedding_model",
+      "clustering_method",
+      "dimensionality_reduction_method",
+      "naming_model",
+      "prompt_id",
+      "prompt_version",
+      "prompt_digest",
+    ],
+  );
+  assert.deepEqual(
+    report.comparison_rollups.find(
+      (rollup) => rollup.dimension === "embedding_model",
+    ),
+    {
+      dimension: "embedding_model",
+      status: "available",
+      missing_review_count: 0,
+      groups: [
+        {
+          value: "synthetic-embedding-b",
+          review_count: 1,
+          evidence_decision_count: 2,
+          verdict_distribution: {
+            supported: 1,
+            partially_supported: 0,
+            unsupported_or_overclaimed: 0,
+            uncertain: 0,
+            cluster_impure: 0,
+            needs_split: 0,
+            needs_merge: 0,
+            needs_better_evidence: 0,
+          },
+          evidence_rating_distribution: {
+            supports: 2,
+            weak_support: 0,
+            irrelevant: 0,
+            contradicts: 0,
+            insufficient: 0,
+            needs_more_context: 0,
+          },
+        },
+      ],
+    },
+  );
+});
+
+test("comparison rollups report missing compact package metadata explicitly", () => {
+  const report = aggregateReviewResultsV01([
+    createReviewResult(),
+    createReviewResult({ reviewId: "review-b", reviewerId: "reviewer-b" }),
+  ]);
+
+  for (const dimension of [
+    "pipeline_version",
+    "embedding_model",
+    "clustering_method",
+    "dimensionality_reduction_method",
+    "naming_model",
+    "prompt_id",
+    "prompt_version",
+    "prompt_digest",
+  ]) {
+    assert.deepEqual(
+      report.comparison_rollups.find(
+        (rollup) => rollup.dimension === dimension,
+      ),
+      {
+        dimension,
+        status: "unavailable",
+        reason: `Metadata "${dimension}" is missing from all compact CasePackage references.`,
+        missing_review_count: 2,
+        groups: [],
+      },
+    );
+  }
 });
 
 test("aggregation rejects an empty ReviewResult list", () => {

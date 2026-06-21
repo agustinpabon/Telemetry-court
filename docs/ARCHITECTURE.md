@@ -61,6 +61,12 @@ Toponymy adapter, or ACME4 adapter yet.
 
 `ReviewResult` contains one reviewer's versioned decisions about one case package. `EvaluationReport` aggregates compatible review results into agreement, disagreement, support, overclaim, uncertainty, impurity, split or merge, evidence sufficiency, label winner, and comparison metrics.
 
+The current comparison metrics group canonical verdict and evidence-rating
+counts by selected label ID and metadata already present in compact CasePackage
+references. Exact package-reference compatibility remains required, so
+non-label metadata is single-value context within one report. Cross-package or
+cross-run benchmarking is not implemented.
+
 ## Downstream
 
 Outputs should support prompt improvement, label refinement, model and embedding comparison, evidence-extraction improvement, cluster split or merge decisions, research reports, and validation studies.

@@ -61,6 +61,11 @@ The package reference preserves:
 Optional pipeline fields are omitted when the source package does not provide
 them. The exporter does not invent adapter or upstream metadata.
 
+`EvaluationReportV01` can group reviewer verdict and evidence-rating counts by
+the selected label ID and these compact package/pipeline fields. An absent
+optional field remains explicitly unavailable in the report; it is not inferred
+from label text, evidence content, or an upstream system.
+
 ## Structured Decisions
 
 The current export records:

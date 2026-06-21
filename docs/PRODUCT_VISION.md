@@ -78,6 +78,12 @@ failure-mode reason codes are defined in
 
 The current Next.js interface uses five synthetic cases and local state. It demonstrates the review protocol, structured JSON export, browser-local `ReviewResult` persistence keyed by CasePackage ID, deterministic in-memory `EvaluationReport` aggregation, and a fixture-backed read-only results view with JSON/CSV export. It does not yet prove real-world validation value, run Toponymy, ingest ACME4, provide durable server-side persistence, or support a multi-reviewer report workflow.
 
+The current EvaluationReport shape includes descriptive reviewer-signal rollups
+for selected label IDs and compact package/pipeline metadata already carried by
+ReviewResults. Missing optional metadata is explicit. Exact package-reference
+compatibility means non-label rollups are single-value context rather than
+cross-run model, prompt, embedding, or evidence-package rankings.
+
 Synthetic cases remain useful for UI and protocol testing, but they must be described as fixtures, not evidence that the product has completed its validation mission.
 
 ## Definition Of Done For Real Usefulness
