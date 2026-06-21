@@ -30,6 +30,27 @@ Precomputed cluster
 
 The current landscape, case file, evidence board, label comparison, outlier review, and verdict interface are interaction mechanisms inside this validation workflow. They are not the product identity by themselves.
 
+## Utility Gate
+
+Telemetry Court is useful only if it helps produce or improve an auditable
+`EvaluationReport` from real or realistic `CasePackage` inputs. A feature
+passes the Utility Gate when it improves at least one part of this loop:
+
+```text
+import CasePackage JSON
+-> validate it strictly
+-> complete structured review
+-> persist/export ReviewResult
+-> import or aggregate ReviewResults
+-> produce EvaluationReport output
+```
+
+The next proof of value is this external-package validation loop, not more
+synthetic polish, generic backend infrastructure, or evidence-constrained AI
+assistance. AI assistance remains later priority until reviewers can import a
+package, complete reviews, exchange result bundles, and aggregate them into a
+report.
+
 ## Product Responsibilities
 
 Telemetry Court is responsible for:
@@ -61,6 +82,11 @@ Telemetry Court is not responsible for the full telemetry processing stack, live
 11. Aggregate compatible results into an `EvaluationReport`.
 
 The happy path is structured-choice first. Optional expert notes may exist, but typed text must not be required to complete the review.
+
+Fast or batch review modes are allowed when they preserve this protocol and
+produce exportable `ReviewResult` artifacts. They must be framed as evidence
+validation or batch validation, not SOC triage, incident response, live alert
+handling, remediation, or operational action generation.
 
 ## Evidence And Verdict Language
 

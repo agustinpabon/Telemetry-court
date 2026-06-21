@@ -33,10 +33,15 @@ A polished review UI is not enough. Prioritize features only when they improve o
 - The current application is a static validation slice using synthetic cases.
 - It demonstrates the evidence-first review flow, local structured export, and browser-local `ReviewResult` persistence by CasePackage ID.
 - It does not implement real Toponymy or ACME4 ingestion.
+- It does not yet provide local file import for external `CasePackage` JSON.
 - It includes synthetic, non-authoritative adapter-boundary fixtures for Toponymy/DataMapPlot-style and ACME4-style `CasePackage v0.1` shapes.
-- It includes deterministic in-memory `EvaluationReportV01` aggregation and a fixture-backed read-only results view.
+- It includes deterministic in-memory `EvaluationReportV01` aggregation and a fixture-backed read-only results view with JSON/CSV downloads for the existing fixture report.
 - It does not yet provide a complete external-package workflow: local package import, invalid-package failure UI, imported-result bundles, and a real results workflow must move earlier than further polish or AI assistance.
+- It does not provide durable server-side review storage, multi-user persistence, package import, or a real report workflow.
+- Because one report still requires one exact compact CasePackage reference, package/pipeline/model/prompt/embedding rollups are currently single-value context or explicitly unavailable, not cross-run rankings.
 - The main product risk is not visual quality. The main risk is remaining a beautiful synthetic demo with no real evaluation loop.
+- Evidence-constrained AI assistance remains later priority until import,
+  result exchange, and aggregation are usable.
 
 ## Intended Architecture
 
@@ -73,6 +78,19 @@ Telemetry Court owns reviewability, auditability, evidence grounding, and human 
 
 Do not collapse these objects into one generic case record. See [CASE_PACKAGE_CONTRACT.md](./CASE_PACKAGE_CONTRACT.md).
 
+## Utility Loop
+
+```text
+local CasePackage import
+-> strict validation and useful failure UI
+-> structured review
+-> ReviewResult persistence/export/import
+-> local or imported result aggregation
+-> EvaluationReport JSON/CSV
+```
+
+Features that do not improve this path should wait unless they fix correctness, validation, data handling, or serious review usability blockers.
+
 ## Product Guardrails
 
 Do not drift toward:
@@ -81,10 +99,9 @@ Do not drift toward:
 - SIEM, SOC, EDR, or alert-triage workflows;
 - raw telemetry search or live ingestion;
 - chat-first UX or gamification;
-- authentication or database work before the validation loop proves value;
+- authentication or database work before the imported-package review-to-report
+  loop is proven locally;
 - generic CRUD or speculative enterprise features.
-
-Fast review is allowed, but it must be framed as evidence validation or batch validation, not SOC triage. Keyboard shortcuts and faster workflows are acceptable only when they preserve blind review, evidence grounding, and structured verdicts.
 
 Do not add Splunk, Elastic, remediation, or operational action generation as a core promise. If tactical queries or actions ever appear, they must be optional upstream metadata inside a `CasePackage`, not something Telemetry Court invents.
 
@@ -104,6 +121,12 @@ Prioritize next:
 8. Run a small pilot with 3-5 real or realistic packages and 2-3 reviewers.
 
 Evidence-constrained AI assistance remains a later milestone. It should cite evidence IDs, admit missing evidence, and avoid generic chatbot behavior.
+
+Fast review is allowed when it means evidence validation or batch validation.
+It must preserve blind review, claim-to-evidence grounding, structured ratings,
+structured verdicts, exportable ReviewResults, and aggregation into an
+EvaluationReport. Do not frame fast review as SOC triage, live alert handling,
+incident response, remediation, or operational action generation.
 
 ## Toponymy And ACME4
 

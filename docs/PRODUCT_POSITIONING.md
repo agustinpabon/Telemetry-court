@@ -46,6 +46,19 @@ Clustering pipelines can produce coherent-looking maps and confident labels with
 
 A research or AI/ML team imports a real or realistic precomputed cluster as a versioned case package, has multiple reviewers inspect it without seeing the generated label first, captures structured evidence ratings and verdicts, and exports an evaluation report that identifies which label, prompt, model, embedding, or evidence package performed better.
 
+## Utility Gate
+
+A feature is useful only if it helps produce or improve an auditable
+`EvaluationReport` from real or realistic `CasePackage` inputs. The near-term
+product should prioritize local package import, strict invalid-package failure,
+structured `ReviewResult` persistence/export/import, and aggregation from
+local or imported results before evidence-constrained AI assistance.
+
+The target proof is small but real: several real or realistic packages,
+multiple independent reviewers, exported ReviewResults, and one report that
+surfaces label support, overclaim, evidence sufficiency, cluster impurity, and
+reviewer disagreement.
+
 ## Contract Separation
 
 - `CasePackage` is the versioned cluster interpretation and evidence produced upstream.
@@ -65,6 +78,11 @@ ACME4-style and other real or realistic datasets can supply meaningful validatio
 ## Relationship To SIEM, EDR, And SOC Tools
 
 SIEM, EDR, and SOC tools support operational detection, search, triage, investigation, and response. Telemetry Court evaluates whether an AI-generated interpretation of a precomputed cluster is supported by evidence. It complements upstream analytics and operational tools; it does not replace them.
+
+Fast review, keyboard-first review, or batch validation may be useful, but that
+workflow must remain evidence validation. It should use language such as fast
+evidence review, batch validation, or reviewer workbench, not alert triage,
+SOC queue, incident response, remediation, or live investigation.
 
 ## Product Success Criteria
 
