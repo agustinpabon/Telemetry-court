@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-21: Toponymy/DataMapPlot Adapter Input Shape
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Start GitHub issue #62 only by documenting the precomputed, sanitized adapter input shape for Toponymy/DataMapPlot-style cluster outputs without implementing an adapter, claiming official upstream support, ingesting raw restricted telemetry, inventing upstream function signatures, adding fixtures for later issues, persistence, auth, UI redesign, scoring, adjudication, consensus, or chatbot behavior.
+- Files changed: `docs/ADAPTER_BOUNDARY.md` and `docs/CHANGELOG_AI.md`.
+- Summary: Added a Telemetry Court-owned intermediate adapter-input shape between upstream notebooks or pipelines and future `CasePackage v0.1` conversion. The doc now names required field groups for artifact identity, dataset context, pipeline context, clusters, map positions, labels, claims, evidence references, evidence-to-claim mappings, representative items, neighbors, outlier/impostor candidates, metrics, provenance, and sanitization. It also includes explicit unknown/unavailable envelopes and a minimal sanitized JSON sketch.
+- Decisions made: Treated "Toponymy/DataMapPlot-style" as shape-compatible inspiration rather than official support; cited official Toponymy and DataMapPlot README sections only for broad factual grounding; kept the adapter input distinct from `CasePackage`, `ReviewResult`, and `EvaluationReport`; required future conversion to fail loudly when required fields are unavailable rather than inventing placeholder IDs, labels, coordinates, provenance, or sanitization details.
+- Checks run: Parsed all four JSON code blocks in `docs/ADAPTER_BOUNDARY.md`; `git diff --check` passed. Full npm checks were not run because this is a documentation-only change with no TypeScript, fixture, runtime, or UI edits.
+- Assumptions: A future adapter can consume an approved sanitized artifact from an upstream environment, but that artifact remains outside Telemetry Court's current runtime until an adapter and validation path are implemented.
+- Risks/follow-ups: The documented input sketch is non-authoritative and unvalidated by code. It does not add Toponymy execution, DataMapPlot execution, ACME4 ingestion, raw telemetry import, package upload, backend persistence, adapter-generated fixtures, scoring, adjudication, consensus, or UI behavior.
+- Next recommended step: Review this boundary before implementing any Toponymy/DataMapPlot-style adapter prototype or adding realistic adapter fixtures.
+- Suggested commit message: `docs(adapter): define cluster output input shape`
+
 ## 2026-06-21: Reviewer Agreement And Disputed Evidence Metrics
 
 - Agent/model: Codex (GPT-5)
