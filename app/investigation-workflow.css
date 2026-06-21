@@ -129,6 +129,59 @@
   transform: none;
 }
 
+.case-package-import-control {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.case-package-import-input {
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.case-package-import-status {
+  color: var(--arena-muted);
+  font-size: 12px;
+  font-weight: 680;
+  line-height: 1.35;
+  margin: 0;
+  max-width: min(42vw, 560px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.case-package-import-status.is-success {
+  color: var(--arena-green);
+}
+
+.case-package-import-status.is-error {
+  color: var(--arena-red);
+}
+
+.arena-shell-investigate .case-package-import-status {
+  color: var(--workflow-muted);
+}
+
+.arena-shell-investigate .case-package-import-status.is-success {
+  color: var(--workflow-supported);
+}
+
+.arena-shell-investigate .case-package-import-status.is-error {
+  color: var(--workflow-contradicted);
+}
+
 .arena-shell-investigate .arena-layout {
   align-items: start;
   gap: 14px;

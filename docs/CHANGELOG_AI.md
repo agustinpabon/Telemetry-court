@@ -19,6 +19,20 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-21: Local CasePackage JSON Import
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Start issue #97 by adding local `CasePackageV01` JSON import into the existing review flow, without implementing #98's full invalid-package UI, ReviewResult bundle import/export, report generation from imported results, backend persistence, uploads, auth, database work, raw telemetry ingestion, SIEM/SOC workflows, chatbot UI, or real Toponymy/ACME4 support.
+- Files changed: `lib/importCasePackageV01.ts`, `lib/importCasePackageV01.test.ts`, `lib/casePackageV01ToCaseFile.ts`, `lib/arenaReviewState.ts`, `components/arena/CasePackageImportControl.tsx`, `components/arena/AppShell.tsx`, `components/arena/WorkflowPrimitives.test.tsx`, `app/investigation-workflow.css`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added an in-browser `Import CasePackage` entry point that accepts local `.json` files, parses JSON safely, validates unknown input with `validateCasePackageV01`, adapts successful packages through the existing CasePackage-to-CaseFile adapter, and opens the imported package at the case-file review step. The default synthetic fixture flow remains available when no file is imported.
+- Decisions made: Kept imported package state in React memory only and avoided server upload, backend persistence, databases, accounts, or raw telemetry behavior; generated the small current-UI compatibility seed from validated package fields rather than adding a second adapter; kept import failure status intentionally minimal for #97.
+- Review correction: Captured the file input element before the async file read so repeated imports can reset the chooser without throwing after React clears the event target.
+- Checks run: Focused `npm test -- lib/importCasePackageV01.test.ts lib/casePackageV01ToCaseFile.test.ts lib/arenaReviewState.test.ts components/arena/WorkflowPrimitives.test.tsx data/casePackageFixtures.test.ts` passed with 20 tests; `npx tsc --noEmit` passed; `npm test` passed with 127 tests; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed; manual Playwright smoke on `next start --hostname 127.0.0.1 --port 3100` passed for demo open, valid import, malformed JSON rejection, and structurally invalid package rejection.
+- Assumptions: The existing UI still requires compatibility fields such as available metrics, at least two candidate labels, representative sessions, neighbor context, and map coordinates before a validated package can be reviewed.
+- Risks/follow-ups: #98 should replace the minimal import failure status with a more useful invalid-package diagnostic flow. Later issues still need ReviewResult bundle exchange and report generation from local/imported results.
+- Next recommended step: Implement #98's invalid-package failure UI after #97 is reviewed.
+- Suggested commit message: `feat: import local CasePackage JSON`
+
 ## 2026-06-21: Utility Gate Roadmap Correction
 
 - Agent/model: Codex (GPT-5)

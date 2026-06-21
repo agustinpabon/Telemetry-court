@@ -17,7 +17,7 @@ import {
   type CasePackageValidationError,
 } from "@/lib/casePackageValidation";
 
-type CaseFileCompatibilitySeed = Pick<
+export type CaseFileCompatibilitySeed = Pick<
   CaseFile,
   | "id"
   | "cluster"
@@ -68,6 +68,138 @@ export function casePackageV01ToCaseFile(
       validation.package,
       compatibilitySeed,
     ),
+  };
+}
+
+export function createCaseFileCompatibilitySeedFromCasePackageV01(
+  packageFixture: CasePackageV01,
+): CaseFileCompatibilitySeed {
+  const firstAiLabel =
+    packageFixture.candidate_labels.find(
+      (label) => label.source === "ai_generated",
+    ) ?? packageFixture.candidate_labels[0];
+  const topicLabelId = firstAiLabel?.label_id ?? `label-${packageFixture.case.case_id}`;
+  const bestLabelId = getBestSupportedLabelId(packageFixture);
+  const seededImpostorSessionId = getSeededImpostorSessionId(packageFixture);
+  const defaultEvidenceRatings = buildDefaultEvidenceRatings(packageFixture);
+
+  return {
+    id: packageFixture.case.case_id,
+    cluster: {
+      id: packageFixture.cluster.cluster_id,
+      name: packageFixture.cluster.cluster_name ?? packageFixture.case.title,
+      description: packageFixture.case.summary,
+      source: readClusterSource(packageFixture.dataset.data_classification),
+      size: packageFixture.cluster.cluster_size,
+    },
+    reviewStatus: readReviewStatus(packageFixture),
+    landscapeStatus: readLandscapeStatus(packageFixture),
+    topFeatures: readTopFeatures(packageFixture),
+    riskFlags: readRiskFlags(packageFixture),
+    blindInterpretationOptions: [
+      ...packageFixture.candidate_labels.map((label) => ({
+        id: `blind-${label.label_id}`,
+        label: label.label,
+        helper:
+          label.rationale ??
+          `Assess whether the case package evidence supports ${label.label}.`,
+      })),
+      {
+        id: "blind-insufficient-evidence",
+        label: "Not enough evidence",
+        helper:
+          "Use when the case package evidence supports activity but not a confident interpretation.",
+      },
+      {
+        id: "blind-none-of-these",
+        label: "None of these",
+        helper: "Use when the structured interpretations do not fit the evidence.",
+      },
+    ],
+    seededBestLabelId: bestLabelId,
+    seededImpostorSessionId,
+    representativeSessions: packageFixture.representative_sessions.map(
+      (session) => {
+        const outlierReason = readOutlierReason(
+          packageFixture,
+          session.session_id,
+        );
+
+        return {
+          id: session.session_id,
+          title: session.title,
+          principal:
+            session.safe_reference?.label ?? packageFixture.dataset.dataset_name,
+          timestamp:
+            packageFixture.cluster.time_range?.start_at ??
+            packageFixture.created_at,
+          featureOverlap: readAvailableMetric(
+            session.cluster_membership.membership_score,
+            0,
+          ),
+          outlierScore: readAvailableMetric(
+            session.cluster_membership.distance_to_centroid,
+            0,
+          ),
+          summary: session.summary,
+          ...(outlierReason ? { outlierReason } : {}),
+        };
+      },
+    ),
+    failureModes: readFailureModes(packageFixture),
+    defaultEvidenceRatings,
+    topicLabel: {
+      id: topicLabelId,
+      clusterId: packageFixture.cluster.cluster_id,
+      name:
+        firstAiLabel?.label ??
+        packageFixture.cluster.upstream_cluster_label ??
+        packageFixture.case.title,
+      explanation:
+        firstAiLabel?.rationale ??
+        packageFixture.case.description ??
+        packageFixture.case.summary,
+      generatedBy:
+        firstAiLabel?.model_reference ??
+        packageFixture.pipeline.naming_model ??
+        packageFixture.pipeline.upstream_tool,
+      generatedAt: packageFixture.pipeline.generated_at,
+    },
+    claims: packageFixture.claims.map((claim) => ({
+      id: claim.claim_id,
+      clusterId: packageFixture.cluster.cluster_id,
+      topicLabelId,
+      text: claim.text,
+      status: readSupportStatus(claim.confidence),
+      supportScore: readAvailableMetric(claim.confidence, 0),
+      rationale: readClaimRationale(claim),
+    })),
+    evidenceItems: packageFixture.evidence_items.map((evidence) => ({
+      id: evidence.evidence_id,
+      clusterId: packageFixture.cluster.cluster_id,
+      title: evidence.title,
+      summary: evidence.summary,
+      sourceType: readEvidenceSourceType(evidence.evidence_type),
+      rawReference:
+        evidence.source_reference.safe_reference?.uri ??
+        evidence.source_reference.safe_reference?.artifact_id,
+    })),
+    evidenceRelations: packageFixture.evidence_to_claim_mappings.map(
+      (mapping) => ({
+        claimId: mapping.claim_id,
+        evidenceId: mapping.evidence_id,
+        polarity: readEvidencePolarity(mapping.relationship),
+        strength: readEvidenceStrength(mapping.relationship),
+        explanation: mapping.rationale ?? "",
+      }),
+    ),
+    supportScores: packageFixture.claims.map((claim) => ({
+      claimId: claim.claim_id,
+      value: readAvailableMetric(claim.confidence, 0),
+      status: readSupportStatus(claim.confidence),
+      rationale: readClaimRationale(claim),
+    })),
+    analystVerdict: undefined,
   };
 }
 
@@ -537,6 +669,242 @@ function mapValidatedCasePackageV01ToCaseFile(
         }
       : undefined,
   };
+}
+
+function getBestSupportedLabelId(packageFixture: CasePackageV01): string {
+  const sortedLabels = [...packageFixture.candidate_labels].sort(
+    (left, right) =>
+      readAvailableMetric(right.confidence, -1) -
+        readAvailableMetric(left.confidence, -1) ||
+      (left.rank ?? Number.MAX_SAFE_INTEGER) -
+        (right.rank ?? Number.MAX_SAFE_INTEGER) ||
+      left.label_id.localeCompare(right.label_id),
+  );
+
+  return sortedLabels[0]?.label_id ?? "";
+}
+
+function getSeededImpostorSessionId(packageFixture: CasePackageV01): string {
+  const outlierCandidate = [...packageFixture.outlier_impostor_candidates]
+    .filter((candidate) => candidate.session_id)
+    .sort(
+      (left, right) =>
+        readAvailableMetric(right.score, -1) -
+          readAvailableMetric(left.score, -1) ||
+        (left.session_id ?? "").localeCompare(right.session_id ?? ""),
+    )[0];
+
+  return (
+    outlierCandidate?.session_id ??
+    packageFixture.representative_sessions[0]?.session_id ??
+    ""
+  );
+}
+
+function buildDefaultEvidenceRatings(
+  packageFixture: CasePackageV01,
+): CaseFile["defaultEvidenceRatings"] {
+  const relationshipsByEvidence = new Map<
+    string,
+    CasePackageEvidenceRelationshipV01[]
+  >();
+
+  for (const mapping of packageFixture.evidence_to_claim_mappings) {
+    relationshipsByEvidence.set(mapping.evidence_id, [
+      ...(relationshipsByEvidence.get(mapping.evidence_id) ?? []),
+      mapping.relationship,
+    ]);
+  }
+
+  return Object.fromEntries(
+    packageFixture.evidence_items.map((evidence) => [
+      evidence.evidence_id,
+      readDefaultEvidenceRating(
+        relationshipsByEvidence.get(evidence.evidence_id) ?? [],
+      ),
+    ]),
+  ) as CaseFile["defaultEvidenceRatings"];
+}
+
+function readDefaultEvidenceRating(
+  relationships: CasePackageEvidenceRelationshipV01[],
+): CaseFile["defaultEvidenceRatings"][string] {
+  if (relationships.includes("contradicts")) {
+    return "contradicts_label";
+  }
+
+  if (relationships.includes("supports")) {
+    return "supports_label";
+  }
+
+  if (relationships.includes("weak_support")) {
+    return "weak_support";
+  }
+
+  if (relationships.includes("irrelevant")) {
+    return "irrelevant_noise";
+  }
+
+  return "needs_context";
+}
+
+function readReviewStatus(packageFixture: CasePackageV01): CaseFile["reviewStatus"] {
+  if (packageFixture.case.reviewable_status === "needs_more_evidence") {
+    return "needs_evidence";
+  }
+
+  if (packageFixture.case.review_intent === "assess_cluster_purity") {
+    return "needs_split";
+  }
+
+  return "unreviewed";
+}
+
+function readLandscapeStatus(
+  packageFixture: CasePackageV01,
+): CaseFile["landscapeStatus"] {
+  if (packageFixture.case.review_intent === "assess_cluster_purity") {
+    return "impure";
+  }
+
+  if (packageFixture.case.review_intent === "compare_labels") {
+    return "too_broad";
+  }
+
+  const evidenceCoverage = readAvailableMetric(
+    packageFixture.metrics.evidence_coverage,
+    0,
+  );
+  const modelAgreement = readAvailableMetric(
+    packageFixture.metrics.model_agreement,
+    0,
+  );
+  const uncertainty = readAvailableMetric(packageFixture.metrics.uncertainty, 1);
+
+  if (uncertainty >= 0.68) {
+    return "uncertain";
+  }
+
+  if (evidenceCoverage >= 0.72 && modelAgreement >= 0.55) {
+    return "supported";
+  }
+
+  return "overclaimed";
+}
+
+function readTopFeatures(packageFixture: CasePackageV01): string[] {
+  const featureHighlights = packageFixture.representative_sessions.flatMap(
+    (session) => session.feature_highlights,
+  );
+  const evidenceTitles = packageFixture.evidence_items.map(
+    (evidence) => evidence.title,
+  );
+  const features = uniqueStrings([...featureHighlights, ...evidenceTitles]).slice(
+    0,
+    6,
+  );
+
+  return features.length > 0 ? features : ["Case package evidence"];
+}
+
+function readRiskFlags(packageFixture: CasePackageV01): string[] {
+  const riskFlags = new Set<string>();
+  const evidenceCoverage = readAvailableMetric(
+    packageFixture.metrics.evidence_coverage,
+    0,
+  );
+  const uncertainty = readAvailableMetric(packageFixture.metrics.uncertainty, 0);
+
+  if (
+    packageFixture.claims.some(
+      (claim) => claim.evidence_status === "missing_evidence_declared",
+    )
+  ) {
+    riskFlags.add("Claim has missing evidence");
+  }
+
+  if (
+    packageFixture.evidence_to_claim_mappings.some((mapping) =>
+      ["insufficient", "missing_evidence"].includes(mapping.relationship),
+    )
+  ) {
+    riskFlags.add("Evidence sufficiency gap");
+  }
+
+  if (packageFixture.outlier_impostor_candidates.length > 0) {
+    riskFlags.add("Outlier/impostor candidates");
+  }
+
+  if (evidenceCoverage < 0.55) {
+    riskFlags.add("Thin evidence coverage");
+  }
+
+  if (uncertainty >= 0.65) {
+    riskFlags.add("High uncertainty");
+  }
+
+  if (!packageFixture.sanitization.raw_drilldown_allowed) {
+    riskFlags.add("Summary-only references");
+  }
+
+  const flags = [...riskFlags].slice(0, 5);
+
+  return flags.length > 0 ? flags : ["Validate evidence grounding"];
+}
+
+function readFailureModes(packageFixture: CasePackageV01): CaseFile["failureModes"] {
+  const failureModes = new Set<CaseFile["failureModes"][number]>([
+    "better_supported",
+    "less_overclaimed",
+  ]);
+  const uncertainty = readAvailableMetric(packageFixture.metrics.uncertainty, 0);
+
+  if (
+    packageFixture.claims.some(
+      (claim) => claim.evidence_status === "missing_evidence_declared",
+    ) ||
+    packageFixture.evidence_to_claim_mappings.some((mapping) =>
+      ["insufficient", "missing_evidence"].includes(mapping.relationship),
+    )
+  ) {
+    failureModes.add("missing_evidence");
+  }
+
+  if (
+    packageFixture.case.review_intent === "assess_cluster_purity" ||
+    packageFixture.outlier_impostor_candidates.length > 0
+  ) {
+    failureModes.add("cluster_seems_mixed");
+  }
+
+  if (uncertainty >= 0.6) {
+    failureModes.add("preserves_uncertainty");
+  }
+
+  return [...failureModes].slice(0, 5);
+}
+
+function readOutlierReason(
+  packageFixture: CasePackageV01,
+  sessionId: string,
+): string | undefined {
+  return packageFixture.outlier_impostor_candidates.find(
+    (candidate) => candidate.session_id === sessionId,
+  )?.reason;
+}
+
+function readClaimRationale(claim: CasePackageV01["claims"][number]): string {
+  return (
+    claim.caveats?.join(" ") ??
+    claim.assumptions?.join(" ") ??
+    (claim.evidence_status === "missing_evidence_declared"
+      ? "The package declares missing evidence for this claim."
+      : "")
+  );
+}
+
+function uniqueStrings(values: string[]): string[] {
+  return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
 }
 
 function readAvailableMetric(
