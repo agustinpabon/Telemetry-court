@@ -1,4 +1,4 @@
-# Toponymy / ACME4 Adapter Boundary
+# Toponymy / DataMapPlot / ACME4 Adapter Boundary
 
 ## Purpose
 
@@ -11,6 +11,7 @@ documented against the contract.
 ```text
 upstream pipeline or notebook
 -> precomputed cluster output
+-> sanitized adapter input shape
 -> CasePackage JSON
 -> Telemetry Court review
 -> ReviewResult
@@ -42,20 +43,373 @@ These producer categories do not mean the repository currently supports real
 Toponymy execution, real ACME4 ingestion, DataMapPlot execution, raw telemetry
 loading, or live telemetry workflows.
 
+## Toponymy/DataMapPlot-Style Adapter Input Shape
+
+This section defines a Telemetry Court-owned intermediate input shape for a
+future adapter. It is not an official Toponymy schema, not an official
+DataMapPlot schema, not an ACME4 schema, and not an implemented import format.
+It describes the precomputed, sanitized artifact an upstream pipeline or
+notebook could hand to a future adapter before conversion into `CasePackage`
+JSON.
+
+```text
+upstream pipeline or notebook
+-> precomputed cluster output
+-> sanitized adapter input shape
+-> CasePackage JSON
+-> Telemetry Court review
+-> ReviewResult
+-> EvaluationReport
+```
+
+The phrase "Toponymy/DataMapPlot-style" means shape-compatible inspiration:
+named clusters or topics plus data-map positions and labels from an approved
+upstream artifact. The official Toponymy README describes Toponymy as naming
+places in information spaces and shows examples involving document vectors,
+low-dimensional document maps, generated topic names, topic labels per
+document, and DataMapPlot visualization. See
+[TutteInstitute/toponymy `README.rst` Basic Usage](https://github.com/TutteInstitute/toponymy/blob/main/README.rst#basic-usage)
+and
+[Interactive Topic Visualization](https://github.com/TutteInstitute/toponymy/blob/main/README.rst#interactive-topic-visualization).
+The official DataMapPlot README describes plots built from data-map
+coordinates and point labels. See
+[TutteInstitute/datamapplot `README.rst` Basic Usage](https://github.com/TutteInstitute/datamapplot/blob/main/README.rst#basic-usage).
+Telemetry Court does not adopt those README examples as required APIs or
+function signatures.
+
+### Artifact Identity
+
+A future adapter input artifact should include:
+
+- `input_schema_version`: a Telemetry Court-owned version such as
+  `adapter_input.toponymy_datamapplot_style.v0.1`.
+- `artifact_id`: stable ID for the sanitized precomputed artifact.
+- `created_at`: timestamp for the adapter input artifact, not review time.
+- `source_kind`: one of `toponymy_style`, `datamapplot_style`,
+  `combined_toponymy_datamapplot_style`, `synthetic`, or `other`.
+- `conversion_target`: the intended CasePackage schema, currently
+  `case_package.v0.1`.
+- `limitations`: explicit notes about missing fields, synthetic data, or
+  restricted source constraints.
+
+The adapter input artifact is not itself a `CasePackage`, `ReviewResult`, or
+`EvaluationReport`. It should be disposable after conversion because the
+reviewable boundary remains the validated `CasePackage` JSON.
+
+### Required Field Groups
+
+A future converter needs the following groups to build a trustworthy
+`CasePackage v0.1`:
+
+- `dataset_context`: dataset ID or approved alias, dataset name, dataset type,
+  data classification, source environment, approved use, approval notes when
+  relevant, and limitations. This must say whether the artifact is synthetic,
+  sanitized, restricted-derived, internal, or confidential.
+- `pipeline_context`: upstream tool category, run ID when available,
+  generated timestamp, pipeline version when available, embedding model,
+  clustering method, dimensionality-reduction or map method, naming model,
+  prompt reference or digest when available, and compact configuration summary.
+- `clusters`: stable cluster IDs, cluster labels or names when available,
+  cluster size, hierarchy references when available, membership references,
+  cluster method metadata, and optional time range.
+- `map_positions`: map ID, map tool label, coordinate space, coordinate units
+  or normalization notes, and point positions linked to stable subject IDs.
+  Points may reference sessions, evidence summaries, source objects, clusters,
+  or centroids. If positions are unavailable, the artifact must say why.
+- `labels`: stable label IDs, label text, label source, model/prompt/run
+  references when available, rank or confidence when available, and linked
+  claim IDs.
+- `claims`: stable claim IDs, generated claim text, claim type, linked label
+  IDs, linked evidence IDs, caveats or assumptions, and an explicit
+  `evidence_status` of linked or missing.
+- `evidence_references`: stable evidence IDs, safe title and summary,
+  evidence type, safe or derived content, source reference, provenance
+  reference, sanitization status, linked claim IDs, and linked session or point
+  IDs when available.
+- `evidence_to_claim_mappings`: explicit relationship records between claim
+  IDs and evidence IDs. These producer expectations are not reviewer ratings.
+- `representative_items`: stable session or object IDs, safe summaries,
+  feature highlights, cluster membership metadata, flags such as
+  representative, borderline, outlier candidate, impostor candidate, or needs
+  context, and linked evidence IDs when available.
+- `neighbor_clusters`: neighboring cluster IDs, labels or names when
+  available, distance or similarity when available, and a reason the neighbor
+  matters for label review.
+- `outlier_impostor_candidates`: stable candidate IDs, session/evidence
+  references, safe reason, score when available, and expected review use.
+- `metrics`: available bounded metrics or explicit unavailable reasons for
+  coherence, feature distinctiveness, evidence coverage, model agreement,
+  uncertainty, outlier score, and temporal stability when those concepts exist
+  in the upstream artifact.
+- `provenance`: source system, source artifact, generating tool, generated
+  timestamp, upstream run ID when available, adapter-input generation notes,
+  safe artifact references, and owner or contact metadata when allowed.
+- `sanitization`: sanitization status, method, redaction notes, allowed display
+  level, raw drill-down permission, safe reference type, and notes on what has
+  been removed or transformed.
+
+IDs must be stable strings, not array indexes or raw restricted identifiers.
+References must be resolvable within the artifact or explicitly marked as
+unavailable. Broken IDs or links should block future conversion instead of
+becoming warnings inside the review UI.
+
+### Unknown And Unavailable Fields
+
+Unknown and unavailable values must remain honest. A future adapter should not
+invent cluster sizes, coordinates, model names, prompt identifiers, evidence
+links, confidence scores, provenance, or sanitization details to make a package
+look complete.
+
+Use an explicit unavailable envelope for optional metrics or metadata:
+
+```json
+{
+  "status": "unavailable",
+  "reason": "The approved upstream artifact did not preserve repeated-run stability metadata."
+}
+```
+
+Use an explicit unknown envelope when the value may exist upstream but cannot be
+confirmed from the approved artifact:
+
+```json
+{
+  "status": "unknown",
+  "reason": "The sanitized export did not include a naming-model identifier."
+}
+```
+
+If a value is required for `CasePackage` conversion and is unavailable, the
+converter should fail loudly with an actionable error. It should not use
+placeholder strings such as `unknown-model`, `cluster-0`, `label`, or fake
+coordinates merely to pass validation.
+
+### Minimal Synthetic Adapter Input Sketch
+
+The following JSON is intentionally synthetic, sanitized, and non-authoritative.
+It illustrates the intermediate shape only; it is not real Toponymy output, not
+real DataMapPlot output, not real ACME4 output, and not a fixture for issue
+#63 or #64.
+
+```json
+{
+  "input_schema_version": "adapter_input.toponymy_datamapplot_style.v0.1",
+  "artifact_id": "adapter-input-synthetic-cluster-001",
+  "created_at": "2026-06-21T12:00:00.000Z",
+  "source_kind": "combined_toponymy_datamapplot_style",
+  "conversion_target": "case_package.v0.1",
+  "limitations": [
+    "Synthetic documentation sketch only.",
+    "No raw telemetry, real Toponymy output, real DataMapPlot output, or ACME4-derived data is included."
+  ],
+  "dataset_context": {
+    "dataset_id": "dataset-synthetic-sanitized-adapter-input",
+    "dataset_name": "Synthetic Sanitized Adapter Input",
+    "dataset_type": "synthetic",
+    "data_classification": "synthetic",
+    "source_environment": "local-documentation",
+    "approved_use": "Documentation sketch for future adapter-input conversion.",
+    "limitations": [
+      "Safe summaries only.",
+      "No raw source events are present."
+    ]
+  },
+  "pipeline_context": {
+    "upstream_tool_category": "toponymy_datamapplot_style_notebook",
+    "run_id": "run-synthetic-adapter-input-2026-06-21",
+    "generated_at": "2026-06-21T11:58:00.000Z",
+    "embedding_model": {
+      "status": "unavailable",
+      "reason": "Synthetic sketch does not represent a real embedding run."
+    },
+    "clustering_method": "synthetic-precomputed-clustering",
+    "dimensionality_reduction_method": "synthetic-2d-map",
+    "naming_model": {
+      "status": "unknown",
+      "reason": "The sketch avoids claiming a real upstream naming model."
+    },
+    "config_summary": "Synthetic precomputed cluster and map-position summary."
+  },
+  "clusters": [
+    {
+      "cluster_id": "cluster-synthetic-042",
+      "cluster_label": "Synthetic access-change activity",
+      "cluster_size": 42,
+      "member_subject_ids": [
+        "subject-synthetic-001",
+        "subject-synthetic-002"
+      ],
+      "cluster_method": {
+        "method": "synthetic-precomputed-clustering"
+      }
+    }
+  ],
+  "map_positions": {
+    "map_id": "map-synthetic-001",
+    "map_tool": "datamapplot-style-synthetic-map",
+    "coordinate_space": "synthetic-normalized-2d",
+    "points": [
+      {
+        "point_id": "point-synthetic-001",
+        "subject_id": "subject-synthetic-001",
+        "cluster_id": "cluster-synthetic-042",
+        "x": 0.42,
+        "y": 0.31
+      }
+    ]
+  },
+  "labels": [
+    {
+      "label_id": "label-synthetic-access-change",
+      "label": "Possible risky access change",
+      "source": "ai_generated",
+      "run_id": "run-synthetic-adapter-input-2026-06-21",
+      "linked_claim_ids": [
+        "claim-synthetic-access-change"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "claim-synthetic-access-change",
+      "text": "The cluster contains access-change activity that may require review.",
+      "claim_type": "behavioral_summary",
+      "linked_label_ids": [
+        "label-synthetic-access-change"
+      ],
+      "linked_evidence_ids": [
+        "evidence-synthetic-feature-summary"
+      ],
+      "evidence_status": "linked"
+    }
+  ],
+  "evidence_references": [
+    {
+      "evidence_id": "evidence-synthetic-feature-summary",
+      "title": "Synthetic feature summary",
+      "summary": "Derived feature counts summarize synthetic access-change activity.",
+      "evidence_type": "derived_table",
+      "content": {
+        "content_type": "structured_summary",
+        "fields": {
+          "synthetic_feature_count": 17,
+          "raw_events_included": false
+        }
+      },
+      "source_reference": {
+        "source_id": "source-synthetic-derived-table",
+        "source_type": "derived_feature_summary",
+        "safe_reference": {
+          "reference_id": "ref-synthetic-derived-table",
+          "reference_type": "source_artifact_id",
+          "artifact_id": "synthetic-adapter-input/table-001"
+        }
+      },
+      "provenance_reference": "prov-synthetic-adapter-input",
+      "sanitization_status": "synthetic",
+      "linked_claim_ids": [
+        "claim-synthetic-access-change"
+      ],
+      "linked_subject_ids": [
+        "subject-synthetic-001"
+      ]
+    }
+  ],
+  "evidence_to_claim_mappings": [
+    {
+      "claim_id": "claim-synthetic-access-change",
+      "evidence_id": "evidence-synthetic-feature-summary",
+      "relationship": "weak_support",
+      "rationale": "The derived summary shows activity type, but does not prove intent."
+    }
+  ],
+  "representative_items": [
+    {
+      "subject_id": "subject-synthetic-001",
+      "title": "Synthetic representative subject",
+      "summary": "A safe summary of one synthetic item near the cluster center.",
+      "feature_highlights": [
+        "access-change",
+        "review-context"
+      ],
+      "cluster_membership": {
+        "cluster_id": "cluster-synthetic-042",
+        "membership_score": {
+          "status": "available",
+          "value": 0.76,
+          "min": 0,
+          "max": 1,
+          "interpretation": "higher_is_better"
+        }
+      },
+      "flags": [
+        "representative"
+      ],
+      "linked_evidence_ids": [
+        "evidence-synthetic-feature-summary"
+      ]
+    }
+  ],
+  "neighbor_clusters": [],
+  "outlier_impostor_candidates": [],
+  "metrics": {
+    "evidence_coverage": {
+      "status": "available",
+      "value": 0.58,
+      "min": 0,
+      "max": 1,
+      "interpretation": "higher_is_better",
+      "notes": "Synthetic documentation value only."
+    },
+    "temporal_stability": {
+      "status": "unavailable",
+      "reason": "The synthetic sketch does not include repeated upstream runs."
+    }
+  },
+  "provenance": {
+    "provenance_id": "prov-synthetic-adapter-input",
+    "source_system": "synthetic-upstream-notebook",
+    "source_artifact": "synthetic-adapter-input/artifact-001",
+    "generating_tool": "manual-documentation-sketch",
+    "generated_at": "2026-06-21T11:58:00.000Z",
+    "references": [
+      {
+        "reference_id": "ref-synthetic-adapter-input",
+        "reference_type": "source_artifact_id",
+        "artifact_id": "synthetic-adapter-input/artifact-001",
+        "notes": "Synthetic source artifact only."
+      }
+    ]
+  },
+  "sanitization": {
+    "status": "synthetic",
+    "method": "Generated safe documentation sketch.",
+    "redaction_notes": [
+      "No real account, principal, host, network, or event identifiers are present."
+    ],
+    "allowed_display_level": "summary_only",
+    "raw_drilldown_allowed": false,
+    "safe_reference_type": "source_artifact_id"
+  }
+}
+```
+
 ## Adapter Responsibilities
 
 A future adapter should:
 
 1. Run upstream processing inside the approved environment for the source data.
-2. Select a precomputed cluster and generated interpretation to review.
-3. Convert only approved output into `CasePackage v0.1` JSON.
-4. Preserve stable package, cluster, label, claim, evidence, and session IDs.
-5. Preserve evidence-to-claim mappings as explicit contract data.
-6. Include dataset, pipeline, provenance, and sanitization metadata.
-7. Include safe summaries, derived features, aggregate statistics, or permitted
+2. Export or receive a sanitized adapter input artifact with the field groups
+   above.
+3. Select a precomputed cluster and generated interpretation to review.
+4. Convert only approved output into `CasePackage v0.1` JSON.
+5. Preserve stable package, cluster, label, claim, evidence, and session IDs.
+6. Preserve evidence-to-claim mappings as explicit contract data.
+7. Include dataset, pipeline, provenance, and sanitization metadata.
+8. Include safe summaries, derived features, aggregate statistics, or permitted
    drill-down references instead of raw restricted telemetry.
-8. Mark missing or unavailable metrics explicitly instead of inventing values.
-9. Run package validation before review.
+9. Mark missing or unavailable metrics explicitly instead of inventing values.
+10. Run package validation before review.
 
 The adapter output is the product boundary. Reviewers should be able to audit
 what package was reviewed without needing Telemetry Court to resolve raw source
