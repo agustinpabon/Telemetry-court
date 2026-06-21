@@ -17,6 +17,17 @@ export const REVIEW_RESULT_V01_EVIDENCE_RATINGS =
 export const REVIEW_RESULT_V01_VERDICTS = CASE_PACKAGE_V01_VERDICTS;
 export const REVIEW_RESULT_V01_RECOMMENDED_ACTIONS =
   CASE_PACKAGE_V01_RECOMMENDED_ACTIONS;
+export const REVIEW_RESULT_V01_DUEL_REASONS = [
+  "better_supported",
+  "less_overclaimed",
+  "more_specific",
+  "too_broad",
+  "missing_evidence",
+  "missing_malicious_intent",
+  "missing_downstream_abuse",
+  "preserves_uncertainty",
+  "cluster_seems_mixed",
+] as const satisfies readonly DuelReason[];
 
 export type ReviewResultV01 = {
   schema_version: typeof REVIEW_RESULT_V01_SCHEMA_VERSION;

@@ -138,6 +138,73 @@
   position: relative;
 }
 
+.arena-local-file-actions {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.arena-local-file-actions .case-package-import-control {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+}
+
+.arena-local-file-actions .case-package-import-status {
+  max-width: 260px;
+}
+
+.review-result-bundle-control {
+  align-items: center;
+  display: grid;
+  gap: 4px 8px;
+  grid-template-columns: auto auto;
+  justify-items: end;
+  min-width: 0;
+}
+
+.arena-topbar-actions .review-result-bundle-label {
+  color: var(--workflow-ink, var(--arena-ink));
+  font-size: 12px;
+  font-weight: 760;
+  grid-column: 1;
+  line-height: 1.25;
+}
+
+.review-result-bundle-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  justify-content: flex-end;
+}
+
+.review-result-bundle-status {
+  color: var(--workflow-muted, var(--arena-muted));
+  font-size: 12px;
+  font-weight: 640;
+  grid-column: 1 / -1;
+  justify-self: end;
+  line-height: 1.35;
+  margin: 0;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.review-result-bundle-status.is-success {
+  color: var(--workflow-supported, var(--arena-green));
+}
+
+.review-result-bundle-status.is-error {
+  color: var(--workflow-contradicted, var(--arena-red));
+}
+
 .case-package-import-input {
   border: 0;
   clip: rect(0 0 0 0);
@@ -339,9 +406,39 @@
 }
 
 @media (max-width: 720px) {
+  .arena-local-file-actions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
   .case-package-import-control {
     justify-content: flex-start;
     width: 100%;
+  }
+
+  .arena-local-file-actions .case-package-import-control {
+    justify-items: start;
+  }
+
+  .review-result-bundle-control {
+    grid-template-columns: 1fr;
+    justify-items: start;
+    width: 100%;
+  }
+
+  .review-result-bundle-actions,
+  .review-result-bundle-status,
+  .arena-topbar-actions .review-result-bundle-label {
+    grid-column: 1;
+  }
+
+  .review-result-bundle-status {
+    justify-self: start;
+  }
+
+  .review-result-bundle-actions {
+    grid-row: auto;
+    justify-content: flex-start;
   }
 
   .case-package-import-failure-panel {
@@ -7789,5 +7886,33 @@
     animation-duration: 1ms !important;
     scroll-behavior: auto !important;
     transition-duration: 1ms !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .arena-shell .arena-topbar.arena-header {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 100%;
+    padding-right: 2px;
+    position: static;
+    width: 100%;
+  }
+
+  .arena-shell .arena-topbar.arena-header > .arena-brand {
+    display: flex;
+    flex: 0 0 auto;
+    order: -1;
+    width: 100%;
+  }
+
+  .arena-shell .arena-topbar-actions {
+    justify-content: flex-start;
+    min-width: 0;
+    padding-top: 0;
+    position: static;
+    width: 100%;
   }
 }

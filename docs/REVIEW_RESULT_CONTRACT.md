@@ -193,6 +193,37 @@ The current UI saves the built ReviewResult to this local store when the user
 copies or downloads the structured JSON export. This is a convenience boundary
 for the portable validation slice, not target enterprise infrastructure.
 
+## Portable ReviewResult Bundle v0.1
+
+`lib/reviewResultBundleV01.ts` defines the local JSON exchange envelope
+`review_result_bundle.v0.1`. A bundle contains:
+
+- bundle ID, creation timestamp, source application, local JSON format, and a
+  declared result count;
+- the supported ReviewResult, review protocol, and CasePackage schema versions;
+- one or more fully validated `ReviewResultV01` artifacts.
+
+Bundle export reads the ReviewResults already saved in the browser-local store,
+sorts them deterministically by `review_id`, and downloads a dated
+`telemetry-court-review-results-YYYY-MM-DD.json` file. It does not copy full
+CasePackages, claims, evidence content, or raw telemetry into the bundle.
+
+Bundle import parses local JSON, validates the envelope and every contained
+ReviewResult, rejects unsupported versions, duplicate `review_id` values,
+duplicate reviewer/session submissions, and incompatible compact CasePackage
+references. Import is atomic: all results are staged before one local-store
+write, and an existing local result is never overwritten by bundle import.
+
+Bundles may carry results for different CasePackage IDs. Results sharing a
+CasePackage ID must have the same package revision and exact compact package,
+pipeline, model, embedding, clustering, naming, and prompt references already
+used by local sessions and `EvaluationReportV01` aggregation.
+
+Issue #100 remains responsible for choosing local or imported results and
+building the results workflow from them. Issue #101 remains responsible for the
+broader imported-package-to-EvaluationReport smoke test. Bundle import itself
+does not aggregate, adjudicate, score, or render an EvaluationReport.
+
 ## Deferred Work
 
 This contract does not implement backend persistence, reviewer accounts,
