@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-21: Invalid Package Render State
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Start GitHub issue #55 only by adding the smallest invalid-package UI/developer error state so broken `CasePackage` input never renders as a normal review, without starting import, upload, persistence, auth, adapter, scoring, consensus, or UI redesign work.
+- Files changed: `data/sampleCases.ts`, `components/arena/PackageReviewGate.tsx`, `app/[[...stage]]/page.tsx`, `app/globals.css`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a package-to-review render state that returns either validated adapted `CaseFile` objects or prefixed validation/compatibility errors. Routed the app through a `PackageReviewGate` that renders the normal review only for valid packages and otherwise shows a calm invalid-package diagnostic with path, code, and sanitized short message. Added UI test coverage proving invalid package errors render without exposing deliberately sensitive invalid values or normal review content.
+- Decisions made: Reused `casePackageV01ToCaseFile` and `CasePackageValidationError` rather than adding a new import system; kept built-in valid sample behavior unchanged; redacted quoted values in UI error messages because validator messages may include raw invalid IDs or schema values; preserved path/code for developer actionability.
+- Checks run: Red test failed before implementation with missing `PackageReviewGate`; targeted `npm test -- app/page.test.ts lib/casePackageV01ToCaseFile.test.ts data/casePackageFixtures.test.ts` passed with 32 tests; `npx tsc --noEmit` passed; `npm test` passed with 90 tests; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed.
+- Assumptions: The current app still uses local validated fixture packages, so a deterministic render-state helper is the smallest useful harness for proving invalid-package rendering without adding upload/import infrastructure.
+- Risks/follow-ups: The invalid-package UI intentionally does not resolve safe references, inspect raw telemetry, upload packages, persist diagnostics, or provide a full import wizard. Future package import work should reuse the same render state or equivalent sanitized error surface.
+- Next recommended step: Review and merge this focused PR before starting later package import or adapter work.
+- Suggested commit message: `feat(validation): show invalid package state`
+
 ## 2026-06-21: Adapter Boundary Documentation
 
 - Agent/model: Codex (GPT-5)

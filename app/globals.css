@@ -152,6 +152,79 @@ textarea,
   text-align: center;
 }
 
+.arena-empty .eyebrow {
+  color: var(--color-muted);
+}
+
+.arena-invalid-package section {
+  max-width: 900px;
+  text-align: left;
+}
+
+.arena-invalid-package h1 {
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.08;
+  margin: 8px 0 12px;
+}
+
+.arena-invalid-package p {
+  color: var(--color-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.invalid-package-error-list {
+  display: grid;
+  gap: 10px;
+  margin: 24px 0 0;
+}
+
+.invalid-package-error {
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--tc-radius-md);
+  padding: 16px;
+}
+
+.invalid-package-error dl {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.invalid-package-error div {
+  display: grid;
+  gap: 4px;
+}
+
+.invalid-package-error dt {
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.invalid-package-error dd {
+  color: var(--color-ink);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.invalid-package-error code {
+  background: rgba(50, 48, 47, 0.08);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  display: inline-block;
+  font-size: 13px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  padding: 3px 6px;
+}
+
+.invalid-package-overflow {
+  margin-top: 16px;
+}
+
 .arena-topbar,
 .arena-layout,
 .stage-surface,

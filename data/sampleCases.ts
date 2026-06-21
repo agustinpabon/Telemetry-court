@@ -4,28 +4,72 @@ import {
   sampleLandscapeContextNodeSeedData,
 } from "@/data/sampleCaseSeedData";
 import { casePackageV01ToCaseFile } from "@/lib/casePackageV01ToCaseFile";
+import type { CasePackageValidationError } from "@/lib/casePackageValidation";
 import type { CaseFile, LandscapeContextNode } from "@/lib/types";
 
-// Stable UI import fed by validated package fixtures through a compatibility boundary.
-export const sampleCases: CaseFile[] = casePackageFixtures.map(
-  (packageFixture, index) =>
-    readCompatibleSampleCase(packageFixture, sampleCaseSeedData[index]),
+export type PackageReviewRenderState =
+  | { ok: true; cases: CaseFile[] }
+  | { ok: false; errors: CasePackageValidationError[] };
+
+export const samplePackageReviewRenderState = buildPackageReviewRenderState(
+  casePackageFixtures,
+  sampleCaseSeedData,
 );
+
+// Stable UI import fed by validated package fixtures through a compatibility boundary.
+export const sampleCases: CaseFile[] = samplePackageReviewRenderState.ok
+  ? samplePackageReviewRenderState.cases
+  : [];
 
 export const sampleLandscapeContextNodes: LandscapeContextNode[] =
   sampleLandscapeContextNodeSeedData;
 
-function readCompatibleSampleCase(
-  packageFixture: unknown,
-  compatibilitySeed: CaseFile | undefined,
-): CaseFile {
-  const result = casePackageV01ToCaseFile(packageFixture, compatibilitySeed);
+export function buildPackageReviewRenderState(
+  packageFixtures: readonly unknown[],
+  compatibilitySeeds: readonly (CaseFile | undefined)[],
+): PackageReviewRenderState {
+  const cases: CaseFile[] = [];
+  const errors: CasePackageValidationError[] = [];
 
-  if (!result.ok) {
-    throw new Error(
-      `CasePackage fixture cannot support the current UI: ${JSON.stringify(result.errors)}`,
+  packageFixtures.forEach((packageFixture, index) => {
+    const result = casePackageV01ToCaseFile(
+      packageFixture,
+      compatibilitySeeds[index],
     );
+
+    if (result.ok) {
+      cases.push(result.caseFile);
+      return;
+    }
+
+    errors.push(...prefixPackageErrors(result.errors, index));
+  });
+
+  if (errors.length > 0) {
+    return { ok: false, errors };
   }
 
-  return result.caseFile;
+  return { ok: true, cases };
+}
+
+function prefixPackageErrors(
+  errors: CasePackageValidationError[],
+  packageIndex: number,
+): CasePackageValidationError[] {
+  return errors.map((error) => ({
+    ...error,
+    path: prefixPackagePath(error.path, packageIndex),
+  }));
+}
+
+function prefixPackagePath(path: string, packageIndex: number): string {
+  if (path === "$") {
+    return `$.packages[${packageIndex}]`;
+  }
+
+  if (path.startsWith("$")) {
+    return `$.packages[${packageIndex}]${path.slice(1)}`;
+  }
+
+  return `$.packages[${packageIndex}].${path}`;
 }
