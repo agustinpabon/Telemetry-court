@@ -1,6 +1,8 @@
 # Data Model
 
-This document describes the domain model currently implemented by the static validation slice. It is not the approved `CasePackage v0.1` contract.
+This document describes the compatibility UI model implemented by the static
+validation slice. The approved package and result boundaries are documented in
+`docs/CASE_PACKAGE_CONTRACT.md` and `docs/REVIEW_RESULT_CONTRACT.md`.
 
 The target model must separate:
 
@@ -8,7 +10,9 @@ The target model must separate:
 - `ReviewResult`: one human review of that package;
 - `EvaluationReport`: aggregated metrics across compatible review results.
 
-See `docs/CASE_PACKAGE_CONTRACT.md` before changing or renaming current types. Milestone 2 should introduce an explicit adapter or migration path rather than treating the current `CaseFile` shape as the final package contract.
+Do not treat the current `CaseFile` shape as either versioned contract. The
+existing adapter carries a compact CasePackage reference into the UI model so
+the export can identify what was reviewed without copying the package.
 
 Current product flow:
 
@@ -167,6 +171,7 @@ interface EvidenceArenaReview {
   blindChoiceId?: string;
   blindChoiceLabel?: string;
   aiLabel: string;
+  aiLabelRevealed: boolean;
   blindChoiceAgreesWithAi?: boolean;
   labelDuelWinnerId?: string;
   labelDuelWinnerLabel?: string;
@@ -223,22 +228,24 @@ interface CaseFile {
 
 ## Current Review Export
 
-The current review export preserves the case evidence trail and the reviewer's structured UI choices:
+The current review export emits `ReviewResultV01` with schema version
+`review_result.v0.1`. It contains:
 
-- blind choice;
-- AI label;
-- blind agreement/disagreement;
-- label duel winner;
-- duel reason chips;
-- optional label duel note;
-- evidence ratings;
-- impostor session;
-- failure modes;
-- final verdict.
+- compact CasePackage and pipeline references;
+- local synthetic reviewer/session metadata and protocol version;
+- blind interpretation and reveal state;
+- candidate-label winner and structured reason codes;
+- optional label-comparison rationale already captured by the UI;
+- canonical evidence ratings keyed by evidence ID;
+- outlier or impostor session ID;
+- failure modes, canonical final verdict, and canonical recommended action.
 
 Typing must not be required to produce this export.
 
-The current export is not yet `ReviewResult v0.1`. It lacks an approved schema version, source package version, review protocol version, and multi-reviewer compatibility rules. Those are Milestone 2 decisions.
+The export does not include the full cluster, claims, evidence items, support
+scores, or raw telemetry. It is one local review artifact; persistence,
+multi-reviewer aggregation, confidence capture, and `EvaluationReport` remain
+future work.
 
 ## Runtime Fixture
 

@@ -154,8 +154,9 @@ test("arena reducer drives the staged structured-choice happy path", () => {
   assert.equal(arenaReview.impostorSessionId, impostor.id);
   assert.equal(arenaReview.finalVerdict, "partially_supported");
   assert.equal(balance.total, targetCase.evidenceItems.length);
-  assert.match(exportJson, /"arenaReview"/);
-  assert.match(exportJson, /"duelNote"/);
+  assert.match(exportJson, /"schema_version": "review_result\.v0\.1"/);
+  assert.match(exportJson, /"decisions"/);
+  assert.match(exportJson, /"rationale": "Best supported by observed behavior\."/);
   assert.match(exportJson, /"partially_supported"/);
 });
 

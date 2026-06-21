@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-21: ReviewResult v0.1 Export
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #51 by replacing the local UI-state export with a typed `ReviewResultV01` artifact, while deferring issue #52, `EvaluationReport`, persistence, uploads, backend APIs, real adapters, raw telemetry ingestion, and UI redesign.
+- Files changed: `lib/reviewResultV01.ts`, `lib/exportReview.ts`, `lib/exportReview.test.ts`, `lib/types.ts`, `lib/casePackageV01ToCaseFile.ts`, `lib/casePackageV01ToCaseFile.test.ts`, `lib/arenaReviewState.ts`, `lib/arenaReviewState.test.ts`, `data/casePackageFixtures.test.ts`, `components/arena/AppShell.tsx`, `docs/REVIEW_RESULT_CONTRACT.md`, `docs/CASE_PACKAGE_CONTRACT.md`, `docs/DATA_MODEL.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added the `review_result.v0.1` TypeScript contract and changed copy/download serialization to emit one structured reviewer decision with compact CasePackage and pipeline references instead of duplicating cluster, claim, evidence, score, or raw-reference content.
+- Decisions made: Reused the CasePackage canonical evidence-rating, verdict, and recommended-action vocabularies; translated legacy UI values at the export boundary; preserved optional label-comparison rationale; derived the current demo's canonical recommended action from its final verdict because no separate action picker exists; failed loudly on incomplete or mismatched package/review references.
+- Checks run: `npm test` passed with 73 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `npx tsc --noEmit` passed; `git diff --check` passed. No formatter script is configured.
+- Assumptions: `review_result.v0.1` and `telemetry_court_review.v0.1` are the stable first schema/protocol values; local synthetic reviewer/session metadata is sufficient until reviewer identity work is explicitly scoped.
+- Risks/follow-ups: The builder is not a general ReviewResult runtime validator or import boundary. Confidence capture, independent recommended-action selection, persistence, multi-reviewer aggregation, and `EvaluationReport` remain deferred.
+- Next recommended step: Review and merge issue #51 independently before beginning the next contract milestone.
+- Suggested commit message: `feat(export): emit ReviewResult v0.1`
+
 ## 2026-06-21: CasePackage-To-UI Compatibility Boundary
 
 - Agent/model: Codex (GPT-5)

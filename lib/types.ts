@@ -183,6 +183,7 @@ export type AnalystVerdict = {
 
 export type CaseFile = {
   id: string;
+  casePackageReference?: CasePackageReferenceV01;
   cluster: Cluster;
   dataset: string;
   reviewStatus: ReviewStatus;
@@ -516,6 +517,31 @@ export type CasePackagePipelineMetadataV01 = {
   generated_at: CasePackageIsoTimestamp;
   parameters?: { [key: string]: CasePackageJsonValue };
   config_summary?: string;
+};
+
+export type CasePackagePipelineReferenceV01 = {
+  pipeline_id?: CasePackagePipelineId;
+  run_id: CasePackageRunId;
+  upstream_tool: string;
+  pipeline_version?: string;
+  embedding_model?: string;
+  clustering_method?: string;
+  dimensionality_reduction_method?: string;
+  naming_model?: string;
+  prompt_id?: string;
+  prompt_version?: string;
+  prompt_digest?: string;
+  generated_at: CasePackageIsoTimestamp;
+};
+
+export type CasePackageReferenceV01 = {
+  schema_version: CasePackageV01SchemaVersion;
+  package_id: CasePackageId;
+  package_revision?: string;
+  case_id: CasePackageCaseId;
+  cluster_id: CasePackageClusterId;
+  pipeline: CasePackagePipelineReferenceV01;
+  blind_review_enabled: boolean;
 };
 
 export type CasePackageCandidateLabelV01 = {

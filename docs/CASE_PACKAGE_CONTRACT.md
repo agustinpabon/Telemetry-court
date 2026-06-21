@@ -15,6 +15,11 @@ upstream pipeline or notebook
 
 `CasePackage v0.1` is defined in `lib/types.ts` as `CasePackageV01`.
 
+The separate reviewer-decision artifact is documented in
+[`REVIEW_RESULT_CONTRACT.md`](./REVIEW_RESULT_CONTRACT.md). A review result
+references package identity and pipeline metadata; it does not duplicate this
+package.
+
 This document explains the field intent for that TypeScript contract and the current runtime validation boundary. It does not implement package import, UI adapters, persistence, Toponymy integration, ACME4 ingestion, or evaluation aggregation.
 
 ## What A CasePackage Is
@@ -217,7 +222,7 @@ Evidence content should be safe, summarized, or derived. Safe drill-down referen
 - optional `expected_support`
 - optional rationale
 
-These mappings describe what the package producer expects the evidence to show. They are not reviewer ratings. Reviewer ratings use the future `ReviewResult` contract.
+These mappings describe what the package producer expects the evidence to show. They are not reviewer ratings. Reviewer ratings use the separate `ReviewResultV01` contract.
 
 ### Representative Sessions
 
