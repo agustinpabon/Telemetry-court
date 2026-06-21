@@ -559,12 +559,12 @@ Synthetic or demo packages may use:
 - synthetic safe references;
 - compact pipeline metadata.
 
-The local fixture in
-`data/syntheticToponymyStyleCasePackageFixture.ts` is in this category. It
-uses a synthetic Toponymy/DataMapPlot-style input shape to produce one
-validated `CasePackage v0.1` fixture, and it must not be treated as real
-Toponymy compatibility, official DataMapPlot output, ACME4 support, raw
-telemetry ingestion, or a general adapter framework.
+The local fixtures in `data/syntheticToponymyStyleCasePackageFixture.ts` and
+`data/syntheticAcme4StyleCasePackageFixture.ts` are in this category. They use
+synthetic, non-authoritative input shapes to produce validated
+`CasePackage v0.1` fixtures, and they must not be treated as real Toponymy
+compatibility, official DataMapPlot output, real ACME4 support, raw telemetry
+ingestion, or a general adapter framework.
 
 Realistic or adapter-produced packages are expected to provide:
 

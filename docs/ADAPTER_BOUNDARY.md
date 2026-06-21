@@ -740,6 +740,30 @@ artifact can be represented at the `CasePackage` boundary. It is not a general
 adapter framework, upload flow, backend import service, raw telemetry ingestion
 path, or claim of current Toponymy support.
 
+## Local Synthetic ACME4-Style Fixture
+
+Issue #64 adds one local fixture at
+`data/syntheticAcme4StyleCasePackageFixture.ts` that exercises this boundary
+without implementing real ACME4 support. It contains a Telemetry Court-owned,
+synthetic, sanitized ACME4-style input artifact and a fixture-only helper that
+emits one `CasePackage v0.1` object.
+
+The fixture is intentionally non-authoritative:
+
+- it does not ingest ACME4 data;
+- it is not real ACME4 output, an ACME4 schema, restricted telemetry, or a
+  supported import format;
+- it does not define or imply ACME4 APIs, loaders, execution workflows,
+  outputs, identifiers, or source-data access;
+- it includes only synthetic feature-family summaries, safe source-artifact
+  references, provenance metadata, and sanitization metadata;
+- it validates through `validateCasePackageV01` before tests use it.
+
+This fixture is useful for proving that a sanitized ACME4-style precomputed
+artifact can be represented at the `CasePackage` boundary. It is not a general
+adapter framework, upload flow, backend import service, raw telemetry ingestion
+path, or claim of current ACME4 support.
+
 ## Handoff To Telemetry Court
 
 Once an adapter emits a package, Telemetry Court should treat the package as an
