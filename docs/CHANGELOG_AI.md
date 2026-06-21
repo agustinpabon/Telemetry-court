@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-21: EvaluationReport v0.1 Aggregation
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #52 with the smallest deterministic aggregation utility for compatible `ReviewResultV01` objects, without persistence, backend APIs, report UI, automated adjudication, reviewer accounts, uploads, or raw telemetry ingestion.
+- Files changed: `lib/evaluationReportV01.ts`, `lib/evaluationReportV01.test.ts`, `docs/EVALUATION_INFRASTRUCTURE.md`, `docs/REVIEW_RESULT_CONTRACT.md`, `docs/PROJECT_CONTEXT.md`, `docs/ARCHITECTURE.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added the typed `evaluation_report.v0.1` contract and pure `aggregateReviewResultsV01` utility with reviewer count, canonical verdict/action/evidence distributions, sorted label-winner and failure-mode counts, source review traceability, and simple verdict, action, label, and per-evidence disagreement indicators.
+- Decisions made: Used `review_result_aggregation.v0.1` as an explicit calculation version; counted all evidence decisions in the aggregate evidence distribution; listed only selected failure modes with deterministic counts; treated disagreement as a descriptive difference signal rather than consensus or adjudication; rejected empty, unsupported, missing-metadata, mixed-package, mixed-schema, and mixed-revision inputs.
+- Checks run: No formatter script is configured; `npm test` passed with 81 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `npx tsc --noEmit` passed; `git diff --check` passed.
+- Assumptions: One valid `ReviewResultV01` represents one reviewer for `reviewer_count`; package ID, schema version, and optional revision identify compatible package inputs; current `selected_label_id`, `recommended_action`, evidence rating, and failure mode fields are the canonical aggregation sources.
+- Risks/follow-ups: This utility does not validate arbitrary unknown JSON, persist reviews, enforce reviewer independence, calculate statistical agreement, adjudicate a winner, expose a report screen, or produce comparison metrics across packages, models, prompts, or embeddings.
+- Next recommended step: Exercise the contracts end to end with independently produced reviews of one realistic validated package before adding persistence or broader metrics.
+- Suggested commit message: `feat(evaluation): add EvaluationReport aggregation utility`
+
 ## 2026-06-21: ReviewResult v0.1 Export
 
 - Agent/model: Codex (GPT-5)

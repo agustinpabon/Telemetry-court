@@ -54,11 +54,42 @@ The infrastructure must preserve:
 - incomplete or uncertain judgments without coercing a definitive answer;
 - an audit trail from aggregate metrics back to source review results.
 
+## Minimal EvaluationReport v0.1
+
+`EvaluationReportV01` is the first local aggregation contract. The pure
+`aggregateReviewResultsV01` utility accepts compatible `ReviewResultV01`
+objects and returns:
+
+- `evaluation_report.v0.1` schema identity and a separate calculation version;
+- the reviewed CasePackage reference and sorted source review IDs;
+- reviewer count;
+- canonical verdict and recommended-action count distributions;
+- sorted candidate-label winner counts;
+- canonical evidence-rating counts across all evidence decisions;
+- sorted selected failure-mode counts;
+- simple verdict, action, label, and per-evidence rating disagreement flags.
+
+The disagreement fields report whether reviewers selected different values;
+they do not adjudicate a correct answer, calculate statistical agreement, or
+choose a consensus. Evidence disagreement also lists the stable evidence IDs
+that received more than one rating.
+
+The utility rejects empty input, unsupported ReviewResult or CasePackage schema
+versions, mixed package IDs or revisions, and missing required review, package,
+pipeline, reviewer, or protocol metadata. It uses no database, server, file IO,
+or account system.
+
 ## Current State And Next Proof
 
-The current application stores review state locally and exports a single structured JSON record from synthetic fixtures. It does not yet provide package import, contract validation, durable review storage, multi-reviewer aggregation, or research-grade metrics.
+The current application stores review state locally and exports a single
+structured JSON record from synthetic fixtures. The repository now provides
+CasePackage validation and deterministic in-memory aggregation of compatible
+ReviewResult objects. It does not yet provide package uploads, durable review
+storage, a multi-reviewer service or report UI, or research-grade metrics.
 
-The next proof is a narrow end-to-end slice: validate one package-shaped real or realistic fixture, complete blind review, export a versioned `ReviewResult`, combine multiple compatible results, and produce a deterministic `EvaluationReport`.
+The next proof after this contract slice is a narrow end-to-end exercise with a
+realistic package: complete independent reviews, retain the resulting artifacts,
+and aggregate them without relying on synthetic-only assumptions.
 
 ## Deferred Concerns
 
