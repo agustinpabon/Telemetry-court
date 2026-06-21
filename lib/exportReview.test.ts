@@ -46,7 +46,7 @@ test("review result export emits a versioned decision artifact with package refe
   assert.equal(exportResult.created_at, "2026-06-12T12:00:00.000Z");
   assert.equal(
     exportResult.review_id,
-    "review:pkg-synthetic-arena-001:2026-06-12T12:00:00.000Z",
+    "review:pkg-synthetic-arena-001:local-demo-reviewer:pkg-synthetic-arena-001:case-arena-001:local-session:2026-06-12T12:00:00.000Z",
   );
   assert.deepEqual(exportResult.reviewer, {
     reviewer_id: "local-demo-reviewer",

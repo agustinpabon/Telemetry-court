@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-21: Multi-Reviewer Review Sessions
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #57 by adding the smallest local multi-reviewer session boundary for multiple independent `ReviewResultV01` objects against one compatible `CasePackageV01`, without persistence, backend APIs, accounts, consensus, report UI, raw telemetry ingestion, Toponymy, or ACME4 integration.
+- Files changed: `lib/reviewSessionV01.ts`, `lib/reviewSessionV01.test.ts`, `lib/exportReview.ts`, `lib/exportReview.test.ts`, `docs/REVIEW_RESULT_CONTRACT.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added `LocalReviewSessionV01` helpers that associate reviewer/session identifiers with one compact CasePackage reference, preserve independent local review state per session, accept compatible `ReviewResultV01` submissions, reject duplicate ReviewResult IDs and duplicate reviewer/session submissions, reject incompatible package references, and keep submitted disagreements available for `aggregateReviewResultsV01`.
+- Decisions made: Kept the first implementation pure and in-memory; preserved disagreement instead of consensus; treated duplicate and incompatible submissions as loud boundary errors; updated generated `review_id` values to include package, reviewer, review-session, and timestamp identity so concurrent local exports do not collide.
+- Checks run: `npm test` passed with 86 tests; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `npx tsc --noEmit` passed; `git diff --check` passed.
+- Assumptions: UI orchestration can remain deferred because the issue can be satisfied through the local review-session model and tested aggregation path; the current static demo export still uses the existing synthetic reviewer/session metadata.
+- Risks/follow-ups: This does not add durable storage, reviewer accounts, a local reviewer selector, import/export orchestration for multiple files, EvaluationReport result views, or broader comparison metrics.
+- Next recommended step: Exercise the helper with independently exported reviews from a realistic validated package before adding persistence or UI orchestration.
+- Suggested commit message: `feat(review): support multi-reviewer sessions`
+
 ## 2026-06-21: EvaluationReport v0.1 Aggregation
 
 - Agent/model: Codex (GPT-5)

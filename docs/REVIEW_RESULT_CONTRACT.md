@@ -44,6 +44,11 @@ Every result contains:
 - review protocol version and reveal state;
 - structured reviewer decisions.
 
+The local exporter builds the `review_id` from the package ID, reviewer ID,
+review session ID, and export timestamp. This keeps two independent reviewers
+of the same package distinct even when their local exports are produced at the
+same instant.
+
 The package reference preserves:
 
 - package ID, package schema version, and optional package revision;
@@ -132,8 +137,16 @@ The current app uses deterministic test timestamps and local synthetic reviewer
 metadata in tests. Browser exports use the export timestamp at the time the
 artifact is built.
 
+`LocalReviewSessionV01` in `lib/reviewSessionV01.ts` is the first in-memory
+multi-reviewer boundary. It associates multiple reviewer/session identifiers
+with one compatible compact CasePackage reference, stores independent local
+review state per review session, accepts compatible `ReviewResultV01`
+submissions, and rejects duplicate reviewer/session submissions or incompatible
+package references before aggregation.
+
 ## Deferred Work
 
 This contract does not implement persistence, reviewer accounts, package
-uploads, confidence capture, real Toponymy or ACME4 adapters, or raw telemetry
-ingestion. The separate aggregation utility does not add those capabilities.
+uploads, confidence capture, a reviewer selector UI, real Toponymy or ACME4
+adapters, or raw telemetry ingestion. The separate aggregation utility does not
+add those capabilities.

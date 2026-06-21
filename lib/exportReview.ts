@@ -145,7 +145,11 @@ export function buildReviewResultExport({
 
   return {
     schema_version: REVIEW_RESULT_V01_SCHEMA_VERSION,
-    review_id: `review:${packageReference.package_id}:${createdAt}`,
+    review_id: createReviewResultId(
+      packageReference.package_id,
+      reviewResultReviewer,
+      createdAt,
+    ),
     created_at: createdAt,
     case_package: casePackage,
     reviewer: reviewResultReviewer,
@@ -290,6 +294,20 @@ function createLocalDemoReviewer(
     review_session_id: `${packageId}:${caseId}:local-session`,
     context: "synthetic_demo",
   };
+}
+
+function createReviewResultId(
+  packageId: string,
+  reviewer: ReviewResultReviewer,
+  createdAt: string,
+): string {
+  return [
+    "review",
+    packageId,
+    reviewer.reviewer_id,
+    reviewer.review_session_id,
+    createdAt,
+  ].join(":");
 }
 
 function requireValue<T>(value: T | undefined, label: string): T {
