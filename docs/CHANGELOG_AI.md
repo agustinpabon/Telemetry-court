@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-21: Milestone 2 Regression Coverage Hardening
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Inspect GitHub issue #53, compare its acceptance criteria against the merged Milestone 2 validation, adapter, export, aggregation, and multi-reviewer tests, and add only missing regression coverage without introducing new product behavior.
+- Files changed: `lib/casePackageValidation.test.ts` and `docs/CHANGELOG_AI.md`.
+- Summary: Added the one uncovered #53 regression test: packages without `claims` now have an explicit behavior-oriented test proving they fail runtime CasePackage validation before review evidence can be trusted.
+- Decisions made: Treated existing tests as satisfying valid package, broken evidence links, missing provenance, invalid metric bounds, package-to-UI adapter, ReviewResult export, EvaluationReport aggregation, and behavior-oriented naming; avoided duplicate tests and made no production-code changes.
+- Checks run: `npm test` passed with 88 tests; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `npx tsc --noEmit` passed; `git diff --check` passed.
+- Assumptions: Issue #53 intended explicit regression coverage for named package-boundary risks, so a generic missing top-level-section test deleting `dataset` was not strong enough to count as missing-claims coverage.
+- Risks/follow-ups: None known; this is test-only hardening and does not add persistence, uploads, backend APIs, auth/accounts, dashboards, report UI, Toponymy/ACME4 import, raw telemetry ingestion, or UI redesign.
+- Next recommended step: Review and merge this test-only PR before starting later Milestone 3 or adapter work.
+- Suggested commit message: `test(validation): harden Milestone 2 regression coverage`
+
 ## 2026-06-21: Multi-Reviewer Review Sessions
 
 - Agent/model: Codex (GPT-5)

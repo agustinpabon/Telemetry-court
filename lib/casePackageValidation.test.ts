@@ -89,6 +89,16 @@ test("missing required top-level section fails", () => {
   });
 });
 
+test("packages without claims fail before review evidence can be trusted", () => {
+  const input = clonePackage();
+  delete input.claims;
+
+  assertInvalid(validateCasePackageV01(input), {
+    code: "missing_required_field",
+    pathIncludes: "claims",
+  });
+});
+
 test("claim evidence references must point at existing evidence IDs", () => {
   const input = clonePackage();
   const claims = arrayField(input, "claims");
