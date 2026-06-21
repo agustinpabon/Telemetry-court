@@ -165,6 +165,83 @@ test("local review sessions reject incompatible review submissions", () => {
   );
 });
 
+test("local review sessions reject incompatible schema, revision, pipeline, and protocol metadata", () => {
+  const caseFile = sampleCases[0];
+  assert.ok(caseFile);
+
+  const review = buildReviewResult(caseFile, reviewerA);
+  const session = createLocalReviewSessionV01(review.case_package);
+  const incompatibleSubmissions: Array<{
+    name: string;
+    reviewResult: ReviewResultV01;
+    expectedError: RegExp;
+  }> = [
+    {
+      name: "review schema",
+      reviewResult: {
+        ...review,
+        schema_version: "review_result.v9",
+      } as unknown as ReviewResultV01,
+      expectedError: /unsupported ReviewResult schema version/,
+    },
+    {
+      name: "package schema",
+      reviewResult: {
+        ...review,
+        case_package: {
+          ...review.case_package,
+          schema_version: "case_package.v9",
+        },
+      } as unknown as ReviewResultV01,
+      expectedError: /unsupported CasePackage schema version/,
+    },
+    {
+      name: "package revision",
+      reviewResult: {
+        ...review,
+        case_package: {
+          ...review.case_package,
+          package_revision: "r-incompatible",
+        },
+      },
+      expectedError: /field "package_revision" differs/,
+    },
+    {
+      name: "pipeline reference",
+      reviewResult: {
+        ...review,
+        case_package: {
+          ...review.case_package,
+          pipeline: {
+            ...review.case_package.pipeline,
+            run_id: "run-incompatible",
+          },
+        },
+      },
+      expectedError: /pipeline field "run_id" differs/,
+    },
+    {
+      name: "review protocol",
+      reviewResult: {
+        ...review,
+        protocol: {
+          ...review.protocol,
+          protocol_version: "telemetry_court_review.v9",
+        },
+      } as unknown as ReviewResultV01,
+      expectedError: /unsupported review protocol version/,
+    },
+  ];
+
+  for (const { name, reviewResult, expectedError } of incompatibleSubmissions) {
+    assert.throws(
+      () => submitReviewResultToLocalReviewSessionV01(session, reviewResult),
+      expectedError,
+      name,
+    );
+  }
+});
+
 function buildReviewResult(
   caseFile: CaseFile,
   reviewer: ReviewResultV01["reviewer"],
