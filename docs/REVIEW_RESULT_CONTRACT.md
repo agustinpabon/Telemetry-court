@@ -9,7 +9,7 @@ validated `CasePackage v0.1`.
 CasePackage v0.1
 -> Telemetry Court review
 -> ReviewResult v0.1
--> future EvaluationReport aggregation
+-> EvaluationReport v0.1 aggregation
 ```
 
 The canonical TypeScript type is `ReviewResultV01` in
@@ -25,8 +25,9 @@ review_result.v0.1
   evidence, provenance, sanitization metadata, and review configuration.
 - `ReviewResultV01` contains one reviewer's choices and stable references to
   the package that was reviewed.
-- A future `EvaluationReport` will aggregate compatible review results. It is
-  not implemented by this contract or export path.
+- `EvaluationReportV01` aggregates compatible review results through the
+  separate pure utility in `lib/evaluationReportV01.ts`. It remains distinct
+  from this single-review contract and export path.
 
 `ReviewResultV01` does not copy claims, evidence content, support scores, raw
 references, or the full package. This prevents the result from becoming a UI
@@ -134,5 +135,5 @@ artifact is built.
 ## Deferred Work
 
 This contract does not implement persistence, reviewer accounts, package
-uploads, multi-reviewer aggregation, `EvaluationReport`, confidence capture,
-real Toponymy or ACME4 adapters, or raw telemetry ingestion.
+uploads, confidence capture, real Toponymy or ACME4 adapters, or raw telemetry
+ingestion. The separate aggregation utility does not add those capabilities.

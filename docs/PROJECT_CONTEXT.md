@@ -19,7 +19,8 @@ It turns generated cluster labels into testable claims and records structured hu
 - The current application is a static validation slice using synthetic cases.
 - It demonstrates the evidence-first review flow and local structured export.
 - It does not implement real Toponymy or ACME4 ingestion.
-- It does not persist multi-reviewer results or generate aggregated evaluation reports.
+- It includes a deterministic in-memory `EvaluationReportV01` aggregation utility,
+  but does not persist multi-reviewer results or expose a report workflow.
 - The next implementation milestone is the Case Package Contract and Validation Infrastructure, not generic backend work.
 
 ## Intended Architecture
