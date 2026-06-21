@@ -12,9 +12,15 @@ import type {
   EvidenceStrength,
   SupportStatus,
 } from "@/lib/types";
+import {
+  validateCasePackageV01,
+  type CasePackageValidationError,
+} from "@/lib/casePackageValidation";
 
 type CaseFileCompatibilitySeed = Pick<
   CaseFile,
+  | "id"
+  | "cluster"
   | "reviewStatus"
   | "landscapeStatus"
   | "topFeatures"
@@ -33,7 +39,291 @@ type CaseFileCompatibilitySeed = Pick<
   | "analystVerdict"
 >;
 
+export type CasePackageV01ToCaseFileResult =
+  | { ok: true; caseFile: CaseFile }
+  | { ok: false; errors: CasePackageValidationError[] };
+
 export function casePackageV01ToCaseFile(
+  input: unknown,
+  compatibilitySeed: CaseFileCompatibilitySeed | undefined,
+): CasePackageV01ToCaseFileResult {
+  const validation = validateCasePackageV01(input);
+
+  if (!validation.ok) {
+    return validation;
+  }
+
+  const compatibilityErrors = getUiCompatibilityErrors(
+    validation.package,
+    compatibilitySeed,
+  );
+
+  if (compatibilityErrors.length > 0 || !compatibilitySeed) {
+    return { ok: false, errors: compatibilityErrors };
+  }
+
+  return {
+    ok: true,
+    caseFile: mapValidatedCasePackageV01ToCaseFile(
+      validation.package,
+      compatibilitySeed,
+    ),
+  };
+}
+
+function getUiCompatibilityErrors(
+  packageFixture: CasePackageV01,
+  compatibilitySeed: CaseFileCompatibilitySeed | undefined,
+): CasePackageValidationError[] {
+  const errors: CasePackageValidationError[] = [];
+
+  if (!compatibilitySeed) {
+    errors.push({
+      path: "$compatibility_seed",
+      code: "ui_missing_compatibility_seed",
+      message:
+        "The current UI requires compatibility metadata that is not part of CasePackage v0.1.",
+    });
+    return errors;
+  }
+
+  if (packageFixture.case.reviewable_status === "blocked") {
+    addUiCompatibilityError(
+      errors,
+      "$.case.reviewable_status",
+      "ui_case_not_reviewable",
+      "The current UI cannot start a review for a blocked case package.",
+    );
+  }
+
+  if (packageFixture.candidate_labels.length < 2) {
+    addUiCompatibilityError(
+      errors,
+      "$.candidate_labels",
+      "ui_missing_candidate_labels",
+      "The current label-comparison flow requires at least two candidate labels.",
+    );
+  }
+
+  if (
+    !packageFixture.candidate_labels.some(
+      (label) => label.source === "ai_generated",
+    )
+  ) {
+    addUiCompatibilityError(
+      errors,
+      "$.candidate_labels",
+      "ui_missing_ai_label",
+      "The current reveal flow requires an AI-generated candidate label.",
+    );
+  }
+
+  packageFixture.candidate_labels.forEach((label, index) => {
+    if (label.confidence?.status !== "available") {
+      addUiCompatibilityError(
+        errors,
+        `$.candidate_labels[${index}].confidence`,
+        "ui_missing_metric",
+        "The current label comparison requires an available confidence metric.",
+      );
+    }
+  });
+
+  if (packageFixture.claims.length === 0) {
+    addUiCompatibilityError(
+      errors,
+      "$.claims",
+      "ui_missing_claim",
+      "The current evidence review flow requires at least one claim.",
+    );
+  }
+
+  packageFixture.claims.forEach((claim, index) => {
+    if (claim.confidence?.status !== "available") {
+      addUiCompatibilityError(
+        errors,
+        `$.claims[${index}].confidence`,
+        "ui_missing_metric",
+        "The current claim display requires an available confidence metric.",
+      );
+    }
+  });
+
+  if (packageFixture.evidence_items.length === 0) {
+    addUiCompatibilityError(
+      errors,
+      "$.evidence_items",
+      "ui_missing_evidence",
+      "The current evidence board requires at least one evidence item.",
+    );
+  }
+
+  if (packageFixture.representative_sessions.length === 0) {
+    addUiCompatibilityError(
+      errors,
+      "$.representative_sessions",
+      "ui_missing_representative_session",
+      "The current outlier review requires at least one representative session.",
+    );
+  }
+
+  const compatibilitySessionsById = new Map(
+    compatibilitySeed.representativeSessions.map((session) => [session.id, session]),
+  );
+  packageFixture.representative_sessions.forEach((session, index) => {
+    if (!compatibilitySessionsById.has(session.session_id)) {
+      addUiCompatibilityError(
+        errors,
+        `$compatibility_seed.representativeSessions[${index}]`,
+        "ui_incompatible_seed_reference",
+        `The compatibility seed is missing representative session "${session.session_id}".`,
+      );
+    }
+
+    if (session.cluster_membership.membership_score?.status !== "available") {
+      addUiCompatibilityError(
+        errors,
+        `$.representative_sessions[${index}].cluster_membership.membership_score`,
+        "ui_missing_metric",
+        "The current outlier review requires an available membership score.",
+      );
+    }
+
+    if (session.cluster_membership.distance_to_centroid?.status !== "available") {
+      addUiCompatibilityError(
+        errors,
+        `$.representative_sessions[${index}].cluster_membership.distance_to_centroid`,
+        "ui_missing_metric",
+        "The current outlier review requires an available centroid distance.",
+      );
+    }
+  });
+
+  if (packageFixture.neighbor_clusters.length === 0) {
+    addUiCompatibilityError(
+      errors,
+      "$.neighbor_clusters",
+      "ui_missing_neighbor_cluster",
+      "The current UI requires at least one neighbor cluster for case context.",
+    );
+  } else {
+    const firstNeighbor = packageFixture.neighbor_clusters[0];
+
+    if (!firstNeighbor.label && !firstNeighbor.name) {
+      addUiCompatibilityError(
+        errors,
+        "$.neighbor_clusters[0]",
+        "ui_missing_neighbor_label",
+        "The current case context requires a label or name for its first neighbor.",
+      );
+    }
+
+    if (firstNeighbor.distance?.status !== "available") {
+      addUiCompatibilityError(
+        errors,
+        "$.neighbor_clusters[0].distance",
+        "ui_missing_metric",
+        "The current case context requires an available neighbor distance metric.",
+      );
+    }
+  }
+
+  if (!packageFixture.cluster.embedding_map?.coordinates) {
+    addUiCompatibilityError(
+      errors,
+      "$.cluster.embedding_map.coordinates",
+      "ui_missing_embedding_coordinates",
+      "The current landscape requires package-provided embedding coordinates.",
+    );
+  }
+
+  const requiredMetrics = [
+    ["model_agreement", packageFixture.metrics.model_agreement],
+    ["evidence_coverage", packageFixture.metrics.evidence_coverage],
+    ["uncertainty", packageFixture.metrics.uncertainty],
+  ] as const;
+
+  for (const [metricName, metric] of requiredMetrics) {
+    if (metric?.status !== "available") {
+      addUiCompatibilityError(
+        errors,
+        `$.metrics.${metricName}`,
+        "ui_missing_metric",
+        `The current UI requires an available ${metricName} metric.`,
+      );
+    }
+  }
+
+  const candidateLabelIds = new Set(
+    packageFixture.candidate_labels.map((label) => label.label_id),
+  );
+  if (compatibilitySeed.id !== packageFixture.case.case_id) {
+    addUiCompatibilityError(
+      errors,
+      "$compatibility_seed.id",
+      "ui_incompatible_seed_reference",
+      "The compatibility seed must belong to the package case ID.",
+    );
+  }
+
+  if (compatibilitySeed.cluster.id !== packageFixture.cluster.cluster_id) {
+    addUiCompatibilityError(
+      errors,
+      "$compatibility_seed.cluster.id",
+      "ui_incompatible_seed_reference",
+      "The compatibility seed must belong to the package cluster ID.",
+    );
+  }
+
+  if (
+    packageFixture.candidate_labels.length > 0 &&
+    !candidateLabelIds.has(compatibilitySeed.seededBestLabelId)
+  ) {
+    addUiCompatibilityError(
+      errors,
+      "$compatibility_seed.seededBestLabelId",
+      "ui_incompatible_seed_reference",
+      "The seeded label winner must reference a package candidate label.",
+    );
+  }
+
+  const sessionIds = new Set(
+    packageFixture.representative_sessions.map((session) => session.session_id),
+  );
+  if (
+    packageFixture.representative_sessions.length > 0 &&
+    !sessionIds.has(compatibilitySeed.seededImpostorSessionId)
+  ) {
+    addUiCompatibilityError(
+      errors,
+      "$compatibility_seed.seededImpostorSessionId",
+      "ui_incompatible_seed_reference",
+      "The seeded impostor must reference a package representative session.",
+    );
+  }
+
+  if (compatibilitySeed.blindInterpretationOptions.length === 0) {
+    addUiCompatibilityError(
+      errors,
+      "$compatibility_seed.blindInterpretationOptions",
+      "ui_missing_blind_interpretation",
+      "The current blind review requires at least one compatibility option.",
+    );
+  }
+
+  return errors;
+}
+
+function addUiCompatibilityError(
+  errors: CasePackageValidationError[],
+  path: string,
+  code: string,
+  message: string,
+) {
+  errors.push({ path, code, message });
+}
+
+function mapValidatedCasePackageV01ToCaseFile(
   packageFixture: CasePackageV01,
   compatibilitySeed: CaseFileCompatibilitySeed,
 ): CaseFile {
@@ -101,7 +391,32 @@ export function casePackageV01ToCaseFile(
     })),
     seededBestLabelId: compatibilitySeed.seededBestLabelId,
     seededImpostorSessionId: compatibilitySeed.seededImpostorSessionId,
-    representativeSessions: compatibilitySeed.representativeSessions,
+    representativeSessions: packageFixture.representative_sessions.map(
+      (session) => {
+        const seedSession = compatibilitySeed.representativeSessions.find(
+          (candidate) => candidate.id === session.session_id,
+        );
+
+        return {
+          id: session.session_id,
+          title: session.title,
+          principal: seedSession?.principal ?? "",
+          timestamp: seedSession?.timestamp ?? "",
+          featureOverlap: readAvailableMetric(
+            session.cluster_membership.membership_score,
+            0,
+          ),
+          outlierScore: readAvailableMetric(
+            session.cluster_membership.distance_to_centroid,
+            0,
+          ),
+          summary: session.summary,
+          ...(seedSession?.outlierReason
+            ? { outlierReason: seedSession.outlierReason }
+            : {}),
+        };
+      },
+    ),
     failureModes: compatibilitySeed.failureModes,
     defaultEvidenceRatings: compatibilitySeed.defaultEvidenceRatings,
     claims: packageFixture.claims.map((claim) => {

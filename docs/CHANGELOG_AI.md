@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-21: CasePackage-To-UI Compatibility Boundary
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Audit GitHub issue #50 against merged PR #79, then complete only the missing `CasePackageV01`-to-current-UI adapter behavior without adding `ReviewResult`, aggregation, persistence, ingestion, backend APIs, or UI changes.
+- Files changed: `lib/casePackageV01ToCaseFile.ts`, `lib/casePackageV01ToCaseFile.test.ts`, `data/sampleCases.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Changed the compatibility adapter to accept unknown package-shaped input, validate it with `validateCasePackageV01`, reject packages that cannot support the current static review flow, and return an explicit success/failure result before producing the existing `CaseFile` UI shape. Kept `data/sampleCases.ts` as the stable UI import and made fixture adaptation fail loudly instead of substituting plausible-looking fallback data.
+- Decisions made: Kept `CasePackageV01` as the durable input contract and `CaseFile` as a compatibility-only UI model; treated missing AI labels, claims, evidence, representative sessions, neighbor context, map coordinates, and currently displayed metrics as adapter readiness failures rather than weakening the package contract.
+- Checks run: `npm test` passed with 70 tests; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `npx tsc --noEmit` passed; `git diff --check` passed.
+- Assumptions: The existing synthetic compatibility seed remains necessary for UI-only demo fields that are intentionally absent from `CasePackageV01`; current visual and interaction behavior must remain byte-for-byte equivalent at the `sampleCases` boundary.
+- Risks/follow-ups: The adapter remains intentionally temporary and compatibility-oriented. It does not define `ReviewResultV01`, import external files, persist data, aggregate reviewers, or produce evaluation reports.
+- Next recommended step: Close issue #50 after review, then plan the separate structured `ReviewResult` contract issue.
+- Suggested commit message: `feat(adapter): validate package-to-UI compatibility`
+
 ## 2026-06-20: Package-Shaped Synthetic Fixtures
 
 - Agent/model: Codex (GPT-5)
