@@ -35,9 +35,10 @@ const evidenceRatingLabels: Record<CasePackageEvidenceRatingV01, string> = {
 };
 
 export function EvaluationReportResults({ report }: EvaluationReportResultsProps) {
-  const reviewerCountAvailable = report.reviewer_count > 0;
+  const hasReviewerOutput = report.reviewer_count > 0;
   const verdictTotal = sumCounts(report.verdict_distribution);
   const evidenceRatingTotal = sumCounts(report.evidence_rating_distribution);
+  const reportStatus = getReportStatus(report, hasReviewerOutput);
 
   return (
     <ArenaWorkflowShell
@@ -53,12 +54,8 @@ export function EvaluationReportResults({ report }: EvaluationReportResultsProps
             describe the same CasePackage reference.
           </p>
         </div>
-        <ArenaStatusBadge
-          tone={report.disagreement.has_any_disagreement ? "overclaim" : "supported"}
-        >
-          {report.disagreement.has_any_disagreement
-            ? "Disagreement detected"
-            : "No disagreement detected"}
+        <ArenaStatusBadge tone={reportStatus.tone}>
+          {reportStatus.label}
         </ArenaStatusBadge>
       </header>
 
@@ -78,7 +75,7 @@ export function EvaluationReportResults({ report }: EvaluationReportResultsProps
         <MetricCard
           label="Reviewer count"
           value={
-            reviewerCountAvailable
+            hasReviewerOutput
               ? formatCount(report.reviewer_count, "reviewer", "reviewers")
               : "Reviewer output unavailable"
           }
@@ -162,34 +159,40 @@ export function EvaluationReportResults({ report }: EvaluationReportResultsProps
           title="Disagreement indicators"
           description="Flags show where reviewers selected different values. They do not choose a winner."
         />
-        <div className="evaluation-disagreement-grid">
-          <DisagreementFlag
-            label="Verdict"
-            active={report.disagreement.verdict}
-          />
-          <DisagreementFlag
-            label="Recommended action"
-            active={report.disagreement.recommended_action}
-          />
-          <DisagreementFlag
-            label="Label winner"
-            active={report.disagreement.label_winner}
-          />
-          <DisagreementFlag
-            label="Evidence ratings"
-            active={report.disagreement.evidence_ratings}
-          />
-        </div>
-        {report.disagreement.evidence_ids.length > 0 ? (
-          <p className="evaluation-reference-note">
-            Evidence rating disagreement references:{" "}
-            {report.disagreement.evidence_ids.join(", ")}. These are stable
-            references only.
-          </p>
+        {hasReviewerOutput ? (
+          <>
+            <div className="evaluation-disagreement-grid">
+              <DisagreementFlag
+                label="Verdict"
+                active={report.disagreement.verdict}
+              />
+              <DisagreementFlag
+                label="Recommended action"
+                active={report.disagreement.recommended_action}
+              />
+              <DisagreementFlag
+                label="Label winner"
+                active={report.disagreement.label_winner}
+              />
+              <DisagreementFlag
+                label="Evidence ratings"
+                active={report.disagreement.evidence_ratings}
+              />
+            </div>
+            {report.disagreement.evidence_ids.length > 0 ? (
+              <p className="evaluation-reference-note">
+                Evidence rating disagreement references:{" "}
+                {report.disagreement.evidence_ids.join(", ")}. These are stable
+                references only.
+              </p>
+            ) : (
+              <p className="evaluation-reference-note">
+                No evidence-rating disagreement references were reported.
+              </p>
+            )}
+          </>
         ) : (
-          <p className="evaluation-reference-note">
-            No evidence-rating disagreement references were reported.
-          </p>
+          <UnavailableState label="Disagreement indicators unavailable" />
         )}
       </section>
     </ArenaWorkflowShell>
@@ -267,6 +270,24 @@ function UnavailableState({ label }: { label: string }) {
 
 function sumCounts(distribution: Record<string, number>) {
   return Object.values(distribution).reduce((total, count) => total + count, 0);
+}
+
+function getReportStatus(
+  report: EvaluationReportV01,
+  hasReviewerOutput: boolean,
+): {
+  label: string;
+  tone: "neutral" | "overclaim" | "supported";
+} {
+  if (!hasReviewerOutput) {
+    return { label: "Reviewer output unavailable", tone: "neutral" };
+  }
+
+  if (report.disagreement.has_any_disagreement) {
+    return { label: "Disagreement detected", tone: "overclaim" };
+  }
+
+  return { label: "No disagreement detected", tone: "supported" };
 }
 
 function formatCount(count: number, singular: string, plural: string) {

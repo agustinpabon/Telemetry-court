@@ -106,6 +106,9 @@ test("evaluation report results view marks unavailable aggregate data explicitly
   assert.match(markup, /Verdict distribution unavailable/);
   assert.match(markup, /Label winner distribution unavailable/);
   assert.match(markup, /Evidence rating distribution unavailable/);
+  assert.match(markup, /Disagreement indicators unavailable/);
+  assert.doesNotMatch(markup, /No disagreement detected/);
+  assert.doesNotMatch(markup, /Aligned/);
   assert.doesNotMatch(markup, /0%/);
 });
 
