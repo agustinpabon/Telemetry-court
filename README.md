@@ -26,9 +26,9 @@ The repository currently contains a high-quality static validation slice built w
 - impostor or outlier selection;
 - structured verdicts and local JSON export;
 - browser-local `ReviewResult` persistence and a read-only fixture-backed
-  `EvaluationReport` results view.
+  `EvaluationReport` results view with JSON/CSV downloads.
 
-This slice demonstrates the review protocol and current local report shape. It does not yet ingest real Toponymy or ACME4-derived outputs, persist multi-reviewer results in durable infrastructure, or produce research-grade evaluation reports from a real report workflow. Those are target capabilities, not current claims.
+This slice demonstrates the review protocol and current local report/export shape. It does not yet ingest real Toponymy or ACME4-derived outputs, persist multi-reviewer results in durable infrastructure, or produce research-grade evaluation reports from a real report workflow. Those are target capabilities, not current claims.
 
 ## Product Boundary
 

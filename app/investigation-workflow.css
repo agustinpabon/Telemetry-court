@@ -7313,6 +7313,42 @@
   padding: clamp(20px, 2.4vw, 30px);
 }
 
+.arena-shell .evaluation-report-hero-actions {
+  align-items: flex-end;
+  display: grid;
+  gap: 10px;
+  justify-items: end;
+}
+
+.arena-shell .evaluation-report-export-actions {
+  display: grid;
+  gap: 8px;
+  justify-items: end;
+}
+
+.arena-shell .evaluation-report-export-actions > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.arena-shell .evaluation-report-export-actions button {
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 780;
+  min-height: 40px;
+  padding: 9px 14px;
+}
+
+.arena-shell .evaluation-report-export-actions p {
+  color: var(--workflow-muted);
+  font-size: 12px;
+  margin: 0;
+  text-align: right;
+}
+
 .arena-shell .evaluation-report-hero h2 {
   color: var(--workflow-ink);
   font-size: clamp(28px, 3vw, 42px);
@@ -7437,6 +7473,19 @@
   .arena-shell .evaluation-report-metrics,
   .arena-shell .evaluation-disagreement-grid {
     grid-template-columns: 1fr;
+  }
+
+  .arena-shell .evaluation-report-hero-actions,
+  .arena-shell .evaluation-report-export-actions {
+    justify-items: start;
+  }
+
+  .arena-shell .evaluation-report-export-actions > div {
+    justify-content: flex-start;
+  }
+
+  .arena-shell .evaluation-report-export-actions p {
+    text-align: left;
   }
 
   .arena-shell .evaluation-report-list strong,

@@ -4,6 +4,7 @@ import {
   MetricCard,
   SectionHeader,
 } from "@/components/arena/WorkflowPrimitives";
+import { EvaluationReportExportActions } from "@/components/evaluation/EvaluationReportExportActions";
 import type { EvaluationReportV01 } from "@/lib/evaluationReportV01";
 import type {
   CasePackageEvidenceRatingV01,
@@ -54,9 +55,12 @@ export function EvaluationReportResults({ report }: EvaluationReportResultsProps
             describe the same CasePackage reference.
           </p>
         </div>
-        <ArenaStatusBadge tone={reportStatus.tone}>
-          {reportStatus.label}
-        </ArenaStatusBadge>
+        <div className="evaluation-report-hero-actions">
+          <ArenaStatusBadge tone={reportStatus.tone}>
+            {reportStatus.label}
+          </ArenaStatusBadge>
+          <EvaluationReportExportActions report={report} />
+        </div>
       </header>
 
       <section

@@ -246,9 +246,9 @@ The export does not include the full cluster, claims, evidence items, support
 scores, or raw telemetry. It is one local review artifact. The current app can
 persist that artifact in browser-local storage by CasePackage ID after copy or
 download. The current app also includes a fixture-backed read-only
-`EvaluationReport` results view, but durable backend storage, real report
-workflows, confidence capture, and broader `EvaluationReport` production remain
-future work.
+`EvaluationReport` results view with JSON/CSV downloads for the existing report
+artifact, but durable backend storage, real report workflows, confidence
+capture, and broader `EvaluationReport` production remain future work.
 
 ## Runtime Fixture
 
