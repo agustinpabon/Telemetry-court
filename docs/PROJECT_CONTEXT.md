@@ -20,6 +20,8 @@ It turns generated cluster labels into testable claims and records structured hu
 - It demonstrates the evidence-first review flow, local structured export, and
   browser-local `ReviewResult` persistence by CasePackage ID.
 - It does not implement real Toponymy or ACME4 ingestion.
+- It includes synthetic, non-authoritative adapter-boundary fixtures for
+  Toponymy/DataMapPlot-style and ACME4-style `CasePackage v0.1` shapes.
 - It includes a deterministic in-memory `EvaluationReportV01` aggregation utility,
   plus a fixture-backed read-only results view for inspecting reviewer
   distributions, reviewer agreement, disputed evidence IDs, incomplete

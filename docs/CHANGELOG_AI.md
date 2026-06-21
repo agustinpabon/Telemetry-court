@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-21: Synthetic ACME4-Style CasePackage Fixture
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Start GitHub issue #64 only by adding one safe sanitized ACME4-style fixture that validates through the existing `CasePackage v0.1` boundary, without relying on real ACME4 schemas, restricted telemetry, APIs, outputs, ingestion workflows, adding a general adapter framework, runtime import UI, backend persistence, upload flow, auth, SIEM/SOC behavior, chatbot behavior, scoring/adjudication, consensus logic, UI redesign, or modifying the Toponymy-style fixture.
+- Files changed: `data/syntheticAcme4StyleCasePackageFixture.ts`, `data/syntheticAcme4StyleCasePackageFixture.test.ts`, `docs/ADAPTER_BOUNDARY.md`, `docs/CASE_PACKAGE_CONTRACT.md`, `docs/PROJECT_CONTEXT.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a Telemetry Court-owned synthetic, sanitized ACME4-style adapter-input fixture and fixture-only converter that emits one validated `CasePackageV01` object. The package includes synthetic feature-family summaries, generated and baseline labels, explicit claims, evidence-to-claim mappings, representative sessions, neighbor and outlier context, safe source-artifact references, provenance metadata, sanitization metadata, and canonical review configuration values.
+- Decisions made: Kept the helper explicitly fixture-only and named it as a synthetic converter rather than production support; used an ACME4-style input shape owned by Telemetry Court without claiming real ACME4 compatibility; self-validated the exported package at module load; used `sanitization.status: "sanitized"`, `data_classification: "synthetic"`, safe `source_artifact_id` references, and `raw_drilldown_allowed: false`.
+- Checks run: Red `npm test -- data/syntheticAcme4StyleCasePackageFixture.test.ts` failed before the fixture module existed; targeted `npm test -- data/syntheticAcme4StyleCasePackageFixture.test.ts` passed with 5 tests after implementation; targeted fixture/validation/adapter set `npm test -- data/syntheticAcme4StyleCasePackageFixture.test.ts data/syntheticToponymyStyleCasePackageFixture.test.ts data/casePackageFixtures.test.ts lib/casePackageV01.test.ts lib/casePackageValidation.test.ts lib/casePackageV01ToCaseFile.test.ts` passed with 32 tests; `npm test` passed with 122 tests; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `npx tsc --noEmit` passed; `git diff --check` passed.
+- Assumptions: A small synthetic, sanitized fixture is enough to exercise the boundary for issue #64 because real ACME4 adapter behavior, source-specific validation, restricted-data handling, ingestion, and review-to-report proof remain future work.
+- Risks/follow-ups: This fixture is non-authoritative and should not be promoted as real ACME4 support. Future real adapter work still needs approved upstream artifacts, source-specific conversion rules, restricted-environment processing, and end-to-end review/evaluation validation.
+- Next recommended step: Review and merge this focused fixture PR before starting any real ACME4 adapter prototype or package import workflow.
+- Suggested commit message: `data(fixtures): add synthetic acme4-style package`
+
 ## 2026-06-21: Synthetic Toponymy-Style CasePackage Fixture
 
 - Agent/model: Codex (GPT-5)
