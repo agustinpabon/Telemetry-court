@@ -6,4 +6,4 @@ This document supersedes the older Evidence Arena framing as the repository's co
 
 ## Product Identity
 
-Telemetry Court is an evidence-based human-in-the-loop validation bench for AI
+Telemetry Court is an evidence-based human-in
