@@ -66,7 +66,7 @@ The infrastructure must preserve:
 objects and returns:
 
 - `evaluation_report.v0.1` schema identity and the separate
-  `review_result_aggregation.v0.2` calculation version;
+  `review_result_aggregation.v0.3` calculation version;
 - the reviewed CasePackage reference and sorted source review IDs;
 - reviewer count;
 - canonical verdict and recommended-action count distributions;
@@ -75,6 +75,8 @@ objects and returns:
 - sorted selected failure-mode counts;
 - deterministic comparison rollups for selected label IDs and available compact
   CasePackage/pipeline metadata;
+- descriptive reviewer-agreement signals for verdict, label winner,
+  per-evidence rating, and a major failure mode where one mode is identifiable;
 - simple verdict, action, label, and per-evidence rating disagreement flags.
 
 The v0.1 report represents cluster impurity, split, merge, and recommended
@@ -105,6 +107,54 @@ The disagreement fields report whether reviewers selected different values;
 they do not adjudicate a correct answer, calculate statistical agreement, or
 choose a consensus. Evidence disagreement also lists the stable evidence IDs
 that received more than one rating.
+
+### Reviewer Agreement And Disputed Evidence
+
+`reviewer_agreement` is descriptive and additive to the existing distributions
+and disagreement flags. Each signal records:
+
+- `compared_review_count`, the number of reviews with a comparable value;
+- `unavailable_review_count`, the number of input reviews without a comparable
+  value for that signal;
+- sorted observed `values` with reviewer counts and `distinct_value_count`;
+- `unanimous`, which is `true` or `false` only when at least two values can be
+  compared and is otherwise `null`;
+- `status: "available"`, `"incomplete"`, or `"unavailable"`, plus a reason when
+  the comparison is not fully available.
+
+Verdict and label-winner agreement compare one canonical value per compatible
+ReviewResult. A single review retains its observed value but cannot establish
+reviewer agreement. Canonical uncertainty values, including the `uncertain`
+verdict and `insufficient` or `needs_more_context` evidence ratings, remain
+ordinary observed values rather than missing data or reviewer errors.
+
+Evidence-rating agreement is calculated independently for each stable evidence
+ID found in the input reviews. An evidence item is `disputed` only when at least
+two comparable ratings exist and more than one rating value was observed.
+Missing ratings increase `unavailable_review_count`; they do not become an
+implicit rating or a disagreement. Evidence items and their rating values are
+sorted by exact string value. The existing `disagreement.evidence_ids` remains
+the sorted compatibility index of disputed evidence IDs.
+
+The legacy disagreement booleans remain in the JSON contract for compatibility.
+A `false` value with fewer than two reviews is not agreement; consumers must use
+the agreement status and denominator. CSV disagreement rows are unavailable and
+blank in that case rather than exporting `false` as a completed comparison.
+
+`ReviewResultV01` normally requires one rating for every package evidence ID.
+The aggregation status still exposes partial evidence coverage defensively if
+compatible input artifacts do not contain the same evidence references. This
+does not relax the ReviewResult builder boundary or validate an incomplete
+review as complete.
+
+Failure modes are multi-select secondary reason codes, so ReviewResult does not
+identify one primary mode. The major-failure-mode signal compares only reviews
+with exactly one selected failure mode. Reviews with zero or multiple modes are
+counted as unavailable for that comparison, and the report never chooses a
+primary mode on their behalf.
+
+These fields do not calculate a quality score, statistical coefficient, correct
+answer, consensus value, adjudication result, or reviewer-error rate.
 
 The utility rejects empty input, unsupported ReviewResult or CasePackage schema
 versions, mixed package IDs or revisions, mismatched compact package references,
@@ -155,7 +205,10 @@ implied by these single-package rollups.
 The first results view is the `/results` route backed by a deterministic
 synthetic `EvaluationReportV01` fixture. It renders reviewer count, verdict
 distribution, label-winner distribution, evidence-rating distribution, and
-disagreement indicators from an already-built report. It also renders the
+disagreement indicators from an already-built report. It renders reviewer
+agreement coverage and observed values, identifies disputed evidence by stable
+ID, and marks single-review or partial comparisons unavailable or incomplete
+rather than aligned. It also renders the
 comparison rollups as descriptive groups, marks single-value dimensions as
 context rather than cross-variant comparison, and shows missing dimensions as
 unavailable.
@@ -180,13 +233,16 @@ or fetch upstream package evidence.
 The JSON export preserves the report schema version, calculation version,
 compact CasePackage reference, sorted source review IDs, reviewer count,
 canonical count distributions, label-winner counts, evidence-rating counts,
-failure-mode counts, comparison rollups, and disagreement flags. The CSV export
+failure-mode counts, reviewer-agreement signals, disputed evidence IDs,
+comparison rollups, and disagreement flags. The CSV export
 repeats compact package and pipeline provenance on each row, uses stable
 headers, emits rows in canonical or sorted order, escapes CSV cells, and marks
 unavailable aggregate sections explicitly instead of treating zero or false
 values as factual conclusions when reviewer output is unavailable. Comparison
 rows preserve review and evidence-decision denominators, canonical
 verdict/evidence counts, missing-review counts, and unavailable reasons.
+Agreement rows preserve compared and unavailable review counts, observed values,
+distinct-value counts, incomplete reasons, and per-evidence dispute flags.
 
 The `/results` fixture view offers JSON and CSV downloads for the already-built
 fixture report. This is a portable artifact export for the static validation

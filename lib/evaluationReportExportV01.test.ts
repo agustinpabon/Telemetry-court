@@ -24,7 +24,7 @@ test("evaluation report JSON export preserves versioned report metadata", () => 
   assert.equal(parsedExport.schema_version, "evaluation_report.v0.1");
   assert.equal(
     parsedExport.calculation_version,
-    "review_result_aggregation.v0.2",
+    "review_result_aggregation.v0.3",
   );
   assert.deepEqual(parsedExport.case_package, sampleEvaluationReportV01.case_package);
   assert.deepEqual(parsedExport.source_review_ids, ["review-a", "review-b"]);
@@ -36,6 +36,10 @@ test("evaluation report JSON export preserves versioned report metadata", () => 
   assert.deepEqual(
     parsedExport.comparison_rollups,
     sampleEvaluationReportV01.comparison_rollups,
+  );
+  assert.deepEqual(
+    parsedExport.reviewer_agreement,
+    sampleEvaluationReportV01.reviewer_agreement,
   );
   assert.equal("claims" in parsedExport, false);
   assert.equal("evidence_items" in parsedExport, false);
@@ -116,6 +120,32 @@ test("evaluation report CSV export includes deterministic audit rows", () => {
   );
   assert.ok(
     rows.some((row) =>
+      row.endsWith(",reviewer_agreement,verdict,disagreement,2,available"),
+    ),
+  );
+  assert.ok(
+    rows.some((row) =>
+      row.endsWith(",reviewer_agreement_value,verdict,supported,1,available"),
+    ),
+  );
+  assert.ok(
+    rows.some((row) =>
+      row.endsWith(",evidence_rating_agreement,evidence-2,disagreement,2,available"),
+    ),
+  );
+  assert.ok(
+    rows.some((row) =>
+      row.endsWith(",disputed_evidence,evidence-2,true,2,available"),
+    ),
+  );
+  assert.ok(
+    rows.some((row) =>
+      row.includes(",reviewer_agreement_reason,major_failure_mode,") &&
+      row.endsWith(",,incomplete"),
+    ),
+  );
+  assert.ok(
+    rows.some((row) =>
       row.endsWith(",comparison_review_count,embedding_model,synthetic-embedding-a,2,available"),
     ),
   );
@@ -192,6 +222,22 @@ test("evaluation report export normalizes row ordering without mutating the repo
       { failure_mode: "too_broad", count: 1 },
       { failure_mode: "missing_evidence", count: 2 },
     ],
+    reviewer_agreement: {
+      ...sampleEvaluationReportV01.reviewer_agreement,
+      verdict: {
+        ...sampleEvaluationReportV01.reviewer_agreement.verdict,
+        values: [...sampleEvaluationReportV01.reviewer_agreement.verdict.values]
+          .reverse(),
+      },
+      evidence_ratings: [
+        ...sampleEvaluationReportV01.reviewer_agreement.evidence_ratings,
+      ]
+        .reverse()
+        .map((evidence) => ({
+          ...evidence,
+          values: [...evidence.values].reverse(),
+        })),
+    },
     disagreement: {
       ...sampleEvaluationReportV01.disagreement,
       evidence_ids: ["evidence-z", "evidence-a"],
@@ -223,6 +269,16 @@ test("evaluation report export normalizes row ordering without mutating the repo
     "evidence-a",
     "evidence-z",
   ]);
+  assert.deepEqual(
+    parsedExport.reviewer_agreement.verdict.values.map((value) => value.value),
+    ["supported", "unsupported_or_overclaimed"],
+  );
+  assert.deepEqual(
+    parsedExport.reviewer_agreement.evidence_ratings.map(
+      (evidence) => evidence.evidence_id,
+    ),
+    ["evidence-1", "evidence-2"],
+  );
   assert.deepEqual(
     parsedExport.comparison_rollups.slice(0, 2).map((rollup) => rollup.dimension),
     ["selected_label_id", "package_id"],
@@ -287,6 +343,57 @@ test("evaluation report CSV export marks unavailable aggregate rows explicitly",
       row.endsWith(",disagreement,has_any_disagreement,,,unavailable"),
     ),
   );
+  assert.ok(
+    rows.some((row) =>
+      row.endsWith(",reviewer_agreement,verdict,,0,unavailable"),
+    ),
+  );
+});
+
+test("evaluation report CSV does not present one review as no disagreement", () => {
+  const singleReviewAgreement = {
+    ...createUnavailableAgreementSignal(),
+    compared_review_count: 1,
+    distinct_value_count: 1,
+    values: [{ value: "supported", review_count: 1 }],
+  };
+  const singleReviewerReport: EvaluationReportV01 = {
+    ...sampleEvaluationReportV01,
+    source_review_ids: ["review-a"],
+    reviewer_count: 1,
+    reviewer_agreement: {
+      verdict: singleReviewAgreement,
+      label_winner: {
+        ...singleReviewAgreement,
+        values: [{ value: "label-a", review_count: 1 }],
+      },
+      evidence_ratings: [],
+      major_failure_mode: createUnavailableAgreementSignal(),
+    },
+    disagreement: {
+      has_any_disagreement: false,
+      verdict: false,
+      recommended_action: false,
+      label_winner: false,
+      evidence_ratings: false,
+      evidence_ids: [],
+    },
+  };
+
+  const csvExport = serializeEvaluationReportCsvV01(singleReviewerReport);
+  const rows = csvExport.trimEnd().split("\n");
+
+  assert.ok(
+    rows.some((row) =>
+      row.endsWith(",disagreement,has_any_disagreement,,,unavailable"),
+    ),
+  );
+  assert.equal(
+    rows.some((row) =>
+      row.endsWith(",disagreement,has_any_disagreement,false,,available"),
+    ),
+    false,
+  );
 });
 
 function createUnavailableReport(): EvaluationReportV01 {
@@ -312,6 +419,12 @@ function createUnavailableReport(): EvaluationReportV01 {
       ),
     ) as EvaluationReportV01["evidence_rating_distribution"],
     failure_mode_counts: [],
+    reviewer_agreement: {
+      verdict: createUnavailableAgreementSignal(),
+      label_winner: createUnavailableAgreementSignal(),
+      evidence_ratings: [],
+      major_failure_mode: createUnavailableAgreementSignal(),
+    },
     disagreement: {
       has_any_disagreement: false,
       verdict: false,
@@ -320,5 +433,17 @@ function createUnavailableReport(): EvaluationReportV01 {
       evidence_ratings: false,
       evidence_ids: [],
     },
+  };
+}
+
+function createUnavailableAgreementSignal(): EvaluationReportV01["reviewer_agreement"]["verdict"] {
+  return {
+    status: "unavailable",
+    compared_review_count: 0,
+    unavailable_review_count: 0,
+    distinct_value_count: 0,
+    unanimous: null,
+    values: [],
+    reason: "Reviewer output is unavailable.",
   };
 }

@@ -66,6 +66,12 @@ the selected label ID and these compact package/pipeline fields. An absent
 optional field remains explicitly unavailable in the report; it is not inferred
 from label text, evidence content, or an upstream system.
 
+The report can also compare verdicts, label winners, and ratings per stable
+evidence ID. Because `failure_modes` is multi-select and has no primary marker,
+a major failure mode is comparable only for reviews with exactly one selected
+mode. Aggregation preserves incomplete coverage instead of selecting a mode or
+rating on the reviewer's behalf.
+
 ## Structured Decisions
 
 The current export records:

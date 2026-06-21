@@ -84,6 +84,12 @@ ReviewResults. Missing optional metadata is explicit. Exact package-reference
 compatibility means non-label rollups are single-value context rather than
 cross-run model, prompt, embedding, or evidence-package rankings.
 
+It also reports descriptive reviewer agreement for verdicts, selected labels,
+per-evidence ratings, and a major failure mode where one mode is identifiable.
+Per-evidence comparisons retain coverage counts and disputed stable IDs.
+Single-review and partial comparisons remain unavailable or incomplete; the
+report does not infer consensus, correctness, or reviewer error.
+
 Synthetic cases remain useful for UI and protocol testing, but they must be described as fixtures, not evidence that the product has completed its validation mission.
 
 ## Definition Of Done For Real Usefulness

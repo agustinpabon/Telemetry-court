@@ -16,7 +16,7 @@ import {
 export const EVALUATION_REPORT_V01_SCHEMA_VERSION =
   "evaluation_report.v0.1" as const;
 export const EVALUATION_REPORT_V01_CALCULATION_VERSION =
-  "review_result_aggregation.v0.2" as const;
+  "review_result_aggregation.v0.3" as const;
 
 export const EVALUATION_REPORT_V01_COMPARISON_DIMENSIONS = [
   "selected_label_id",
@@ -38,6 +38,22 @@ export const EVALUATION_REPORT_V01_COMPARISON_DIMENSIONS = [
 type CountDistribution<Value extends string> = Record<Value, number>;
 type FailureModeV01 = ReviewResultV01["decisions"]["failure_modes"][number];
 type ReviewedCasePackageReferenceV01 = ReviewResultV01["case_package"];
+export type ReviewerAgreementSignalV01 = {
+  status: "available" | "incomplete" | "unavailable";
+  compared_review_count: number;
+  unavailable_review_count: number;
+  distinct_value_count: number;
+  unanimous: boolean | null;
+  values: Array<{
+    value: string;
+    review_count: number;
+  }>;
+  reason?: string;
+};
+export type EvidenceRatingAgreementV01 = ReviewerAgreementSignalV01 & {
+  evidence_id: string;
+  disputed: boolean;
+};
 export type ComparisonDimensionV01 =
   (typeof EVALUATION_REPORT_V01_COMPARISON_DIMENSIONS)[number];
 export type ComparisonRollupGroupV01 = {
@@ -174,6 +190,12 @@ export type EvaluationReportV01 = {
     failure_mode: FailureModeV01;
     count: number;
   }>;
+  reviewer_agreement: {
+    verdict: ReviewerAgreementSignalV01;
+    label_winner: ReviewerAgreementSignalV01;
+    evidence_ratings: EvidenceRatingAgreementV01[];
+    major_failure_mode: ReviewerAgreementSignalV01;
+  };
   comparison_rollups: ComparisonRollupV01[];
   disagreement: {
     has_any_disagreement: boolean;
@@ -257,7 +279,6 @@ export function aggregateReviewResultsV01(
   );
   const labelWinnerCounts = new Map<string, number>();
   const failureModeCounts = new Map<FailureModeV01, number>();
-  const evidenceRatingsById = new Map<string, Set<CasePackageEvidenceRatingV01>>();
   const verdicts = new Set<CasePackageVerdictV01>();
   const recommendedActions = new Set<CasePackageRecommendedActionV01>();
   const labelWinners = new Set<string>();
@@ -274,16 +295,6 @@ export function aggregateReviewResultsV01(
 
     for (const evidenceRating of decisions.evidence_ratings) {
       evidenceRatingDistribution[evidenceRating.rating] += 1;
-      const ratings = evidenceRatingsById.get(evidenceRating.evidence_id);
-
-      if (ratings) {
-        ratings.add(evidenceRating.rating);
-      } else {
-        evidenceRatingsById.set(
-          evidenceRating.evidence_id,
-          new Set([evidenceRating.rating]),
-        );
-      }
     }
 
     for (const failureMode of decisions.failure_modes) {
@@ -291,10 +302,10 @@ export function aggregateReviewResultsV01(
     }
   }
 
-  const evidenceIdsWithDisagreement = [...evidenceRatingsById.entries()]
-    .filter(([, ratings]) => ratings.size > 1)
-    .map(([evidenceId]) => evidenceId)
-    .sort();
+  const evidenceRatingAgreement = buildEvidenceRatingAgreement(reviewResults);
+  const evidenceIdsWithDisagreement = evidenceRatingAgreement
+    .filter((evidence) => evidence.disputed)
+    .map((evidence) => evidence.evidence_id);
   const disagreement = {
     verdict: verdicts.size > 1,
     recommended_action: recommendedActions.size > 1,
@@ -315,6 +326,31 @@ export function aggregateReviewResultsV01(
     label_winner_distribution: sortedCounts(labelWinnerCounts, "label_id"),
     evidence_rating_distribution: evidenceRatingDistribution,
     failure_mode_counts: sortedCounts(failureModeCounts, "failure_mode"),
+    reviewer_agreement: {
+      verdict: buildReviewerAgreementSignal(
+        reviewResults.map((reviewResult) => reviewResult.decisions.final_verdict),
+        reviewResults.length,
+        "At least two reviewer verdicts are required to describe agreement.",
+      ),
+      label_winner: buildReviewerAgreementSignal(
+        reviewResults.map(
+          (reviewResult) =>
+            reviewResult.decisions.label_comparison.selected_label_id,
+        ),
+        reviewResults.length,
+        "At least two reviewer label selections are required to describe agreement.",
+      ),
+      evidence_ratings: evidenceRatingAgreement,
+      major_failure_mode: buildReviewerAgreementSignal(
+        reviewResults.map((reviewResult) => {
+          const { failure_modes: failureModes } = reviewResult.decisions;
+
+          return failureModes.length === 1 ? failureModes[0] : undefined;
+        }),
+        reviewResults.length,
+        "Major failure-mode agreement is incomplete or unavailable because ReviewResult records zero or multiple failure-mode reason codes without designating one as primary.",
+      ),
+    },
     comparison_rollups: COMPARISON_DIMENSION_DEFINITIONS.map(
       ({ dimension, getValue }) =>
         buildComparisonRollup(dimension, reviewResults, getValue),
@@ -324,6 +360,82 @@ export function aggregateReviewResultsV01(
       ...disagreement,
       evidence_ids: evidenceIdsWithDisagreement,
     },
+  };
+}
+
+function buildEvidenceRatingAgreement(
+  reviewResults: readonly ReviewResultV01[],
+): EvidenceRatingAgreementV01[] {
+  const evidenceIds = new Set<string>();
+
+  for (const reviewResult of reviewResults) {
+    for (const evidenceRating of reviewResult.decisions.evidence_ratings) {
+      evidenceIds.add(evidenceRating.evidence_id);
+    }
+  }
+
+  return [...evidenceIds]
+    .sort(compareStrings)
+    .map((evidenceId) => {
+      const signal = buildReviewerAgreementSignal(
+        reviewResults.map(
+          (reviewResult) =>
+            reviewResult.decisions.evidence_ratings.find(
+              (evidenceRating) => evidenceRating.evidence_id === evidenceId,
+            )?.rating,
+        ),
+        reviewResults.length,
+        `Evidence rating agreement for "${evidenceId}" cannot be fully compared because fewer than two comparable ratings are available or some reviews do not contain this evidence reference.`,
+      );
+
+      return {
+        evidence_id: evidenceId,
+        ...signal,
+        disputed:
+          signal.compared_review_count >= 2 && signal.distinct_value_count > 1,
+      };
+    });
+}
+
+function buildReviewerAgreementSignal(
+  values: readonly (string | undefined)[],
+  reviewerCount: number,
+  unavailableReason: string,
+): ReviewerAgreementSignalV01 {
+  const counts = new Map<string, number>();
+
+  for (const value of values) {
+    if (typeof value === "string" && value.trim() !== "") {
+      incrementMap(counts, value);
+    }
+  }
+
+  const comparedReviewCount = [...counts.values()].reduce(
+    (total, count) => total + count,
+    0,
+  );
+  const unavailableReviewCount = reviewerCount - comparedReviewCount;
+  const distinctValueCount = counts.size;
+  const status =
+    unavailableReviewCount > 0
+      ? "incomplete"
+      : comparedReviewCount < 2
+        ? "unavailable"
+        : "available";
+
+  return {
+    status,
+    compared_review_count: comparedReviewCount,
+    unavailable_review_count: unavailableReviewCount,
+    distinct_value_count: distinctValueCount,
+    unanimous: comparedReviewCount < 2 ? null : distinctValueCount === 1,
+    values: [...counts.entries()]
+      .sort(([left], [right]) => compareStrings(left, right))
+      .map(([value, reviewCountForValue]) => ({
+        value,
+        review_count: reviewCountForValue,
+      })),
+    ...(status === "available" ? {} : { reason: unavailableReason }),
   };
 }
 

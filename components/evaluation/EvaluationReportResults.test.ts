@@ -43,6 +43,13 @@ test("evaluation report results view shows reviewer distributions and disagreeme
   assert.match(markup, /Supports/);
   assert.match(markup, /Contradicts/);
   assert.match(markup, /Insufficient/);
+  assert.match(markup, /Reviewer agreement/);
+  assert.match(markup, /Final verdict/);
+  assert.match(markup, /Major failure mode/);
+  assert.match(markup, /Incomplete comparison/);
+  assert.match(markup, /Evidence evidence-2/);
+  assert.match(markup, /Disputed/);
+  assert.match(markup, /Contradicts: 1, Insufficient: 1/);
   assert.match(markup, /Download JSON/);
   assert.match(markup, /Download CSV/);
   assert.match(markup, /Disagreement detected/);
@@ -62,12 +69,13 @@ test("evaluation report results view shows reviewer distributions and disagreeme
   assert.match(markup, /clustering_method/);
   assert.doesNotMatch(markup, /best model/i);
   assert.doesNotMatch(markup, /score/i);
+  assert.match(markup, /not consensus or scoring/i);
 });
 
 test("evaluation report results view marks unavailable aggregate data explicitly", () => {
   const unavailableReport: EvaluationReportV01 = {
     schema_version: "evaluation_report.v0.1",
-    calculation_version: "review_result_aggregation.v0.2",
+    calculation_version: "review_result_aggregation.v0.3",
     case_package: createReviewResult().case_package,
     source_review_ids: [],
     reviewer_count: 0,
@@ -103,6 +111,36 @@ test("evaluation report results view marks unavailable aggregate data explicitly
       needs_more_context: 0,
     },
     failure_mode_counts: [],
+    reviewer_agreement: {
+      verdict: {
+        status: "unavailable",
+        compared_review_count: 0,
+        unavailable_review_count: 0,
+        distinct_value_count: 0,
+        unanimous: null,
+        values: [],
+        reason: "Reviewer output is unavailable.",
+      },
+      label_winner: {
+        status: "unavailable",
+        compared_review_count: 0,
+        unavailable_review_count: 0,
+        distinct_value_count: 0,
+        unanimous: null,
+        values: [],
+        reason: "Reviewer output is unavailable.",
+      },
+      evidence_ratings: [],
+      major_failure_mode: {
+        status: "unavailable",
+        compared_review_count: 0,
+        unavailable_review_count: 0,
+        distinct_value_count: 0,
+        unanimous: null,
+        values: [],
+        reason: "Reviewer output is unavailable.",
+      },
+    },
     comparison_rollups: [],
     disagreement: {
       has_any_disagreement: false,
@@ -120,11 +158,24 @@ test("evaluation report results view marks unavailable aggregate data explicitly
   assert.match(markup, /Verdict distribution unavailable/);
   assert.match(markup, /Label winner distribution unavailable/);
   assert.match(markup, /Evidence rating distribution unavailable/);
-  assert.match(markup, /Disagreement indicators unavailable/);
+  assert.match(markup, /Reviewer agreement unavailable/);
+  assert.match(markup, /Disagreement comparison unavailable/);
   assert.match(markup, /Comparison rollups unavailable/);
   assert.doesNotMatch(markup, /No disagreement detected/);
   assert.doesNotMatch(markup, /Aligned/);
   assert.doesNotMatch(markup, /0%/);
+});
+
+test("a single review is not presented as reviewer alignment", () => {
+  const markup = renderReportText(
+    aggregateReviewResultsV01([createReviewResult()]),
+  );
+
+  assert.match(markup, /Agreement comparison unavailable/);
+  assert.match(markup, /At least two reviewer verdicts are required/);
+  assert.match(markup, /Disagreement comparison unavailable/);
+  assert.doesNotMatch(markup, /No disagreement detected/);
+  assert.doesNotMatch(markup, />Aligned</);
 });
 
 function renderReportText(report: EvaluationReportV01): string {
