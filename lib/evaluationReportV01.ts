@@ -417,7 +417,9 @@ function buildReviewerAgreementSignal(
   const unavailableReviewCount = reviewerCount - comparedReviewCount;
   const distinctValueCount = counts.size;
   const status =
-    unavailableReviewCount > 0
+    comparedReviewCount === 0
+      ? "unavailable"
+      : unavailableReviewCount > 0
       ? "incomplete"
       : comparedReviewCount < 2
         ? "unavailable"

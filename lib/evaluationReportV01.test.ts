@@ -511,6 +511,28 @@ test("multi-select failure modes keep major-mode agreement incomplete", () => {
   });
 });
 
+test("major failure mode is unavailable when no review provides a comparable single mode", () => {
+  const report = aggregateReviewResultsV01([
+    createReviewResult({ failureModes: [] }),
+    createReviewResult({
+      reviewId: "review-b",
+      reviewerId: "reviewer-b",
+      failureModes: ["missing_evidence", "too_broad"],
+    }),
+  ]);
+
+  assert.deepEqual(report.reviewer_agreement.major_failure_mode, {
+    status: "unavailable",
+    compared_review_count: 0,
+    unavailable_review_count: 2,
+    distinct_value_count: 0,
+    unanimous: null,
+    values: [],
+    reason:
+      "Major failure-mode agreement is incomplete or unavailable because ReviewResult records zero or multiple failure-mode reason codes without designating one as primary.",
+  });
+});
+
 test("uncertain verdicts and insufficient evidence remain visible agreement values", () => {
   const report = aggregateReviewResultsV01([
     createReviewResult({

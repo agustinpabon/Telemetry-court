@@ -46,7 +46,8 @@ test("evaluation report results view shows reviewer distributions and disagreeme
   assert.match(markup, /Reviewer agreement/);
   assert.match(markup, /Final verdict/);
   assert.match(markup, /Major failure mode/);
-  assert.match(markup, /Incomplete comparison/);
+  assert.match(markup, /Major failure mode/);
+  assert.match(markup, /Unavailable/);
   assert.match(markup, /Evidence evidence-2/);
   assert.match(markup, /Disputed/);
   assert.match(markup, /Contradicts: 1, Insufficient: 1/);
