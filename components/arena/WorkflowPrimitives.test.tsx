@@ -4,6 +4,7 @@ import test from "node:test";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
+import { CasePackageImportControl } from "@/components/arena/CasePackageImportControl";
 import {
   ArenaActionFooter,
   ArenaHeader,
@@ -59,4 +60,38 @@ test("workflow primitives render the shared arena page language", () => {
   assert.match(markup, /This is not a verdict\./);
   assert.match(markup, /Back to blind read/);
   assert.match(markup, /Review evidence board/);
+});
+
+test("CasePackage import control renders local import status", () => {
+  const successMarkup = renderStaticMarkup(
+    React.createElement(CasePackageImportControl, {
+      status: {
+        state: "success",
+        packageId: "pkg-imported-001",
+        caseId: "case-imported-001",
+        title: "Imported validation package",
+      },
+      onImportStart: () => undefined,
+      onImportText: () => undefined,
+      onImportReadError: () => undefined,
+    }),
+  );
+  const errorMarkup = renderStaticMarkup(
+    React.createElement(CasePackageImportControl, {
+      status: {
+        state: "error",
+        message: "Invalid case package. Review was not opened.",
+      },
+      onImportStart: () => undefined,
+      onImportText: () => undefined,
+      onImportReadError: () => undefined,
+    }),
+  );
+
+  assert.match(successMarkup, /Import CasePackage/);
+  assert.match(successMarkup, /accept="application\/json,.json"/);
+  assert.match(successMarkup, /Imported case package pkg-imported-001/);
+  assert.match(successMarkup, /case-imported-001/);
+  assert.match(errorMarkup, /role="alert"/);
+  assert.match(errorMarkup, /Invalid case package\. Review was not opened\./);
 });

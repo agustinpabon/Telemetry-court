@@ -40,6 +40,7 @@ export type ArenaUiState = {
 
 export type ArenaAction =
   | { type: "selectCase"; caseId: string }
+  | { type: "startImportedCaseReview"; caseId: string }
   | {
       type: "hydrateSession";
       selectedCaseId?: string;
@@ -118,6 +119,17 @@ export function arenaReducer(
           ? action.caseId
           : state.selectedCaseId,
         activeStage: "landscape",
+      };
+    case "startImportedCaseReview":
+      return {
+        ...state,
+        selectedCaseId: action.caseId,
+        activeStage: "case_file",
+        reviewDrawerOpen: false,
+        reviewsByCase: {
+          ...state.reviewsByCase,
+          [action.caseId]: {},
+        },
       };
     case "openCaseFile":
       return { ...state, activeStage: "case_file" };

@@ -1,9 +1,13 @@
 "use client";
 
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 
 import { AiRevealPanel } from "@/components/arena/AiRevealPanel";
 import { BlindReadPanel } from "@/components/arena/BlindReadPanel";
+import {
+  CasePackageImportControl,
+  type CasePackageImportStatus,
+} from "@/components/arena/CasePackageImportControl";
 import { CaseFilePanel } from "@/components/arena/CaseFilePanel";
 import { EvidenceBoard } from "@/components/arena/EvidenceBoard";
 import { ImpostorPanel } from "@/components/arena/ImpostorPanel";
@@ -33,6 +37,10 @@ import {
   getReviewResultExportFilename,
   serializeReviewResultExport,
 } from "@/lib/exportReview";
+import {
+  importCasePackageV01Json,
+  type CasePackageImportResult,
+} from "@/lib/importCasePackageV01";
 import { saveReviewResultToLocalStoreV01 } from "@/lib/reviewResultStorageV01";
 import type { CaseFile, LandscapeContextNode } from "@/lib/types";
 
@@ -53,10 +61,31 @@ export function AppShell({
   pathname,
   onNavigatePath,
 }: AppShellProps) {
+  const [importedCases, setImportedCases] = useState<CaseFile[]>([]);
+  const importedCaseIds = useMemo(
+    () => new Set(importedCases.map((caseFile) => caseFile.id)),
+    [importedCases],
+  );
+  const sessionPersistableCaseIds = useMemo(
+    () =>
+      new Set(
+        cases
+          .map((caseFile) => caseFile.id)
+          .filter((caseId) => !importedCaseIds.has(caseId)),
+      ),
+    [cases, importedCaseIds],
+  );
+  const activeCases = useMemo(
+    () => [
+      ...importedCases,
+      ...cases.filter((caseFile) => !importedCaseIds.has(caseFile.id)),
+    ],
+    [cases, importedCases, importedCaseIds],
+  );
   const [arenaState, rawDispatch] = useReducer(
     (state: ReturnType<typeof createInitialArenaState>, action: ArenaAction) =>
-      arenaReducer(state, action, cases),
-    { cases, initialStage },
+      arenaReducer(state, action, activeCases),
+    { cases: activeCases, initialStage },
     ({ cases: initialCases, initialStage: nextInitialStage }) =>
       createInitialArenaState(initialCases, nextInitialStage),
   );
@@ -64,8 +93,11 @@ export function AppShell({
   const sessionHydrationPendingRef = useRef(false);
   const [previewCaseId, setPreviewCaseId] = useState<string>();
   const [exportMessage, setExportMessage] = useState<string>();
+  const [importStatus, setImportStatus] = useState<CasePackageImportStatus>({
+    state: "idle",
+  });
 
-  const selectedCase = getSelectedCase(cases, arenaState);
+  const selectedCase = getSelectedCase(activeCases, arenaState);
   const reviewState = getCurrentReviewState(arenaState);
   const blindChoiceId = reviewState.blindChoiceId;
   const aiLabelRevealed = reviewState.aiLabelRevealed;
@@ -80,6 +112,10 @@ export function AppShell({
   }, [activeStage, selectedCase?.id]);
 
   useEffect(() => {
+    if (sessionHydrationCheckedRef.current) {
+      return;
+    }
+
     const storedState = readArenaSessionState(cases);
 
     if (storedState) {
@@ -98,8 +134,8 @@ export function AppShell({
       return;
     }
 
-    persistArenaSessionState(arenaState);
-  }, [arenaState]);
+    persistArenaSessionState(arenaState, sessionPersistableCaseIds);
+  }, [arenaState, sessionPersistableCaseIds]);
 
   useEffect(() => {
     if (!sessionHydrationCheckedRef.current) {
@@ -172,7 +208,10 @@ export function AppShell({
   const exportError = exportResult.ok ? undefined : exportResult.error;
 
   function dispatchArena(action: ArenaAction) {
-    persistArenaSessionState(arenaReducer(arenaState, action, cases));
+    persistArenaSessionState(
+      arenaReducer(arenaState, action, activeCases),
+      sessionPersistableCaseIds,
+    );
     rawDispatch(action);
     setExportMessage(undefined);
   }
@@ -194,6 +233,51 @@ export function AppShell({
 
   function openCaseFile() {
     navigateToStage("case_file");
+  }
+
+  function handleImportStart() {
+    setImportStatus({ state: "reading" });
+  }
+
+  function handleImportReadError(message: string) {
+    setImportStatus({ state: "error", message });
+  }
+
+  function handleImportCasePackageJson(jsonText: string) {
+    const importResult = importCasePackageV01Json(jsonText);
+
+    if (!importResult.ok) {
+      setImportStatus({
+        state: "error",
+        message: formatImportFailureMessage(importResult),
+      });
+      return;
+    }
+
+    const importedCase = importResult.caseFile;
+
+    setImportedCases((currentCases) => [
+      importedCase,
+      ...currentCases.filter((caseFile) => caseFile.id !== importedCase.id),
+    ]);
+    setPreviewCaseId(undefined);
+    setExportMessage(undefined);
+    rawDispatch({
+      type: "startImportedCaseReview",
+      caseId: importedCase.id,
+    });
+    setImportStatus({
+      state: "success",
+      packageId: importResult.package.package_id,
+      caseId: importResult.package.case.case_id,
+      title: importResult.package.case.title,
+    });
+
+    const caseFilePath = getPathForArenaStage("case_file");
+
+    if (caseFilePath !== pathname) {
+      onNavigatePath(caseFilePath);
+    }
   }
 
   function startInvestigation() {
@@ -306,7 +390,16 @@ export function AppShell({
 
   return (
     <main className={shellClassName}>
-      <ArenaHeader />
+      <ArenaHeader
+        actions={
+          <CasePackageImportControl
+            status={importStatus}
+            onImportStart={handleImportStart}
+            onImportText={handleImportCasePackageJson}
+            onImportReadError={handleImportReadError}
+          />
+        }
+      />
 
       <div className="arena-layout">
         <section className="arena-workspace" aria-live="polite">
@@ -315,7 +408,7 @@ export function AppShell({
             className="stage-transition"
           >
             {renderStage({
-              cases,
+              cases: activeCases,
               landscapeContextNodes,
               selectedCase,
               previewCaseId,
@@ -383,6 +476,18 @@ function formatExportActionMessage(actionMessage: string, saveError?: string) {
   return `${actionMessage} Saved ReviewResult locally.`;
 }
 
+function formatImportFailureMessage(
+  importResult: Extract<CasePackageImportResult, { ok: false }>,
+): string {
+  const firstError = importResult.errors[0];
+
+  if (!firstError) {
+    return importResult.message;
+  }
+
+  return `${importResult.message} First validation error: ${firstError.code} at ${firstError.path}.`;
+}
+
 function readArenaSessionState(cases: CaseFile[]) {
   if (typeof window === "undefined") {
     return undefined;
@@ -414,16 +519,28 @@ function readArenaSessionState(cases: CaseFile[]) {
   }
 }
 
-function persistArenaSessionState(state: ArenaUiState) {
+function persistArenaSessionState(
+  state: ArenaUiState,
+  persistableCaseIds: Set<string>,
+) {
   if (typeof window === "undefined") {
     return;
   }
 
+  const reviewsByCase = Object.fromEntries(
+    Object.entries(state.reviewsByCase).filter(([caseId]) =>
+      persistableCaseIds.has(caseId),
+    ),
+  );
+  const selectedCaseId = persistableCaseIds.has(state.selectedCaseId)
+    ? state.selectedCaseId
+    : "";
+
   window.sessionStorage.setItem(
     arenaSessionStateKey,
     JSON.stringify({
-      selectedCaseId: state.selectedCaseId,
-      reviewsByCase: state.reviewsByCase,
+      selectedCaseId,
+      reviewsByCase,
     }),
   );
 }
