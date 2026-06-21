@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 
-import { RoutedAppShell } from "@/components/arena/RoutedAppShell";
+import { PackageReviewGate } from "@/components/arena/PackageReviewGate";
 import {
-  sampleCases,
+  samplePackageReviewRenderState,
   sampleLandscapeContextNodes,
 } from "@/data/sampleCases";
 import { getArenaStageForSlug } from "@/lib/arenaRoutes";
@@ -22,8 +22,8 @@ export default async function ArenaPage({ params }: ArenaPageProps) {
   }
 
   return (
-    <RoutedAppShell
-      cases={sampleCases}
+    <PackageReviewGate
+      renderState={samplePackageReviewRenderState}
       landscapeContextNodes={sampleLandscapeContextNodes}
       initialStage={initialStage}
     />

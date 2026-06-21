@@ -12,15 +12,19 @@ import { EvidenceBoard } from "@/components/arena/EvidenceBoard";
 import { getLandscapeAtlasPosition } from "@/components/arena/EvidenceGalaxyAtlas";
 import { ImpostorPanel } from "@/components/arena/ImpostorPanel";
 import { LabelDuelPanel } from "@/components/arena/LabelDuelPanel";
+import { PackageReviewGate } from "@/components/arena/PackageReviewGate";
 import { VerdictPanel } from "@/components/arena/VerdictPanel";
 import { CaseSwitcher } from "@/components/CaseSwitcher";
 import { ClaimLedger } from "@/components/ClaimLedger";
 import { EvidenceCard } from "@/components/EvidenceCard";
 import { ScorePanel } from "@/components/ScorePanel";
+import { casePackageFixtures } from "@/data/casePackageFixtures";
+import { buildPackageReviewRenderState } from "@/data/sampleCases";
 import {
   sampleCases,
   sampleLandscapeContextNodes,
 } from "@/data/sampleCases";
+import { sampleCaseSeedData } from "@/data/sampleCaseSeedData";
 import {
   arenaRouteEntries,
   getArenaStageForSlug,
@@ -164,6 +168,44 @@ test("home page static review flow exposes the core Telemetry Court concepts", (
   assert.match(pageText, /Impostor/);
   assert.match(pageText, /Verdict/);
   assert.doesNotMatch(pageText, /Investigation stages/);
+});
+
+test("invalid package render state shows sanitized validation errors instead of review UI", () => {
+  const invalidPackage = structuredClone(casePackageFixtures[0]) as Record<
+    string,
+    unknown
+  > & {
+    claims: Array<{ linked_evidence_ids: string[] }>;
+  };
+  invalidPackage.schema_version =
+    "case_package.v9-secret-account-111111111111";
+  invalidPackage.claims[0].linked_evidence_ids = [
+    "raw-secret-evidence-id-98765",
+  ];
+  const renderState = buildPackageReviewRenderState(
+    [invalidPackage],
+    [sampleCaseSeedData[0]],
+  );
+  const markup = renderStaticMarkup(
+    React.createElement(PackageReviewGate, {
+      renderState,
+      landscapeContextNodes: sampleLandscapeContextNodes,
+      initialStage: "landscape",
+    }),
+  );
+
+  assert.match(markup, /Invalid CasePackage/);
+  assert.match(markup, /failed validation and cannot be reviewed/);
+  assert.match(markup, /\$\.packages\[0\]\.schema_version/);
+  assert.match(markup, /unsupported_schema_version/);
+  assert.match(markup, /\$\.packages\[0\]\.claims\[0\]\.linked_evidence_ids\[0\]/);
+  assert.match(markup, /unknown_evidence_reference/);
+  assert.match(markup, /Claim references missing evidence ID/);
+  assert.match(markup, /\[redacted\]/);
+  assert.doesNotMatch(markup, /case_package\.v9-secret-account-111111111111/);
+  assert.doesNotMatch(markup, /raw-secret-evidence-id-98765/);
+  assert.doesNotMatch(markup, /IAM role provisioning region/);
+  assert.doesNotMatch(markup, /Open case file/);
 });
 
 test("telemetry galaxy renders every synthetic behavioural region", () => {
