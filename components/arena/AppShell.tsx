@@ -6,6 +6,7 @@ import { AiRevealPanel } from "@/components/arena/AiRevealPanel";
 import { BlindReadPanel } from "@/components/arena/BlindReadPanel";
 import {
   CasePackageImportControl,
+  type CasePackageImportFailureDetails,
   type CasePackageImportStatus,
 } from "@/components/arena/CasePackageImportControl";
 import { CaseFilePanel } from "@/components/arena/CaseFilePanel";
@@ -50,6 +51,7 @@ type AppShellProps = {
   initialStage: ReturnType<typeof createInitialArenaState>["activeStage"];
   pathname: string;
   onNavigatePath: (path: string) => void;
+  onNavigatePathPreservingState?: (path: string) => void;
 };
 
 const arenaSessionStateKey = "telemetry-court-arena-state-v1";
@@ -60,6 +62,7 @@ export function AppShell({
   initialStage,
   pathname,
   onNavigatePath,
+  onNavigatePathPreservingState = onNavigatePath,
 }: AppShellProps) {
   const [importedCases, setImportedCases] = useState<CaseFile[]>([]);
   const importedCaseIds = useMemo(
@@ -240,7 +243,25 @@ export function AppShell({
   }
 
   function handleImportReadError(message: string) {
-    setImportStatus({ state: "error", message });
+    setImportStatus({
+      state: "error",
+      failure: {
+        reason: "read_error",
+        title: "CasePackage file could not be read",
+        summary:
+          "The selected file could not be read locally. Package validation did not run and review cannot start.",
+        suggestedFix:
+          "Choose another local JSON file or confirm the file is accessible before retrying.",
+        message,
+        errors: [
+          {
+            path: "$file",
+            code: "file_read_failed",
+            message,
+          },
+        ],
+      },
+    });
   }
 
   function handleImportCasePackageJson(jsonText: string) {
@@ -249,7 +270,7 @@ export function AppShell({
     if (!importResult.ok) {
       setImportStatus({
         state: "error",
-        message: formatImportFailureMessage(importResult),
+        failure: toImportFailureDetails(importResult),
       });
       return;
     }
@@ -276,7 +297,26 @@ export function AppShell({
     const caseFilePath = getPathForArenaStage("case_file");
 
     if (caseFilePath !== pathname) {
-      onNavigatePath(caseFilePath);
+      onNavigatePathPreservingState(caseFilePath);
+    }
+  }
+
+  function handleClearImport() {
+    const demoCaseId = cases[0]?.id;
+
+    setImportedCases([]);
+    setPreviewCaseId(undefined);
+    setExportMessage(undefined);
+    setImportStatus({ state: "idle" });
+
+    if (demoCaseId) {
+      dispatchArena({ type: "selectCase", caseId: demoCaseId });
+    }
+
+    const landscapePath = getPathForArenaStage("landscape");
+
+    if (landscapePath !== pathname) {
+      onNavigatePath(landscapePath);
     }
   }
 
@@ -397,6 +437,7 @@ export function AppShell({
             onImportStart={handleImportStart}
             onImportText={handleImportCasePackageJson}
             onImportReadError={handleImportReadError}
+            onClearImport={handleClearImport}
           />
         }
       />
@@ -476,16 +517,17 @@ function formatExportActionMessage(actionMessage: string, saveError?: string) {
   return `${actionMessage} Saved ReviewResult locally.`;
 }
 
-function formatImportFailureMessage(
+function toImportFailureDetails(
   importResult: Extract<CasePackageImportResult, { ok: false }>,
-): string {
-  const firstError = importResult.errors[0];
-
-  if (!firstError) {
-    return importResult.message;
-  }
-
-  return `${importResult.message} First validation error: ${firstError.code} at ${firstError.path}.`;
+): CasePackageImportFailureDetails {
+  return {
+    reason: importResult.reason,
+    title: importResult.title,
+    summary: importResult.summary,
+    suggestedFix: importResult.suggestedFix,
+    message: importResult.message,
+    errors: importResult.errors,
+  };
 }
 
 function readArenaSessionState(cases: CaseFile[]) {

@@ -74,24 +74,54 @@ test("CasePackage import control renders local import status", () => {
       onImportStart: () => undefined,
       onImportText: () => undefined,
       onImportReadError: () => undefined,
+      onClearImport: () => undefined,
     }),
   );
   const errorMarkup = renderStaticMarkup(
     React.createElement(CasePackageImportControl, {
       status: {
         state: "error",
-        message: "Invalid case package. Review was not opened.",
+        failure: {
+          reason: "schema_version",
+          title: "Missing or unsupported schema version",
+          summary:
+            "Package validation could not confirm a supported CasePackage schema version. Review cannot start.",
+          suggestedFix:
+            'Set schema_version to "case_package.v0.1" and retry the import.',
+          message:
+            "Missing or unsupported CasePackage schema version. Review cannot start.",
+          errors: [
+            {
+              path: "$.schema_version",
+              code: "unsupported_schema_version",
+              message:
+                'Unsupported CasePackage schema_version "case_package.v9-secret-account-111111111111". Expected "case_package.v0.1".',
+            },
+          ],
+        },
       },
       onImportStart: () => undefined,
       onImportText: () => undefined,
       onImportReadError: () => undefined,
+      onClearImport: () => undefined,
     }),
   );
 
   assert.match(successMarkup, /Import CasePackage/);
   assert.match(successMarkup, /accept="application\/json,.json"/);
-  assert.match(successMarkup, /Imported case package pkg-imported-001/);
+  assert.match(successMarkup, /Imported CasePackage pkg-imported-001/);
   assert.match(successMarkup, /case-imported-001/);
   assert.match(errorMarkup, /role="alert"/);
-  assert.match(errorMarkup, /Invalid case package\. Review was not opened\./);
+  assert.match(errorMarkup, /Package validation/);
+  assert.match(errorMarkup, /Missing or unsupported schema version/);
+  assert.match(errorMarkup, /Review not started/);
+  assert.match(errorMarkup, /Error count/);
+  assert.match(errorMarkup, /First validation errors/);
+  assert.match(errorMarkup, /\$\.schema_version/);
+  assert.match(errorMarkup, /unsupported_schema_version/);
+  assert.match(errorMarkup, /\[redacted\]/);
+  assert.match(errorMarkup, /Choose Another File/);
+  assert.match(errorMarkup, /Clear failed import \/ return to demo/);
+  assert.match(errorMarkup, /Copy diagnostics/);
+  assert.doesNotMatch(errorMarkup, /case_package\.v9-secret-account-111111111111/);
 });

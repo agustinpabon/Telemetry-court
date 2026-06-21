@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-21: CasePackage Import Failure Diagnostics
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Start issue #98 by replacing the minimal invalid-package import status with useful, safe failure diagnostics, without implementing #99 ReviewResult bundle import/export, #100 local/imported ReviewResult results, #101 end-to-end smoke testing, backend persistence, databases, auth, upload services, raw telemetry ingestion, SIEM/SOC workflows, chatbot UI, or real Toponymy/ACME4 support.
+- Files changed: `lib/importCasePackageV01.ts`, `lib/importCasePackageV01.test.ts`, `components/arena/CasePackageImportControl.tsx`, `components/arena/AppShell.tsx`, `components/arena/RoutedAppShell.tsx`, `components/arena/WorkflowPrimitives.test.tsx`, `app/investigation-workflow.css`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added import failure categories for malformed JSON, missing or unsupported schema versions, structural `CasePackageV01` validation failures, and contract-valid packages that cannot enter the current review workflow. The import control now renders a failure panel with concise summary, error count, visible path/code/message diagnostics, suggested fix, review-not-started state, redacted messages, choose-another-file, clear-failed-import/return-to-demo, and copy-diagnostics actions. The import-to-review route transition preserves the validated in-memory CasePackage instead of remounting the routed shell and showing a demo case.
+- Decisions made: Kept the existing local file import architecture from #97; kept strict validation and adapter readiness as blocking failures; capped visible and copied diagnostics; preserved successful imports in React memory and the synthetic demo fixture flow; used the Next.js-integrated native History API only for the import-to-review transition; made returning to the demo an explicit clear action.
+- Checks run: Focused `npm test -- lib/importCasePackageV01.test.ts components/arena/WorkflowPrimitives.test.tsx` passed with 9 tests; `npm test` passed with 129 tests; `npx tsc --noEmit` passed; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed.
+- Assumptions: The current UI readiness requirements from the CasePackage adapter remain valid: an AI-generated label, reviewable evidence, representative sessions, neighbor context, embedding coordinates, and available metrics are still needed before review can start.
+- Risks/follow-ups: This does not aggregate ReviewResults, import/export result bundles, or run an end-to-end import-to-report smoke test. #99 remains the next step after #98.
+- Next recommended step: Implement #99 ReviewResult bundle export/import after this PR is reviewed.
+- Suggested commit message: `feat: show CasePackage import diagnostics`
+
 ## 2026-06-21: Local CasePackage JSON Import
 
 - Agent/model: Codex (GPT-5)
