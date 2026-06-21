@@ -19,11 +19,20 @@ Potential upstream producers include Toponymy, notebooks and clustering pipeline
 
 Upstream systems own raw telemetry processing, sessionization, embeddings, clustering, and initial label generation. Telemetry Court must not invent those capabilities or require one specific upstream implementation.
 
+The adapter boundary for those producer categories is documented in
+[`ADAPTER_BOUNDARY.md`](./ADAPTER_BOUNDARY.md). It frames future Toponymy,
+DataMapPlot, ACME4-style, CloudTrail-style, and synthetic/sanitized producers
+as sources of approved `CasePackage` JSON, not as raw telemetry integrations.
+
 ## Boundary: CasePackage JSON
 
 The integration boundary is a validated, versioned `CasePackage`, not direct access to raw telemetry or an unspecified backend API.
 
 The package contains the cluster interpretation, claims, evidence, provenance, review configuration, and safe references needed for review. Adapters translate approved upstream output into this contract. See [CASE_PACKAGE_CONTRACT.md](./CASE_PACKAGE_CONTRACT.md).
+
+This repository must not claim real Toponymy support, real ACME4 support,
+DataMapPlot execution, or raw restricted telemetry ingestion until a concrete
+adapter is implemented, validated, and documented.
 
 ## Telemetry Court
 

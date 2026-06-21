@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-21: Adapter Boundary Documentation
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Start GitHub issue #54 only by documenting the Toponymy / ACME4 adapter boundary without implementing an adapter, inventing upstream APIs, introducing raw restricted telemetry, or claiming real Toponymy or ACME4 support.
+- Files changed: `docs/ADAPTER_BOUNDARY.md`, `docs/ARCHITECTURE.md`, `docs/CASE_PACKAGE_CONTRACT.md`, `docs/TOPONYMY_NOTES.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a dedicated adapter-boundary note that defines the flow from upstream pipeline or notebook to precomputed cluster output, approved `CasePackage` JSON, Telemetry Court review, `ReviewResult`, and `EvaluationReport`. The note names Toponymy, DataMapPlot, ACME4-style experiments, CloudTrail-style experiments, and synthetic/sanitized package generators as possible upstream producer categories while keeping Telemetry Court on the package boundary.
+- Decisions made: Kept the change documentation-only; framed future adapters as producers of approved package-shaped JSON; included a minimal synthetic/sanitized adapter-produced `CasePackage` example; explicitly stated that the repo must not claim real Toponymy, real ACME4, DataMapPlot execution, raw telemetry ingestion, persistence, auth, upload flows, scoring, adjudication, consensus, SIEM/SOC behavior, chatbot behavior, or UI redesign from this boundary work.
+- Checks run: Embedded JSON example parsed and passed `validateCasePackageV01`; `git diff --check` passed. No formatter or markdown-check script is configured.
+- Assumptions: A dedicated adapter-boundary doc plus links from architecture, the CasePackage contract, and Toponymy notes gives future adapter implementers a clearer handoff than expanding one existing product page.
+- Risks/follow-ups: Future real adapters still need verified upstream source contracts, approved data-handling procedures, validation fixtures, and end-to-end review-to-report proof before any real support claim is made.
+- Next recommended step: Use this boundary as the entry point for a later approved adapter prototype issue.
+- Suggested commit message: `docs(adapter): document upstream package boundary`
+
 ## 2026-06-21: Issue #27 Contract Audit Closure
 
 - Agent/model: Codex (GPT-5)

@@ -29,6 +29,10 @@ Secondary pages may be mentioned only as non-authoritative navigation aids. They
 
 Telemetry Court treats Toponymy as a credible upstream producer category and future adapter source, not as a current implementation dependency.
 
+The broader adapter boundary for Toponymy, DataMapPlot, ACME4-style,
+CloudTrail-style, and synthetic/sanitized producers is documented in
+[`ADAPTER_BOUNDARY.md`](./ADAPTER_BOUNDARY.md).
+
 Use careful language:
 
 - "downstream of Toponymy-style cluster naming"
