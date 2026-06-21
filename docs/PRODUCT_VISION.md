@@ -70,6 +70,10 @@ Verdicts should distinguish supported, partially supported, unsupported or overc
 
 Uncertainty is a valid result. Telemetry Court must not force certainty when the evidence cannot support it.
 
+The evaluation semantics for canonical verdict values and structured
+failure-mode reason codes are defined in
+[`VERDICT_AND_FAILURE_MODE_SEMANTICS.md`](./VERDICT_AND_FAILURE_MODE_SEMANTICS.md).
+
 ## Current Static Validation Slice
 
 The current Next.js interface uses five synthetic cases and local state. It demonstrates the review protocol and structured JSON export. It does not yet prove real-world validation value, run Toponymy, ingest ACME4, persist results, support independent reviewers, or calculate evaluation reports.

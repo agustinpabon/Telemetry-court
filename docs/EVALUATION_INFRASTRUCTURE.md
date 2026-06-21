@@ -42,6 +42,11 @@ Expected metrics include:
 
 Every metric must define its inputs, denominator, treatment of incomplete reviews, compatible schema versions, and calculation version. Metrics that cannot be calculated from available data must be reported as unavailable.
 
+Verdict and failure-mode reason-code semantics are defined in
+[`VERDICT_AND_FAILURE_MODE_SEMANTICS.md`](./VERDICT_AND_FAILURE_MODE_SEMANTICS.md).
+Those definitions specify which concepts each value can contribute to without
+turning a human review choice into an automated score or adjudicated consensus.
+
 ## Review Integrity
 
 The infrastructure must preserve:

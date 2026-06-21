@@ -341,6 +341,11 @@ Canonical verdicts for future `ReviewResult` compatibility:
 - `needs_merge`
 - `needs_better_evidence`
 
+The evaluation meaning of each verdict is defined in
+[`VERDICT_AND_FAILURE_MODE_SEMANTICS.md`](./VERDICT_AND_FAILURE_MODE_SEMANTICS.md).
+These values are human review judgments, not automated scores or clustering
+actions.
+
 Canonical recommended actions for future `ReviewResult` compatibility:
 
 - `accept_label`
