@@ -249,7 +249,12 @@ download. The current app also includes a fixture-backed read-only
 `EvaluationReport` results view with JSON/CSV downloads for the existing report
 artifact. The report includes deterministic descriptive rollups grouped by
 selected label ID and compact package/pipeline metadata, with absent optional
-metadata recorded as unavailable. Exact package-reference compatibility means
+metadata recorded as unavailable. It also includes descriptive agreement signals
+for verdict, label winner, evidence ratings by stable evidence ID, and a major
+failure mode when a review selects exactly one mode. Agreement signals retain
+compared and unavailable review counts, observed value counts, explicit
+available/incomplete/unavailable states, and disputed-evidence flags without
+choosing a correct value or consensus. Exact package-reference compatibility means
 non-label metadata remains single-value context; durable backend storage, real
 cross-package report workflows, confidence capture, and broader
 `EvaluationReport` production remain future work.

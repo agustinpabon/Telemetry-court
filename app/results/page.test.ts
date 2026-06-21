@@ -19,6 +19,9 @@ test("results page renders a focused EvaluationReport view outside the review wo
   assert.match(markup, /Verdict distribution/);
   assert.match(markup, /Label winner distribution/);
   assert.match(markup, /Evidence rating distribution/);
+  assert.match(markup, /Reviewer agreement/);
+  assert.match(markup, /Evidence evidence-2/);
+  assert.match(markup, /Disputed/);
   assert.match(markup, /Download JSON/);
   assert.match(markup, /Download CSV/);
   assert.doesNotMatch(markup, /Step 1 of 8/);

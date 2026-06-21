@@ -2,6 +2,7 @@ import {
   EVALUATION_REPORT_V01_COMPARISON_DIMENSIONS,
   type ComparisonRollupV01,
   type EvaluationReportV01,
+  type ReviewerAgreementSignalV01,
 } from "@/lib/evaluationReportV01";
 import {
   REVIEW_RESULT_V01_EVIDENCE_RATINGS,
@@ -38,7 +39,7 @@ const evaluationReportCsvHeadersV01 = [
   "status",
 ] as const;
 
-type CsvStatus = "available" | "unavailable";
+type CsvStatus = "available" | "incomplete" | "unavailable";
 
 type EvaluationReportCsvRowV01 = Record<
   (typeof evaluationReportCsvHeadersV01)[number],
@@ -119,6 +120,22 @@ function buildEvaluationReportJsonExportV01(
     failure_mode_counts: [...report.failure_mode_counts].sort((left, right) =>
       compareStrings(left.failure_mode, right.failure_mode),
     ),
+    reviewer_agreement: {
+      verdict: normalizeReviewerAgreementSignal(
+        report.reviewer_agreement.verdict,
+      ),
+      label_winner: normalizeReviewerAgreementSignal(
+        report.reviewer_agreement.label_winner,
+      ),
+      evidence_ratings: [...report.reviewer_agreement.evidence_ratings]
+        .sort((left, right) =>
+          compareStrings(left.evidence_id, right.evidence_id),
+        )
+        .map(normalizeReviewerAgreementSignal),
+      major_failure_mode: normalizeReviewerAgreementSignal(
+        report.reviewer_agreement.major_failure_mode,
+      ),
+    },
     comparison_rollups: [...report.comparison_rollups]
       .sort(
         (left, right) =>
@@ -130,6 +147,17 @@ function buildEvaluationReportJsonExportV01(
       ...report.disagreement,
       evidence_ids: [...report.disagreement.evidence_ids].sort(),
     },
+  };
+}
+
+function normalizeReviewerAgreementSignal<
+  Signal extends ReviewerAgreementSignalV01,
+>(signal: Signal): Signal {
+  return {
+    ...signal,
+    values: [...signal.values].sort((left, right) =>
+      compareStrings(left.value, right.value),
+    ),
   };
 }
 
@@ -170,6 +198,8 @@ function buildEvaluationReportCsvRowsV01(
 ): EvaluationReportCsvRowV01[] {
   const rows: EvaluationReportCsvRowV01[] = [];
   const reviewerOutputStatus = getReviewerOutputStatus(report);
+  const reviewerComparisonStatus: CsvStatus =
+    report.reviewer_count >= 2 ? "available" : "unavailable";
 
   rows.push(
     createCsvRow(report, {
@@ -275,6 +305,44 @@ function buildEvaluationReportCsvRowsV01(
     );
   }
 
+  for (const [dimension, signal] of [
+    ["verdict", report.reviewer_agreement.verdict],
+    ["label_winner", report.reviewer_agreement.label_winner],
+    ["major_failure_mode", report.reviewer_agreement.major_failure_mode],
+  ] as const) {
+    appendAgreementSignalRows(
+      rows,
+      report,
+      "reviewer_agreement",
+      dimension,
+      signal,
+    );
+  }
+
+  for (const evidenceAgreement of report.reviewer_agreement.evidence_ratings) {
+    appendAgreementSignalRows(
+      rows,
+      report,
+      "evidence_rating_agreement",
+      evidenceAgreement.evidence_id,
+      evidenceAgreement,
+    );
+    rows.push(
+      createCsvRow(report, {
+        section: "disputed_evidence",
+        key: evidenceAgreement.evidence_id,
+        value:
+          evidenceAgreement.unanimous === null
+            ? ""
+            : evidenceAgreement.disputed
+              ? "true"
+              : "false",
+        count: evidenceAgreement.compared_review_count,
+        status: evidenceAgreement.status,
+      }),
+    );
+  }
+
   for (const rollup of report.comparison_rollups) {
     if (rollup.status === "unavailable") {
       rows.push(
@@ -348,42 +416,45 @@ function buildEvaluationReportCsvRowsV01(
       key: "has_any_disagreement",
       value: formatAvailableBoolean(
         report.disagreement.has_any_disagreement,
-        reviewerOutputStatus,
+        reviewerComparisonStatus,
       ),
-      status: reviewerOutputStatus,
+      status: reviewerComparisonStatus,
     }),
     createCsvRow(report, {
       section: "disagreement",
       key: "verdict",
-      value: formatAvailableBoolean(report.disagreement.verdict, reviewerOutputStatus),
-      status: reviewerOutputStatus,
+      value: formatAvailableBoolean(
+        report.disagreement.verdict,
+        reviewerComparisonStatus,
+      ),
+      status: reviewerComparisonStatus,
     }),
     createCsvRow(report, {
       section: "disagreement",
       key: "recommended_action",
       value: formatAvailableBoolean(
         report.disagreement.recommended_action,
-        reviewerOutputStatus,
+        reviewerComparisonStatus,
       ),
-      status: reviewerOutputStatus,
+      status: reviewerComparisonStatus,
     }),
     createCsvRow(report, {
       section: "disagreement",
       key: "label_winner",
       value: formatAvailableBoolean(
         report.disagreement.label_winner,
-        reviewerOutputStatus,
+        reviewerComparisonStatus,
       ),
-      status: reviewerOutputStatus,
+      status: reviewerComparisonStatus,
     }),
     createCsvRow(report, {
       section: "disagreement",
       key: "evidence_ratings",
       value: formatAvailableBoolean(
         report.disagreement.evidence_ratings,
-        reviewerOutputStatus,
+        reviewerComparisonStatus,
       ),
-      status: reviewerOutputStatus,
+      status: reviewerComparisonStatus,
     }),
   );
 
@@ -393,8 +464,8 @@ function buildEvaluationReportCsvRowsV01(
         createCsvRow(report, {
           section: "disagreement_evidence_ids",
           key: evidenceId,
-          count: formatAvailableCount(1, reviewerOutputStatus),
-          status: reviewerOutputStatus,
+          count: formatAvailableCount(1, reviewerComparisonStatus),
+          status: reviewerComparisonStatus,
         }),
       );
     }
@@ -402,14 +473,75 @@ function buildEvaluationReportCsvRowsV01(
     rows.push(
       createCsvRow(report, {
         section: "disagreement_evidence_ids",
-        key: reviewerOutputStatus === "available" ? "none_reported" : "unavailable",
-        count: reviewerOutputStatus === "available" ? 0 : "",
-        status: reviewerOutputStatus,
+        key:
+          reviewerComparisonStatus === "available"
+            ? "none_reported"
+            : "unavailable",
+        count: reviewerComparisonStatus === "available" ? 0 : "",
+        status: reviewerComparisonStatus,
       }),
     );
   }
 
   return rows;
+}
+
+function appendAgreementSignalRows(
+  rows: EvaluationReportCsvRowV01[],
+  report: EvaluationReportV01,
+  sectionPrefix: "reviewer_agreement" | "evidence_rating_agreement",
+  key: string,
+  signal: ReviewerAgreementSignalV01,
+) {
+  rows.push(
+    createCsvRow(report, {
+      section: sectionPrefix,
+      key,
+      value:
+        signal.unanimous === null
+          ? ""
+          : signal.unanimous
+            ? "unanimous"
+            : "disagreement",
+      count: signal.compared_review_count,
+      status: signal.status,
+    }),
+    createCsvRow(report, {
+      section: `${sectionPrefix}_unavailable_review_count`,
+      key,
+      count: signal.unavailable_review_count,
+      status: signal.status,
+    }),
+    createCsvRow(report, {
+      section: `${sectionPrefix}_distinct_value_count`,
+      key,
+      count: signal.distinct_value_count,
+      status: signal.status,
+    }),
+  );
+
+  for (const value of signal.values) {
+    rows.push(
+      createCsvRow(report, {
+        section: `${sectionPrefix}_value`,
+        key,
+        value: value.value,
+        count: value.review_count,
+        status: signal.status,
+      }),
+    );
+  }
+
+  if (signal.reason) {
+    rows.push(
+      createCsvRow(report, {
+        section: `${sectionPrefix}_reason`,
+        key,
+        value: signal.reason,
+        status: signal.status,
+      }),
+    );
+  }
 }
 
 function createCsvRow(

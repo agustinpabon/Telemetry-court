@@ -8,6 +8,7 @@ import { EvaluationReportExportActions } from "@/components/evaluation/Evaluatio
 import type {
   ComparisonDimensionV01,
   EvaluationReportV01,
+  ReviewerAgreementSignalV01,
 } from "@/lib/evaluationReportV01";
 import type {
   CasePackageEvidenceRatingV01,
@@ -59,6 +60,7 @@ export function EvaluationReportResults({ report }: EvaluationReportResultsProps
   const hasReviewerOutput = report.reviewer_count > 0;
   const verdictTotal = sumCounts(report.verdict_distribution);
   const evidenceRatingTotal = sumCounts(report.evidence_rating_distribution);
+  const hasComparableReviews = report.reviewer_count >= 2;
   const reportStatus = getReportStatus(report, hasReviewerOutput);
 
   return (
@@ -175,6 +177,11 @@ export function EvaluationReportResults({ report }: EvaluationReportResultsProps
         total={evidenceRatingTotal}
       />
 
+      <ReviewerAgreementSection
+        report={report}
+        hasReviewerOutput={hasReviewerOutput}
+      />
+
       <ComparisonRollupsSection
         report={report}
         hasReviewerOutput={hasReviewerOutput}
@@ -188,7 +195,7 @@ export function EvaluationReportResults({ report }: EvaluationReportResultsProps
           title="Disagreement indicators"
           description="Flags show where reviewers selected different values. They do not choose a winner."
         />
-        {hasReviewerOutput ? (
+        {hasComparableReviews ? (
           <>
             <div className="evaluation-disagreement-grid">
               <DisagreementFlag
@@ -221,11 +228,140 @@ export function EvaluationReportResults({ report }: EvaluationReportResultsProps
             )}
           </>
         ) : (
-          <UnavailableState label="Disagreement indicators unavailable" />
+          <UnavailableState label="Disagreement comparison unavailable" />
         )}
       </section>
     </ArenaWorkflowShell>
   );
+}
+
+function ReviewerAgreementSection({
+  report,
+  hasReviewerOutput,
+}: {
+  report: EvaluationReportV01;
+  hasReviewerOutput: boolean;
+}) {
+  return (
+    <section className="evaluation-report-section" aria-label="Reviewer agreement">
+      <SectionHeader
+        title="Reviewer agreement"
+        description="Descriptive reviewer comparisons with observed values and coverage. Agreement does not establish a correct answer."
+      />
+      {hasReviewerOutput ? (
+        <div className="evaluation-comparison-list">
+          <AgreementSignalRow
+            label="Final verdict"
+            signal={report.reviewer_agreement.verdict}
+            valueLabels={verdictLabels}
+          />
+          <AgreementSignalRow
+            label="Label winner"
+            signal={report.reviewer_agreement.label_winner}
+          />
+          <AgreementSignalRow
+            label="Major failure mode"
+            signal={report.reviewer_agreement.major_failure_mode}
+            humanizeValues
+          />
+          {report.reviewer_agreement.evidence_ratings.map((evidence) => (
+            <AgreementSignalRow
+              key={evidence.evidence_id}
+              label={`Evidence ${evidence.evidence_id}`}
+              signal={evidence}
+              valueLabels={evidenceRatingLabels}
+              disputed={evidence.disputed}
+            />
+          ))}
+        </div>
+      ) : (
+        <UnavailableState label="Reviewer agreement unavailable" />
+      )}
+    </section>
+  );
+}
+
+function AgreementSignalRow({
+  label,
+  signal,
+  valueLabels,
+  disputed = false,
+  humanizeValues = false,
+}: {
+  label: string;
+  signal: ReviewerAgreementSignalV01;
+  valueLabels?: Record<string, string>;
+  disputed?: boolean;
+  humanizeValues?: boolean;
+}) {
+  return (
+    <article className="evaluation-comparison-row">
+      <header>
+        <strong>{label}</strong>
+        <span>{formatAgreementState(signal, disputed)}</span>
+      </header>
+      <div className="evaluation-comparison-groups">
+        <p>
+          Compared: {formatCount(signal.compared_review_count, "review", "reviews")};
+          unavailable: {formatCount(
+            signal.unavailable_review_count,
+            "review",
+            "reviews",
+          )}.
+        </p>
+        <p>
+          Observed values: {formatAgreementValues(
+            signal.values,
+            valueLabels,
+            humanizeValues,
+          )}.
+        </p>
+        {signal.reason ? <p>{signal.reason}</p> : null}
+      </div>
+    </article>
+  );
+}
+
+function formatAgreementState(
+  signal: ReviewerAgreementSignalV01,
+  disputed: boolean,
+) {
+  if (signal.status === "incomplete") {
+    return disputed ? "Disputed, incomplete coverage" : "Incomplete comparison";
+  }
+
+  if (signal.status === "unavailable" || signal.unanimous === null) {
+    return "Unavailable";
+  }
+
+  if (disputed || !signal.unanimous) {
+    return "Disputed";
+  }
+
+  return "Unanimous";
+}
+
+function formatAgreementValues(
+  values: ReviewerAgreementSignalV01["values"],
+  labels?: Record<string, string>,
+  humanizeValues = false,
+) {
+  if (values.length === 0) {
+    return "none available";
+  }
+
+  return values
+    .map(({ value, review_count: reviewCount }) =>
+      `${labels?.[value] ?? (humanizeValues ? formatAgreementValue(value) : value)}: ${reviewCount}`,
+    )
+    .join(", ");
+}
+
+function formatAgreementValue(value: string) {
+  return value
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 function ComparisonRollupsSection({
@@ -410,6 +546,10 @@ function getReportStatus(
 } {
   if (!hasReviewerOutput) {
     return { label: "Reviewer output unavailable", tone: "neutral" };
+  }
+
+  if (report.reviewer_count < 2) {
+    return { label: "Agreement comparison unavailable", tone: "neutral" };
   }
 
   if (report.disagreement.has_any_disagreement) {

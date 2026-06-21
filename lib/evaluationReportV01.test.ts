@@ -90,11 +90,15 @@ test("compatible reviews aggregate deterministic counts and disagreement", () =>
   });
 
   const report = aggregateReviewResultsV01([reviewA, reviewB]);
-  const { comparison_rollups: comparisonRollups, ...baseReport } = report;
+  const {
+    comparison_rollups: comparisonRollups,
+    reviewer_agreement: _reviewerAgreement,
+    ...baseReport
+  } = report;
 
   assert.deepEqual(baseReport, {
     schema_version: "evaluation_report.v0.1",
-    calculation_version: "review_result_aggregation.v0.2",
+    calculation_version: "review_result_aggregation.v0.3",
     case_package: reviewA.case_package,
     source_review_ids: ["review-a", "review-b"],
     reviewer_count: 2,
@@ -154,6 +158,12 @@ test("compatible reviews aggregate deterministic counts and disagreement", () =>
   assert.equal(report.recommended_action_distribution.split_cluster, 0);
   assert.equal(report.recommended_action_distribution.merge_cluster, 0);
   assert.equal(report.recommended_action_distribution.collect_more_evidence, 0);
+  assert.equal(_reviewerAgreement.verdict.unanimous, false);
+  assert.deepEqual(_reviewerAgreement.verdict.values, [
+    { value: "supported", review_count: 1 },
+    { value: "unsupported_or_overclaimed", review_count: 1 },
+  ]);
+  assert.equal(_reviewerAgreement.label_winner.unanimous, false);
 });
 
 test("comparison rollups group reviewer signals by selected label ID", () => {
@@ -342,8 +352,9 @@ test("aggregation rejects an empty ReviewResult list", () => {
 
 test("a single compatible review reports no disagreement", () => {
   const review = createReviewResult();
+  const report = aggregateReviewResultsV01([review]);
 
-  assert.deepEqual(aggregateReviewResultsV01([review]).disagreement, {
+  assert.deepEqual(report.disagreement, {
     has_any_disagreement: false,
     verdict: false,
     recommended_action: false,
@@ -351,6 +362,202 @@ test("a single compatible review reports no disagreement", () => {
     evidence_ratings: false,
     evidence_ids: [],
   });
+  assert.deepEqual(report.reviewer_agreement.verdict, {
+    status: "unavailable",
+    compared_review_count: 1,
+    unavailable_review_count: 0,
+    distinct_value_count: 1,
+    unanimous: null,
+    values: [{ value: "supported", review_count: 1 }],
+    reason:
+      "At least two reviewer verdicts are required to describe agreement.",
+  });
+});
+
+test("matching reviewer verdicts and label winners report available agreement", () => {
+  const report = aggregateReviewResultsV01([
+    createReviewResult(),
+    createReviewResult({ reviewId: "review-b", reviewerId: "reviewer-b" }),
+  ]);
+
+  assert.deepEqual(report.reviewer_agreement.verdict, {
+    status: "available",
+    compared_review_count: 2,
+    unavailable_review_count: 0,
+    distinct_value_count: 1,
+    unanimous: true,
+    values: [{ value: "supported", review_count: 2 }],
+  });
+  assert.deepEqual(report.reviewer_agreement.label_winner, {
+    status: "available",
+    compared_review_count: 2,
+    unavailable_review_count: 0,
+    distinct_value_count: 1,
+    unanimous: true,
+    values: [{ value: "label-a", review_count: 2 }],
+  });
+});
+
+test("evidence agreement identifies aligned and disputed evidence by stable ID", () => {
+  const report = aggregateReviewResultsV01([
+    createReviewResult({ evidenceTwoRating: "contradicts" }),
+    createReviewResult({
+      reviewId: "review-b",
+      reviewerId: "reviewer-b",
+      evidenceTwoRating: "insufficient",
+    }),
+  ]);
+
+  assert.deepEqual(report.reviewer_agreement.evidence_ratings, [
+    {
+      evidence_id: "evidence-1",
+      status: "available",
+      compared_review_count: 2,
+      unavailable_review_count: 0,
+      distinct_value_count: 1,
+      unanimous: true,
+      disputed: false,
+      values: [{ value: "supports", review_count: 2 }],
+    },
+    {
+      evidence_id: "evidence-2",
+      status: "available",
+      compared_review_count: 2,
+      unavailable_review_count: 0,
+      distinct_value_count: 2,
+      unanimous: false,
+      disputed: true,
+      values: [
+        { value: "contradicts", review_count: 1 },
+        { value: "insufficient", review_count: 1 },
+      ],
+    },
+  ]);
+  assert.deepEqual(report.disagreement.evidence_ids, ["evidence-2"]);
+});
+
+test("missing evidence ratings remain visible as incomplete comparisons", () => {
+  const reviewWithMissingEvidenceRating = createReviewResult({
+    reviewId: "review-b",
+    reviewerId: "reviewer-b",
+  });
+  reviewWithMissingEvidenceRating.decisions.evidence_ratings =
+    reviewWithMissingEvidenceRating.decisions.evidence_ratings.filter(
+      (evidenceRating) => evidenceRating.evidence_id !== "evidence-2",
+    );
+
+  const report = aggregateReviewResultsV01([
+    createReviewResult(),
+    reviewWithMissingEvidenceRating,
+  ]);
+
+  assert.deepEqual(report.reviewer_agreement.evidence_ratings[1], {
+    evidence_id: "evidence-2",
+    status: "incomplete",
+    compared_review_count: 1,
+    unavailable_review_count: 1,
+    distinct_value_count: 1,
+    unanimous: null,
+    disputed: false,
+    values: [{ value: "supports", review_count: 1 }],
+    reason:
+      'Evidence rating agreement for "evidence-2" cannot be fully compared because fewer than two comparable ratings are available or some reviews do not contain this evidence reference.',
+  });
+  assert.deepEqual(report.disagreement.evidence_ids, []);
+});
+
+test("single failure-mode selections support a descriptive major-mode comparison", () => {
+  const report = aggregateReviewResultsV01([
+    createReviewResult({ failureModes: ["missing_evidence"] }),
+    createReviewResult({
+      reviewId: "review-b",
+      reviewerId: "reviewer-b",
+      failureModes: ["too_broad"],
+    }),
+  ]);
+
+  assert.deepEqual(report.reviewer_agreement.major_failure_mode, {
+    status: "available",
+    compared_review_count: 2,
+    unavailable_review_count: 0,
+    distinct_value_count: 2,
+    unanimous: false,
+    values: [
+      { value: "missing_evidence", review_count: 1 },
+      { value: "too_broad", review_count: 1 },
+    ],
+  });
+});
+
+test("multi-select failure modes keep major-mode agreement incomplete", () => {
+  const report = aggregateReviewResultsV01([
+    createReviewResult({ failureModes: ["missing_evidence"] }),
+    createReviewResult({
+      reviewId: "review-b",
+      reviewerId: "reviewer-b",
+      failureModes: ["missing_evidence", "too_broad"],
+    }),
+  ]);
+
+  assert.deepEqual(report.reviewer_agreement.major_failure_mode, {
+    status: "incomplete",
+    compared_review_count: 1,
+    unavailable_review_count: 1,
+    distinct_value_count: 1,
+    unanimous: null,
+    values: [{ value: "missing_evidence", review_count: 1 }],
+    reason:
+      "Major failure-mode agreement is incomplete or unavailable because ReviewResult records zero or multiple failure-mode reason codes without designating one as primary.",
+  });
+});
+
+test("major failure mode is unavailable when no review provides a comparable single mode", () => {
+  const report = aggregateReviewResultsV01([
+    createReviewResult({ failureModes: [] }),
+    createReviewResult({
+      reviewId: "review-b",
+      reviewerId: "reviewer-b",
+      failureModes: ["missing_evidence", "too_broad"],
+    }),
+  ]);
+
+  assert.deepEqual(report.reviewer_agreement.major_failure_mode, {
+    status: "unavailable",
+    compared_review_count: 0,
+    unavailable_review_count: 2,
+    distinct_value_count: 0,
+    unanimous: null,
+    values: [],
+    reason:
+      "Major failure-mode agreement is incomplete or unavailable because ReviewResult records zero or multiple failure-mode reason codes without designating one as primary.",
+  });
+});
+
+test("uncertain verdicts and insufficient evidence remain visible agreement values", () => {
+  const report = aggregateReviewResultsV01([
+    createReviewResult({
+      evidenceTwoRating: "insufficient",
+      finalVerdict: "uncertain",
+      recommendedAction: "mark_uncertain",
+    }),
+    createReviewResult({
+      reviewId: "review-b",
+      reviewerId: "reviewer-b",
+      evidenceTwoRating: "insufficient",
+      finalVerdict: "uncertain",
+      recommendedAction: "mark_uncertain",
+    }),
+  ]);
+
+  assert.equal(report.verdict_distribution.uncertain, 2);
+  assert.deepEqual(report.reviewer_agreement.verdict.values, [
+    { value: "uncertain", review_count: 2 },
+  ]);
+  assert.deepEqual(report.reviewer_agreement.evidence_ratings[1].values, [
+    { value: "insufficient", review_count: 2 },
+  ]);
+  assert.equal(report.reviewer_agreement.verdict.unanimous, true);
+  assert.equal(report.reviewer_agreement.evidence_ratings[1].unanimous, true);
 });
 
 test("aggregation rejects mixed CasePackage IDs", () => {
