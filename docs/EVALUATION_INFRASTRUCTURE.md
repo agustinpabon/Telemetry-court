@@ -6,17 +6,43 @@ The backend direction for Telemetry Court is evaluation infrastructure, not a ge
 
 Its purpose is to preserve a trustworthy path from a precomputed cluster and generated interpretation to structured human judgment and reusable evaluation metrics.
 
+## Utility Gate
+
+A feature is useful only if it helps produce or improve an auditable
+`EvaluationReport` from real or realistic `CasePackage` inputs. The immediate
+utility loop is:
+
+```text
+local CasePackage JSON import
+-> strict validation
+-> structured review
+-> ReviewResult persistence/export/import
+-> aggregate local or imported ReviewResults
+-> EvaluationReport JSON/CSV
+```
+
+This gate comes before evidence-constrained AI assistance, generic backend
+persistence, accounts, databases, raw telemetry ingestion, live SIEM
+connectors, operational action generation, or broad dashboards.
+
 ## Priority Order
 
-1. Import precomputed clusters through a versioned contract.
-2. Convert upstream output into reviewable case and evidence packages.
-3. Validate package identity, provenance, references, and integrity.
+1. Import external `CasePackage` JSON through the versioned contract.
+2. Validate package identity, provenance, references, sanitization, and
+   integrity before rendering.
+3. Show useful invalid-package failure UI during import.
 4. Preserve blind human review before showing the AI-generated label.
-5. Allow safe drill-down into real, sanitized, or approved semi-raw evidence.
-6. Save structured human `ReviewResult` records.
-7. Support multiple independent reviewers.
-8. Aggregate compatible reviewer judgments.
-9. Export `EvaluationReport` metrics that improve models, prompts, embeddings, labels, evidence extraction, and clustering decisions.
+5. Save structured human `ReviewResult` records locally without backend
+   infrastructure.
+6. Export and import `ReviewResult` bundles.
+7. Support multiple independent reviewer results for one compatible package.
+8. Aggregate compatible local or imported reviewer judgments.
+9. Build the results page from local or imported ReviewResults, not only a
+   static fixture.
+10. Export `EvaluationReport` metrics that improve models, prompts,
+   embeddings, labels, evidence extraction, and clustering decisions.
+11. Convert upstream output into approved reviewable packages through adapters
+   after the local import and result loop is usable.
 
 ## Evaluation Outputs
 
@@ -286,8 +312,10 @@ review storage, a multi-reviewer service, a report-generation workflow, or
 research-grade metrics.
 
 The next proof after this contract slice is a narrow end-to-end exercise with a
-realistic package: complete independent reviews, retain the resulting artifacts,
-and aggregate them without relying on synthetic-only assumptions.
+realistic package: import the package from local JSON, fail visibly if the
+package is invalid, complete independent reviews, retain and exchange the
+resulting ReviewResult artifacts, and aggregate them into an EvaluationReport
+without relying on synthetic-only assumptions.
 
 ## Deferred Concerns
 

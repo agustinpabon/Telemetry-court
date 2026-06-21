@@ -2,6 +2,32 @@
 
 This is the initial decision log for Telemetry Court. Add new entries when product direction, architecture, or evidence-model assumptions change.
 
+## 2026-06-21: Utility Gate Comes Before AI Assistance
+
+Decision: A feature is useful only if it helps produce or improve an auditable
+`EvaluationReport` from real or realistic `CasePackage` inputs.
+
+Rationale: The main product risk is that Telemetry Court remains a beautiful
+synthetic demo. The next proof of value is a local external-package validation
+loop: import `CasePackage` JSON, validate it strictly, complete structured
+reviews, persist/export/import ReviewResults, and aggregate them into an
+EvaluationReport.
+
+Consequences:
+
+- Milestone 3 is now the active Local Utility Gate rather than a vague
+  evaluation-infrastructure bucket.
+- Local CasePackage import, invalid-package UI, ReviewResult bundle exchange,
+  results from local/imported reviews, and an end-to-end smoke test come before
+  evidence-constrained AI assistance.
+- AI assistance issues stay in the roadmap, but they are later priority until
+  import/results/aggregation are usable.
+- Toponymy, DataMapPlot, ACME4-style, and notebook adapters remain upstream
+  producers of approved `CasePackage` JSON; Telemetry Court still does not
+  ingest raw restricted telemetry.
+- Fast review is allowed only as evidence validation or batch validation, not
+  SOC triage, incident response, remediation, or live alert handling.
+
 ## 2026-06-21: Persist ReviewResults Locally Before Backend Infrastructure
 
 Decision: Telemetry Court's first persistence step is a browser-local

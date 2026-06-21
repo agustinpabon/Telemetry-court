@@ -89,6 +89,12 @@ These folders describe the present implementation, not the final service decompo
 
 ## Next Architectural Milestone
 
-Milestone 2 must define and validate `CasePackage v0.1`, `ReviewResult v0.1`, and `EvaluationReport v0.1`, then adapt one package-shaped fixture through the existing UI and export path.
+The next architectural milestone is the Local Utility Gate: import external
+`CasePackage` JSON from a local file, validate it strictly before rendering,
+produce structured `ReviewResult` artifacts, export and import result bundles,
+and aggregate local or imported results into an auditable `EvaluationReport`.
 
-Do not choose a production database, authentication system, workspace model, admin interface, or broad API surface before the contract and evaluation requirements are proven.
+This milestone should stay local and contract-first. Do not choose a production
+database, authentication system, workspace model, admin interface, broad API
+surface, raw telemetry ingestion path, SIEM connector, or chatbot-first UI
+before the imported-package review-to-report loop is proven.

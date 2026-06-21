@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-21: Utility Gate Roadmap Correction
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Correct the product roadmap without resetting the validation-bench direction; keep `CasePackage` -> `ReviewResult` -> `EvaluationReport`; prioritize real utility through local package import, strict validation, ReviewResult persistence/export/import, aggregation, and EvaluationReport output before evidence-constrained AI assistance.
+- Files changed: `docs/PRODUCT_VISION.md`, `docs/PRODUCT_POSITIONING.md`, `docs/PROJECT_CONTEXT.md`, `docs/EVALUATION_INFRASTRUCTURE.md`, `docs/ROADMAP.md`, `docs/GITHUB_PLANNING.md`, `docs/ARCHITECTURE.md`, `docs/PRODUCT_DECISIONS.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added the Utility Gate: a feature is useful only if it helps produce or improve an auditable EvaluationReport from real or realistic CasePackages. Reframed Milestone 3 as the active Local Utility Gate, moved local CasePackage import, invalid-package failure UI, ReviewResult bundle exchange, local/imported results, and an end-to-end import-to-report smoke test ahead of AI assistance, and documented that fast review must remain evidence or batch validation rather than SOC triage.
+- Decisions made: Kept AI assistance in the roadmap as later priority; preserved the Toponymy/DataMapPlot/ACME4 adapter boundary as approved CasePackage JSON rather than raw telemetry ingestion; avoided backend persistence, auth, accounts, databases, generic dashboards, SIEM connectors, operational action generation, and chatbot-first UI.
+- Checks run: `git diff --check`; no npm tests were run because this was a documentation and GitHub planning change only.
+- Assumptions: Existing local contract, export, storage, and fixture-backed report work should be treated as foundation, not as proof that imported-package evaluation is complete.
+- Risks/follow-ups: The new Utility Gate issues still need implementation. The current app remains a local/static validation slice until package import, result bundle import, and report generation from imported/local results are implemented.
+- Next recommended step: Implement the Local Utility Gate issue batch in dependency order before starting evidence-constrained AI assistance.
+- Suggested commit message: `docs(roadmap): add utility gate`
+
 ## 2026-06-21: Synthetic ACME4-Style CasePackage Fixture
 
 - Agent/model: Codex (GPT-5)

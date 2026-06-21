@@ -4,6 +4,21 @@
 
 `docs/ROADMAP.md` is the canonical roadmap. Planning must describe Telemetry Court as an evidence-based human-in-the-loop validation bench, not a frontend MVP, investigation platform, or generic backend application.
 
+## Utility Gate
+
+Every planning artifact should preserve this gate:
+
+```text
+A feature is useful only if it helps produce or improve an auditable
+EvaluationReport from real or realistic CasePackages.
+```
+
+Near-term issues should advance local `CasePackage` import, strict validation,
+useful invalid-package failure UI, `ReviewResult` persistence/export/import,
+aggregation from local or imported ReviewResults, or an end-to-end
+import-to-report smoke test. Evidence-constrained AI assistance stays later
+priority until that loop is usable.
+
 ## Milestones
 
 | Milestone | Planning outcome |
@@ -11,28 +26,37 @@
 | Milestone 0 - Current Static Validation Slice | Preserve the shipped synthetic review protocol as the baseline. |
 | Milestone 1 - Product Realignment And Documentation | Align repository identity, contracts, architecture, and contributor guidance. |
 | Milestone 2 - Case Package Contract And Validation Infrastructure | Define and validate the three versioned contracts and package-shaped fixtures. |
-| Milestone 3 - Evaluation Infrastructure | Persist, aggregate, and export multi-reviewer evaluation data. |
-| Milestone 4 - Toponymy / ACME4 Adapter Prototype | Convert one approved real or realistic cluster output into a case package. |
-| Milestone 5 - Evidence-Constrained AI Assistance | Add only evidence-citing, predefined assistance if it improves review quality. |
+| Milestone 3 - Local Utility Gate | Import local CasePackage JSON, persist/export/import ReviewResults, aggregate local or imported results, and generate an EvaluationReport without backend infrastructure. |
+| Milestone 4 - Toponymy / ACME4 Adapter Prototype | Convert one approved real or realistic cluster output into a case package after the local utility loop works. |
+| Milestone 5 - Evidence-Constrained AI Assistance | Add only evidence-citing, predefined assistance after import/results/aggregation are usable. |
 | Milestone 6 - Research Validation Study | Prove useful upstream signals with multiple reviewers and real or realistic cases. |
 
 Historical Evidence Arena and static MVP milestones may remain closed for recordkeeping, but new work must use the validation-bench roadmap.
 
 ## Immediate Planning Priority
 
-Milestone 2 is the next implementation milestone. Its first issue batch should stay small and dependency ordered:
+Milestone 3 - Local Utility Gate is the next implementation milestone. Its
+issue batch should stay small and dependency ordered:
 
-1. Resolve the `CasePackage v0.1`, `ReviewResult v0.1`, and `EvaluationReport v0.1` contract decisions (`human-in-the-loop`).
-2. Add runtime validation and invalid-package diagnostics (`AFK` after the contract is approved).
-3. Adapt one current synthetic fixture through the versioned package boundary (`AFK`).
-4. Version the current review export against its source package and protocol (`AFK`).
+1. Import `CasePackage` JSON from a local file (`AFK`).
+2. Show useful invalid-package failures during import (`AFK`).
+3. Persist `ReviewResult` artifacts locally without backend infrastructure
+   (`AFK`; existing local storage should be reused and hardened).
+4. Export and import `ReviewResult` bundles (`AFK`).
+5. Build the results page from local or imported ReviewResults (`AFK`).
+6. Add an end-to-end imported package -> review -> exported result ->
+   EvaluationReport smoke test (`AFK`).
 
-Do not create issues yet for auth, production databases, admin UX, broad analytics dashboards, or enterprise features.
+Do not create issues yet for auth, production databases, admin UX, broad
+analytics dashboards, enterprise features, raw telemetry ingestion, SIEM
+connectors, operational action generation, or chatbot-first UI.
 
 ## Issue Gate
 
 Every issue must answer:
 
+- Does this change pass the Utility Gate by improving auditable
+  `EvaluationReport` production from real or realistic `CasePackage` inputs?
 - Does this change support the validation-bench direction?
 - Does it preserve the distinction between `CasePackage`, `ReviewResult`, and `EvaluationReport`?
 - Does it avoid SIEM/SOC/dashboard, alert-triage, raw-search, chat-first, and gamification drift?
@@ -65,6 +89,7 @@ Every issue must answer:
 
 ## Acceptance criteria
 - [ ] The change advances evidence-based validation of AI-generated cluster interpretations.
+- [ ] The change helps produce or improve an auditable EvaluationReport from real or realistic CasePackages, or it fixes a correctness/validation blocker on that path.
 - [ ] Contract separation is preserved or an explicit decision updates it.
 - [ ] Broken evidence, IDs, versions, or provenance fail visibly where applicable.
 - [ ] Current and target capabilities are not conflated.
@@ -85,6 +110,9 @@ Every issue must answer:
 
 - `AFK`: sufficiently specified for an agent to complete without product decisions.
 - `human-in-the-loop`: requires approval of a contract, research protocol, data-handling rule, or product judgment.
+- `priority/p0`: active Utility Gate blockers.
+- `priority/p3`: later work, including evidence-constrained AI assistance until
+  import/results/aggregation are usable.
 - Preserve existing team, type, priority, and status labels where they remain useful.
 - Replace `scope/mvp` with validation-oriented scope labels when label maintenance is next performed.
 
@@ -93,7 +121,9 @@ Every issue must answer:
 - Prefer thin vertical slices through contract, validation, fixture, UI compatibility, export, and tests where applicable.
 - Do not create horizontal "build the backend" or "design the database" issues.
 - One issue should produce one independently verifiable validation outcome.
-- Keep future adapter and research-study work in the roadmap until Milestone 2 proves the contract.
+- Keep future adapter and research-study work behind the Local Utility Gate
+  until imported packages and imported/local ReviewResults can produce an
+  auditable EvaluationReport.
 
 ## PR Requirements
 
