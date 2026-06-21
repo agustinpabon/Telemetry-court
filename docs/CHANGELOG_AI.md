@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-21: Issue #27 Contract Audit Closure
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Audit issue #27 against merged Milestone 2 work after PR #85, without starting adapter, backend, persistence, UI, or next-issue work.
+- Files changed: `lib/reviewResultV01.ts`, `lib/exportReview.test.ts`, `lib/evaluationReportV01.test.ts`, `docs/REVIEW_RESULT_CONTRACT.md`, `docs/EVALUATION_INFRASTRUCTURE.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Found one direct contract gap before closing #27: `ReviewResultV01` did not expose confidence or optional notes. Added optional reviewer confidence and notes to the type, documented that the current local exporter omits them because the UI does not capture those values, and clarified how existing EvaluationReport v0.1 distributions represent cluster impurity, split/merge recommendation counts, common failure modes, metadata rollups, and recommended follow-up actions without adding scoring or consensus logic.
+- Decisions made: Kept the patch type/docs/test-only; did not change the exporter output, aggregation algorithm, UI workflow, persistence, adapters, or durable schema version. Treated named rates as future calculated metrics that require explicit denominators and calculation versions.
+- Checks run: Targeted contract checks passed with `npm test -- lib/exportReview.test.ts lib/evaluationReportV01.test.ts lib/reviewSessionV01.test.ts` (22 tests); `npm test` passed with 89 tests; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `npx tsc --noEmit` passed; `git diff --check` passed.
+- Assumptions: Optional confidence and notes satisfy the v0.1 contract requirement without fabricating values in the current synthetic export path; EvaluationReport v0.1 can satisfy #27's rollup requirements through distributions and traceable references rather than separate score fields.
+- Risks/follow-ups: Future protocols need UI or import support before local exports can populate confidence and free-form notes. Future rate exports still need explicit metric definitions.
+- Next recommended step: Close issue #27 after the focused PR is reviewed and merged.
+- Suggested commit message: `model(review): close review result contract gaps`
+
 ## 2026-06-21: Verdict And Failure-Mode Semantics
 
 - Agent/model: Codex (GPT-5)

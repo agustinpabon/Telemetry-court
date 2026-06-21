@@ -253,6 +253,34 @@ test("ReviewResult v0.1 exposes the complete canonical decision vocabulary", () 
   ]);
 });
 
+test("ReviewResult v0.1 can carry optional reviewer confidence and notes", () => {
+  const caseFile = sampleCases[0];
+  const exportResult = buildReviewResultExport({
+    caseFile,
+    exportTimestamp: "2026-06-12T12:00:00.000Z",
+    arenaReview: completeArenaReview(caseFile),
+  });
+  const reviewWithOptionalContext = {
+    ...exportResult,
+    decisions: {
+      ...exportResult.decisions,
+      confidence: {
+        level: "medium",
+        rationale: "Synthetic reviewer confidence fixture.",
+      },
+      notes: ["Synthetic optional reviewer note."],
+    },
+  } satisfies typeof exportResult;
+
+  assert.deepEqual(reviewWithOptionalContext.decisions.confidence, {
+    level: "medium",
+    rationale: "Synthetic reviewer confidence fixture.",
+  });
+  assert.deepEqual(reviewWithOptionalContext.decisions.notes, [
+    "Synthetic optional reviewer note.",
+  ]);
+});
+
 test("review result export maps every current final verdict to canonical values", () => {
   const caseFile = sampleCases[0];
   const expected: Array<
