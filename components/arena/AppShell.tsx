@@ -159,13 +159,16 @@ export function AppShell({
     (session) => session.id === reviewState.impostorSessionId,
   );
   const arenaReview = buildArenaReview(selectedCase, reviewState, evidenceRatings);
-  const exportJson = serializeReviewResultExport(
-    buildReviewResultExport({
-      caseFile: selectedCase,
-      exportTimestamp: new Date().toISOString(),
-      arenaReview,
-    }),
-  );
+  const exportTimestamp = new Date().toISOString();
+  const exportResult = tryBuildReviewResultExport({
+    caseFile: selectedCase,
+    exportTimestamp,
+    arenaReview,
+  });
+  const exportJson = exportResult.ok
+    ? serializeReviewResultExport(exportResult.reviewResult)
+    : undefined;
+  const exportError = exportResult.ok ? undefined : exportResult.error;
 
   function dispatchArena(action: ArenaAction) {
     persistArenaSessionState(arenaReducer(arenaState, action, cases));
@@ -211,6 +214,11 @@ export function AppShell({
   }
 
   async function handleCopyReviewJson() {
+    if (!exportJson) {
+      setExportMessage(exportError);
+      return;
+    }
+
     if (!navigator.clipboard?.writeText) {
       setExportMessage("Clipboard is unavailable. Use Download JSON.");
       return;
@@ -225,7 +233,8 @@ export function AppShell({
   }
 
   function handleDownloadReviewJson() {
-    if (!selectedCase) {
+    if (!exportJson || !selectedCase) {
+      setExportMessage(exportError);
       return;
     }
 
@@ -304,7 +313,7 @@ export function AppShell({
           duelWinner={duelWinner}
           impostor={impostor}
           balance={evidenceBalance}
-          exportJson={exportJson}
+          exportJson={exportJson ?? exportError ?? "ReviewResult v0.1 is unavailable."}
           exportMessage={exportMessage}
           onClose={closeReviewDrawer}
           onCopyJson={handleCopyReviewJson}
@@ -313,6 +322,24 @@ export function AppShell({
       ) : null}
     </main>
   );
+}
+
+function tryBuildReviewResultExport(
+  input: Parameters<typeof buildReviewResultExport>[0],
+):
+  | { ok: true; reviewResult: ReturnType<typeof buildReviewResultExport> }
+  | { ok: false; error: string } {
+  try {
+    return { ok: true, reviewResult: buildReviewResultExport(input) };
+  } catch (error) {
+    return {
+      ok: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "ReviewResult v0.1 export is unavailable.",
+    };
+  }
 }
 
 function readArenaSessionState(cases: CaseFile[]) {

@@ -17,7 +17,29 @@ test("adapts a complete CasePackage v0.1 into the existing UI case shape", () =>
     return;
   }
 
-  assert.deepEqual(result.caseFile, sampleCaseSeedData[0]);
+  const { casePackageReference, ...caseFile } = result.caseFile;
+
+  assert.deepEqual(caseFile, sampleCaseSeedData[0]);
+  assert.deepEqual(casePackageReference, {
+    schema_version: "case_package.v0.1",
+    package_id: "pkg-synthetic-arena-001",
+    package_revision: "r1",
+    case_id: "case-arena-001",
+    cluster_id: "cluster-iam-029",
+    pipeline: {
+      pipeline_id: "pipeline-synthetic-sample-fixtures",
+      run_id: "run-case-arena-001-synthetic-fixture",
+      upstream_tool: "synthetic-demo-fixture",
+      pipeline_version: "0.1.0",
+      embedding_model: "synthetic-embedding-fixture",
+      clustering_method: "synthetic-static-clustering",
+      dimensionality_reduction_method: "synthetic-static-review-map",
+      naming_model: "Baseline AI labeler v0.7",
+      prompt_id: "prompt-synthetic-baseline-labeler-v0.7",
+      generated_at: "2026-06-13T13:10:00Z",
+    },
+    blind_review_enabled: true,
+  });
 });
 
 test("maps package representative-session content instead of copying the compatibility seed", () => {

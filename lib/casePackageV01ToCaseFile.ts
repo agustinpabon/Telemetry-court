@@ -336,6 +336,52 @@ function mapValidatedCasePackageV01ToCaseFile(
 
   return {
     id: packageFixture.case.case_id,
+    casePackageReference: {
+      schema_version: packageFixture.schema_version,
+      package_id: packageFixture.package_id,
+      ...(packageFixture.package_revision
+        ? { package_revision: packageFixture.package_revision }
+        : {}),
+      case_id: packageFixture.case.case_id,
+      cluster_id: packageFixture.cluster.cluster_id,
+      pipeline: {
+        ...(packageFixture.pipeline.pipeline_id
+          ? { pipeline_id: packageFixture.pipeline.pipeline_id }
+          : {}),
+        run_id: packageFixture.pipeline.run_id,
+        upstream_tool: packageFixture.pipeline.upstream_tool,
+        ...(packageFixture.pipeline.pipeline_version
+          ? { pipeline_version: packageFixture.pipeline.pipeline_version }
+          : {}),
+        ...(packageFixture.pipeline.embedding_model
+          ? { embedding_model: packageFixture.pipeline.embedding_model }
+          : {}),
+        ...(packageFixture.pipeline.clustering_method
+          ? { clustering_method: packageFixture.pipeline.clustering_method }
+          : {}),
+        ...(packageFixture.pipeline.dimensionality_reduction_method
+          ? {
+              dimensionality_reduction_method:
+                packageFixture.pipeline.dimensionality_reduction_method,
+            }
+          : {}),
+        ...(packageFixture.pipeline.naming_model
+          ? { naming_model: packageFixture.pipeline.naming_model }
+          : {}),
+        ...(packageFixture.pipeline.prompt?.prompt_id
+          ? { prompt_id: packageFixture.pipeline.prompt.prompt_id }
+          : {}),
+        ...(packageFixture.pipeline.prompt?.prompt_version
+          ? { prompt_version: packageFixture.pipeline.prompt.prompt_version }
+          : {}),
+        ...(packageFixture.pipeline.prompt?.prompt_digest
+          ? { prompt_digest: packageFixture.pipeline.prompt.prompt_digest }
+          : {}),
+        generated_at: packageFixture.pipeline.generated_at,
+      },
+      blind_review_enabled:
+        packageFixture.review_configuration.blind_review_enabled,
+    },
     dataset: packageFixture.dataset.dataset_name,
     reviewStatus: compatibilitySeed.reviewStatus,
     landscapeStatus: compatibilitySeed.landscapeStatus,

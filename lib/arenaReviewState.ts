@@ -303,6 +303,7 @@ export function buildArenaReview(
         }
       : {}),
     aiLabel: caseFile.topicLabel.name,
+    aiLabelRevealed: Boolean(reviewState.aiLabelRevealed),
     ...(duelWinner
       ? {
           labelDuelWinnerId: duelWinner.id,
