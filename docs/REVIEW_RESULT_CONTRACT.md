@@ -126,6 +126,14 @@ review configuration. The compatibility exporter translates the current UI's
 legacy names, such as `supports_label` and `unsupported_overclaimed`, before
 serialization.
 
+The evaluation semantics for final verdicts and structured failure-mode reason
+codes are defined in
+[`VERDICT_AND_FAILURE_MODE_SEMANTICS.md`](./VERDICT_AND_FAILURE_MODE_SEMANTICS.md).
+`final_verdict` is the primary evaluation judgment. `failure_modes` are
+secondary reason codes that explain the reviewer's choice and may be counted in
+aggregate reports, but they do not override the final verdict or force
+consensus.
+
 ## Integrity Behavior
 
 `buildReviewResultExport` refuses to emit a result when required package,

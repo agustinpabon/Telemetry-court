@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-21: Verdict And Failure-Mode Semantics
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Start GitHub issue #28 only by defining the evaluation semantics for canonical final verdicts and failure-mode reason codes, after reading current contract/evaluation docs, ReviewResult/EvaluationReport types, sample cases, and relevant tests; audit issue #27 for effective satisfaction without expanding into #27 implementation.
+- Files changed: `docs/VERDICT_AND_FAILURE_MODE_SEMANTICS.md`, `docs/CASE_PACKAGE_CONTRACT.md`, `docs/REVIEW_RESULT_CONTRACT.md`, `docs/EVALUATION_INFRASTRUCTURE.md`, `docs/PRODUCT_VISION.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a dedicated semantics document for `supported`, `partially_supported`, `unsupported_or_overclaimed`, `uncertain`, `cluster_impure`, `needs_split`, `needs_merge`, and `needs_better_evidence`, covering evidence conditions, missing-vs-contradictory-vs-uncertain distinctions, primary evaluation concepts, EvaluationReport contributions, and invalid inferences. Also mapped current structured failure-mode reason codes to evaluation concepts and linked the new semantics from the product, package, review-result, and evaluation docs.
+- Decisions made: Kept the change documentation-first and did not alter TypeScript contracts, sample cases, scoring, aggregation, UI, persistence, or adapters; treated `final_verdict` as the primary evaluation judgment and `failure_modes` as secondary reason-code counts; preserved reviewer disagreement as distributions and flags rather than consensus; kept split and merge as human recommendations for upstream review, not automatic clustering actions.
+- Checks run: Targeted vocabulary/fixture checks passed with `npm test -- lib/exportReview.test.ts lib/evaluationReportV01.test.ts data/casePackageFixtures.test.ts` (20 tests); `npm test` passed with 88 tests; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `npx tsc --noEmit` passed; `git diff --check` passed. No formatter script is configured.
+- Assumptions: Issue #27 is effectively satisfied locally by the existing `ReviewResultV01`, `EvaluationReportV01`, local review-session, contract docs, and tests, so this issue only needed a semantics layer over the existing vocabulary; the current UI legacy `unsupported_overclaimed` value remains acceptable because export tests prove it maps to canonical `unsupported_or_overclaimed`.
+- Risks/follow-ups: These semantics do not add scoring algorithms, automated adjudication, live AI evaluation, backend persistence, auth, raw telemetry ingestion, SIEM/SOC behavior, chatbot behavior, Toponymy/ACME4 implementation, or UI redesign. Future metric implementations still need explicit numerators, denominators, incomplete-review treatment, schema compatibility, and calculation versions.
+- Next recommended step: Human review of the semantics before implementing any named EvaluationReport rates or changing durable review vocabulary.
+- Suggested commit message: `docs(evaluation): define verdict semantics`
+
 ## 2026-06-21: Milestone 2 Regression Coverage Hardening
 
 - Agent/model: Codex (GPT-5)
