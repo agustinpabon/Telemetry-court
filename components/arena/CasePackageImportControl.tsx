@@ -29,7 +29,8 @@ export function CasePackageImportControl({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.currentTarget.files?.[0];
+    const input = event.currentTarget;
+    const file = input.files?.[0];
 
     if (!file) {
       return;
@@ -43,7 +44,7 @@ export function CasePackageImportControl({
     } catch {
       onImportReadError("Could not read the selected case package file.");
     } finally {
-      event.currentTarget.value = "";
+      input.value = "";
     }
   }
 
