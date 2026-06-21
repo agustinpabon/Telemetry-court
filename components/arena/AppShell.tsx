@@ -51,6 +51,7 @@ type AppShellProps = {
   initialStage: ReturnType<typeof createInitialArenaState>["activeStage"];
   pathname: string;
   onNavigatePath: (path: string) => void;
+  onNavigatePathPreservingState?: (path: string) => void;
 };
 
 const arenaSessionStateKey = "telemetry-court-arena-state-v1";
@@ -61,6 +62,7 @@ export function AppShell({
   initialStage,
   pathname,
   onNavigatePath,
+  onNavigatePathPreservingState = onNavigatePath,
 }: AppShellProps) {
   const [importedCases, setImportedCases] = useState<CaseFile[]>([]);
   const importedCaseIds = useMemo(
@@ -295,7 +297,7 @@ export function AppShell({
     const caseFilePath = getPathForArenaStage("case_file");
 
     if (caseFilePath !== pathname) {
-      onNavigatePath(caseFilePath);
+      onNavigatePathPreservingState(caseFilePath);
     }
   }
 

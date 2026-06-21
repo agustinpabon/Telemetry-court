@@ -27,6 +27,9 @@ export function RoutedAppShell({
       initialStage={initialStage}
       pathname={pathname}
       onNavigatePath={(path) => router.push(path)}
+      onNavigatePathPreservingState={(path) =>
+        window.history.pushState(null, "", path)
+      }
     />
   );
 }
