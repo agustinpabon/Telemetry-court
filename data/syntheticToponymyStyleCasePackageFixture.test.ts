@@ -33,6 +33,8 @@ test("synthetic Toponymy-style fixture output validates as CasePackage v0.1", ()
   assert.equal(result.package.dataset.data_classification, "synthetic");
   assert.equal(result.package.sanitization.status, "synthetic");
   assert.equal(result.package.sanitization.raw_drilldown_allowed, false);
+  assert.equal(result.package.dataset.approval_notes, undefined);
+  assert.equal(result.package.sanitization.review_approval, undefined);
 });
 
 test("synthetic Toponymy-style fixture is labeled non-authoritative", () => {

@@ -31,11 +31,13 @@ test("synthetic ACME4-style fixture output validates as CasePackage v0.1", () =>
   );
   assert.equal(result.package.case.reviewable_status, "synthetic_demo");
   assert.equal(result.package.dataset.data_classification, "synthetic");
-  assert.equal(result.package.sanitization.status, "sanitized");
+  assert.equal(result.package.sanitization.status, "synthetic");
   assert.equal(result.package.sanitization.raw_drilldown_allowed, false);
+  assert.equal(result.package.dataset.approval_notes, undefined);
+  assert.equal(result.package.sanitization.review_approval, undefined);
 });
 
-test("synthetic ACME4-style fixture is labeled sanitized and non-authoritative", () => {
+test("synthetic ACME4-style fixture is explicitly synthetic and non-authoritative", () => {
   assert.equal(
     syntheticAcme4StyleAdapterInputFixture.input_schema_version,
     "adapter_input.acme4_style_sanitized.v0.1",
@@ -82,7 +84,7 @@ test("synthetic ACME4-style fixture keeps evidence provenance and sanitization s
       evidenceItem.provenance_reference,
       packageFixture.provenance.provenance_id,
     );
-    assert.equal(evidenceItem.sanitization_status, "sanitized");
+    assert.equal(evidenceItem.sanitization_status, "synthetic");
     assert.equal(
       evidenceItem.source_reference.safe_reference?.reference_type,
       "source_artifact_id",

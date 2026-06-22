@@ -19,6 +19,52 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-22: Adapter Provenance And Sanitization Requirements
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement issue #65 by hardening provenance, sanitization, and
+  approval requirements for realistic or adapter-produced `CasePackage v0.1`
+  output while keeping local fixtures explicitly synthetic; do not run issues
+  #74 or #114 or fabricate reviewer/evaluation artifacts.
+- Files changed: `lib/types.ts`, `lib/casePackageValidation.ts`,
+  `lib/casePackageValidation.test.ts`, `lib/casePackageV01Fixture.ts`,
+  `data/syntheticToponymyStyleCasePackageFixture.ts` and its test,
+  `data/syntheticAcme4StyleCasePackageFixture.ts` and its test,
+  `docs/CASE_PACKAGE_CONTRACT.md`, `docs/ADAPTER_BOUNDARY.md`,
+  `docs/ARCHITECTURE.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a structured sanitization review-approval type and conditional
+  runtime validation. Packages outside the explicit synthetic-demo posture now
+  require matching upstream-run provenance, adapter name/version, concrete safe
+  provenance references, non-empty sanitization notes, an auditable approval
+  record, and a non-synthetic safe-reference posture. Synthetic fixtures remain
+  valid only with explicit synthetic case, dataset, evidence, and sanitization
+  metadata and no real-data approval claim.
+- Decisions made: Kept `case_package.v0.1` because provenance and sanitization
+  were already required sections, the approval field is additive in the
+  TypeScript shape, explicit synthetic fixtures remain compatible, and the repo
+  has no supported real adapter package to migrate. A future incompatible field
+  replacement or supported-package migration still requires a schema bump.
+  Restricted telemetry remains upstream; validation requires safe summaries and
+  audit pointers, not raw payloads.
+- Checks run: Focused 30-test CasePackage/fixture suite passed; `npm test`
+  passed with 190 tests; `npx tsc --noEmit` passed; `npm run lint` passed with
+  0 errors and the existing 134 warnings under `.agents/skills/impeccable`;
+  `npm run build` passed; `git diff --check` passed. `npm audit` was not run or
+  modified because dependency work is explicitly out of scope.
+- Assumptions: A package is exempt from controlled-data approval requirements
+  only when `reviewable_status`, dataset classification, and sanitization status
+  all identify an explicit synthetic demo. Approval covers the exported package
+  revision and review scope, not unrestricted source access.
+- Risks/follow-ups: Previously accepted non-synthetic v0.1 packages without the
+  new conditional metadata now fail runtime validation by design. Metadata
+  validation cannot prove arbitrary evidence text is safe, so upstream adapters
+  and named approvers still own content review. No real adapter, raw telemetry
+  ingestion, reviewer execution, ReviewResult generation, or EvaluationReport
+  generation was added.
+- Next recommended step: Use the hardened contract when an authorized upstream
+  owner prepares the first real or realistic sanitized adapter output.
+- Suggested commit message: `model(case-package): require adapter provenance and approval`
+
 ## 2026-06-22: Issue 74 Pilot Preflight
 
 - Agent/model: Codex (GPT-5)

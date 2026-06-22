@@ -151,6 +151,8 @@ const METRIC_INTERPRETATIONS = [
   "contextual",
 ] as const;
 
+const REVIEW_APPROVAL_STATUSES = ["approved"] as const;
+
 export function validateCasePackageV01(
   input: unknown,
 ): CasePackageValidationResult {
@@ -208,7 +210,12 @@ export function validateCasePackageV01(
   validateCaseMetadata(caseMetadata, "$.case", errors);
   validateDataset(dataset, "$.dataset", errors);
   const primaryClusterId = validateCluster(cluster, "$.cluster", errors);
-  validatePipeline(pipeline, "$.pipeline", errors);
+  const pipelineRunId = validatePipeline(pipeline, "$.pipeline", errors);
+  const packagePosture = determinePackagePosture(
+    caseMetadata,
+    dataset,
+    sanitization,
+  );
 
   const candidateLabelIds = collectUniqueIds(
     candidateLabels,
@@ -242,8 +249,19 @@ export function validateCasePackageV01(
     errors,
   );
 
-  const provenanceId = validateProvenance(provenance, "$.provenance", errors);
-  validateSanitization(sanitization, "$.sanitization", errors);
+  const provenanceId = validateProvenance(
+    provenance,
+    "$.provenance",
+    packagePosture,
+    pipelineRunId,
+    errors,
+  );
+  validateSanitization(
+    sanitization,
+    "$.sanitization",
+    packagePosture,
+    errors,
+  );
 
   validateCandidateLabels(candidateLabels, claimIds, errors);
   validateClaims(claims, candidateLabelIds, evidenceIds, errors);
@@ -378,14 +396,16 @@ function validatePipeline(
   pipeline: ObjectRecord | undefined,
   path: string,
   errors: CasePackageValidationError[],
-) {
+): string | undefined {
   if (!pipeline) {
-    return;
+    return undefined;
   }
 
-  requireString(pipeline, "run_id", path, errors);
+  const runId = requireString(pipeline, "run_id", path, errors);
   requireString(pipeline, "upstream_tool", path, errors);
   requireString(pipeline, "generated_at", path, errors);
+
+  return runId;
 }
 
 function validateCandidateLabels(
@@ -821,6 +841,8 @@ function validateMetricsObject(
 function validateProvenance(
   provenance: ObjectRecord | undefined,
   path: string,
+  packagePosture: "synthetic" | "controlled" | undefined,
+  pipelineRunId: string | undefined,
   errors: CasePackageValidationError[],
 ): string | undefined {
   if (!provenance) {
@@ -832,6 +854,26 @@ function validateProvenance(
   requireString(provenance, "source_artifact", path, errors);
   requireString(provenance, "generating_tool", path, errors);
   requireString(provenance, "generated_at", path, errors);
+
+  if (packagePosture === "controlled") {
+    const upstreamRunId = requireString(
+      provenance,
+      "upstream_run_id",
+      path,
+      errors,
+    );
+    requireString(provenance, "adapter_name", path, errors);
+    requireString(provenance, "adapter_version", path, errors);
+
+    if (upstreamRunId && pipelineRunId && upstreamRunId !== pipelineRunId) {
+      addError(
+        errors,
+        fieldPath(path, "upstream_run_id"),
+        "provenance_run_mismatch",
+        `Provenance upstream run "${upstreamRunId}" must match pipeline run "${pipelineRunId}".`,
+      );
+    }
+  }
 
   const references = requireArray(provenance, "references", path, errors);
   if (references && references.length === 0) {
@@ -846,21 +888,51 @@ function validateProvenance(
     validateSafeReference(reference, itemPath, errors);
   });
 
+  if (
+    packagePosture === "controlled" &&
+    references &&
+    !references.some(isAuditableControlledReference)
+  ) {
+    addError(
+      errors,
+      fieldPath(path, "references"),
+      "missing_auditable_reference",
+      "Adapter provenance must include at least one safe reference with a URI or artifact ID.",
+    );
+  }
+
   return provenanceId;
 }
 
 function validateSanitization(
   sanitization: ObjectRecord | undefined,
   path: string,
+  packagePosture: "synthetic" | "controlled" | undefined,
   errors: CasePackageValidationError[],
 ) {
   if (!sanitization) {
     return;
   }
 
-  validateEnumField(sanitization, "status", path, SANITIZATION_STATUSES, errors);
+  const status = validateEnumField(
+    sanitization,
+    "status",
+    path,
+    SANITIZATION_STATUSES,
+    errors,
+  );
   requireString(sanitization, "method", path, errors);
-  validateRequiredStringArray(sanitization, "redaction_notes", path, errors);
+  const redactionNotes = requireArray(
+    sanitization,
+    "redaction_notes",
+    path,
+    errors,
+  );
+  validateStringArrayValues(
+    redactionNotes,
+    fieldPath(path, "redaction_notes"),
+    errors,
+  );
   validateEnumField(
     sanitization,
     "allowed_display_level",
@@ -890,6 +962,129 @@ function validateSanitization(
       "Raw drill-down cannot be allowed without an explicit safe reference type.",
     );
   }
+
+  if (packagePosture === "synthetic") {
+    if (sanitization.review_approval !== undefined) {
+      addError(
+        errors,
+        fieldPath(path, "review_approval"),
+        "synthetic_approval_not_allowed",
+        "Synthetic demo packages must not claim real-data review approval.",
+      );
+    }
+    return;
+  }
+
+  if (packagePosture !== "controlled") {
+    return;
+  }
+
+  if (status === "synthetic" || status === "unknown") {
+    addError(
+      errors,
+      fieldPath(path, "status"),
+      "invalid_controlled_data_sanitization",
+      "Non-synthetic packages must declare a concrete sanitization or approved-internal status.",
+    );
+  }
+
+  if (redactionNotes && redactionNotes.length === 0) {
+    addError(
+      errors,
+      fieldPath(path, "redaction_notes"),
+      "empty_required_array",
+      "Non-synthetic packages must describe what was removed, transformed, or retained.",
+    );
+  }
+
+  if (safeReferenceType === "none" || safeReferenceType === "synthetic_fixture_path") {
+    addError(
+      errors,
+      fieldPath(path, "safe_reference_type"),
+      "invalid_controlled_data_reference",
+      "Non-synthetic packages must use an auditable safe reference type.",
+    );
+  }
+
+  validateReviewApproval(
+    requireObject(sanitization, "review_approval", path, errors),
+    fieldPath(path, "review_approval"),
+    errors,
+  );
+}
+
+function validateReviewApproval(
+  approval: ObjectRecord | undefined,
+  path: string,
+  errors: CasePackageValidationError[],
+) {
+  if (!approval) {
+    return;
+  }
+
+  validateEnumField(
+    approval,
+    "status",
+    path,
+    REVIEW_APPROVAL_STATUSES,
+    errors,
+  );
+  requireString(approval, "approved_by", path, errors);
+  requireString(approval, "approved_at", path, errors);
+  requireString(approval, "scope", path, errors);
+  const reference = requireObject(approval, "reference", path, errors);
+  validateSafeReference(reference, fieldPath(path, "reference"), errors);
+
+  if (reference && !isAuditableControlledReference(reference)) {
+    addError(
+      errors,
+      fieldPath(path, "reference"),
+      "missing_auditable_reference",
+      "Review approval must include a safe reference with a URI or artifact ID.",
+    );
+  }
+}
+
+function determinePackagePosture(
+  caseMetadata: ObjectRecord | undefined,
+  dataset: ObjectRecord | undefined,
+  sanitization: ObjectRecord | undefined,
+): "synthetic" | "controlled" | undefined {
+  if (!caseMetadata || !dataset || !sanitization) {
+    return undefined;
+  }
+
+  if (
+    caseMetadata.reviewable_status === "synthetic_demo" &&
+    dataset.data_classification === "synthetic" &&
+    sanitization.status === "synthetic"
+  ) {
+    return "synthetic";
+  }
+
+  return "controlled";
+}
+
+function hasConcreteSafeReferenceTarget(reference: unknown): boolean {
+  if (!isObjectRecord(reference)) {
+    return false;
+  }
+
+  return [reference.uri, reference.artifact_id].some(
+    (value) => typeof value === "string" && value.trim() !== "",
+  );
+}
+
+function isAuditableControlledReference(reference: unknown): boolean {
+  if (!isObjectRecord(reference)) {
+    return false;
+  }
+
+  return (
+    reference.reference_type !== "none" &&
+    reference.reference_type !== "synthetic_fixture_path" &&
+    hasConcreteSafeReferenceTarget(reference)
+  );
 }
 
 function validateReviewConfiguration(

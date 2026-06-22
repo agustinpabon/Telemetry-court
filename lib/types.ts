@@ -675,6 +675,14 @@ export type CasePackageProvenanceMetadataV01 = {
   };
 };
 
+export type CasePackageReviewApprovalMetadataV01 = {
+  status: "approved";
+  approved_by: string;
+  approved_at: CasePackageIsoTimestamp;
+  scope: string;
+  reference: CasePackageSafeReferenceV01;
+};
+
 export type CasePackageSanitizationMetadataV01 = {
   status: CasePackageSanitizationStatusV01;
   method: string;
@@ -682,6 +690,7 @@ export type CasePackageSanitizationMetadataV01 = {
   allowed_display_level: CasePackageAllowedDisplayLevelV01;
   raw_drilldown_allowed: boolean;
   safe_reference_type: CasePackageSafeReferenceTypeV01;
+  review_approval?: CasePackageReviewApprovalMetadataV01;
   notes?: string;
 };
 

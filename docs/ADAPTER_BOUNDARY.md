@@ -105,7 +105,7 @@ A future converter needs the following groups to build a trustworthy
   data classification, source environment, approved use, approval notes when
   relevant, and limitations. This must say whether the artifact is synthetic,
   sanitized, restricted-derived, internal, or confidential.
-- `pipeline_context`: upstream tool category, run ID when available,
+- `pipeline_context`: upstream tool category, run ID,
   generated timestamp, pipeline version when available, embedding model,
   clustering method, dimensionality-reduction or map method, naming model,
   prompt reference or digest when available, and compact configuration summary.
@@ -142,16 +142,35 @@ A future converter needs the following groups to build a trustworthy
   uncertainty, outlier score, and temporal stability when those concepts exist
   in the upstream artifact.
 - `provenance`: source system, source artifact, generating tool, generated
-  timestamp, upstream run ID when available, adapter-input generation notes,
-  safe artifact references, and owner or contact metadata when allowed.
+  timestamp, upstream run ID, adapter-input generation notes, safe artifact
+  references, and owner or contact metadata when allowed. A non-synthetic
+  adapter output must also identify the adapter name and version.
 - `sanitization`: sanitization status, method, redaction notes, allowed display
-  level, raw drill-down permission, safe reference type, and notes on what has
-  been removed or transformed.
+  level, raw drill-down permission, safe reference type, notes on what has been
+  removed or transformed, and the approval record for the package's review use
+  when the output is not an explicit synthetic demo.
 
 IDs must be stable strings, not array indexes or raw restricted identifiers.
 References must be resolvable within the artifact or explicitly marked as
 unavailable. Broken IDs or links should block future conversion instead of
 becoming warnings inside the review UI.
+
+### Adapter Output Validation Posture
+
+`CasePackage v0.1` treats an output as an explicit synthetic demo only when its
+case status, dataset classification, and sanitization status are all
+`synthetic`. Such fixtures omit `sanitization.review_approval`; their
+`approved_use` text describes fixture purpose, not real-data approval.
+
+Every other output must carry the upstream run ID, adapter name and version,
+concrete safe provenance references, non-empty sanitization notes, and a
+`review_approval` record containing the approver, approval timestamp, review
+scope, and a safe reference to the approval artifact. The approval applies to
+the exported package revision, not to unrestricted raw source access.
+
+Adapters must not embed raw restricted telemetry to satisfy these rules. Raw
+data stays in the authorized upstream environment; packages carry approved
+summaries, derived features, aggregates, and audit pointers only.
 
 ### Unknown And Unavailable Fields
 
@@ -462,8 +481,7 @@ integration exists.
     "dataset_type": "cloudtrail",
     "data_classification": "synthetic",
     "source_environment": "local-fixture",
-    "approved_use": "Documentation example for the CasePackage adapter boundary.",
-    "approval_notes": "No real telemetry, accounts, principals, hosts, or events are included.",
+    "approved_use": "Synthetic documentation example only; not a real-data approval.",
     "limitations": [
       "No raw restricted telemetry is included.",
       "Safe references identify synthetic source artifacts only."
@@ -733,6 +751,8 @@ The fixture is intentionally non-authoritative:
 - it includes only synthetic summaries, synthetic map positions, synthetic
   labels, safe source-artifact references, provenance metadata, and
   sanitization metadata;
+- it uses synthetic case, dataset, and sanitization markers and carries no
+  real-data review approval;
 - it validates through `validateCasePackageV01` before tests use it.
 
 This fixture is useful for proving that a Toponymy/DataMapPlot-style precomputed
@@ -745,8 +765,8 @@ path, or claim of current Toponymy support.
 Issue #64 adds one local fixture at
 `data/syntheticAcme4StyleCasePackageFixture.ts` that exercises this boundary
 without implementing real ACME4 support. It contains a Telemetry Court-owned,
-synthetic, sanitized ACME4-style input artifact and a fixture-only helper that
-emits one `CasePackage v0.1` object.
+synthetic ACME4-style input artifact with safe summary fields and a fixture-only
+helper that emits one `CasePackage v0.1` object.
 
 The fixture is intentionally non-authoritative:
 
@@ -757,9 +777,11 @@ The fixture is intentionally non-authoritative:
   outputs, identifiers, or source-data access;
 - it includes only synthetic feature-family summaries, safe source-artifact
   references, provenance metadata, and sanitization metadata;
+- it uses synthetic case, dataset, evidence, and sanitization markers and
+  carries no real-data review approval;
 - it validates through `validateCasePackageV01` before tests use it.
 
-This fixture is useful for proving that a sanitized ACME4-style precomputed
+This fixture is useful for proving that a safe synthetic ACME4-style precomputed
 artifact can be represented at the `CasePackage` boundary. It is not a general
 adapter framework, upload flow, backend import service, raw telemetry ingestion
 path, or claim of current ACME4 support.
@@ -769,8 +791,8 @@ path, or claim of current ACME4 support.
 Once an adapter emits a package, Telemetry Court should treat the package as an
 unknown input and run the runtime validator before review. Invalid schema
 versions, broken IDs, missing provenance, missing sanitization metadata, invalid
-safe references, or broken claim-to-evidence links should block review rather
-than appear as optional UI warnings.
+safe references, missing required review approval, or broken claim-to-evidence
+links should block review rather than appear as optional UI warnings.
 
 The review result should reference the exact package identity and pipeline
 metadata that were reviewed. Aggregation should use compatible `ReviewResult`
