@@ -656,6 +656,18 @@ type CasePackageValidationError = {
 };
 ```
 
+For local package authoring and inspection, run the CLI against exactly one
+CasePackage JSON file:
+
+```bash
+npm run validate-package -- path/to/case-package.json
+```
+
+The command parses that supplied JSON file, runs `validateCasePackageV01`, and
+prints a compact package summary when validation passes. It validates
+`CasePackage` JSON only; it does not read raw telemetry, resolve source
+artifacts, or follow safe references.
+
 Example failure shape:
 
 ```json

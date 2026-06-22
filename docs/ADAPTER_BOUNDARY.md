@@ -76,9 +76,10 @@ package publicly or use it in a public demo.
 5. Record the source run, adapter name/version, sanitization method, redaction
    notes, allowed display level, and approval scope. Tie approval to the exact
    package revision and use a safe reference to the approval artifact.
-6. Build and validate `CasePackage v0.1` in the approved environment. Broken
-   IDs, links, schema versions, provenance, sanitization, or approval metadata
-   must block handoff.
+6. Build and validate `CasePackage v0.1` in the approved environment. Use
+   `npm run validate-package -- path/to/case-package.json` for local package
+   validation and inspection. Broken IDs, links, schema versions, provenance,
+   sanitization, or approval metadata must block handoff.
 7. Transfer and locally import only the approved `CasePackage` JSON. Telemetry
    Court validates the package again before review; it does not fetch the raw
    source data.
