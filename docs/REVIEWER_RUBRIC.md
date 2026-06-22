@@ -55,7 +55,7 @@ evidence-based interpretation before the AI label can steer the judgment.
 
 ## Evidence Ratings
 
-Use the canonical evidence-rating values exactly as defined by the contract:
+The canonical evidence-rating vocabulary is:
 
 ```text
 supports
@@ -79,12 +79,22 @@ Apply them consistently:
 - `needs_more_context`: The reviewer cannot responsibly judge from the
   provided package because needed context is missing from the review packet.
 
+Current repository note:
+
+- `ReviewResultV01` accepts all six canonical evidence-rating values.
+- The current local review UI and exporter only emit `supports`,
+  `weak_support`, `irrelevant`, `contradicts`, and `needs_more_context`.
+- The current local workflow does not expose a separate `insufficient`
+  selection, so reviewers should not invent that value in current local
+  exports.
+
 Important distinctions:
 
 - Missing evidence is not the same as contradiction.
 - `insufficient` means the evidence packet is too thin.
 - `needs_more_context` means the reviewer cannot judge from the provided
   package context.
+- Uncertainty is an evidence-grounded outcome, not reviewer indecision.
 - Uncertainty is acceptable and should be recorded honestly rather than hidden.
 
 ## Label Comparison
@@ -266,8 +276,13 @@ Current repository note:
 - `ReviewResultV01` supports these canonical action values.
 - The current local exporter derives `recommended_action` from the final
   verdict rather than collecting a separate independent action choice.
+- The current verdict-derived mapping emits only `accept_label`,
+  `narrow_label`, `rename_label`, `split_cluster`, `merge_cluster`, and
+  `collect_more_evidence`.
 
-Reviewers should still understand the intended meaning:
+Reviewers should still understand the intended meaning of the canonical action
+set, even though the current local workflow does not collect it as a separate
+reviewer choice:
 
 - `accept_label`: The current label is defensible as reviewed.
 - `rename_label`: The current label should be replaced because it is
@@ -283,6 +298,9 @@ Reviewers should still understand the intended meaning:
 - `rerun_embedding`: The embedding or clustering setup may need upstream
   reconsideration.
 - `mark_uncertain`: The responsible outcome is to preserve uncertainty.
+
+For the current local validation slice, treat recommended action as derived
+review metadata, not as a separate required reviewer decision.
 
 ## ReviewResult And EvaluationReport
 

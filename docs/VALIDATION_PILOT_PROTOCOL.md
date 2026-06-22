@@ -122,11 +122,15 @@ consistently across reviewers.
 4. Complete the blind review before revealing the AI interpretation.
 5. Reveal the AI label, explanation, and claims.
 6. Classify each evidence item against the relevant claim using the available
-   evidence ratings: supports, weak support, irrelevant or noise, contradicts,
-   insufficient, or needs more context.
+   current UI ratings: supports, weak support, irrelevant or noise,
+   contradicts, or needs more context. The canonical v0.1 vocabulary also
+   includes `insufficient`, but the current local review flow does not collect
+   it as a separate evidence-rating choice.
 7. Compare candidate labels and select the best-supported label when possible.
 8. Select any impostor or outlier signal requested by the review flow.
-9. Complete the structured verdict and recommended action.
+9. Complete the structured verdict. The current local export derives the
+   canonical recommended action from that verdict rather than collecting a
+   separate action choice.
 10. Download or copy the structured `ReviewResult` so it is saved to the local
     review store, then export the package `ReviewResult` bundle.
 11. Record manual pilot notes about confusion, missing evidence, UI friction,
