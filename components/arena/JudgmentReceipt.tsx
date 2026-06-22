@@ -50,27 +50,27 @@ export function JudgmentReceipt({
       <div className="receipt-header">
         <div>
           <p className="eyebrow">Review result</p>
-          <h3>Review summary</h3>
+          <h3>Final evaluation</h3>
         </div>
         <span className="mono-value">{caseFile.id}</span>
       </div>
 
       <dl className="receipt-grid">
         <ReceiptLine
-          label="Blind choice"
+          label="Initial assessment"
           value={blindChoice?.label}
-          fallback="No blind choice recorded."
+          fallback="No initial assessment recorded."
         />
         <ReceiptLine label="AI claim" value={caseFile.topicLabel.name} />
         <ReceiptLine
-          label="Label duel winner"
+          label="Selected label"
           value={duelWinner?.label}
-          fallback="No duel winner recorded."
+          fallback="No selected label recorded."
         />
         <ReceiptLine
-          label="Impostor selected"
+          label="Weakest-fit session"
           value={impostor?.title}
-          fallback="No impostor selected."
+          fallback="No weakest-fit session selected."
         />
         <ReceiptLine label="Evidence balance" value={evidenceBalanceSummary} />
         <ReceiptLine
@@ -79,13 +79,13 @@ export function JudgmentReceipt({
           fallback={
             reviewState.finalVerdict
               ? "No failure reason selected."
-              : "Select reasons after choosing a verdict."
+              : "Select reasons after choosing an evaluation outcome."
           }
         />
         <ReceiptLine
-          label="Final verdict"
+          label="Evaluation outcome"
           value={verdictLabel}
-          fallback="Verdict not selected."
+          fallback="Evaluation not selected."
           emphasis
         />
         <ReceiptLine

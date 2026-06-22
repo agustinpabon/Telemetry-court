@@ -175,6 +175,16 @@ export function ArenaStepHero({
   );
 }
 
+export function ArenaReviewerGoal() {
+  return (
+    <div className="arena-reviewer-goal">
+      Your job: decide whether the AI label is supported by the evidence. Prefer
+      narrow, evidence-grounded conclusions. Flag overclaiming, uncertainty, or
+      cluster impurity.
+    </div>
+  );
+}
+
 type ArenaAction = {
   label: ReactNode;
   onClick: () => void;

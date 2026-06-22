@@ -84,8 +84,8 @@ export function VerdictPanel({
   const selectedFailureModes = getCompatibleFailureModes(reviewState);
   const heroTitle = selectedVerdictLabel ?? "Make the final call";
   const heroEyebrow = hasFinalVerdict
-    ? "Structured Verdict · Review complete"
-    : "Structured Verdict · Awaiting verdict";
+    ? "Final Evaluation · Review complete"
+    : "Final Evaluation · Awaiting evaluation";
   const heroLead = getVerdictLead(finalVerdict);
   const heroExplanation = getVerdictExplanation({
     verdict: finalVerdict,
@@ -94,7 +94,7 @@ export function VerdictPanel({
   });
 
   return (
-    <ArenaWorkflowShell className="verdict-stage" ariaLabel="Structured Verdict">
+    <ArenaWorkflowShell className="verdict-stage" ariaLabel="Final Evaluation">
       <ArenaStepProgress currentStage="verdict" onSelectStage={onSelectStage} />
 
       <section className="verdict-hero" aria-labelledby="verdict-hero-title">
@@ -102,7 +102,7 @@ export function VerdictPanel({
           <div className="arena-step-hero-meta">
             <p className="eyebrow">{heroEyebrow}</p>
             <ArenaStatusBadge tone={hasFinalVerdict ? "supported" : "neutral"}>
-              {hasFinalVerdict ? "Ready to export" : "Verdict pending"}
+              {hasFinalVerdict ? "Ready to export" : "Evaluation pending"}
             </ArenaStatusBadge>
           </div>
           <h2 id="verdict-hero-title">{heroTitle}</h2>
@@ -115,14 +115,14 @@ export function VerdictPanel({
             Status:{" "}
             {hasFinalVerdict
               ? "Review complete · Ready to export"
-              : "Choose a verdict to finish the review."}
+              : "Choose an evaluation outcome to finish the review."}
           </p>
         </div>
 
         <aside className="verdict-balance-card" aria-label="Evidence balance">
           <div className="verdict-balance-card-header">
             <span>Evidence balance</span>
-            <strong>{hasFinalVerdict ? "Ready to export" : "Verdict pending"}</strong>
+            <strong>{hasFinalVerdict ? "Ready to export" : "Evaluation pending"}</strong>
           </div>
           <dl className="verdict-balance-list">
             <BalanceLine label="Strong support" value={balance.supporting} />
@@ -137,7 +137,7 @@ export function VerdictPanel({
       <div className="verdict-layout">
         <article className="verdict-choice-panel">
           <SectionHeader
-            title="Final verdict"
+            title="Final evaluation"
             description="Choose the structured outcome that best matches the evidence and cluster quality."
           />
           <div className="verdict-sections">
@@ -173,10 +173,10 @@ export function VerdictPanel({
 
           <div className="reason-panel">
             <SectionHeader
-              title="Why this verdict?"
+              title="Why this evaluation?"
               description={
                 finalVerdict === "supported"
-                  ? "A supported verdict does not use failure-mode reasons."
+                  ? "A supported evaluation does not use failure-mode reasons."
                   : "Select the clearest reasons the claim or cluster did not fully hold up."
               }
             />
@@ -207,7 +207,7 @@ export function VerdictPanel({
                     .join(", ")}.`
                 : hasFinalVerdict
                   ? "No failure reason selected."
-                  : "Choose a verdict first, then add reasons if they clarify the decision."}
+                  : "Choose an evaluation outcome first, then add reasons if they clarify the decision."}
             </p>
           </div>
         </article>
@@ -228,7 +228,7 @@ export function VerdictPanel({
 
       <ArenaActionFooter
         className="verdict-actions"
-        ariaLabel="Verdict actions"
+        ariaLabel="Final Evaluation actions"
         microcopy={
           hasFinalVerdict
             ? "Review complete. Export the structured result or go back to adjust earlier choices."
@@ -237,7 +237,7 @@ export function VerdictPanel({
         secondaryAction={
           onBackToImpostor
             ? {
-                label: "Back",
+                label: "Return to cluster fit check",
                 onClick: onBackToImpostor,
               }
             : undefined

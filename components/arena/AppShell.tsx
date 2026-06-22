@@ -21,7 +21,7 @@ import {
 } from "@/components/arena/ReviewResultBundleControl";
 import { TelemetryGalaxy } from "@/components/arena/TelemetryGalaxy";
 import { VerdictPanel } from "@/components/arena/VerdictPanel";
-import { ArenaHeader } from "@/components/arena/WorkflowPrimitives";
+import { ArenaHeader, ArenaReviewerGoal } from "@/components/arena/WorkflowPrimitives";
 import {
   getArenaStageForPathname,
   getPathForArenaStage,
@@ -599,6 +599,7 @@ export function AppShell({
       />
 
       <div className="arena-layout">
+        {!isExploreMode && <ArenaReviewerGoal />}
         <section className="arena-workspace" aria-live="polite">
           <div
             key={stageTransitionKey}

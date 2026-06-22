@@ -68,22 +68,22 @@ export function LabelDuelPanel({
       : "Needs label review";
 
   return (
-    <ArenaWorkflowShell className="label-duel-stage" ariaLabel="Label Duel">
+    <ArenaWorkflowShell className="label-duel-stage" ariaLabel="Label Selection">
       <ArenaStepProgress currentStage="label_duel" onSelectStage={onSelectStage} />
 
       <ArenaStepHero
         status={
           <ArenaStatusBadge tone="uncertain">
-            Label Duel · {caseFile.candidateLabels.length} candidate labels
+            Label Selection · {caseFile.candidateLabels.length} candidate labels
           </ArenaStatusBadge>
         }
-        title="Choose the most defensible label"
-        summary="Your evidence suggests the original AI claim may be too strong. Pick the interpretation that best matches what was actually observed."
+        title="Which interpretation is most strictly supported by the observed evidence?"
+        summary="Pick the interpretation that best matches what was actually observed."
       />
 
       <section className="duel-evidence-summary" aria-label="Evidence summary">
         <div>
-          <span>Original AI claim</span>
+          <span>AI claim</span>
           <strong>{caseFile.topicLabel.name}</strong>
         </div>
         <div>
@@ -146,22 +146,22 @@ export function LabelDuelPanel({
 
       <ArenaActionFooter
         className="label-duel-actions"
-        ariaLabel="Label Duel actions"
+        ariaLabel="Label Selection actions"
         microcopy={
           selectedCandidate
-            ? `Selected: ${selectedCandidate.label}. It will be compared against the impostor label next.`
+            ? `Selected: ${selectedCandidate.label}. Its cluster fit will be checked next.`
             : "Select one label to continue."
         }
         secondaryAction={
           onBackToEvidenceBoard
             ? {
-                label: "Back to evidence board",
+                label: "Return to evidence verification",
                 onClick: onBackToEvidenceBoard,
               }
             : undefined
         }
         primaryAction={{
-          label: "Continue with selected label",
+          label: "Proceed to cluster fit check",
           disabled: !reviewState.labelDuelWinnerId,
           onClick: onContinue,
         }}
