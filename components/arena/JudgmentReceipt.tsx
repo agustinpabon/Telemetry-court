@@ -95,6 +95,25 @@ export function JudgmentReceipt({
         />
       </dl>
 
+      <div className="receipt-purpose" aria-label="ReviewResult purpose">
+        <p>
+          This JSON file is a ReviewResult: one reviewer&apos;s structured
+          judgment for this CasePackage.
+        </p>
+        <p>
+          It preserves the human verdict, evidence ratings, failure modes, and
+          recommended action.
+        </p>
+        <p>
+          Collect compatible ReviewResults for the same CasePackage, then
+          aggregate them into an EvaluationReport.
+        </p>
+        <p>
+          Use that EvaluationReport to evaluate and improve upstream labels,
+          prompts, embeddings, evidence extraction, or clustering.
+        </p>
+      </div>
+
       <div className="receipt-actions">
         {showJsonAction ? (
           <button type="button" onClick={onOpenReviewDrawer}>

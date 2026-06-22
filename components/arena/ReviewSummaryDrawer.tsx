@@ -54,7 +54,7 @@ export function ReviewSummaryDrawer({
         <div className="review-drawer-header">
           <div>
             <p className="eyebrow">Review Summary</p>
-            <h2>Structured review JSON</h2>
+            <h2>Structured ReviewResult JSON</h2>
           </div>
           <button type="button" className="drawer-close" onClick={onClose}>
             Close

@@ -1138,6 +1138,22 @@ test("verdict page reads as a final judgment and preserves export actions", () =
     markup,
     /Rename the label or request stronger evidence before accepting the AI claim\./,
   );
+  assert.match(
+    markup,
+    /This JSON file is a ReviewResult: one reviewer&#x27;s structured judgment for this CasePackage\./,
+  );
+  assert.match(
+    markup,
+    /It preserves the human verdict, evidence ratings, failure modes, and recommended action\./,
+  );
+  assert.match(
+    markup,
+    /Collect compatible ReviewResults for the same CasePackage, then aggregate them into an EvaluationReport\./,
+  );
+  assert.match(
+    markup,
+    /Use that EvaluationReport to evaluate and improve upstream labels, prompts, embeddings, evidence extraction, or clustering\./,
+  );
   assert.match(markup, /Review complete\. Export the structured result/);
   assert.match(markup, /View JSON/);
   assert.match(markup, /Copy JSON/);
@@ -1365,6 +1381,18 @@ test("verdict route opens the demo case as a completed structured judgment", () 
   assert.match(
     pageText,
     /class="verdict-button is-selected"[^>]*aria-pressed="true"[^>]*><span class="verdict-button-label">Unsupported \/ overclaimed/,
+  );
+  assert.match(
+    pageText,
+    /This JSON file is a ReviewResult: one reviewer&#x27;s structured judgment for this CasePackage\./,
+  );
+  assert.match(
+    pageText,
+    /Collect compatible ReviewResults for the same CasePackage, then aggregate them into an EvaluationReport\./,
+  );
+  assert.match(
+    pageText,
+    /Use that EvaluationReport to evaluate and improve upstream labels, prompts, embeddings, evidence extraction, or clustering\./,
   );
   assert.match(pageText, /Conclusion: Claim is not sufficiently supported\./);
   assert.match(

@@ -5388,6 +5388,22 @@
   font-weight: 780;
 }
 
+.arena-shell.arena-shell-investigate .receipt-purpose {
+  background: rgba(247, 245, 239, 0.46);
+  border: 1px solid rgba(50, 48, 47, 0.08);
+  border-radius: 14px;
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+}
+
+.arena-shell.arena-shell-investigate .receipt-purpose p {
+  color: var(--workflow-muted);
+  font-size: 13px;
+  line-height: 1.48;
+  margin: 0;
+}
+
 .arena-shell.arena-shell-investigate .receipt-actions {
   display: flex;
   flex-wrap: wrap;
