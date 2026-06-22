@@ -7,7 +7,7 @@
   ║  ║╣  ║   ║╣  ║║║ ║╣   ║  ╠╦╝ ╚╦╝   ║   ║ ║ ║ ║ ╠╦╝  ║ 
   ╩  ╚═╝ ╩═╝ ╚═╝ ╩ ╩ ╚═╝  ╩  ╩╚═  ╩    ╚═╝ ╚═╝ ╚═╝ ╩╚═  ╩ 
 
-    — AI names the cluster. Humans test the evidence. —
+      AI names the cluster. Humans test the evidence. 
 ```
 
 Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.
