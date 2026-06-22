@@ -2437,8 +2437,13 @@
 
 .arena-shell-investigate .readiness-option-copy {
   color: var(--workflow-ink);
+  border: 0;
+  border-radius: 0;
   display: block;
+  height: auto;
   min-width: 0;
+  position: static;
+  width: auto;
 }
 
 .arena-shell-investigate .readiness-option-copy strong {
@@ -2457,9 +2462,17 @@
   color: var(--workflow-focus);
   font-size: 11px;
   font-weight: 820;
+  height: auto;
   line-height: 1;
   padding: 6px 8px;
+  position: static;
   white-space: nowrap;
+  width: auto;
+}
+
+.arena-shell-investigate .readiness-option.is-selected > .readiness-option-copy::after,
+.arena-shell-investigate .readiness-option.is-selected > .readiness-option-state::after {
+  content: none;
 }
 
 .arena-shell-investigate .blind-evidence-panel,

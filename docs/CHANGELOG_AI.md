@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-22: Checkpoint Card Copy Collision Fix
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Fix the PR #119 blocking visual regression where new checkpoint card copy inherited old fake-radio direct-span styling.
+- Files changed: `app/investigation-workflow.css` and `docs/CHANGELOG_AI.md`.
+- Summary: Added scoped investigation-shell CSS resets so `.readiness-option-copy` renders as normal text content and `.readiness-option-state` keeps its selected chip shape without inheriting the old 18px fake-radio span sizing or pseudo-dot.
+- Decisions made: Kept the existing `BlindReadPanel` markup, route/stage behavior, review state, contracts, schemas, and ReviewResult export shape unchanged. The actual radio marker remains `.readiness-option-mark`.
+- Checks run: `node --test --import tsx app/page.test.ts` passed with 36 tests; `npm test` passed with 182 tests; `npx tsc --noEmit` passed; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed. Manual Playwright review on `next start --hostname 127.0.0.1 --port 3102` with imported `case_package_case-arena-002` passed desktop and mobile checkpoint rendering, whole-card click selection, keyboard focus ring, selected state, blind AI-label hiding before AI Claim Check, normal ReviewResult export, low-context ReviewResult export, and console-error checks.
+- Assumptions: The blocker is a CSS cascade collision only; no markup, state-machine, route, schema, or copy change is needed.
+- Risks/follow-ups: None.
+- Next recommended step: Review the small CSS follow-up and mark PR #119 ready if acceptable.
+- Suggested commit message: `fix(review): prevent checkpoint copy clipping`
+
 ## 2026-06-22: Low-Context Checkpoint Visibility
 
 - Agent/model: Codex (GPT-5)
