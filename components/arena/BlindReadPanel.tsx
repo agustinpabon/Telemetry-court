@@ -48,7 +48,7 @@ export function BlindReadPanel({
           </ArenaStatusBadge>
         }
         title="Establish an independent baseline."
-        summary="Review the evidence without anchoring on the AI's claim."
+        summary="Before seeing the AI label, record what the evidence suggests on its own."
         context="The AI label remains sealed until you choose one interpretation below."
       />
 

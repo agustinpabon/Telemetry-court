@@ -106,6 +106,10 @@ export function VerdictPanel({
             </ArenaStatusBadge>
           </div>
           <h2 id="verdict-hero-title">{heroTitle}</h2>
+          <p className="verdict-decision-prompt">
+            Choose the verdict and recommended action based on evidence support,
+            uncertainty, and cluster fit.
+          </p>
           <p>{heroLead}</p>
           <p>{heroExplanation}</p>
           <p className="verdict-hero-balance">
@@ -140,6 +144,19 @@ export function VerdictPanel({
             title="Final evaluation"
             description="Choose the structured outcome that best matches the evidence and cluster quality."
           />
+          <section
+            className="final-evaluation-checklist"
+            aria-labelledby="final-evaluation-checklist-title"
+          >
+            <h4 id="final-evaluation-checklist-title">Before you decide</h4>
+            <ul>
+              <li>Is the AI label supported by the evidence?</li>
+              <li>Is the label too broad, too specific, or overclaimed?</li>
+              <li>Is uncertainty high enough to avoid a strong conclusion?</li>
+              <li>Does the cluster appear mixed or impure?</li>
+              <li>Is the recommended action aligned with the evidence?</li>
+            </ul>
+          </section>
           <div className="verdict-sections">
             {verdictGroups.map((group) => (
               <section key={group.title} className="verdict-option-section">

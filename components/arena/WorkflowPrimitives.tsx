@@ -177,11 +177,18 @@ export function ArenaStepHero({
 
 export function ArenaReviewerGoal() {
   return (
-    <div className="arena-reviewer-goal">
-      Your job: decide whether the AI label is supported by the evidence. Prefer
-      narrow, evidence-grounded conclusions. Flag overclaiming, uncertainty, or
-      cluster impurity.
-    </div>
+    <aside
+      className="arena-reviewer-goal"
+      aria-labelledby="review-orientation-title"
+    >
+      <strong id="review-orientation-title">What you are reviewing</strong>
+      <p>
+        You are reviewing one telemetry cluster from a CasePackage. The upstream
+        pipeline produced an AI label for this cluster. Your task is to test
+        whether the available evidence supports that label and export a structured
+        ReviewResult.
+      </p>
+    </aside>
   );
 }
 

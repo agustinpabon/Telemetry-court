@@ -55,10 +55,7 @@ test("workflow primitives render the shared arena page language", () => {
   assert.match(markup, /class="arena-workflow-shell stage-surface test-stage"/);
   assert.match(markup, /Telemetry Court/);
   assert.match(markup, /Evidence review for AI-named telemetry clusters\./);
-  assert.match(
-    markup,
-    /Your job: decide whether the AI label is supported by the evidence\. Prefer narrow, evidence-grounded conclusions\. Flag overclaiming, uncertainty, or cluster impurity\./,
-  );
+  assert.match(markup, /What you are reviewing/);
   assert.match(markup, /Step 4 of 8 · AI Claim Check/);
   assert.match(markup, /aria-current="step"/);
   assert.match(markup, /arena-status-badge arena-status-badge-overclaim/);
@@ -66,6 +63,17 @@ test("workflow primitives render the shared arena page language", () => {
   assert.match(markup, /This is not a verdict\./);
   assert.match(markup, /Return to initial assessment/);
   assert.match(markup, /Proceed to verification/);
+});
+
+test("review orientation explains the CasePackage task without exposing a label", () => {
+  const markup = renderStaticMarkup(React.createElement(ArenaReviewerGoal));
+
+  assert.match(markup, /What you are reviewing/);
+  assert.match(markup, /one telemetry cluster from a CasePackage/);
+  assert.match(markup, /upstream pipeline produced an AI label/);
+  assert.match(markup, /test whether the available evidence supports that label/);
+  assert.match(markup, /export a structured ReviewResult/);
+  assert.doesNotMatch(markup, /Suspicious IAM privilege escalation/);
 });
 
 test("CasePackage import control renders local import status", () => {

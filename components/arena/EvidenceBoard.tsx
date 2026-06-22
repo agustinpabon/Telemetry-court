@@ -23,6 +23,30 @@ const mainEvidenceRatingOptions = evidenceRatingOptions.filter(
   (option) => option !== "irrelevant_noise",
 );
 
+const evidenceRatingLegend = [
+  { label: "Supports", description: "Directly backs the claim." },
+  {
+    label: "Weak support",
+    description: "Points in the same direction but is not enough alone.",
+  },
+  {
+    label: "Irrelevant",
+    description: "Does not materially affect the claim.",
+  },
+  {
+    label: "Contradicts",
+    description: "Weakens or conflicts with the claim.",
+  },
+  {
+    label: "Insufficient",
+    description: "Not enough evidence to support the claim.",
+  },
+  {
+    label: "Needs more context",
+    description: "Cannot judge without more baseline, provenance, or detail.",
+  },
+] as const;
+
 type EvidenceBoardProps = {
   caseFile: CaseFile;
   reviewState?: CaseReviewState;
@@ -83,7 +107,7 @@ export function EvidenceBoard({
           </ArenaStatusBadge>
         }
         title="Does the evidence support the AI claim?"
-        summary="IAM activity is present, but malicious escalation is not proven."
+        summary="Rate whether each evidence item supports the specific claim under review."
       />
 
       <section className="evidence-review-context" aria-label="Review context">
@@ -111,10 +135,7 @@ export function EvidenceBoard({
               Evidence balance: <EvidenceBalanceCounts balance={balance} />
             </h3>
           </div>
-          <p>
-            IAM activity is present, but downstream abuse, sensitive access, and
-            malicious intent are missing.
-          </p>
+          <p>{getEvidenceBalanceSummary(caseFile)}</p>
         </div>
       </section>
 
@@ -165,6 +186,21 @@ export function EvidenceBoard({
               {classifiedEvidenceCount} of {caseFile.evidenceItems.length} classified
             </strong>
           </div>
+
+          <section
+            className="evidence-rating-legend"
+            aria-labelledby="evidence-rating-legend-title"
+          >
+            <h3 id="evidence-rating-legend-title">How to rate evidence</h3>
+            <dl>
+              {evidenceRatingLegend.map((item) => (
+                <div key={item.label}>
+                  <dt>{item.label}</dt>
+                  <dd>{item.description}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
 
           <div className="evidence-review-list">
             {caseFile.evidenceItems.map((evidence) => {
@@ -298,6 +334,14 @@ export function EvidenceBoard({
       ) : null}
     </ArenaWorkflowShell>
   );
+}
+
+function getEvidenceBalanceSummary(caseFile: CaseFile) {
+  if (caseFile.id === "case-arena-001") {
+    return "IAM activity is present, but downstream abuse, sensitive access, and malicious intent are missing.";
+  }
+
+  return "Weigh supporting, contradictory, and incomplete evidence against the AI claim before choosing a label.";
 }
 
 function EvidenceBalanceCounts({ balance }: { balance: EvidenceBalanceValue }) {
