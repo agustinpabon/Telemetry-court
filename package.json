@@ -2,6 +2,7 @@
   "name": "telemetry-court",
   "version": "0.1.0",
   "private": true,
+  "description": "Evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

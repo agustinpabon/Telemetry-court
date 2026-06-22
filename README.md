@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/telemetry-court-logo.png" alt="Telemetry Court Logo" width="120" />
+</p>
+
 # Telemetry Court
 
 Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.

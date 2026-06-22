@@ -18,6 +18,20 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Next recommended step:
 - Suggested commit message:
 ```
+
+## 2026-06-22: Project Logo and Favicon Integration
+
+- Agent/model: Gemini 3.5 Flash
+- Prompt scope: Integrate the new Telemetry Court logo as the project logo, favicon, and social preview across local browser, Vercel production, and GitHub README/metadata.
+- Files changed: `public/telemetry-court-logo.png`, `app/icon.png`, `app/apple-icon.png`, `public/icon-192.png`, `public/icon-512.png`, `public/apple-touch-icon.png`, `app/favicon.ico`, `public/favicon.ico`, `docs/assets/github-social-preview.png`, `README.md`, `package.json`, `docs/CHANGELOG_AI.md`.
+- Summary: Saved the provided official logo, generated multi-resolution PNG and ICO favicon/app icon variants using `sips` and a custom Python builder script, configured Next.js file-based metadata, generated a standard 1280x640 GitHub social preview asset, added the logo to the top of the README, updated package.json descriptions, and set up GitHub repository description/topics via CLI.
+- Decisions made: Used built-in macOS `sips` tool and a lightweight Python script for image resizing and ICO generation to avoid adding external node dependencies. Configured standard Next.js App Router metadata conventions by placing favicon/icon assets directly under `app/`.
+- Checks run: `npm run lint` passed; `npm test` passed with 170 tests; `npm run build` completed successfully with Turbopack identifying `/apple-icon.png` and `/icon.png` static routes; verified that the local Next.js server serves `/favicon.ico` (200 OK) and `/icon.png` (200 OK) with the correct generation timestamps.
+- Assumptions: The logo provided is the official source of truth and needs no text additions or design changes.
+- Risks/follow-ups: The user should manually verify the tab favicon in a clean browser window or after clearing the browser cache, as browsers aggressively cache favicons.
+- Next recommended step: Verify the browser tab icon locally and inspect the updated README.
+- Suggested commit message: `meta: integrate official project logo and favicon variants`
+
 ## 2026-06-22: Audit and refine the review flow UI labels
 
 - Agent/model: Gemini 3.1 Pro (High)

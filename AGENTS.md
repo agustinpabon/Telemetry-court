@@ -140,3 +140,13 @@ Telemetry landscape
 - Use `$tdd` for implementation work where practical.
 - Use fresh-context review before merge.
 - Do not commit anything unless explicitly asked.
+
+## UI and frontend quality
+
+- Build real, usable screens first, not marketing placeholders.
+- Prefer premium, minimal, Apple/Linear-style interfaces: calm hierarchy, strong spacing, clear typography, and restrained color.
+- Avoid generic AI-looking UI: decorative blobs, excessive gradients, random glass cards, noisy shadows, and overdesigned sections.
+- Use existing components, styling conventions, and framework patterns before adding new abstractions.
+- For React/Next.js UI, preserve existing route behavior and state unless the task explicitly asks to change it.
+- Use shadcn/ui components when they fit the project and do not fight the existing design system.
+- After UI changes, verify desktop and mobile layout, run the project’s tests/typecheck/lint/build commands when available, and use browser tooling to catch visual or runtime issues.
