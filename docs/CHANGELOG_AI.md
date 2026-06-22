@@ -19,6 +19,41 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-22: Issue 74 Pilot Preflight
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Prepare a docs-only preflight plan and execution checklist for
+  the human-run multi-reviewer pilot in issue #74 without running the pilot or
+  claiming ReviewResult artifacts exist.
+- Files changed: `docs/PILOT_74_PREFLIGHT.md`,
+  `docs/VALIDATION_PILOT_PROTOCOL.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added execution gates for a 3-5 package, 2-3 independent reviewer
+  pilot; package validation and safety checks; reviewer instructions;
+  ReviewResult naming, metadata, and completeness checks; operational notes;
+  aggregation compatibility; explicit human approvals; non-goals; and required
+  completion evidence.
+- Decisions made: Kept the change documentation-only. Identified seven tracked
+  package-shaped TypeScript fixtures as synthetic rehearsal inputs, not an
+  approved realistic pilot set. Documented the existing UI import validation
+  path because the repository has no standalone JSON package-validator CLI,
+  and used the contract's actual `review_id` field without changing the
+  `review_result.v0.1` shape.
+- Checks run: `git diff --check` passed; `npm test` passed with 185 tests;
+  `npx tsc --noEmit` passed; `npm run lint` passed with 0 errors and the
+  existing 134 warnings under `.agents/skills/impeccable`; `npm run build`
+  passed; `npm audit --audit-level=high` reported two moderate findings in
+  Next.js's transitive `postcss` dependency and offered only a breaking forced
+  fix.
+- Assumptions: Issue #74 remains human-in-the-loop and cannot complete until
+  multiple independent reviewers produce real ReviewResults for the same
+  approved packages.
+- Risks/follow-ups: Human approval is still required for the realistic package
+  set, reviewer roster, any restricted-data use, publication, and claims. The
+  pilot itself and ReviewResult collection remain unexecuted.
+- Next recommended step: Approve and freeze the package manifest and reviewer
+  roster, then execute the pilot exactly once per reviewer/package assignment.
+- Suggested commit message: `docs(evaluation): prepare multi-reviewer pilot preflight`
+
 ## 2026-06-22: Research Validation Study Protocol
 
 - Agent/model: Codex (GPT-5)
