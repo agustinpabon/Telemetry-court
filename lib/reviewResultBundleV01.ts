@@ -22,6 +22,25 @@ import { CASE_PACKAGE_V01_SCHEMA_VERSION } from "@/lib/types";
 export const REVIEW_RESULT_BUNDLE_V01_SCHEMA_VERSION =
   "review_result_bundle.v0.1" as const;
 
+const bundleFields = [
+  "schema_version",
+  "metadata",
+  "compatibility",
+  "review_results",
+] as const;
+const bundleMetadataFields = [
+  "bundle_id",
+  "created_at",
+  "source_application",
+  "format",
+  "review_result_count",
+] as const;
+const bundleCompatibilityFields = [
+  "review_result_schema_version",
+  "review_protocol_version",
+  "case_package_schema_version",
+] as const;
+
 export type ReviewResultBundleV01 = {
   schema_version: typeof REVIEW_RESULT_BUNDLE_V01_SCHEMA_VERSION;
   metadata: {
@@ -93,14 +112,18 @@ export function createReviewResultBundleV01({
   }
 
   const sortedReviewResults = [...validatedReviewResults].sort((left, right) =>
-    left.review_id.localeCompare(right.review_id),
+    left.review_id < right.review_id
+      ? -1
+      : left.review_id > right.review_id
+        ? 1
+        : 0,
   );
 
   return {
     schema_version: REVIEW_RESULT_BUNDLE_V01_SCHEMA_VERSION,
     metadata: {
       bundle_id: requireMetadataString(bundleId, "bundle ID"),
-      created_at: requireMetadataString(createdAt, "creation timestamp"),
+      created_at: requireIsoTimestamp(createdAt, "creation timestamp"),
       source_application: "telemetry_court",
       format: "local_json",
       review_result_count: sortedReviewResults.length,
@@ -156,14 +179,37 @@ export function importReviewResultBundleV01Json(
     };
   }
 
+  const unsupportedBundleField = findUnsupportedField(parsed, bundleFields, "$");
+  if (unsupportedBundleField) {
+    return invalidBundle(unsupportedBundleField);
+  }
+
   if (!isObjectRecord(parsed.metadata)) {
     return invalidBundle("ReviewResult bundle metadata must be an object.");
+  }
+
+  const unsupportedMetadataField = findUnsupportedField(
+    parsed.metadata,
+    bundleMetadataFields,
+    "$.metadata",
+  );
+  if (unsupportedMetadataField) {
+    return invalidBundle(unsupportedMetadataField);
   }
 
   if (!isObjectRecord(parsed.compatibility)) {
     return invalidBundle(
       "ReviewResult bundle compatibility metadata must be an object.",
     );
+  }
+
+  const unsupportedCompatibilityField = findUnsupportedField(
+    parsed.compatibility,
+    bundleCompatibilityFields,
+    "$.compatibility",
+  );
+  if (unsupportedCompatibilityField) {
+    return invalidBundle(unsupportedCompatibilityField);
   }
 
   if (!Array.isArray(parsed.review_results) || parsed.review_results.length === 0) {
@@ -182,6 +228,12 @@ export function importReviewResultBundleV01Json(
   ) {
     return invalidBundle(
       "ReviewResult bundle metadata requires a bundle ID and creation timestamp.",
+    );
+  }
+
+  if (!isIsoTimestamp(bundle.metadata.created_at)) {
+    return invalidBundle(
+      "ReviewResult bundle creation timestamp must be a valid ISO timestamp.",
     );
   }
 
@@ -246,8 +298,24 @@ export function importReviewResultBundleV01Json(
 
 export function importReviewResultBundleToLocalStoreV01(
   storage: ReviewResultStorageLike,
-  bundle: ReviewResultBundleV01,
+  inputBundle: ReviewResultBundleV01,
 ): ReviewResultBundleLocalImportSummaryV01 {
+  let serializedBundle: string | undefined;
+  try {
+    serializedBundle = JSON.stringify(inputBundle);
+  } catch {
+    throw new Error(
+      "Cannot import ReviewResult bundle: runtime input is not serializable JSON. No results were imported.",
+    );
+  }
+
+  const validation = importReviewResultBundleV01Json(serializedBundle ?? "");
+  if (!validation.ok) {
+    throw new Error(
+      `Cannot import ReviewResult bundle: ${validation.message} No results were imported.`,
+    );
+  }
+  const bundle = validation.bundle;
   const currentStore = readReviewResultLocalStoreV01(storage);
   const currentReviews = Object.values(
     currentStore.review_results_by_case_package_id,
@@ -276,6 +344,21 @@ export function importReviewResultBundleToLocalStoreV01(
         `Cannot import ReviewResult bundle: reviewer/session "${reviewResult.reviewer.reviewer_id}" / "${reviewResult.reviewer.review_session_id}" already has a local result for CasePackage "${reviewResult.case_package.package_id}". No results were imported.`,
       );
     }
+  }
+
+  const bundlePackageId = bundle.review_results[0].case_package.package_id;
+  const existingPackageReviews = currentReviews.filter(
+    (reviewResult) =>
+      reviewResult.case_package.package_id === bundlePackageId,
+  );
+  const localCompatibilityError = getReviewSetCompatibilityError([
+    ...existingPackageReviews,
+    ...bundle.review_results,
+  ]);
+  if (localCompatibilityError) {
+    throw new Error(
+      `Cannot import ReviewResult bundle: ${localCompatibilityError} No results were imported.`,
+    );
   }
 
   let stagedSerializedStore = storage.getItem(REVIEW_RESULT_LOCAL_STORE_V01_KEY);
@@ -330,12 +413,45 @@ function requireMetadataString(value: string, label: string): string {
   return value;
 }
 
+function requireIsoTimestamp(value: string, label: string): string {
+  requireMetadataString(value, label);
+  if (!isIsoTimestamp(value)) {
+    throw new Error(
+      `Cannot export ReviewResult bundle v0.1 without a valid ${label}.`,
+    );
+  }
+
+  return value;
+}
+
+function isIsoTimestamp(value: string): boolean {
+  return (
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(
+      value,
+    ) && !Number.isNaN(Date.parse(value))
+  );
+}
+
 function invalidBundle(message: string): ReviewResultBundleImportResult {
   return { ok: false, reason: "invalid_bundle", message };
 }
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function findUnsupportedField(
+  input: Record<string, unknown>,
+  allowedFields: readonly string[],
+  path: string,
+): string | undefined {
+  const unsupportedField = Object.keys(input).find(
+    (field) => !allowedFields.includes(field),
+  );
+
+  return unsupportedField
+    ? `ReviewResult bundle contains unsupported field "${unsupportedField}" at ${path}.${unsupportedField}.`
+    : undefined;
 }
 
 function findDuplicateReviewId(
@@ -366,6 +482,29 @@ function getReviewSetCompatibilityError(
     ]);
   }
 
+  if (reviewsByPackageId.size !== 1) {
+    return "ReviewResult bundle must contain results for one compatible CasePackage ID.";
+  }
+
+  const expectedEvidenceIds = getSortedEvidenceIds(reviewResults[0]);
+  const evidenceSetMismatch = reviewResults.find(
+    (reviewResult) =>
+      !arraysEqual(expectedEvidenceIds, getSortedEvidenceIds(reviewResult)),
+  );
+  if (evidenceSetMismatch) {
+    return `ReviewResult "${evidenceSetMismatch.review_id}" is incompatible because its stable evidence ID set differs.`;
+  }
+
+  const expectedBlindReviewSetting =
+    reviewResults[0].protocol.blind_review_enabled;
+  const blindReviewMismatch = reviewResults.find(
+    (reviewResult) =>
+      reviewResult.protocol.blind_review_enabled !== expectedBlindReviewSetting,
+  );
+  if (blindReviewMismatch) {
+    return `ReviewResult "${blindReviewMismatch.review_id}" is incompatible because its blind-review setting differs.`;
+  }
+
   try {
     for (const packageReviews of reviewsByPackageId.values()) {
       let session = createLocalReviewSessionV01(
@@ -385,4 +524,17 @@ function getReviewSetCompatibilityError(
   }
 
   return undefined;
+}
+
+function getSortedEvidenceIds(reviewResult: ReviewResultV01): string[] {
+  return reviewResult.decisions.evidence_ratings
+    .map((rating) => rating.evidence_id)
+    .sort();
+}
+
+function arraysEqual(left: readonly string[], right: readonly string[]): boolean {
+  return (
+    left.length === right.length &&
+    left.every((value, index) => value === right[index])
+  );
 }

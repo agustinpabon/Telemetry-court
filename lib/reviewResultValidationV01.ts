@@ -34,6 +34,50 @@ const pipelineStringFields = [
   "generated_at",
 ] as const;
 
+const topLevelFields = [
+  "schema_version",
+  "review_id",
+  "created_at",
+  "case_package",
+  "reviewer",
+  "protocol",
+  "decisions",
+] as const;
+const casePackageFields = [
+  "schema_version",
+  "package_id",
+  "package_revision",
+  "case_id",
+  "cluster_id",
+  "pipeline",
+] as const;
+const reviewerFields = ["reviewer_id", "review_session_id", "context"] as const;
+const protocolFields = [
+  "protocol_version",
+  "blind_review_enabled",
+  "ai_label_revealed",
+] as const;
+const decisionFields = [
+  "blind_interpretation",
+  "label_comparison",
+  "evidence_ratings",
+  "outlier_impostor",
+  "confidence",
+  "failure_modes",
+  "final_verdict",
+  "recommended_action",
+  "notes",
+] as const;
+const blindInterpretationFields = ["option_id", "label", "agrees_with_ai"] as const;
+const labelComparisonFields = [
+  "selected_label_id",
+  "reason_codes",
+  "rationale",
+] as const;
+const evidenceRatingFields = ["evidence_id", "rating"] as const;
+const outlierImpostorFields = ["selected_session_id"] as const;
+const confidenceFields = ["level", "rationale"] as const;
+
 export function validateReviewResultV01(
   input: unknown,
   rootPath = "$",
@@ -45,6 +89,8 @@ export function validateReviewResultV01(
     return { ok: false, errors };
   }
 
+  rejectUnknownFields(reviewResult, topLevelFields, rootPath, errors);
+
   requireExactValue(
     reviewResult.schema_version,
     REVIEW_RESULT_V01_SCHEMA_VERSION,
@@ -53,12 +99,13 @@ export function validateReviewResultV01(
     errors,
   );
   requireNonEmptyString(reviewResult.review_id, `${rootPath}.review_id`, errors);
-  requireNonEmptyString(reviewResult.created_at, `${rootPath}.created_at`, errors);
+  requireIsoTimestamp(reviewResult.created_at, `${rootPath}.created_at`, errors);
 
   validateCasePackageReference(reviewResult.case_package, `${rootPath}.case_package`, errors);
   validateReviewer(reviewResult.reviewer, `${rootPath}.reviewer`, errors);
   validateProtocol(reviewResult.protocol, `${rootPath}.protocol`, errors);
   validateDecisions(reviewResult.decisions, `${rootPath}.decisions`, errors);
+  validateReviewIdentity(reviewResult, rootPath, errors);
 
   return errors.length === 0
     ? { ok: true, reviewResult: reviewResult as ReviewResultV01 }
@@ -80,6 +127,40 @@ export function assertValidReviewResultV01(input: unknown): ReviewResultV01 {
   return result.reviewResult;
 }
 
+function validateReviewIdentity(
+  reviewResult: Record<string, unknown>,
+  path: string,
+  errors: ReviewResultValidationErrorV01[],
+) {
+  const casePackage = isObjectRecord(reviewResult.case_package)
+    ? reviewResult.case_package
+    : undefined;
+  const reviewer = isObjectRecord(reviewResult.reviewer)
+    ? reviewResult.reviewer
+    : undefined;
+  const identityParts = [
+    casePackage?.package_id,
+    reviewer?.reviewer_id,
+    reviewer?.review_session_id,
+    reviewResult.created_at,
+  ];
+
+  if (
+    identityParts.every(
+      (value): value is string =>
+        typeof value === "string" && value.trim() !== "",
+    ) &&
+    reviewResult.review_id !== ["review", ...identityParts].join(":")
+  ) {
+    addError(
+      errors,
+      `${path}.review_id`,
+      "inconsistent_review_identity",
+      "must match the package, reviewer, session, and timestamp metadata.",
+    );
+  }
+}
+
 function validateCasePackageReference(
   input: unknown,
   path: string,
@@ -87,6 +168,8 @@ function validateCasePackageReference(
 ) {
   const reference = requireObject(input, path, errors);
   if (!reference) return;
+
+  rejectUnknownFields(reference, casePackageFields, path, errors);
 
   requireExactValue(
     reference.schema_version,
@@ -103,9 +186,13 @@ function validateCasePackageReference(
   const pipeline = requireObject(reference.pipeline, `${path}.pipeline`, errors);
   if (!pipeline) return;
 
+  rejectUnknownFields(pipeline, pipelineStringFields, `${path}.pipeline`, errors);
+
   for (const field of pipelineStringFields) {
     const fieldPath = `${path}.pipeline.${field}`;
-    if (field === "run_id" || field === "upstream_tool" || field === "generated_at") {
+    if (field === "generated_at") {
+      requireIsoTimestamp(pipeline[field], fieldPath, errors);
+    } else if (field === "run_id" || field === "upstream_tool") {
       requireNonEmptyString(pipeline[field], fieldPath, errors);
     } else {
       validateOptionalString(pipeline[field], fieldPath, errors);
@@ -120,6 +207,8 @@ function validateReviewer(
 ) {
   const reviewer = requireObject(input, path, errors);
   if (!reviewer) return;
+
+  rejectUnknownFields(reviewer, reviewerFields, path, errors);
 
   requireNonEmptyString(reviewer.reviewer_id, `${path}.reviewer_id`, errors);
   requireNonEmptyString(
@@ -143,6 +232,8 @@ function validateProtocol(
   const protocol = requireObject(input, path, errors);
   if (!protocol) return;
 
+  rejectUnknownFields(protocol, protocolFields, path, errors);
+
   requireExactValue(
     protocol.protocol_version,
     REVIEW_PROTOCOL_V01_VERSION,
@@ -152,6 +243,17 @@ function validateProtocol(
   );
   requireBoolean(protocol.blind_review_enabled, `${path}.blind_review_enabled`, errors);
   requireBoolean(protocol.ai_label_revealed, `${path}.ai_label_revealed`, errors);
+  if (
+    protocol.blind_review_enabled === true &&
+    protocol.ai_label_revealed === false
+  ) {
+    addError(
+      errors,
+      `${path}.ai_label_revealed`,
+      "incomplete_review",
+      "must be true for a completed blind review.",
+    );
+  }
 }
 
 function validateDecisions(
@@ -162,12 +264,20 @@ function validateDecisions(
   const decisions = requireObject(input, path, errors);
   if (!decisions) return;
 
+  rejectUnknownFields(decisions, decisionFields, path, errors);
+
   const blindInterpretation = requireObject(
     decisions.blind_interpretation,
     `${path}.blind_interpretation`,
     errors,
   );
   if (blindInterpretation) {
+    rejectUnknownFields(
+      blindInterpretation,
+      blindInterpretationFields,
+      `${path}.blind_interpretation`,
+      errors,
+    );
     requireNonEmptyString(
       blindInterpretation.option_id,
       `${path}.blind_interpretation.option_id`,
@@ -191,6 +301,12 @@ function validateDecisions(
     errors,
   );
   if (labelComparison) {
+    rejectUnknownFields(
+      labelComparison,
+      labelComparisonFields,
+      `${path}.label_comparison`,
+      errors,
+    );
     requireNonEmptyString(
       labelComparison.selected_label_id,
       `${path}.label_comparison.selected_label_id`,
@@ -217,6 +333,12 @@ function validateDecisions(
     errors,
   );
   if (outlierImpostor) {
+    rejectUnknownFields(
+      outlierImpostor,
+      outlierImpostorFields,
+      `${path}.outlier_impostor`,
+      errors,
+    );
     requireNonEmptyString(
       outlierImpostor.selected_session_id,
       `${path}.outlier_impostor.selected_session_id`,
@@ -231,6 +353,7 @@ function validateDecisions(
       errors,
     );
     if (confidence) {
+      rejectUnknownFields(confidence, confidenceFields, `${path}.confidence`, errors);
       requireEnum(
         confidence.level,
         ["low", "medium", "high"] as const,
@@ -272,11 +395,23 @@ function validateEvidenceRatings(
     return;
   }
 
+  if (input.length === 0) {
+    addError(
+      errors,
+      path,
+      "empty_required_array",
+      "must contain at least one evidence rating.",
+    );
+    return;
+  }
+
   const seenEvidenceIds = new Set<string>();
   input.forEach((item, index) => {
     const itemPath = `${path}[${index}]`;
     const rating = requireObject(item, itemPath, errors);
     if (!rating) return;
+
+    rejectUnknownFields(rating, evidenceRatingFields, itemPath, errors);
 
     const evidenceId = requireNonEmptyString(
       rating.evidence_id,
@@ -357,6 +492,28 @@ function requireObject(
   return input as Record<string, unknown>;
 }
 
+function isObjectRecord(input: unknown): input is Record<string, unknown> {
+  return typeof input === "object" && input !== null && !Array.isArray(input);
+}
+
+function rejectUnknownFields(
+  input: Record<string, unknown>,
+  allowedFields: readonly string[],
+  path: string,
+  errors: ReviewResultValidationErrorV01[],
+) {
+  for (const field of Object.keys(input)) {
+    if (!allowedFields.includes(field)) {
+      addError(
+        errors,
+        `${path}.${field}`,
+        "unsupported_field",
+        `contains unsupported field "${field}".`,
+      );
+    }
+  }
+}
+
 function requireNonEmptyString(
   input: unknown,
   path: string,
@@ -369,13 +526,42 @@ function requireNonEmptyString(
   return input;
 }
 
+function requireIsoTimestamp(
+  input: unknown,
+  path: string,
+  errors: ReviewResultValidationErrorV01[],
+): string | undefined {
+  const value = requireNonEmptyString(input, path, errors);
+  if (!value) return undefined;
+
+  if (
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(
+      value,
+    ) ||
+    Number.isNaN(Date.parse(value))
+  ) {
+    addError(errors, path, "invalid_timestamp", "must be a valid ISO timestamp.");
+    return undefined;
+  }
+
+  return value;
+}
+
 function validateOptionalString(
   input: unknown,
   path: string,
   errors: ReviewResultValidationErrorV01[],
 ) {
-  if (input !== undefined && typeof input !== "string") {
-    addError(errors, path, "invalid_type", "must be a string when provided.");
+  if (
+    input !== undefined &&
+    (typeof input !== "string" || input.trim() === "")
+  ) {
+    addError(
+      errors,
+      path,
+      "invalid_type",
+      "must be a non-empty string when provided.",
+    );
   }
 }
 

@@ -203,21 +203,26 @@ for the portable validation slice, not target enterprise infrastructure.
 - the supported ReviewResult, review protocol, and CasePackage schema versions;
 - one or more fully validated `ReviewResultV01` artifacts.
 
-Bundle export reads the ReviewResults already saved in the browser-local store,
-sorts them deterministically by `review_id`, and downloads a dated
+Bundle export reads the ReviewResults already saved for the currently selected
+CasePackage in the browser-local store, sorts them deterministically by
+`review_id`, and downloads a dated
 `telemetry-court-review-results-YYYY-MM-DD.json` file. It does not copy full
 CasePackages, claims, evidence content, or raw telemetry into the bundle.
 
 Bundle import parses local JSON, validates the envelope and every contained
-ReviewResult, rejects unsupported versions, duplicate `review_id` values,
-duplicate reviewer/session submissions, and incompatible compact CasePackage
-references. Import is atomic: all results are staged before one local-store
-write, and an existing local result is never overwritten by bundle import.
+ReviewResult, rejects unsupported or unknown fields, invalid timestamps,
+inconsistent review identity, incomplete blind-review state, missing evidence
+decisions, duplicate `review_id` values, duplicate reviewer/session
+submissions, and incompatible compact CasePackage references. Import is
+atomic: all results are staged before one local-store write, and an existing
+local result is never overwritten by bundle import.
 
-Bundles may carry results for different CasePackage IDs. Results sharing a
-CasePackage ID must have the same package revision and exact compact package,
-pipeline, model, embedding, clustering, naming, and prompt references already
-used by local sessions and `EvaluationReportV01` aggregation.
+Each bundle carries results for exactly one CasePackage ID. Every result must
+have the same package revision, exact compact package, pipeline, model,
+embedding, clustering, naming, and prompt references, blind-review setting,
+and stable evidence-ID set already used by local sessions and
+`EvaluationReportV01` aggregation. An import must also match any results for
+that CasePackage already present in the local store.
 
 Issue #100 remains responsible for choosing local or imported results and
 building the results workflow from them. Issue #101 remains responsible for the

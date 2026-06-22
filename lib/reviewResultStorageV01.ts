@@ -3,6 +3,7 @@ import {
   submitReviewResultToLocalReviewSessionV01,
 } from "@/lib/reviewSessionV01";
 import type { ReviewResultV01 } from "@/lib/reviewResultV01";
+import { assertValidReviewResultV01 } from "@/lib/reviewResultValidationV01";
 
 export const REVIEW_RESULT_LOCAL_STORE_V01_SCHEMA_VERSION =
   "review_result_local_store.v0.1" as const;
@@ -183,7 +184,7 @@ function assertSupportedReviewResultV01(
     typedReviewResult,
   );
 
-  return typedReviewResult;
+  return assertValidReviewResultV01(typedReviewResult);
 }
 
 function createEmptyReviewResultLocalStoreV01(): ReviewResultLocalStoreV01 {

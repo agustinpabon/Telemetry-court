@@ -13,6 +13,7 @@ import {
   importReviewResultBundleToLocalStoreV01,
   REVIEW_RESULT_BUNDLE_V01_SCHEMA_VERSION,
   serializeReviewResultBundleV01,
+  type ReviewResultBundleV01,
 } from "@/lib/reviewResultBundleV01";
 import {
   loadReviewResultsForCasePackageV01,
@@ -108,6 +109,55 @@ test("ReviewResult bundle v0.1 rejects unsupported bundle schemas", () => {
   });
 });
 
+test("ReviewResult bundle v0.1 rejects out-of-contract bundle fields", () => {
+  const review = buildReviewResult(sampleCases[0], {
+    reviewer_id: "reviewer-a",
+    review_session_id: "session-a",
+    context: "local_review",
+  });
+  const bundle = createReviewResultBundleV01({
+    reviewResults: [review],
+    bundleId: "bundle-local-001",
+    createdAt: "2026-06-21T16:00:00.000Z",
+  });
+
+  const result = importReviewResultBundleV01Json(
+    JSON.stringify({ ...bundle, raw_evidence: ["must-not-be-imported"] }),
+  );
+
+  assert.deepEqual(result, {
+    ok: false,
+    reason: "invalid_bundle",
+    message: 'ReviewResult bundle contains unsupported field "raw_evidence" at $.raw_evidence.',
+  });
+});
+
+test("ReviewResult bundle v0.1 rejects invalid bundle timestamps", () => {
+  const review = buildReviewResult(sampleCases[0], {
+    reviewer_id: "reviewer-a",
+    review_session_id: "session-a",
+    context: "local_review",
+  });
+  const bundle = createReviewResultBundleV01({
+    reviewResults: [review],
+    bundleId: "bundle-local-001",
+    createdAt: "2026-06-21T16:00:00.000Z",
+  });
+
+  const result = importReviewResultBundleV01Json(
+    JSON.stringify({
+      ...bundle,
+      metadata: { ...bundle.metadata, created_at: "not-a-timestamp" },
+    }),
+  );
+
+  assert.deepEqual(result, {
+    ok: false,
+    reason: "invalid_bundle",
+    message: "ReviewResult bundle creation timestamp must be a valid ISO timestamp.",
+  });
+});
+
 test("ReviewResult bundle v0.1 rejects structurally invalid ReviewResults", () => {
   const review = buildReviewResult(sampleCases[0], {
     reviewer_id: "reviewer-a",
@@ -142,29 +192,260 @@ test("ReviewResult bundle v0.1 rejects structurally invalid ReviewResults", () =
   }
 });
 
+test("ReviewResult bundle v0.1 rejects out-of-contract ReviewResult fields", () => {
+  const review = buildReviewResult(sampleCases[0], {
+    reviewer_id: "reviewer-a",
+    review_session_id: "session-a",
+    context: "local_review",
+  });
+  const bundle = createReviewResultBundleV01({
+    reviewResults: [review],
+    bundleId: "bundle-local-001",
+    createdAt: "2026-06-21T16:00:00.000Z",
+  });
+  const invalidBundle = {
+    ...bundle,
+    review_results: [
+      {
+        ...review,
+        raw_telemetry: [{ event: "must-not-be-imported" }],
+      },
+    ],
+  };
+
+  const result = importReviewResultBundleV01Json(JSON.stringify(invalidBundle));
+
+  assert.equal(result.ok, false);
+  if (!result.ok) {
+    assert.equal(result.reason, "invalid_review_result");
+    assert.match(result.message, /review_results\[0\]\.raw_telemetry/);
+    assert.match(result.message, /unsupported field/);
+  }
+});
+
+test("ReviewResult bundle v0.1 rejects incomplete blind-review protocol state", () => {
+  const review = buildReviewResult(sampleCases[0], {
+    reviewer_id: "reviewer-a",
+    review_session_id: "session-a",
+    context: "local_review",
+  });
+  const bundle = createReviewResultBundleV01({
+    reviewResults: [review],
+    bundleId: "bundle-local-001",
+    createdAt: "2026-06-21T16:00:00.000Z",
+  });
+  const invalidBundle = {
+    ...bundle,
+    review_results: [
+      {
+        ...review,
+        protocol: { ...review.protocol, ai_label_revealed: false },
+      },
+    ],
+  };
+
+  const result = importReviewResultBundleV01Json(JSON.stringify(invalidBundle));
+
+  assert.equal(result.ok, false);
+  if (!result.ok) {
+    assert.equal(result.reason, "invalid_review_result");
+    assert.match(result.message, /review_results\[0\]\.protocol\.ai_label_revealed/);
+    assert.match(result.message, /must be true for a completed blind review/);
+  }
+});
+
+test("ReviewResult bundle v0.1 rejects results without evidence decisions", () => {
+  const review = buildReviewResult(sampleCases[0], {
+    reviewer_id: "reviewer-a",
+    review_session_id: "session-a",
+    context: "local_review",
+  });
+  const bundle = createReviewResultBundleV01({
+    reviewResults: [review],
+    bundleId: "bundle-local-001",
+    createdAt: "2026-06-21T16:00:00.000Z",
+  });
+  const invalidBundle = {
+    ...bundle,
+    review_results: [
+      {
+        ...review,
+        decisions: { ...review.decisions, evidence_ratings: [] },
+      },
+    ],
+  };
+
+  const result = importReviewResultBundleV01Json(JSON.stringify(invalidBundle));
+
+  assert.equal(result.ok, false);
+  if (!result.ok) {
+    assert.equal(result.reason, "invalid_review_result");
+    assert.match(result.message, /review_results\[0\]\.decisions\.evidence_ratings/);
+    assert.match(result.message, /at least one evidence rating/);
+  }
+});
+
+test("ReviewResult bundle v0.1 rejects inconsistent ReviewResult identity", () => {
+  const review = buildReviewResult(sampleCases[0], {
+    reviewer_id: "reviewer-a",
+    review_session_id: "session-a",
+    context: "local_review",
+  });
+  const bundle = createReviewResultBundleV01({
+    reviewResults: [review],
+    bundleId: "bundle-local-001",
+    createdAt: "2026-06-21T16:00:00.000Z",
+  });
+  const invalidBundle = {
+    ...bundle,
+    review_results: [{ ...review, review_id: "review:arbitrary" }],
+  };
+
+  const result = importReviewResultBundleV01Json(JSON.stringify(invalidBundle));
+
+  assert.equal(result.ok, false);
+  if (!result.ok) {
+    assert.equal(result.reason, "invalid_review_result");
+    assert.match(result.message, /review_results\[0\]\.review_id/);
+    assert.match(result.message, /package, reviewer, session, and timestamp/);
+  }
+});
+
+test("ReviewResult bundle v0.1 rejects invalid ReviewResult timestamps", () => {
+  const review = buildReviewResult(sampleCases[0], {
+    reviewer_id: "reviewer-a",
+    review_session_id: "session-a",
+    context: "local_review",
+  });
+  const bundle = createReviewResultBundleV01({
+    reviewResults: [review],
+    bundleId: "bundle-local-001",
+    createdAt: "2026-06-21T16:00:00.000Z",
+  });
+  const createdAt = "not-a-timestamp";
+  const invalidReview = {
+    ...review,
+    created_at: createdAt,
+    review_id: [
+      "review",
+      review.case_package.package_id,
+      review.reviewer.reviewer_id,
+      review.reviewer.review_session_id,
+      createdAt,
+    ].join(":"),
+  };
+
+  const result = importReviewResultBundleV01Json(
+    JSON.stringify({ ...bundle, review_results: [invalidReview] }),
+  );
+
+  assert.equal(result.ok, false);
+  if (!result.ok) {
+    assert.equal(result.reason, "invalid_review_result");
+    assert.match(result.message, /review_results\[0\]\.created_at/);
+    assert.match(result.message, /valid ISO timestamp/);
+  }
+});
+
 test("ReviewResult bundle v0.1 rejects duplicate review_result_id values", () => {
   const reviewA = buildReviewResult(sampleCases[0], {
     reviewer_id: "reviewer-a",
     review_session_id: "session-a",
     context: "local_review",
   });
+
+  assert.throws(
+    () =>
+      createReviewResultBundleV01({
+        reviewResults: [reviewA, reviewA],
+        bundleId: "bundle-local-duplicates",
+        createdAt: "2026-06-21T16:00:00.000Z",
+      }),
+    /duplicate ReviewResult ID/,
+  );
+});
+
+test("ReviewResult bundle v0.1 rejects mixed CasePackage IDs", () => {
+  const reviewA = buildReviewResult(sampleCases[0], {
+    reviewer_id: "reviewer-a",
+    review_session_id: "session-a",
+    context: "local_review",
+  });
+  const reviewB = buildReviewResult(sampleCases[1], {
+    reviewer_id: "reviewer-b",
+    review_session_id: "session-b",
+    context: "local_review",
+  });
+
+  assert.throws(
+    () =>
+      createReviewResultBundleV01({
+        reviewResults: [reviewA, reviewB],
+        bundleId: "bundle-mixed-packages",
+        createdAt: "2026-06-21T16:00:00.000Z",
+      }),
+    /one compatible CasePackage ID/,
+  );
+});
+
+test("ReviewResult bundle v0.1 rejects incompatible evidence ID sets", () => {
+  const reviewA = buildReviewResult(sampleCases[0], {
+    reviewer_id: "reviewer-a",
+    review_session_id: "session-a",
+    context: "local_review",
+  });
+  const completeReviewB = buildReviewResult(sampleCases[0], {
+    reviewer_id: "reviewer-b",
+    review_session_id: "session-b",
+    context: "local_review",
+  });
   const reviewB = {
-    ...buildReviewResult(sampleCases[0], {
-      reviewer_id: "reviewer-b",
-      review_session_id: "session-b",
-      context: "local_review",
-    }),
-    review_id: reviewA.review_id,
+    ...completeReviewB,
+    decisions: {
+      ...completeReviewB.decisions,
+      evidence_ratings: completeReviewB.decisions.evidence_ratings.slice(1),
+    },
   };
 
   assert.throws(
     () =>
       createReviewResultBundleV01({
         reviewResults: [reviewA, reviewB],
-        bundleId: "bundle-local-duplicates",
+        bundleId: "bundle-incompatible-evidence",
         createdAt: "2026-06-21T16:00:00.000Z",
       }),
-    /duplicate ReviewResult ID/,
+    /stable evidence ID set differs/,
+  );
+});
+
+test("ReviewResult bundle v0.1 rejects incompatible blind-review settings", () => {
+  const reviewA = buildReviewResult(sampleCases[0], {
+    reviewer_id: "reviewer-a",
+    review_session_id: "session-a",
+    context: "local_review",
+  });
+  const completeReviewB = buildReviewResult(sampleCases[0], {
+    reviewer_id: "reviewer-b",
+    review_session_id: "session-b",
+    context: "local_review",
+  });
+  const reviewB = {
+    ...completeReviewB,
+    protocol: {
+      ...completeReviewB.protocol,
+      blind_review_enabled: false,
+      ai_label_revealed: false,
+    },
+  };
+
+  assert.throws(
+    () =>
+      createReviewResultBundleV01({
+        reviewResults: [reviewA, reviewB],
+        bundleId: "bundle-incompatible-protocol",
+        createdAt: "2026-06-21T16:00:00.000Z",
+      }),
+    /blind-review setting differs/,
   );
 });
 
@@ -191,6 +472,38 @@ test("ReviewResult bundle v0.1 import reports duplicate review_result_id values"
     ok: false,
     reason: "duplicate_review_result_id",
     message: `ReviewResult bundle contains duplicate ReviewResult ID "${review.review_id}".`,
+  });
+});
+
+test("ReviewResult bundle v0.1 import reports mixed CasePackage IDs", () => {
+  const reviewA = buildReviewResult(sampleCases[0], {
+    reviewer_id: "reviewer-a",
+    review_session_id: "session-a",
+    context: "local_review",
+  });
+  const reviewB = buildReviewResult(sampleCases[1], {
+    reviewer_id: "reviewer-b",
+    review_session_id: "session-b",
+    context: "local_review",
+  });
+  const bundle = createReviewResultBundleV01({
+    reviewResults: [reviewA],
+    bundleId: "bundle-mixed-packages",
+    createdAt: "2026-06-21T16:00:00.000Z",
+  });
+  const mixedBundle = {
+    ...bundle,
+    metadata: { ...bundle.metadata, review_result_count: 2 },
+    review_results: [reviewA, reviewB],
+  };
+
+  const result = importReviewResultBundleV01Json(JSON.stringify(mixedBundle));
+
+  assert.deepEqual(result, {
+    ok: false,
+    reason: "invalid_bundle",
+    message:
+      "ReviewResult bundle must contain results for one compatible CasePackage ID.",
   });
 });
 
@@ -226,6 +539,44 @@ test("ReviewResult bundle v0.1 appends valid imported results to local storage",
       reviewA.case_package.package_id,
     ),
     [reviewA, reviewB],
+  );
+});
+
+test("ReviewResult bundle local import revalidates its runtime input", () => {
+  const storage = createMemoryStorage();
+  const review = buildReviewResult(sampleCases[0], {
+    reviewer_id: "reviewer-a",
+    review_session_id: "session-a",
+    context: "local_review",
+  });
+  const bundle = createReviewResultBundleV01({
+    reviewResults: [review],
+    bundleId: "bundle-forged-runtime-input",
+    createdAt: "2026-06-21T16:00:00.000Z",
+  });
+  const forgedBundle = {
+    ...bundle,
+    review_results: [
+      {
+        ...review,
+        decisions: {
+          ...review.decisions,
+          final_verdict: "invented_verdict",
+        },
+      },
+    ],
+  } as unknown as ReviewResultBundleV01;
+
+  assert.throws(
+    () => importReviewResultBundleToLocalStoreV01(storage, forgedBundle),
+    /Invalid ReviewResult.*final_verdict.*No results were imported/,
+  );
+  assert.deepEqual(
+    loadReviewResultsForCasePackageV01(
+      storage,
+      review.case_package.package_id,
+    ),
+    [],
   );
 });
 
@@ -289,6 +640,45 @@ test("ReviewResult bundle import preserves exact CasePackage compatibility", () 
   assert.throws(
     () => importReviewResultBundleToLocalStoreV01(storage, bundle),
     /incompatible CasePackage reference/,
+  );
+  assert.deepEqual(
+    loadReviewResultsForCasePackageV01(
+      storage,
+      existingReview.case_package.package_id,
+    ),
+    [existingReview],
+  );
+});
+
+test("ReviewResult bundle import rejects evidence-set incompatibility without a partial write", () => {
+  const storage = createMemoryStorage();
+  const existingReview = buildReviewResult(sampleCases[0], {
+    reviewer_id: "reviewer-a",
+    review_session_id: "session-a",
+    context: "local_review",
+  });
+  const completeImportedReview = buildReviewResult(sampleCases[0], {
+    reviewer_id: "reviewer-b",
+    review_session_id: "session-b",
+    context: "local_review",
+  });
+  const importedReview = {
+    ...completeImportedReview,
+    decisions: {
+      ...completeImportedReview.decisions,
+      evidence_ratings: completeImportedReview.decisions.evidence_ratings.slice(1),
+    },
+  };
+  saveReviewResultToLocalStoreV01(storage, existingReview);
+  const bundle = createReviewResultBundleV01({
+    reviewResults: [importedReview],
+    bundleId: "bundle-incompatible-evidence-set",
+    createdAt: "2026-06-21T16:00:00.000Z",
+  });
+
+  assert.throws(
+    () => importReviewResultBundleToLocalStoreV01(storage, bundle),
+    /stable evidence ID set differs.*No results were imported/,
   );
   assert.deepEqual(
     loadReviewResultsForCasePackageV01(

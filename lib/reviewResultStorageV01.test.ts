@@ -108,6 +108,14 @@ test("local ReviewResult storage rejects unsupported or incompatible artifacts",
       } as unknown as ReviewResultV01),
     /unsupported review protocol version/,
   );
+  assert.throws(
+    () =>
+      saveReviewResultToLocalStoreV01(storage, {
+        ...review,
+        raw_telemetry: [{ event: "must-not-be-stored" }],
+      } as unknown as ReviewResultV01),
+    /unsupported field "raw_telemetry"/,
+  );
 
   saveReviewResultToLocalStoreV01(storage, review);
 

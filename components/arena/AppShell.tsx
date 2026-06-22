@@ -54,7 +54,7 @@ import {
   serializeReviewResultBundleV01,
 } from "@/lib/reviewResultBundleV01";
 import {
-  readReviewResultLocalStoreV01,
+  loadReviewResultsForCasePackageV01,
   saveReviewResultToLocalStoreV01,
 } from "@/lib/reviewResultStorageV01";
 import type { CaseFile, LandscapeContextNode } from "@/lib/types";
@@ -203,6 +203,7 @@ export function AppShell({
     );
   }
 
+  const selectedCasePackageId = selectedCase.casePackageReference?.package_id;
   const evidenceRatings = getEvidenceRatings(selectedCase, reviewState);
   const evidenceBalance = getEvidenceBalance(selectedCase, evidenceRatings);
   const blindChoice = selectedCase.blindInterpretationOptions.find(
@@ -346,16 +347,26 @@ export function AppShell({
     }
 
     try {
-      const localStore = readReviewResultLocalStoreV01(window.localStorage);
-      const localReviews = Object.values(
-        localStore.review_results_by_case_package_id,
-      ).flat();
+      const packageId = selectedCasePackageId;
+
+      if (!packageId) {
+        setReviewBundleStatus({
+          state: "error",
+          message:
+            "The selected case has no CasePackage reference, so its ReviewResults cannot be exported.",
+        });
+        return;
+      }
+
+      const localReviews = loadReviewResultsForCasePackageV01(
+        window.localStorage,
+        packageId,
+      );
 
       if (localReviews.length === 0) {
         setReviewBundleStatus({
           state: "error",
-          message:
-            "No local ReviewResults are available. Export a completed review first.",
+          message: `No local ReviewResults are available for CasePackage "${packageId}". Export a completed review for this case first.`,
         });
         return;
       }
@@ -372,7 +383,7 @@ export function AppShell({
       );
       setReviewBundleStatus({
         state: "success",
-        message: `Exported ${localReviews.length} local ReviewResult${localReviews.length === 1 ? "" : "s"}.`,
+        message: `Exported ${localReviews.length} local ReviewResult${localReviews.length === 1 ? "" : "s"} for CasePackage "${packageId}".`,
       });
     } catch (error) {
       setReviewBundleStatus({
