@@ -85,6 +85,9 @@ The infrastructure must preserve:
 - incomplete or uncertain judgments without coercing a definitive answer;
 - an audit trail from aggregate metrics back to source review results.
 
+Reviewer-facing guidance for producing comparable structured judgments is
+documented in [`REVIEWER_RUBRIC.md`](./REVIEWER_RUBRIC.md).
+
 ## Minimal EvaluationReport v0.1
 
 `EvaluationReportV01` is the first local aggregation contract. The pure
