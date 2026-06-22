@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-22: First-Time Review Flow Comprehension
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement issue #112 as a narrow, copy-first UX comprehension slice for built-in and imported reviews without changing contracts, routes, stage IDs, protected-stage logic, or review state-machine semantics.
+- Files changed: `app/investigation-workflow.css`, `app/page.test.ts`, `components/arena/AiRevealPanel.tsx`, `components/arena/AppShell.test.ts`, `components/arena/AppShell.tsx`, `components/arena/BlindReadPanel.tsx`, `components/arena/EvidenceBoard.tsx`, `components/arena/ImpostorPanel.tsx`, `components/arena/LabelDuelPanel.tsx`, `components/arena/VerdictPanel.tsx`, `components/arena/WorkflowPrimitives.test.tsx`, `components/arena/WorkflowPrimitives.tsx`, `lib/casePackageV01ToCaseFile.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a compact CasePackage review orientation near the start of the flow, concise decision prompts for all six review stages, a six-concept evidence-rating legend, and a five-question Final Evaluation checklist. Replaced imported-case IAM-specific fallback copy with case-neutral guidance and kept the upstream AI candidate out of imported blind-choice options so the exact label remains sealed until AI Claim Check.
+- Decisions made: Kept `CasePackageV01`, `ReviewResultV01`, and `EvaluationReportV01` unchanged; kept import/export schemas and output shapes unchanged; kept routes, stage IDs, protected-stage logic, and reducer semantics unchanged. The legend explains the existing contract concepts without adding interactive rating values. The AI-generated candidate remains available in Label Selection but is excluded from Initial Assessment choices.
+- Checks run: Focused `app/page.test.ts`, `components/arena/WorkflowPrimitives.test.tsx`, `components/arena/AppShell.test.ts`, import/adapter tests, full `npm test`, `npx tsc --noEmit`, `npm run lint`, `npm run build`, and `git diff --check` passed. Lint retained the existing warnings under `.agents/skills/impeccable` with no errors.
+- Assumptions: The CasePackage candidate whose source is `ai_generated` (or the first candidate fallback used as `topicLabel`) is the upstream AI label that must remain hidden during blind review.
+- Risks/follow-ups: No schema or persistence migration is required. Future candidate-source additions should preserve the same rule that the displayed AI claim cannot also appear as an Initial Assessment choice.
+- Next recommended step: Review the draft PR for issue #112 and run a fresh-context review before merge.
+- Suggested commit message: `feat(review): clarify first-time review decisions`
+
 ## 2026-06-22: Project Logo and Favicon Integration
 
 - Agent/model: Gemini 3.5 Flash

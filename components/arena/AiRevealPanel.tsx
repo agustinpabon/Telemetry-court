@@ -38,6 +38,7 @@ export function AiRevealPanel({
   const assessment = getAssessmentCopy(caseFile, revealed);
   const comparisonCopy = getComparisonCopy(caseFile, blindChoice?.label);
   const evidenceRows = getEvidenceAlignmentRows(caseFile);
+  const evidenceAlignmentCopy = getEvidenceAlignmentCopy(caseFile);
   const scoringDetails = [
     {
       label: "Evidence support for AI claim",
@@ -78,12 +79,12 @@ export function AiRevealPanel({
               : "Your read and the AI label diverge."
             : "Reveal the AI claim."
         }
-        summary={
+        summary="Compare your blind assessment with the AI-generated label and claims."
+        context={
           revealed
-            ? `You selected ${blindChoice?.label ?? "an initial assessment"}. The model suggested ${caseFile.topicLabel.name}.`
+            ? `You selected ${blindChoice?.label ?? "an initial assessment"}. The model suggested ${caseFile.topicLabel.name}. This comparison is not a verdict.`
             : "Your initial assessment is saved. Reveal the model claim before proceeding to verification."
         }
-        context="This is not a verdict. It highlights a conflict that needs evidence review."
       />
 
       <div
@@ -115,14 +116,11 @@ export function AiRevealPanel({
 
       <section
         className="arena-soft-section reveal-evidence-alignment"
-        aria-labelledby="overclaim-reason"
+        aria-labelledby="claim-check-reason"
       >
         <div className="arena-section-heading reveal-section-heading">
-          <h3 id="overclaim-reason">Why this may be an overclaim</h3>
-          <p>
-            The evidence confirms IAM activity, but the strongest claim needs more
-            support.
-          </p>
+          <h3 id="claim-check-reason">{evidenceAlignmentCopy.title}</h3>
+          <p>{evidenceAlignmentCopy.body}</p>
         </div>
 
         <div className="arena-evidence-rows reveal-evidence-list">
@@ -174,6 +172,22 @@ export function AiRevealPanel({
       </div>
     </ArenaWorkflowShell>
   );
+}
+
+function getEvidenceAlignmentCopy(caseFile: CaseFile) {
+  if (caseFile.id === "case-arena-001") {
+    return {
+      title: "Why this may be an overclaim",
+      body:
+        "The evidence confirms IAM activity, but the strongest claim needs more support.",
+    };
+  }
+
+  return {
+    title: "What to verify in the AI claim",
+    body:
+      "Compare what is observed with what is missing or ambiguous before rating the evidence.",
+  };
 }
 
 function getAssessmentCopy(caseFile: CaseFile, revealed: boolean) {

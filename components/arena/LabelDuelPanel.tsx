@@ -78,7 +78,7 @@ export function LabelDuelPanel({
           </ArenaStatusBadge>
         }
         title="Which interpretation is most strictly supported by the observed evidence?"
-        summary="Pick the interpretation that best matches what was actually observed."
+        summary="Choose the label best supported by the evidence, not the most impressive wording."
       />
 
       <section className="duel-evidence-summary" aria-label="Evidence summary">

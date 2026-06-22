@@ -561,6 +561,8 @@ export function AppShell({
   }
 
   const isExploreMode = activeStage === "landscape";
+  const showReviewOrientation =
+    activeStage === "case_file" || activeStage === "blind_read";
   const stageTransitionKey = isExploreMode
     ? activeStage
     : `${selectedCase.id}-${activeStage}`;
@@ -598,8 +600,14 @@ export function AppShell({
         }
       />
 
-      <div className="arena-layout">
-        {!isExploreMode && <ArenaReviewerGoal />}
+      <div
+        className={`arena-layout ${
+          showReviewOrientation
+            ? "arena-layout-with-orientation"
+            : "arena-layout-review-only"
+        }`}
+      >
+        {showReviewOrientation ? <ArenaReviewerGoal /> : null}
         <section className="arena-workspace" aria-live="polite">
           <div
             key={stageTransitionKey}

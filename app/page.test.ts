@@ -30,6 +30,7 @@ import {
   getArenaStageForSlug,
   getPathForArenaStage,
 } from "@/lib/arenaRoutes";
+import { importCasePackageV01Json } from "@/lib/importCasePackageV01";
 import { getRelationsForEvidence } from "@/lib/caseMetrics";
 import {
   arenaReducer,
@@ -373,7 +374,7 @@ test("blind read protects the AI judgment until the reviewer chooses", () => {
   assert.match(pageText, /Establish an independent baseline\./);
   assert.match(
     pageText,
-    /Review the evidence without anchoring on the AI&#x27;s claim\./,
+    /Before seeing the AI label, record what the evidence suggests on its own\./,
   );
   assert.match(pageText, /Landscape/);
   assert.match(pageText, /Case File/);
@@ -384,6 +385,9 @@ test("blind read protects the AI judgment until the reviewer chooses", () => {
   assert.match(pageText, /Cluster Fit Check/);
   assert.match(pageText, /Final Evaluation/);
   assert.match(pageText, /AI claim hidden/);
+  assert.match(pageText, /What you are reviewing/);
+  assert.match(pageText, /one telemetry cluster from a CasePackage/);
+  assert.match(pageText, /upstream pipeline produced an AI label/);
   assert.match(
     pageText,
     /The AI label remains sealed until you choose one interpretation below\./,
@@ -424,6 +428,78 @@ test("blind read protects the AI judgment until the reviewer chooses", () => {
   assert.doesNotMatch(pageText, /Average support/);
   assert.doesNotMatch(pageText, /Avg\. support/);
   assert.doesNotMatch(pageText, /38% evidence/);
+});
+
+test("imported Initial Assessment excludes the upstream AI label", () => {
+  const packageFixture = casePackageFixtures[1];
+  assert.ok(packageFixture);
+  const importResult = importCasePackageV01Json(JSON.stringify(packageFixture));
+
+  assert.equal(importResult.ok, true);
+  if (!importResult.ok) {
+    return;
+  }
+
+  const aiLabel = packageFixture.candidate_labels.find(
+    (candidate) => candidate.source === "ai_generated",
+  );
+  assert.ok(aiLabel);
+  const markup = renderStaticMarkup(
+    React.createElement(AppShell, {
+      cases: [importResult.caseFile],
+      initialStage: "blind_read",
+      pathname: "/blind-read",
+      onNavigatePath: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /What you are reviewing/);
+  assert.match(markup, /AI claim hidden/);
+  assert.doesNotMatch(markup, new RegExp(aiLabel.label));
+});
+
+test("imported claim and evidence guidance stays case-neutral", () => {
+  const packageFixture = casePackageFixtures[1];
+  assert.ok(packageFixture);
+  const importResult = importCasePackageV01Json(JSON.stringify(packageFixture));
+
+  assert.equal(importResult.ok, true);
+  if (!importResult.ok) {
+    return;
+  }
+
+  const caseFile = importResult.caseFile;
+  const evidenceRatings = getEvidenceRatings(caseFile, {});
+  const markup = renderStaticMarkup(
+    React.createElement(
+      React.Fragment,
+      null,
+      React.createElement(AiRevealPanel, {
+        caseFile,
+        reviewState: {
+          blindChoiceId: caseFile.blindInterpretationOptions[0]?.id,
+          aiLabelRevealed: true,
+        },
+        onRevealAiLabel: () => undefined,
+        onContinue: () => undefined,
+        onBackToBlindRead: () => undefined,
+      }),
+      React.createElement(EvidenceBoard, {
+        caseFile,
+        evidenceRatings,
+        balance: getEvidenceBalance(caseFile, evidenceRatings),
+        onRateEvidence: () => undefined,
+      }),
+    ),
+  );
+
+  assert.match(markup, /What to verify in the AI claim/);
+  assert.match(
+    markup,
+    /Weigh supporting, contradictory, and incomplete evidence against the AI claim before choosing a label\./,
+  );
+  assert.doesNotMatch(markup, /The evidence confirms IAM activity/);
+  assert.doesNotMatch(markup, /IAM activity is present/);
 });
 
 test("later review routes stay sealed until a blind interpretation exists", () => {
@@ -566,7 +642,10 @@ test("later workflow panels use compact chrome and descriptive actions", () => {
   assert.match(markup, /Initial assessment/);
   assert.match(markup, /Cloud resource discovery/);
   assert.match(markup, /Evidence balance/);
-  assert.match(markup, /IAM activity is present, but malicious escalation is not proven\./);
+  assert.match(
+    markup,
+    /Rate whether each evidence item supports the specific claim under review\./,
+  );
   assert.match(markup, /1 weak support · 2 contradictions · 1 needs context/);
   assert.match(
     markup,
@@ -588,6 +667,161 @@ test("later workflow panels use compact chrome and descriptive actions", () => {
   assert.doesNotMatch(markup, /Open review JSON/);
   assert.doesNotMatch(markup, /Open review summary/);
   assert.doesNotMatch(markup, />Next<\/button>/);
+});
+
+test("each review stage states the decision the reviewer must make", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const evidenceRatings = getEvidenceRatings(selectedCase, {});
+  const balance = getEvidenceBalance(selectedCase, evidenceRatings);
+  const markup = renderStaticMarkup(
+    React.createElement(
+      React.Fragment,
+      null,
+      React.createElement(BlindReadPanel, {
+        caseFile: selectedCase,
+        reviewState: {},
+        onChooseBlindInterpretation: () => undefined,
+        onRevealAiLabel: () => undefined,
+      }),
+      React.createElement(AiRevealPanel, {
+        caseFile: selectedCase,
+        reviewState: {
+          blindChoiceId: "cloud-resource-discovery",
+          aiLabelRevealed: true,
+        },
+        onRevealAiLabel: () => undefined,
+        onContinue: () => undefined,
+        onBackToBlindRead: () => undefined,
+      }),
+      React.createElement(EvidenceBoard, {
+        caseFile: selectedCase,
+        reviewState: {
+          blindChoiceId: "cloud-resource-discovery",
+          aiLabelRevealed: true,
+        },
+        evidenceRatings,
+        balance,
+        onRateEvidence: () => undefined,
+      }),
+      React.createElement(LabelDuelPanel, {
+        caseFile: selectedCase,
+        reviewState: {},
+        onSelectWinner: () => undefined,
+        onToggleReason: () => undefined,
+        onSetDuelNote: () => undefined,
+        onContinue: () => undefined,
+      }),
+      React.createElement(ImpostorPanel, {
+        caseFile: selectedCase,
+        reviewState: {
+          labelDuelWinnerId: selectedCase.candidateLabels[0]?.id,
+        },
+        onSelectSession: () => undefined,
+        onContinue: () => undefined,
+      }),
+      React.createElement(VerdictPanel, {
+        caseFile: selectedCase,
+        reviewState: {},
+        balance,
+        onSelectVerdict: () => undefined,
+        onToggleFailureMode: () => undefined,
+        onOpenReviewDrawer: () => undefined,
+        onCopyJson: () => undefined,
+        onDownloadJson: () => undefined,
+      }),
+    ),
+  );
+
+  assert.match(
+    markup,
+    /Before seeing the AI label, record what the evidence suggests on its own\./,
+  );
+  assert.match(
+    markup,
+    /Compare your blind assessment with the AI-generated label and claims\./,
+  );
+  assert.match(
+    markup,
+    /Rate whether each evidence item supports the specific claim under review\./,
+  );
+  assert.match(
+    markup,
+    /Choose the label best supported by the evidence, not the most impressive wording\./,
+  );
+  assert.match(
+    markup,
+    /Check whether any member, outlier, or neighbor makes the cluster look mixed\./,
+  );
+  assert.match(
+    markup,
+    /Choose the verdict and recommended action based on evidence support, uncertainty, and cluster fit\./,
+  );
+});
+
+test("evidence verification explains how to interpret every rating concept", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const evidenceRatings = getEvidenceRatings(selectedCase, {});
+  const markup = renderStaticMarkup(
+    React.createElement(EvidenceBoard, {
+      caseFile: selectedCase,
+      evidenceRatings,
+      balance: getEvidenceBalance(selectedCase, evidenceRatings),
+      onRateEvidence: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /How to rate evidence/);
+  assert.match(markup, /Supports<\/dt><dd>Directly backs the claim\./);
+  assert.match(
+    markup,
+    /Weak support<\/dt><dd>Points in the same direction but is not enough alone\./,
+  );
+  assert.match(
+    markup,
+    /Irrelevant<\/dt><dd>Does not materially affect the claim\./,
+  );
+  assert.match(
+    markup,
+    /Contradicts<\/dt><dd>Weakens or conflicts with the claim\./,
+  );
+  assert.match(
+    markup,
+    /Insufficient<\/dt><dd>Not enough evidence to support the claim\./,
+  );
+  assert.match(
+    markup,
+    /Needs more context<\/dt><dd>Cannot judge without more baseline, provenance, or detail\./,
+  );
+});
+
+test("final evaluation prompts a complete verdict and action check", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const evidenceRatings = getEvidenceRatings(selectedCase, {});
+  const markup = renderStaticMarkup(
+    React.createElement(VerdictPanel, {
+      caseFile: selectedCase,
+      reviewState: {},
+      balance: getEvidenceBalance(selectedCase, evidenceRatings),
+      onSelectVerdict: () => undefined,
+      onToggleFailureMode: () => undefined,
+      onOpenReviewDrawer: () => undefined,
+      onCopyJson: () => undefined,
+      onDownloadJson: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /Before you decide/);
+  assert.match(markup, /Is the AI label supported by the evidence\?/);
+  assert.match(markup, /Is the label too broad, too specific, or overclaimed\?/);
+  assert.match(markup, /Is uncertainty high enough to avoid a strong conclusion\?/);
+  assert.match(markup, /Does the cluster appear mixed or impure\?/);
+  assert.match(markup, /Is the recommended action aligned with the evidence\?/);
 });
 
 test("verdict page reads as a final judgment and preserves export actions", () => {
@@ -929,7 +1163,7 @@ test("label duel turns evidence balance into a defensible label decision", () =>
   assert.match(emptyMarkup, /Select one label to continue\./);
   assert.match(
     emptyMarkup,
-    /Pick the interpretation that best matches what was actually observed\./,
+    /Choose the label best supported by the evidence, not the most impressive wording\./,
   );
   assert.match(emptyMarkup, /Original AI claim/);
   assert.match(emptyMarkup, /Suspicious IAM privilege escalation/);
@@ -1024,7 +1258,7 @@ test("impostor review teaches the comparison before a session is selected", () =
   assert.match(markup, /Find the weakest-fit session/);
   assert.match(
     markup,
-    /Compare the five representative sessions and choose the one that least matches the cluster pattern\./,
+    /Check whether any member, outlier, or neighbor makes the cluster look mixed\./,
   );
   assert.match(markup, /Selected label/);
   assert.match(markup, /IAM administration with unknown intent/);

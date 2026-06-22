@@ -100,7 +100,7 @@ export function ImpostorPanel({
           </ArenaStatusBadge>
         }
         title="Find the weakest-fit session"
-        summary="Compare the five representative sessions and choose the one that least matches the cluster pattern."
+        summary="Check whether any member, outlier, or neighbor makes the cluster look mixed."
       />
 
       <section className="impostor-evidence-summary" aria-label="Decision context">

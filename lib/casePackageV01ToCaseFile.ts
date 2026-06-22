@@ -79,6 +79,10 @@ export function createCaseFileCompatibilitySeedFromCasePackageV01(
       (label) => label.source === "ai_generated",
     ) ?? packageFixture.candidate_labels[0];
   const topicLabelId = firstAiLabel?.label_id ?? `label-${packageFixture.case.case_id}`;
+  const blindCandidateLabels = packageFixture.candidate_labels.filter(
+    (label) =>
+      label.label_id !== topicLabelId && label.label !== firstAiLabel?.label,
+  );
   const bestLabelId = getBestSupportedLabelId(packageFixture);
   const seededImpostorSessionId = getSeededImpostorSessionId(packageFixture);
   const defaultEvidenceRatings = buildDefaultEvidenceRatings(packageFixture);
@@ -97,7 +101,7 @@ export function createCaseFileCompatibilitySeedFromCasePackageV01(
     topFeatures: readTopFeatures(packageFixture),
     riskFlags: readRiskFlags(packageFixture),
     blindInterpretationOptions: [
-      ...packageFixture.candidate_labels.map((label) => ({
+      ...blindCandidateLabels.map((label) => ({
         id: `blind-${label.label_id}`,
         label: label.label,
         helper:
