@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-22: README Masthead and ASCII Art Integration
+
+- Agent/model: Gemini 3.5 Flash
+- Prompt scope: Add high-trust, premium ASCII/Unicode art to the repository README.md that integrates the Telemetry Court logo image.
+- Files changed: `README.md` and `docs/CHANGELOG_AI.md`.
+- Summary: Designed and implemented a side-by-side masthead layout at the top of the README.md. The layout places the official logo image on the left, and a double-line Unicode text banner ("TELEMETRY COURT") with the project tagline ("— AI names the cluster. Humans test the evidence. —") on the right.
+- Decisions made: Chose a side-by-side table layout using a clean, borderless HTML structure to keep the design aligned, responsive, and compatible with GitHub's markdown renderer.
+- Checks run: `git diff`, `npm run lint`, `npm test`.
+- Assumptions: A clean, minimal side-by-side layout aligns well with the project's premium, high-trust fintech aesthetic.
+- Risks/follow-ups: None.
+- Next recommended step: Review the visual rendering of the README on GitHub.
+- Suggested commit message: `docs: update README header with side-by-side ASCII art masthead`
+
 ## 2026-06-22: Reviewer Rubric And Instructions
 
 - Agent/model: Codex (GPT-5)
