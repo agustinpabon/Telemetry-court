@@ -19,6 +19,42 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-22: Research Validation Study Protocol
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement issue #72 as docs/protocol work only by defining a
+  small multi-reviewer research validation study that tests whether Telemetry
+  Court produces useful validation signals from `CasePackageV01`,
+  `ReviewResultV01`, and `EvaluationReportV01` artifacts.
+- Files changed: `README.md`, `docs/VALIDATION_PILOT_PROTOCOL.md`, and
+  `docs/CHANGELOG_AI.md`.
+- Summary: Reframed the existing validation pilot protocol as a draft research
+  validation study protocol. Added explicit study purpose, study questions,
+  package selection criteria, reviewer selection guidance, reviewer task
+  sequence, blind-review rules, metrics, analysis plan, expected artifacts,
+  data-safety limits, success/failure criteria, study notes, post-study
+  decisions, and human approval checkpoints.
+- Decisions made: Kept the change documentation-only. Documented current
+  capability limits instead of inventing target behavior: reports aggregate one
+  exact compatible CasePackage reference, current recommended actions are
+  derived from final verdicts, `insufficient` is canonical but not emitted by
+  the current local UI/export path, and local storage/bundle exchange is not
+  durable multi-user study infrastructure. Added a README docs-index link for
+  discoverability.
+- Checks run: `git diff --check` passed; `npm test` passed with 185 tests;
+  `npx tsc --noEmit` passed; `npm run lint` passed with 0 errors and the
+  existing 134 warnings under `.agents/skills/impeccable`; `npm run build`
+  passed.
+- Assumptions: Issue #72 should produce an executable draft protocol while
+  preserving human approval gates for real/restricted data, final package
+  selection, reviewer recruitment, publishing, and generalizable claims.
+- Risks/follow-ups: Product/research owner review is still required before
+  executing a real study, recruiting reviewers, selecting final packages, or
+  presenting results.
+- Next recommended step: Have the product/research owner approve the package
+  list, reviewer plan, and publication claims before running the study.
+- Suggested commit message: `docs(evaluation): define validation study protocol`
+
 ## 2026-06-22: README Masthead and ASCII Art Integration
 
 - Agent/model: Gemini 3.5 Flash
