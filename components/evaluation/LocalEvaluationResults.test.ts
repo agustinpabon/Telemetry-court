@@ -25,6 +25,18 @@ test("results view renders locally stored ReviewResults by compatible package", 
   assert.match(markup, /2 results/);
   assert.match(markup, /1 CasePackage/);
   assert.match(markup, /Compatible package groups only/);
+  assert.match(
+    markup,
+    /A ReviewResult is one reviewer&#x27;s structured judgment for one CasePackage\./,
+  );
+  assert.match(
+    markup,
+    /compatible CasePackage reference and ReviewResult protocol/,
+  );
+  assert.match(
+    markup,
+    /Multiple compatible ReviewResults means multiple reviewers reviewed the same compatible CasePackage\/protocol\./,
+  );
   assert.match(markup, /pkg-synthetic-evaluation-001/);
   assert.match(markup, /case-synthetic-evaluation-001/);
   assert.match(markup, /run-synthetic-evaluation-001/);

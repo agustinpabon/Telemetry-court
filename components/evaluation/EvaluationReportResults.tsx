@@ -73,8 +73,9 @@ export function EvaluationReportResults({ report }: EvaluationReportResultsProps
           <p className="eyebrow">Evaluation Report</p>
           <h2>Aggregated reviewer results</h2>
           <p>
-            Review how compatible ReviewResult artifacts agree, diverge, and
-            describe the same CasePackage reference.
+            Review how compatible ReviewResult artifacts from reviewers of the
+            same CasePackage/protocol agree, diverge, and describe stable
+            references.
           </p>
         </div>
         <div className="evaluation-report-hero-actions">

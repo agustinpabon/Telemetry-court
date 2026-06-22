@@ -126,8 +126,10 @@ export function LocalEvaluationResultsView({
           <p className="eyebrow">Local evaluation results</p>
           <h2>ReviewResult summary</h2>
           <p>
-            Aggregate validated browser-local and imported ReviewResults into
-            one EvaluationReport per compatible CasePackage reference.
+            A ReviewResult is one reviewer&apos;s structured judgment for one
+            CasePackage. Browser-local and imported ReviewResults become one
+            EvaluationReport only when they share a compatible CasePackage
+            reference and ReviewResult protocol.
           </p>
         </div>
         <div className="local-results-import">
@@ -203,8 +205,10 @@ export function LocalEvaluationResultsView({
           <section className="evaluation-report-boundary local-results-boundary">
             <strong>Compatible package groups only</strong>
             <p>
-              Each section uses the existing EvaluationReportV01 aggregation
-              logic. Results from different CasePackages are never combined.
+              Multiple compatible ReviewResults means multiple reviewers
+              reviewed the same compatible CasePackage/protocol. Results from
+              different CasePackages or incompatible protocols are never
+              combined.
             </p>
           </section>
 

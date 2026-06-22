@@ -73,6 +73,11 @@ export function BlindReadPanel({
               You are not deciding whether the cluster is dangerous; you are
               deciding whether the AI label is supported by the evidence.
             </p>
+            <p>
+              The blind pass captures your first evidence-based judgment before
+              the AI label can anchor you. Label, claim, and candidate label
+              details stay sealed until you choose.
+            </p>
             {domainContextTerms.length > 0 ? (
               <p className="domain-context-signal">
                 Domain context may be needed: {domainContextTerms.join(" / ")}.

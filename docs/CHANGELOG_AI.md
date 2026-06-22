@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-22: Blind Review And Aggregation Clarity
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement issue #124 as a narrow UX clarity change explaining why Initial Assessment stays blind and how compatible ReviewResults become EvaluationReports.
+- Files changed: `app/page.test.ts`, `components/arena/BlindReadPanel.tsx`, `components/arena/JudgmentReceipt.tsx`, `components/evaluation/EvaluationReportResults.tsx`, `components/evaluation/EvaluationReportResults.test.ts`, `components/evaluation/LocalEvaluationResults.tsx`, `components/evaluation/LocalEvaluationResults.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added concise blind-review rationale explaining that the blind pass captures a first evidence-based judgment before the AI label can anchor the reviewer, while keeping label, claim, and candidate details sealed. Clarified export, receipt, drawer, local results, and EvaluationReport copy so one ReviewResult is one reviewer judgment for one CasePackage, compatible ReviewResults are same CasePackage/protocol reviews by multiple reviewers, and EvaluationReports aggregate those compatible local/exportable artifacts.
+- Decisions made: Kept `CasePackageV01`, `ReviewResultV01`, `EvaluationReportV01`, `review_result.v0.1` export shape, import/export schemas, route IDs, stage IDs, protected-stage logic, and review state-machine semantics unchanged. Did not add backend upload, server saving, ReviewResult import, or EvaluationReport generation beyond existing local results behavior.
+- Checks run: `node --test --import tsx app/page.test.ts` passed with 39 tests; `npm test` passed with 185 tests; `npx tsc --noEmit` passed; `npm run lint` passed with 0 errors and 134 existing warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed.
+- Assumptions: The right fix for issue #124 is compact protocol copy on existing review/export/results surfaces rather than a new flow or data model change.
+- Risks/follow-ups: This improves reviewer comprehension but does not add new aggregation capabilities or durable multi-user persistence.
+- Next recommended step: Review the draft PR for issue #124.
+- Suggested commit message: `fix(review): clarify blind review aggregation purpose`
+
 ## 2026-06-22: Precise Masthead Action Alignment Correction
 
 - Agent/model: Antigravity (Gemini 3.5 Flash (High))

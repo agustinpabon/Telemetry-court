@@ -13,6 +13,7 @@ import { getLandscapeAtlasPosition } from "@/components/arena/EvidenceGalaxyAtla
 import { ImpostorPanel } from "@/components/arena/ImpostorPanel";
 import { LabelDuelPanel } from "@/components/arena/LabelDuelPanel";
 import { PackageReviewGate } from "@/components/arena/PackageReviewGate";
+import { ReviewSummaryDrawer } from "@/components/arena/ReviewSummaryDrawer";
 import { VerdictPanel } from "@/components/arena/VerdictPanel";
 import { CaseSwitcher } from "@/components/CaseSwitcher";
 import { ClaimLedger } from "@/components/ClaimLedger";
@@ -450,6 +451,14 @@ test("blind read protects the AI judgment until the reviewer chooses", () => {
     pageText,
     /Use only the visible evidence\. The AI label stays hidden\./,
   );
+  assert.match(
+    pageText,
+    /The blind pass captures your first evidence-based judgment before the AI label can anchor you\./,
+  );
+  assert.match(
+    pageText,
+    /Label, claim, and candidate label details stay sealed until you choose\./,
+  );
   assert.match(pageText, /Landscape/);
   assert.match(pageText, /Case File/);
   assert.match(pageText, /Initial Assessment/);
@@ -598,6 +607,10 @@ test("case 002 checkpoint remains blind while showing visible domain terms", () 
   );
 
   assert.match(markup, /Can you judge this case\?/);
+  assert.match(
+    markup,
+    /first evidence-based judgment before the AI label can anchor you/,
+  );
   assert.match(markup, /Domain context may be needed: PowerShell \/ encoded command\./);
   assert.doesNotMatch(markup, new RegExp(escapeRegExp(aiLabel.label)));
   assert.doesNotMatch(markup, new RegExp(escapeRegExp(aiRationale)));
@@ -1186,7 +1199,7 @@ test("verdict page reads as a final judgment and preserves export actions", () =
   );
   assert.match(
     markup,
-    /This JSON file is a ReviewResult: one reviewer&#x27;s structured judgment for this CasePackage\./,
+    /This export is one ReviewResult: one reviewer&#x27;s structured judgment for one CasePackage\./,
   );
   assert.match(
     markup,
@@ -1194,7 +1207,15 @@ test("verdict page reads as a final judgment and preserves export actions", () =
   );
   assert.match(
     markup,
-    /Collect compatible ReviewResults for the same CasePackage, then aggregate them into an EvaluationReport\./,
+    /It is local, exportable review data; it is not uploaded or automatically saved to a server\./,
+  );
+  assert.match(
+    markup,
+    /Multiple compatible ReviewResults means multiple reviewers reviewed the same CasePackage with the same protocol\./,
+  );
+  assert.match(
+    markup,
+    /Combine those compatible ReviewResults to produce an EvaluationReport\./,
   );
   assert.match(
     markup,
@@ -1430,11 +1451,19 @@ test("verdict route opens the demo case as a completed structured judgment", () 
   );
   assert.match(
     pageText,
-    /This JSON file is a ReviewResult: one reviewer&#x27;s structured judgment for this CasePackage\./,
+    /This export is one ReviewResult: one reviewer&#x27;s structured judgment for one CasePackage\./,
   );
   assert.match(
     pageText,
-    /Collect compatible ReviewResults for the same CasePackage, then aggregate them into an EvaluationReport\./,
+    /It is local, exportable review data; it is not uploaded or automatically saved to a server\./,
+  );
+  assert.match(
+    pageText,
+    /Multiple compatible ReviewResults means multiple reviewers reviewed the same CasePackage with the same protocol\./,
+  );
+  assert.match(
+    pageText,
+    /Combine those compatible ReviewResults to produce an EvaluationReport\./,
   );
   assert.match(
     pageText,
@@ -1453,6 +1482,67 @@ test("verdict route opens the demo case as a completed structured judgment", () 
   assert.doesNotMatch(pageText, /Evaluation not selected/);
   assert.doesNotMatch(pageText, /Select a verdict to close the review/);
   assertNoMixedVerdictState(pageText);
+});
+
+test("review summary drawer keeps export and aggregation boundaries explicit", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const blindChoice = selectedCase.blindInterpretationOptions.find(
+    (option) => option.id === "cloud-resource-discovery",
+  );
+  const duelWinner = selectedCase.candidateLabels.find(
+    (candidate) => candidate.id === "label-iam-baseline",
+  );
+  const impostor = selectedCase.representativeSessions.find(
+    (session) => session.id === "iam-s-01",
+  );
+  assert.ok(blindChoice);
+  assert.ok(duelWinner);
+  assert.ok(impostor);
+
+  const evidenceRatings = getEvidenceRatings(selectedCase, {});
+  const markup = renderStaticMarkup(
+    React.createElement(ReviewSummaryDrawer, {
+      open: true,
+      caseFile: selectedCase,
+      reviewState: {
+        blindChoiceId: "cloud-resource-discovery",
+        aiLabelRevealed: true,
+        labelDuelWinnerId: "label-iam-baseline",
+        impostorSessionId: "iam-s-01",
+        failureModes: ["less_overclaimed", "missing_evidence"],
+        finalVerdict: "unsupported_overclaimed",
+      },
+      blindChoice,
+      duelWinner,
+      impostor,
+      balance: getEvidenceBalance(selectedCase, evidenceRatings),
+      exportJson: '{"schema_version":"review_result.v0.1"}',
+      onClose: () => undefined,
+      onCopyJson: () => undefined,
+      onDownloadJson: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /Structured ReviewResult JSON/);
+  assert.match(
+    markup,
+    /This export is one ReviewResult: one reviewer&#x27;s structured judgment for one CasePackage\./,
+  );
+  assert.match(
+    markup,
+    /It is local, exportable review data; it is not uploaded or automatically saved to a server\./,
+  );
+  assert.match(
+    markup,
+    /Multiple compatible ReviewResults means multiple reviewers reviewed the same CasePackage with the same protocol\./,
+  );
+  assert.match(
+    markup,
+    /Combine those compatible ReviewResults to produce an EvaluationReport\./,
+  );
+  assert.match(markup, /review_result\.v0\.1/);
 });
 
 test("label duel turns evidence balance into a defensible label decision", () => {
