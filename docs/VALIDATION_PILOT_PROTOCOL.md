@@ -111,6 +111,10 @@ Each reviewer completes the workflow independently for each assigned package.
 The main review should remain structured-choice first; manual notes are for
 pilot observation, not required typed input inside the core workflow.
 
+Use [`REVIEWER_RUBRIC.md`](./REVIEWER_RUBRIC.md) during reviewer onboarding so
+evidence ratings, label comparison, verdicts, and failure modes are applied
+consistently across reviewers.
+
 1. Open Telemetry Court in the local browser environment.
 2. Import the assigned `CasePackageV01` JSON file.
 3. Confirm the imported package identity and stop if the package fails

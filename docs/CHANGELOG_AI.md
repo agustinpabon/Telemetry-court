@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-22: Reviewer Rubric And Instructions
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement issue #73 as a docs-only protocol change that gives reviewers a consistent rubric for producing comparable structured `ReviewResult` artifacts without changing contracts, export shapes, runtime validation, or UI semantics.
+- Files changed: `README.md`, `docs/REVIEWER_RUBRIC.md`, `docs/EVALUATION_INFRASTRUCTURE.md`, `docs/VALIDATION_PILOT_PROTOCOL.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a focused reviewer rubric covering review purpose, blind-review discipline, canonical evidence ratings, label comparison, outlier or impostor choice, optional confidence semantics, structured failure modes, canonical verdicts, recommended actions, and key distinctions such as missing evidence versus contradiction and uncertainty versus package-context gaps. Linked the rubric from the README docs list, evaluation infrastructure, and the validation pilot protocol.
+- Decisions made: Matched the rubric to the existing repository values in `lib/types.ts`, `lib/reviewResultV01.ts`, `lib/exportReview.ts`, `docs/REVIEW_RESULT_CONTRACT.md`, and `docs/VERDICT_AND_FAILURE_MODE_SEMANTICS.md`; documented that `unsupported_overclaimed` is only a legacy internal UI value while `ReviewResultV01` exports canonical `unsupported_or_overclaimed`; documented that confidence is optional in the contract but not emitted by the current local export flow; documented that the current exporter derives recommended action from final verdict rather than collecting a separate action choice. Kept `CasePackageV01`, `ReviewResultV01`, `EvaluationReportV01`, runtime validation, import/export schemas, `review_result.v0.1`, route IDs, stage IDs, protected-stage logic, and review-state semantics unchanged.
+- Checks run: `git diff --check`; `npm test`; `npx tsc --noEmit`.
+- Assumptions: A dedicated reviewer-facing rubric is the most useful next protocol artifact after the blind-review and ReviewResult/EvaluationReport copy fixes from issue #124.
+- Risks/follow-ups: The rubric improves reviewer consistency but does not yet add reviewer training UI, confidence capture, or a formal study packet. If larger validation studies need stronger onboarding, that should remain a later protocol or product issue.
+- Next recommended step: Review the docs-only PR for issue #73, then use the rubric during the next realistic validation pilot.
+- Suggested commit message: `docs(review): add reviewer rubric`
+
 ## 2026-06-22: Blind Review And Aggregation Clarity
 
 - Agent/model: Codex (GPT-5)
