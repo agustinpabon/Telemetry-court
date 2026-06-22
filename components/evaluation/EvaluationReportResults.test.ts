@@ -32,6 +32,7 @@ test("evaluation report results view shows reviewer distributions and disagreeme
 
   assert.match(markup, /Evaluation Report/);
   assert.match(markup, /Reviewer output, not upstream evidence/);
+  assert.match(markup, /reviewers of the same CasePackage\/protocol/);
   assert.match(markup, /2 reviewers/);
   assert.match(markup, /Verdict distribution/);
   assert.match(markup, /Unsupported or overclaimed/);

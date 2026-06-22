@@ -97,16 +97,24 @@ export function JudgmentReceipt({
 
       <div className="receipt-purpose" aria-label="ReviewResult purpose">
         <p>
-          This JSON file is a ReviewResult: one reviewer&apos;s structured
-          judgment for this CasePackage.
+          This export is one ReviewResult: one reviewer&apos;s structured judgment
+          for one CasePackage.
         </p>
         <p>
           It preserves the human verdict, evidence ratings, failure modes, and
           recommended action.
         </p>
         <p>
-          Collect compatible ReviewResults for the same CasePackage, then
-          aggregate them into an EvaluationReport.
+          It is local, exportable review data; it is not uploaded or
+          automatically saved to a server.
+        </p>
+        <p>
+          Multiple compatible ReviewResults means multiple reviewers reviewed
+          the same CasePackage with the same protocol.
+        </p>
+        <p>
+          Combine those compatible ReviewResults to produce an
+          EvaluationReport.
         </p>
         <p>
           Use that EvaluationReport to evaluate and improve upstream labels,
