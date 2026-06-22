@@ -101,8 +101,8 @@ export function JudgmentReceipt({
           judgment for this CasePackage.
         </p>
         <p>
-          It preserves the human verdict, evidence ratings, failure modes,
-          confidence, and recommended action.
+          It preserves the human verdict, evidence ratings, failure modes, and
+          recommended action.
         </p>
         <p>
           Collect compatible ReviewResults for the same CasePackage, then

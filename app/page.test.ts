@@ -1144,7 +1144,7 @@ test("verdict page reads as a final judgment and preserves export actions", () =
   );
   assert.match(
     markup,
-    /It preserves the human verdict, evidence ratings, failure modes, confidence, and recommended action\./,
+    /It preserves the human verdict, evidence ratings, failure modes, and recommended action\./,
   );
   assert.match(
     markup,

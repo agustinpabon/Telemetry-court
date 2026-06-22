@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-22: ReviewResult Export Copy Accuracy Fix
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Fix the PR #120 blocking copy issue without changing schemas, contracts, or export behavior.
+- Files changed: `app/page.test.ts`, `components/arena/JudgmentReceipt.tsx`, and `docs/CHANGELOG_AI.md`.
+- Summary: Removed `confidence` from the export-purpose sentence because the current review-flow export does not serialize `decisions.confidence`.
+- Decisions made: Kept the current `review_result.v0.1` shape and export builder unchanged; retained the existing explanation of the CasePackage, ReviewResult, and EvaluationReport relationship.
+- Checks run: Focused `node --test --import tsx app/page.test.ts` completed a red-to-green cycle and passed with 36 tests; `npm test` passed with 182 tests, including normal and context-limited `review_result.v0.1` export coverage; `npx tsc --noEmit` passed; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed. Browser review against the production build confirmed the corrected purpose copy and JSON drawer on desktop and mobile, a parseable downloaded `review_result.v0.1` with the unchanged seven decision keys and no `confidence`, no console errors, and no mobile horizontal overflow.
+- Assumptions: The current copy should describe only fields emitted by the current review flow, even when the schema permits additional optional fields.
+- Risks/follow-ups: None; adding reviewer confidence remains a separate contract and implementation decision.
+- Next recommended step: Review the copy-only commit and mark PR #120 ready if no new review findings are raised.
+- Suggested commit message: `fix(review): correct ReviewResult export copy`
+
 ## 2026-06-22: ReviewResult Export Purpose Copy
 
 - Agent/model: Codex (GPT-5)
