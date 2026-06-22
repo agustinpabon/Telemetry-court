@@ -107,13 +107,15 @@ Until then, the current application remains a polished static validation interfa
 
 ## Data Posture
 
-The public and portable application must not require raw restricted telemetry. Real or restricted datasets should be converted into approved, minimal, auditable case packages inside the appropriate environment. Local fixtures must remain synthetic, sanitized, or explicitly approved.
+The public and portable application consumes validated `CasePackage` JSON, not raw restricted telemetry. Real or restricted datasets must be converted upstream into minimal, auditable packages inside an approved environment. Public fixtures and demos must use synthetic packages or sanitized packages whose approval scope explicitly permits public/demo use; contributors must never commit restricted data or raw-telemetry fixtures.
 
 Toponymy and ACME4-style integrations should be adapters that produce versioned case packages. They must not turn Telemetry Court into a raw telemetry ingestion engine. The official [TutteInstitute/toponymy](https://github.com/TutteInstitute/toponymy) repository is the factual source of truth for Toponymy in this project.
 
+See [the approved evidence package workflow](./docs/ADAPTER_BOUNDARY.md#approved-evidence-package-workflow) for the synthetic, sanitized controlled, and real/approved controlled postures; required provenance, sanitization, safe-reference, and approval metadata; and contributor handling rules.
+
 ## Next Milestone
 
-The next implementation milestone is **Case Package Contract and Validation Infrastructure**, not a generic backend. It will define `CasePackage v0.1`, `ReviewResult v0.1`, and `EvaluationReport v0.1`, add package validation rules, and convert the current synthetic cases into package-shaped fixtures while preserving the review UI.
+The next implementation milestone is the **Local Utility Gate**, not a generic backend. It establishes the external/approved CasePackage validation workflow, package authoring/inspection support, and realistic/sanitized package readiness by enabling local CasePackage JSON file import, local ReviewResult persistence/export/import, and local EvaluationReport aggregation.
 
 See:
 

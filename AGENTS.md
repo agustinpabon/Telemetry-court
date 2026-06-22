@@ -19,9 +19,9 @@ Treat `docs/PRODUCT_VISION.md`, `docs/PRODUCT_POSITIONING.md`, and `docs/PROJECT
 
 ## Current State And Next Milestone
 
-- The current application is a static validation slice with synthetic cases and local review export.
-- Real Toponymy ingestion, ACME4 ingestion, package validation, persistence, multi-reviewer aggregation, and evaluation reports are not implemented.
-- The next implementation milestone is Case Package Contract and Validation Infrastructure.
+- The current application is a static validation slice with synthetic cases, local package validation, and local review export.
+- Real Toponymy ingestion and ACME4 ingestion are not implemented.
+- The next implementation milestone is the Local Utility Gate (external/approved CasePackage validation workflow, package authoring/inspection support, and realistic/sanitized package readiness).
 - Backend work must start with `CasePackage`, `ReviewResult`, and `EvaluationReport` contracts, not generic APIs, databases, or authentication.
 
 ## Product Boundary
