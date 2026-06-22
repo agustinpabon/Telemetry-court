@@ -123,6 +123,7 @@ See:
 - [Case package contract](./docs/CASE_PACKAGE_CONTRACT.md)
 - [Reviewer rubric](./docs/REVIEWER_RUBRIC.md)
 - [Evaluation infrastructure](./docs/EVALUATION_INFRASTRUCTURE.md)
+- [Research validation study protocol](./docs/VALIDATION_PILOT_PROTOCOL.md)
 - [Architecture](./docs/ARCHITECTURE.md)
 - [Roadmap](./docs/ROADMAP.md)
 - [Product decisions](./docs/PRODUCT_DECISIONS.md)
