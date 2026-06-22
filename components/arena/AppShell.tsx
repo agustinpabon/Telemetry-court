@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import Link from "next/link";
 
 import { AiRevealPanel } from "@/components/arena/AiRevealPanel";
 import { BlindReadPanel } from "@/components/arena/BlindReadPanel";
@@ -556,6 +557,9 @@ export function AppShell({
       <ArenaHeader
         actions={
           <div className="arena-local-file-actions">
+            <Link className="arena-header-link" href="/results">
+              Results
+            </Link>
             <CasePackageImportControl
               status={importStatus}
               onImportStart={handleImportStart}

@@ -6,24 +6,17 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import EvaluationResultsPage from "@/app/results/page";
 
-test("results page renders a focused EvaluationReport view outside the review workflow", () => {
+test("results page renders an empty local ReviewResult state outside the review workflow", () => {
   const markup = renderToStaticMarkup(
     React.createElement(EvaluationResultsPage),
   ).replace(/\s+/g, " ");
 
   assert.match(markup, /Telemetry Court/);
-  assert.match(markup, /Evaluation Report/);
-  assert.match(markup, /Aggregated reviewer results/);
-  assert.match(markup, /Reviewer output, not upstream evidence/);
-  assert.match(markup, /Disagreement detected/);
-  assert.match(markup, /Verdict distribution/);
-  assert.match(markup, /Label winner distribution/);
-  assert.match(markup, /Evidence rating distribution/);
-  assert.match(markup, /Reviewer agreement/);
-  assert.match(markup, /Evidence evidence-2/);
-  assert.match(markup, /Disputed/);
-  assert.match(markup, /Download JSON/);
-  assert.match(markup, /Download CSV/);
+  assert.match(markup, /Local evaluation results/);
+  assert.match(markup, /No ReviewResults available/);
+  assert.match(markup, /Import ReviewResult bundle/);
+  assert.match(markup, /Review cases/);
+  assert.doesNotMatch(markup, /Verdict distribution/);
   assert.doesNotMatch(markup, /Step 1 of 8/);
   assert.doesNotMatch(markup, /Open case file/);
 });
