@@ -23,6 +23,83 @@ projection, clustering, evidence extraction, and initial label generation.
 Telemetry Court owns package validation, evidence-grounded review, structured
 human judgments, and evaluation output.
 
+## Approved Evidence Package Workflow
+
+The controlled-data handoff is:
+
+```text
+approved upstream environment
+-> precomputed cluster and generated interpretation
+-> minimal reviewable evidence selection
+-> sanitization and scoped approval
+-> validated CasePackage JSON
+-> Telemetry Court local review
+-> human-produced ReviewResult
+-> EvaluationReport aggregated from compatible ReviewResults
+```
+
+The current app accepts local `CasePackage v0.1` JSON and validates it before
+rendering the review flow. It does not include a real Toponymy or ACME4 adapter,
+a server upload service, a raw-data connector, or a way to resolve restricted
+references. The target adapter workflow runs upstream in an environment already
+approved for the source data and transfers only the approved `CasePackage` to
+Telemetry Court. The public or portable app consumes `CasePackage` JSON, not
+raw telemetry, adapter-input artifacts, notebook state, or source-system dumps.
+
+### Package Data Postures
+
+| Posture | Meaning | Repository and review requirements |
+| --- | --- | --- |
+| Synthetic | Every event, identifier, summary, and metric is invented for testing or demonstration. | Use all three synthetic markers, omit real-data review approval, and never present the package as evidence of real-world validation. |
+| Sanitized controlled | Evidence is derived from real or restricted sources, but sensitive payloads and identifiers have been removed, generalized, or aggregated. | Treat the package as non-synthetic. Include adapter/run provenance, sanitization details, safe references, and approval scoped to the package revision and intended review environment. |
+| Real/approved controlled | The package contains the minimum real evidence content explicitly permitted for the stated review purpose. It is still a package, not a raw-data dump. | Treat the package as non-synthetic. Record the same provenance, sanitization, safe-reference, and scoped-approval metadata, and distribute it only where that approval permits. |
+
+Calling a package "sanitized" or "approved" is not enough by itself. The
+non-synthetic validation requirements apply to both controlled postures, and a
+scope that permits internal review does not imply permission to commit the
+package publicly or use it in a public demo.
+
+### Preparation And Handoff
+
+1. Keep raw telemetry and restricted identifiers inside the approved upstream
+   environment.
+2. Run sessionization, embedding, clustering, evidence extraction, and label
+   generation upstream. Select one precomputed cluster and interpretation for
+   review.
+3. Select only the evidence needed to test the claims: representative and
+   boundary examples, challenging outliers or impostors, confusing neighbors,
+   derived features, and necessary aggregate metrics. Do not export a raw data
+   dump for convenience.
+4. Remove, generalize, or aggregate sensitive payloads and identifiers. Replace
+   permitted drill-downs with safe audit references that do not embed the
+   restricted content.
+5. Record the source run, adapter name/version, sanitization method, redaction
+   notes, allowed display level, and approval scope. Tie approval to the exact
+   package revision and use a safe reference to the approval artifact.
+6. Build and validate `CasePackage v0.1` in the approved environment. Broken
+   IDs, links, schema versions, provenance, sanitization, or approval metadata
+   must block handoff.
+7. Transfer and locally import only the approved `CasePackage` JSON. Telemetry
+   Court validates the package again before review; it does not fetch the raw
+   source data.
+8. Let reviewers complete the structured workflow. A `ReviewResult` must come
+   from an actual completed human review, and an `EvaluationReport` must be
+   generated from compatible authentic ReviewResults. Do not fabricate either
+   artifact to stand in for reviewer or pilot execution.
+
+### Contributor Handling Rules
+
+- Never commit restricted data, raw telemetry, unsafe source exports,
+  credentials, or raw-telemetry fixtures to this repository.
+- Public fixtures and demos must use synthetic packages or sanitized packages
+  whose explicit approval scope permits that public/demo use.
+- Keep controlled packages and their source artifacts in approved storage and
+  transfer paths. A safe reference is an audit pointer, not permission to copy
+  its target into the repository.
+- Deterministic synthetic `ReviewResult` or `EvaluationReport` test fixtures may
+  test code paths, but they must stay clearly synthetic and must never be
+  represented as human pilot output or real validation evidence.
+
 ## Possible Upstream Producers
 
 An adapter may eventually be written for any approved upstream producer that can

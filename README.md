@@ -107,9 +107,11 @@ Until then, the current application remains a polished static validation interfa
 
 ## Data Posture
 
-The public and portable application must not require raw restricted telemetry. Real or restricted datasets should be converted into approved, minimal, auditable case packages inside the appropriate environment. Local fixtures must remain synthetic, sanitized, or explicitly approved.
+The public and portable application consumes validated `CasePackage` JSON, not raw restricted telemetry. Real or restricted datasets must be converted upstream into minimal, auditable packages inside an approved environment. Public fixtures and demos must use synthetic packages or sanitized packages whose approval scope explicitly permits public/demo use; contributors must never commit restricted data or raw-telemetry fixtures.
 
 Toponymy and ACME4-style integrations should be adapters that produce versioned case packages. They must not turn Telemetry Court into a raw telemetry ingestion engine. The official [TutteInstitute/toponymy](https://github.com/TutteInstitute/toponymy) repository is the factual source of truth for Toponymy in this project.
+
+See [the approved evidence package workflow](./docs/ADAPTER_BOUNDARY.md#approved-evidence-package-workflow) for the synthetic, sanitized controlled, and real/approved controlled postures; required provenance, sanitization, safe-reference, and approval metadata; and contributor handling rules.
 
 ## Next Milestone
 

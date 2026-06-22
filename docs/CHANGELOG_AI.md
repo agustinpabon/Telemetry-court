@@ -19,6 +19,39 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-22: Restricted-Data And Approved Package Workflow
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Complete issue #66 after auditing merged issue #65 / PR #129;
+  document how realistic or sanitized CasePackages enter Telemetry Court
+  without raw telemetry ingestion, restricted-data copying, fake reviewers, or
+  fabricated review and evaluation artifacts.
+- Files changed: `README.md`, `docs/ADAPTER_BOUNDARY.md`, and
+  `docs/CHANGELOG_AI.md`.
+- Summary: Added a contributor-facing flow from an approved upstream
+  environment through minimal evidence selection, sanitization, scoped
+  approval, CasePackage validation, local review, and authentic downstream
+  artifacts. Distinguished synthetic, sanitized controlled, and real/approved
+  controlled package postures and made the public/demo handling rule explicit.
+- Decisions made: Kept the change documentation-only because PR #129 already
+  implemented the required provenance, sanitization, safe-reference, and
+  approval validation. Added only the missing operational handoff, repository
+  handling rules, and current-versus-target capability statement.
+- Checks run: `git diff --check` passed; `npm test` passed with 190 tests;
+  `npx tsc --noEmit` passed; `npm run lint` passed with 0 errors and the
+  existing 134 warnings under `.agents/skills/impeccable`; `npm run build`
+  passed.
+- Assumptions: Both sanitized controlled and real/approved controlled packages
+  remain non-synthetic under the current validator. Approval is scoped to one
+  package revision and environment; it does not authorize raw-data ingestion
+  or public repository publication.
+- Risks/follow-ups: Documentation and metadata validation cannot prove that
+  arbitrary evidence content is safe. The upstream data owner, adapter author,
+  and named approver still own content minimization and release decisions.
+- Next recommended step: Close issue #66 after documentation review; execute no
+  reviewer pilot until its separate human approvals are in place.
+- Suggested commit message: `docs(data-boundary): document approved package workflow`
+
 ## 2026-06-22: Adapter Provenance And Sanitization Requirements
 
 - Agent/model: Codex (GPT-5)
