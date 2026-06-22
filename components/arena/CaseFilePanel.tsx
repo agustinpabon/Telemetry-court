@@ -140,7 +140,7 @@ export function CaseFilePanel({
           <article className="case-file-card case-file-brief-card">
             <SectionHeader
               title="Case brief"
-              description="The minimum context needed before the blind read."
+              description="The minimum context needed before the initial assessment."
             />
             <dl className="case-file-fact-list">
               <div>
@@ -222,7 +222,7 @@ export function CaseFilePanel({
           <article className="case-file-card case-file-questions-card">
             <SectionHeader
               title="Review questions"
-              description="Use these as the decision frame for the blind read."
+              description="Use these as the decision frame for the initial assessment."
             />
             <div className="case-file-question-list">
               {reviewQuestions.map((question) => (
@@ -266,12 +266,12 @@ export function CaseFilePanel({
             <article className="case-file-readiness-card">
               <SectionHeader
                 title="Review readiness"
-                description="What is safe to know before the blind read."
+                description="What is safe to know before the initial assessment."
               />
               <dl className="case-file-readiness-list">
                 <div>
                   <dt>Claim state</dt>
-                  <dd>Hidden until blind read</dd>
+                  <dd>Hidden until initial assessment</dd>
                 </div>
                 <div>
                   <dt>Known packet</dt>
@@ -301,7 +301,7 @@ export function CaseFilePanel({
             : undefined
         }
         primaryAction={{
-          label: "Start blind investigation",
+          label: "Start validation",
           onClick: onStartInvestigation,
         }}
       />
@@ -376,7 +376,7 @@ function RegionContext({
     <article className="case-file-card case-file-region-context">
       <SectionHeader
         title="Region context"
-        description="Where this case sits before the blind read."
+        description="Where this case sits before the initial assessment."
       />
       {nearestNeighbourNode ? (
         <LandscapeLocator

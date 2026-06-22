@@ -63,7 +63,7 @@ export function EvidenceBoard({
   return (
     <ArenaWorkflowShell
       className="evidence-board-stage"
-      ariaLabel="Evidence Board"
+      ariaLabel="Evidence Verification"
     >
       <ArenaStepProgress
         currentStage="evidence_board"
@@ -92,8 +92,8 @@ export function EvidenceBoard({
           <strong>{caseFile.topicLabel.name}</strong>
         </div>
         <div>
-          <span>Your read</span>
-          <strong>{blindChoice?.label ?? "Saved blind interpretation"}</strong>
+          <span>Your baseline</span>
+          <strong>{blindChoice?.label ?? "Saved initial assessment"}</strong>
         </div>
         <div>
           <span>Current signal</span>
@@ -272,12 +272,12 @@ export function EvidenceBoard({
       {onContinue ? (
         <ArenaActionFooter
           className="evidence-board-actions"
-          ariaLabel="Evidence Board actions"
-          microcopy="Your classifications will be used to compare labels next."
+          ariaLabel="Evidence Verification actions"
+          microcopy="Classify all evidence to unlock label selection."
           secondaryAction={
             onBackToAiReveal
               ? {
-                  label: "Back to AI reveal",
+                  label: "Return to AI claim check",
                   onClick: onBackToAiReveal,
                 }
               : undefined
@@ -286,9 +286,9 @@ export function EvidenceBoard({
             label: (
               <>
                 <span className="action-label-desktop">
-                  Continue with {caseFile.evidenceItems.length} classifications
+                  Proceed to label selection
                 </span>
-                <span className="action-label-mobile">Compare labels</span>
+                <span className="action-label-mobile">Select label</span>
               </>
             ),
             onClick: onContinue,
@@ -460,7 +460,7 @@ function getEvidenceReviewCopy(
         whyItMatters:
           "It may indicate a mixed cluster or a session that needs more context.",
         claimMeaning:
-          "It is not enough to prove the AI claim across the cluster, but it should be reviewed before the final verdict.",
+          "It is not enough to prove the AI claim across the cluster, but it should be reviewed before the final evaluation.",
         mobileSummary:
           "One off-window PassRole-like check needs context before it can support the AI claim.",
         signals: ["PassRole-like check", "off-hours", "low feature overlap"],
@@ -484,7 +484,7 @@ function getFallbackEvidenceReviewCopy(
   const primaryRelation = relations[0];
   const relationExplanation =
     primaryRelation?.explanation ??
-    "This evidence should be weighed against the AI claim before the label duel.";
+    "This evidence should be weighed against the AI claim before label selection.";
   const claimMeaningByRating: Record<EvidenceRating, string> = {
     supports_label:
       "This supports the AI claim, but should still be checked against the full evidence packet.",

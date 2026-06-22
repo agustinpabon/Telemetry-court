@@ -47,13 +47,13 @@ export function ImpostorPanel({
 
   if (!selectedLabel) {
     return (
-      <ArenaWorkflowShell className="impostor-stage" ariaLabel="Impostor check">
+      <ArenaWorkflowShell className="impostor-stage" ariaLabel="Cluster Fit Check">
         <ArenaStepProgress currentStage="impostor" onSelectStage={onSelectStage} />
 
         <ArenaStepHero
           status={<ArenaStatusBadge tone="uncertain">Fit check</ArenaStatusBadge>}
           title="Choose a label before the fit check"
-          summary="This comparison depends on the label selected in the previous step. Return to Label Duel to choose the interpretation you want to test."
+          summary="This comparison depends on the label selected in the previous step. Return to Label Selection to choose the interpretation you want to test."
         />
 
         <section className="impostor-label-guard" aria-labelledby="label-guard-title">
@@ -67,10 +67,10 @@ export function ImpostorPanel({
 
         <ArenaActionFooter
           className="impostor-actions"
-          ariaLabel="Impostor recovery actions"
+          ariaLabel="Cluster Fit Check recovery actions"
           microcopy="Choose the most defensible label before checking session fit."
           primaryAction={{
-            label: "Return to label duel",
+            label: "Return to label selection",
             disabled: !onBackToLabelDuel,
             onClick: onBackToLabelDuel ?? (() => undefined),
           }}
@@ -89,13 +89,13 @@ export function ImpostorPanel({
   const strongestCandidate = rankedSessions[0];
 
   return (
-    <ArenaWorkflowShell className="impostor-stage" ariaLabel="Impostor check">
+    <ArenaWorkflowShell className="impostor-stage" ariaLabel="Cluster Fit Check">
       <ArenaStepProgress currentStage="impostor" onSelectStage={onSelectStage} />
 
       <ArenaStepHero
         status={
           <ArenaStatusBadge tone="uncertain">
-            Impostor check · {caseFile.representativeSessions.length} representative
+            Cluster Fit Check · {caseFile.representativeSessions.length} representative
             sessions
           </ArenaStatusBadge>
         }
@@ -219,7 +219,7 @@ export function ImpostorPanel({
 
       <ArenaActionFooter
         className="impostor-actions"
-        ariaLabel="Impostor actions"
+        ariaLabel="Cluster Fit Check actions"
         microcopy={
           selectedSession
             ? formatImpostorFooterMicrocopy(selectedSession, strongestCandidate)
@@ -228,13 +228,13 @@ export function ImpostorPanel({
         secondaryAction={
           onBackToLabelDuel
             ? {
-                label: "Back to label duel",
+                label: "Return to label selection",
                 onClick: onBackToLabelDuel,
               }
             : undefined
         }
         primaryAction={{
-          label: "Continue to verdict",
+          label: "Continue to final evaluation",
           disabled: !selectedSession,
           onClick: onContinue,
         }}
@@ -290,7 +290,7 @@ function ImpostorDetailPanel({
           </section>
         ) : null}
         <p className="impostor-detail-helper">
-          Select a session to see how it affects the final verdict.
+          Select a session to see how it affects the final evaluation.
         </p>
       </aside>
     );
@@ -330,10 +330,10 @@ function ImpostorDetailPanel({
           isStrongestCandidate ? "is-strong-candidate" : "is-neutral-warning"
         }`}
       >
-        <span>Effect on final verdict</span>
+        <span>Effect on final evaluation</span>
         <p>
           {isStrongestCandidate
-            ? "This is a strong impostor candidate because it has the highest outlier risk and weakest match to the cluster."
+            ? "This is the strongest mismatch candidate because it has the highest outlier risk and weakest match to the cluster."
             : alternateCandidateNote}
         </p>
       </div>

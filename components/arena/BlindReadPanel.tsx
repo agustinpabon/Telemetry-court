@@ -29,26 +29,26 @@ export function BlindReadPanel({
   const hasBlindChoice = Boolean(reviewState.blindChoiceId);
   const actionLabel = hasBlindChoice
     ? reviewState.aiLabelRevealed
-      ? "Continue to AI Reveal"
-      : "Reveal AI label"
+      ? "Continue to AI Claim Check"
+      : "Reveal AI claim"
     : "Choose an interpretation to continue";
 
   return (
-    <ArenaWorkflowShell className="blind-stage" ariaLabel="Blind Read">
+    <ArenaWorkflowShell className="blind-stage" ariaLabel="Initial Assessment">
       <ArenaStepProgress
         currentStage="blind_read"
         onSelectStage={onSelectStage}
       />
 
       <ArenaStepHero
-        eyebrow="Blind Read"
+        eyebrow="Initial Assessment"
         status={
           <ArenaStatusBadge tone="sealed">
             AI claim hidden
           </ArenaStatusBadge>
         }
-        title="Judge the evidence first."
-        summary="Choose an independent interpretation before seeing the AI label."
+        title="Establish an independent baseline."
+        summary="Review the evidence without anchoring on the AI's claim."
         context="The AI label remains sealed until you choose one interpretation below."
       />
 
@@ -141,10 +141,10 @@ export function BlindReadPanel({
           </fieldset>
           <ArenaActionFooter
             className="blind-decision-footer"
-            ariaLabel="Blind Read actions"
+            ariaLabel="Initial Assessment actions"
             microcopy={
               reviewState.aiLabelRevealed
-                ? "Your blind interpretation is already saved."
+                ? "Your initial assessment is already saved."
                 : "Your choice will be saved before the AI label is shown."
             }
             primaryAction={{

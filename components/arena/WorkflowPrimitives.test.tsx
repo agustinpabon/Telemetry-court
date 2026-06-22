@@ -8,6 +8,7 @@ import { CasePackageImportControl } from "@/components/arena/CasePackageImportCo
 import {
   ArenaActionFooter,
   ArenaHeader,
+  ArenaReviewerGoal,
   ArenaStatusBadge,
   ArenaStepHero,
   ArenaStepProgress,
@@ -22,11 +23,12 @@ test("workflow primitives render the shared arena page language", () => {
   const markup = renderStaticMarkup(
     React.createElement(
       ArenaWorkflowShell,
-      { ariaLabel: "AI Reveal", className: "test-stage" },
+      { ariaLabel: "AI Claim Check", className: "test-stage" },
       React.createElement(ArenaHeader),
+      React.createElement(ArenaReviewerGoal),
       React.createElement(ArenaStepProgress, { currentStage: "ai_reveal" }),
       React.createElement(ArenaStepHero, {
-        eyebrow: "AI Reveal",
+        eyebrow: "AI Claim Check",
         status: React.createElement(
           ArenaStatusBadge,
           { tone: "overclaim" },
@@ -39,11 +41,11 @@ test("workflow primitives render the shared arena page language", () => {
       React.createElement(ArenaActionFooter, {
         microcopy: "Inspect the signals before deciding.",
         secondaryAction: {
-          label: "Back to blind read",
+          label: "Return to initial assessment",
           onClick: () => undefined,
         },
         primaryAction: {
-          label: "Review evidence board",
+          label: "Proceed to verification",
           onClick: () => undefined,
         },
       }),
@@ -53,13 +55,17 @@ test("workflow primitives render the shared arena page language", () => {
   assert.match(markup, /class="arena-workflow-shell stage-surface test-stage"/);
   assert.match(markup, /Telemetry Court/);
   assert.match(markup, /Evidence review for AI-named telemetry clusters\./);
-  assert.match(markup, /Step 4 of 8 · AI Reveal/);
+  assert.match(
+    markup,
+    /Your job: decide whether the AI label is supported by the evidence\. Prefer narrow, evidence-grounded conclusions\. Flag overclaiming, uncertainty, or cluster impurity\./,
+  );
+  assert.match(markup, /Step 4 of 8 · AI Claim Check/);
   assert.match(markup, /aria-current="step"/);
   assert.match(markup, /arena-status-badge arena-status-badge-overclaim/);
   assert.match(markup, /Your read and the AI label diverge\./);
   assert.match(markup, /This is not a verdict\./);
-  assert.match(markup, /Back to blind read/);
-  assert.match(markup, /Review evidence board/);
+  assert.match(markup, /Return to initial assessment/);
+  assert.match(markup, /Proceed to verification/);
 });
 
 test("CasePackage import control renders local import status", () => {

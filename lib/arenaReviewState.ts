@@ -9,12 +9,12 @@ import type { EvidenceArenaReview } from "@/lib/exportReview";
 export const arenaStages = [
   { id: "landscape", label: "Landscape" },
   { id: "case_file", label: "Case File" },
-  { id: "blind_read", label: "Blind Read" },
-  { id: "ai_reveal", label: "AI Reveal" },
-  { id: "evidence_board", label: "Evidence Board" },
-  { id: "label_duel", label: "Label Duel" },
-  { id: "impostor", label: "Impostor" },
-  { id: "verdict", label: "Verdict" },
+  { id: "blind_read", label: "Initial Assessment" },
+  { id: "ai_reveal", label: "AI Claim Check" },
+  { id: "evidence_board", label: "Evidence Verification" },
+  { id: "label_duel", label: "Label Selection" },
+  { id: "impostor", label: "Cluster Fit Check" },
+  { id: "verdict", label: "Final Evaluation" },
 ] as const;
 
 export type ArenaStage = (typeof arenaStages)[number]["id"];
@@ -351,7 +351,7 @@ export function getBlindAgreementCopy(
     return "Your blind interpretation agrees with the AI label. The next question is whether the evidence is strong enough.";
   }
 
-  return "Your blind interpretation differs from the AI label. Use the evidence board and label duel to judge which interpretation is better grounded.";
+  return "Your initial assessment differs from the AI label. Use evidence verification and label selection to judge which interpretation is better grounded.";
 }
 
 export function labelsMatch(left?: string, right?: string): boolean {

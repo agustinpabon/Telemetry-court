@@ -58,11 +58,11 @@ export function AiRevealPanel({
   ];
 
   return (
-    <ArenaWorkflowShell className="ai-reveal-stage" ariaLabel="AI Reveal">
+    <ArenaWorkflowShell className="ai-reveal-stage" ariaLabel="AI Claim Check">
       <ArenaStepProgress currentStage="ai_reveal" onSelectStage={onSelectStage} />
 
       <ArenaStepHero
-        eyebrow="AI Reveal"
+        eyebrow="AI Claim Check"
         status={
           <ArenaStatusBadge
             tone={assessment.tone}
@@ -76,12 +76,12 @@ export function AiRevealPanel({
             ? agrees
               ? "Your read and the AI label align."
               : "Your read and the AI label diverge."
-            : "Reveal the AI label."
+            : "Reveal the AI claim."
         }
         summary={
           revealed
-            ? `You selected ${blindChoice?.label ?? "a blind read"}. The model suggested ${caseFile.topicLabel.name}.`
-            : "Your blind read is saved. Reveal the model claim before reviewing the evidence board."
+            ? `You selected ${blindChoice?.label ?? "an initial assessment"}. The model suggested ${caseFile.topicLabel.name}.`
+            : "Your initial assessment is saved. Reveal the model claim before proceeding to verification."
         }
         context="This is not a verdict. It highlights a conflict that needs evidence review."
       />
@@ -92,8 +92,8 @@ export function AiRevealPanel({
         }`}
       >
         <article className="arena-comparison-card reveal-card blind-card">
-          <span>Your blind read</span>
-          <strong>{blindChoice?.label ?? "Awaiting blind choice"}</strong>
+          <span>Your initial assessment</span>
+          <strong>{blindChoice?.label ?? "Awaiting initial assessment"}</strong>
           <p>{comparisonCopy.blind}</p>
         </article>
 
@@ -107,7 +107,7 @@ export function AiRevealPanel({
           ) : (
             <>
               <strong className="redacted-claim">Hidden claim</strong>
-              <p>The claim remains unavailable until the blind read is recorded.</p>
+              <p>The claim remains unavailable until the initial assessment is recorded.</p>
             </>
           )}
         </article>
@@ -152,20 +152,20 @@ export function AiRevealPanel({
 
         <ArenaActionFooter
           className="reveal-actions"
-          ariaLabel="AI Reveal actions"
+          ariaLabel="AI Claim Check actions"
           microcopy="Inspect the signals before deciding whether the AI label is supported."
           secondaryAction={{
-            label: "Back to blind read",
+            label: "Return to initial assessment",
             onClick: onBackToBlindRead,
           }}
           primaryAction={
             revealed
               ? {
-                  label: "Review evidence board",
+                  label: "Proceed to verification",
                   onClick: onContinue,
                 }
               : {
-                  label: "Reveal AI label",
+                  label: "Reveal AI claim",
                   disabled: !reviewState.blindChoiceId,
                   onClick: onRevealAiLabel,
                 }
@@ -196,7 +196,7 @@ function getAssessmentCopy(caseFile: CaseFile, revealed: boolean) {
 
   return {
     label: "Needs evidence review",
-    body: "Use the evidence board to judge whether the model label is grounded.",
+    body: "Use evidence verification to judge whether the model label is grounded.",
     tone: "neutral" as const,
   };
 }
@@ -244,7 +244,7 @@ function getEvidenceAlignmentRows(caseFile: CaseFile) {
       label: "Missing",
       body:
         caseFile.claims.find((claim) => claim.status === "unsupported")?.rationale ??
-        "The evidence board should confirm whether any claim is unsupported.",
+        "Evidence verification should confirm whether any claim is unsupported.",
     },
     {
       label: "Ambiguous",

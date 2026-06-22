@@ -18,7 +18,18 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Next recommended step:
 - Suggested commit message:
 ```
+## 2026-06-22: Audit and refine the review flow UI labels
 
+- Agent/model: Gemini 3.1 Pro (High)
+- Prompt scope: Do a review-flow clarity audit and improve the local review flow UI labels to make it self-explanatory and obviously useful without changing any data contracts.
+- Files changed: `app/page.test.ts`, `components/arena/AiRevealPanel.tsx`, `components/arena/AppShell.tsx`, `components/arena/BlindReadPanel.tsx`, `components/arena/CaseFilePanel.tsx`, `components/arena/EvidenceBoard.tsx`, `components/arena/ImpostorPanel.tsx`, `components/arena/JudgmentReceipt.tsx`, `components/arena/LabelDuelPanel.tsx`, `components/arena/VerdictPanel.tsx`, `components/arena/WorkflowPrimitives.test.tsx`, `components/arena/WorkflowPrimitives.tsx`, `lib/arenaReviewState.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Renamed the visible review stages to align with the Telemetry Court product vision ("AI names the cluster. Humans test the evidence"): Initial Assessment, AI Claim Check, Evidence Verification, Label Selection, Cluster Fit Check, and Final Evaluation. Also aligned microcopy, accessible labels, action buttons, and the reviewer-job banner with the approved terminology.
+- Decisions made: Changed presentation copy without touching the underlying domain model or contracts (`CasePackageV01`, `ReviewResultV01`, `EvaluationReportV01`). Internal stage IDs, routes, and review-state semantics remain unchanged. Updated focused UI tests to assert the approved visible copy.
+- Checks run: focused UI/copy tests passed with 27 tests; `npm test` passed with 170 tests; `npx tsc --noEmit` passed; `npm run lint` passed with the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; and `git diff --check` passed. A production browser walkthrough confirmed the approved stage labels and reviewer-job banner across the built-in review flow with no console warnings or errors. The focused imported-case navigation test confirmed that in-memory imported case state remains preserved across stage paths; the in-app browser could not attach a local fixture for a second manual import pass.
+- Assumptions: The user wants to stick strictly to UI copy updates and avoid deep architectural refactoring. The underlying review state machine and actions are unchanged.
+- Risks/follow-ups: Legacy route names, component names, state fields, test descriptions, and historical changelog entries retain older terminology where changing it would create route, contract, or history churn.
+- Next recommended step: Review the draft PR.
+- Suggested commit message: `ux: clarify review flow language`
 ## 2026-06-22: Preserve Imported Case State During Navigation
 
 - Agent/model: Gemini 3.1 Pro (High)
