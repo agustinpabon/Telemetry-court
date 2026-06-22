@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-22: Preserve Imported Case State During Navigation
+
+- Agent/model: Gemini 3.1 Pro (High)
+- Prompt scope: Finalize local follow-up navigation fix for AppShell to keep imported CasePackage state in memory while navigating review stages.
+- Files changed: `components/arena/AppShell.tsx`, `components/arena/AppShell.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: The `imported-case` stage navigation was still using `router.push`, which remounted the shell and dropped the in-memory imported case. Introduced a `navigatePath` function in `AppShell` that uses `onNavigatePathPreservingState` when navigating with an imported case, preventing the remount.
+- Decisions made: Kept the state within React memory using `window.history.pushState` under the hood via `onNavigatePathPreservingState` instead of introducing URL parameters or local storage for the active case. Added focused unit tests for `navigatePath`.
+- Checks run: `npm test` passed, `npx tsc --noEmit` passed, `npm run lint` passed, `npm run build` passed, `git diff --check` passed.
+- Assumptions: The user has already run the follow-up changes locally.
+- Risks/follow-ups: No new risks. The demo built-in case continues to use standard Next.js router.
+- Next recommended step: Review the PR.
+- Suggested commit message: `fix: preserve imported case across stage navigation`
+
 ## 2026-06-22: Imported Blind Read State Isolation
 
 - Agent/model: Codex (GPT-5)

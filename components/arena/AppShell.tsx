@@ -118,6 +118,9 @@ export function AppShell({
     useState<ReviewResultBundleControlStatus>({ state: "idle" });
 
   const selectedCase = getSelectedCase(activeCases, arenaState);
+  const selectedCaseIsImported = selectedCase
+    ? importedCaseIds.has(selectedCase.id)
+    : false;
   const reviewState = getCurrentReviewState(arenaState);
   const blindChoiceId = reviewState.blindChoiceId;
   const aiLabelRevealed = reviewState.aiLabelRevealed;
@@ -179,7 +182,12 @@ export function AppShell({
     const protectedPath = getPathForArenaStage(protectedRouteStage);
 
     if (protectedPath !== pathname) {
-      onNavigatePath(protectedPath);
+      navigatePath({
+        nextPath: protectedPath,
+        preserveImportedState: selectedCaseIsImported,
+        onNavigatePath,
+        onNavigatePathPreservingState,
+      });
     }
 
     if (protectedRouteStage !== arenaState.activeStage) {
@@ -190,7 +198,9 @@ export function AppShell({
     arenaState.activeStage,
     blindChoiceId,
     onNavigatePath,
+    onNavigatePathPreservingState,
     pathname,
+    selectedCaseIsImported,
   ]);
 
   if (!selectedCase) {
@@ -246,7 +256,12 @@ export function AppShell({
     const nextPath = getPathForArenaStage(protectedStage);
 
     if (nextPath !== pathname) {
-      onNavigatePath(nextPath);
+      navigatePath({
+        nextPath,
+        preserveImportedState: selectedCaseIsImported,
+        onNavigatePath,
+        onNavigatePathPreservingState,
+      });
     }
 
     dispatchArena({ type: "goToStage", stage: protectedStage });
@@ -458,7 +473,12 @@ export function AppShell({
 
     const nextPath = getPathForArenaStage("ai_reveal");
     if (nextPath !== pathname) {
-      onNavigatePath(nextPath);
+      navigatePath({
+        nextPath,
+        preserveImportedState: selectedCaseIsImported,
+        onNavigatePath,
+        onNavigatePathPreservingState,
+      });
     }
   }
 
@@ -664,6 +684,25 @@ function downloadJsonFile(json: string, filename: string) {
   downloadLink.click();
   downloadLink.remove();
   URL.revokeObjectURL(exportUrl);
+}
+
+export function navigatePath({
+  nextPath,
+  preserveImportedState,
+  onNavigatePath,
+  onNavigatePathPreservingState,
+}: {
+  nextPath: string;
+  preserveImportedState: boolean;
+  onNavigatePath: (path: string) => void;
+  onNavigatePathPreservingState: (path: string) => void;
+}) {
+  if (preserveImportedState) {
+    onNavigatePathPreservingState(nextPath);
+    return;
+  }
+
+  onNavigatePath(nextPath);
 }
 
 function toImportFailureDetails(
