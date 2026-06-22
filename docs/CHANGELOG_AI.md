@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-22: Imported Blind Read State Isolation
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Fix the imported-case Blind Read progression bug where a validated `CasePackage` with `case.case_id = "case-arena-001"` could collide with the built-in seeded verdict demo/session review state and make the reviewer feel stuck after a blind interpretation was selected.
+- Files changed: `lib/importCasePackageV01.ts`, `lib/importCasePackageV01.test.ts`, `lib/exportReview.ts`, `components/arena/BlindReadPanel.tsx`, `app/page.test.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Imported CasePackages now receive a local-only UI review identity derived from package ID, package revision, and package case ID, so imported review state no longer shares the built-in demo `case-arena-001` slot. `ReviewResult` export still preserves the original compact CasePackage identity and fails loudly on mismatched package references. Blind Read now shows `Continue to AI Reveal` after reveal instead of `Return to AI Reveal`.
+- Decisions made: Kept the CasePackage contract unchanged; kept imported package state local-only; preserved the built-in direct-verdict seeded demo; did not loosen validation; allowed only the exact imported UI identity format to differ from `case_package.case_id` during ReviewResult export.
+- Checks run: Focused `npm test -- lib/importCasePackageV01.test.ts app/page.test.ts lib/exportReview.test.ts lib/arenaReviewState.test.ts` passed with 50 tests; `npm test` passed with 168 tests; `npx tsc --noEmit` passed; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed.
+- Assumptions: The UI-only imported identity is an internal review-state key and must not be serialized into `ReviewResult` or `EvaluationReport` artifacts.
+- Risks/follow-ups: Imported packages with the same `package_id` as a built-in fixture still intentionally produce ReviewResults for that exact CasePackage identity; local report grouping remains by compact CasePackage reference, not UI review key.
+- Next recommended step: Run the full validation suite and publish the scoped bugfix PR.
+- Suggested commit message: `fix(review): isolate imported blind state`
+
 ## 2026-06-22: Validation Pilot Protocol
 
 - Agent/model: Codex (GPT-5)

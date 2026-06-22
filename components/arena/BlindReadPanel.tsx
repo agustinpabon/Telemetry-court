@@ -29,7 +29,7 @@ export function BlindReadPanel({
   const hasBlindChoice = Boolean(reviewState.blindChoiceId);
   const actionLabel = hasBlindChoice
     ? reviewState.aiLabelRevealed
-      ? "Return to AI Reveal"
+      ? "Continue to AI Reveal"
       : "Reveal AI label"
     : "Choose an interpretation to continue";
 
