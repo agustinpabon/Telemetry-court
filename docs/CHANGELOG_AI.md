@@ -19,6 +19,32 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-22: Precise Masthead Action Alignment Correction
+
+- Agent/model: Antigravity (Gemini 3.5 Flash (High))
+- Prompt scope: Align masthead action groups precisely using a CSS grid/subgrid layout for results, CasePackage import, and ReviewResult bundle columns, ensuring shared button/helper baselines.
+- Files changed: `app/investigation-workflow.css`, `components/arena/AppShell.tsx`, `components/arena/CasePackageImportControl.tsx`, `components/arena/ReviewResultBundleControl.tsx`, `app/results/page.tsx`.
+- Summary: Corrected visual misalignment of buttons and helper texts in the masthead. Wrapped the action grid in a semantic subgrid layout so that all column buttons share a single horizontal baseline and helper texts align directly beneath their respective button columns.
+- Decisions made: Preserved all existing test classes for regression protection while layering CSS grid layout rules. Scoped all changes to the masthead action classes.
+- Checks run: `node --test --import tsx app/page.test.ts`, `npm test`, `npx tsc --noEmit`, `npm run lint`, `npm run build`, `git diff --check`.
+- Assumptions: The layout coordinates perfectly with the 8-step progress rail.
+- Risks/follow-ups: None.
+- Next recommended step: Review masthead visually across breakpoints.
+- Suggested commit message: `fix: align masthead action groups`
+
+## 2026-06-22: Shared Workflow Masthead Alignment
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Polish the shared Telemetry Court masthead across all eight review stages without changing contracts, import/export semantics, routes, or review-state behavior.
+- Files changed: `app/investigation-workflow.css`, `app/page.test.ts`, `app/results/page.tsx`, shared arena header/import controls and tests, and the eight arena stage panels.
+- Summary: Moved the eight-step progress rail into `ArenaHeader`, grouped Results, CasePackage import, and ReviewResult bundle actions into one masthead layout, normalized pill geometry and helper placement, aligned masthead and workflow content to the same width, and added deterministic tablet/mobile stacking.
+- Decisions made: Kept all existing actions and product language; made progress optional for the non-workflow Results page; removed stage-local progress instances and the late review-only width override that caused cross-stage drift.
+- Checks run: `node --test --import tsx app/page.test.ts` passed with 38 tests; `npm test` passed with 184 tests; `npx tsc --noEmit`, `npm run lint`, `npm run build`, and `git diff --check` passed. Lint retained 134 existing warnings under `.agents/skills/impeccable` and reported no errors. Production Playwright review completed the full eight-step flow at 1440px and revisited all eight stages at 390px with identical per-breakpoint masthead/progress geometry, no horizontal overflow, no clipped helper text, and no console errors.
+- Assumptions: The existing `1040px` workflow width remains the canonical shared content width for this slice.
+- Risks/follow-ups: The mobile masthead is intentionally tall because all import/export controls remain visible and touch-accessible; no controls were collapsed into a menu.
+- Next recommended step: Review the shared masthead screenshots alongside the existing design references before merge.
+- Suggested commit message: `fix(ui): align shared workflow masthead`
+
 ## 2026-06-22: ReviewResult Export Copy Accuracy Fix
 
 - Agent/model: Codex (GPT-5)

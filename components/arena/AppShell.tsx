@@ -596,11 +596,19 @@ export function AppShell({
   return (
     <main className={shellClassName}>
       <ArenaHeader
+        currentStage={activeStage}
+        onSelectStage={navigateToStage}
         actions={
-          <div className="arena-local-file-actions">
-            <Link className="arena-header-link" href="/results">
-              Results
-            </Link>
+          <div className="arena-local-file-actions tc-masthead__actions-grid">
+            <div className="tc-masthead__action-group tc-masthead__action-group--results">
+              <span className="tc-masthead__group-label tc-masthead__action-label tc-masthead__action-label--empty" aria-hidden="true" />
+              <div className="tc-masthead__action-row tc-masthead__button-row">
+                <Link className="arena-header-link" href="/results">
+                  Results
+                </Link>
+              </div>
+              <p className="tc-masthead__action-helper tc-masthead__action-helper--empty" aria-hidden="true" />
+            </div>
             <CasePackageImportControl
               status={importStatus}
               onImportStart={handleImportStart}
@@ -858,7 +866,6 @@ function renderStage({
           landscapeContextNodes={landscapeContextNodes}
           onBackToLandscape={() => navigateToStage("landscape")}
           onStartInvestigation={startInvestigation}
-          onSelectStage={navigateToStage}
         />
       );
     case "blind_read":
@@ -872,7 +879,6 @@ function renderStage({
             dispatchArena({ type: "chooseBlindInterpretation", optionId })
           }
           onRevealAiLabel={revealAiLabel}
-          onSelectStage={navigateToStage}
         />
       );
     case "ai_reveal":
@@ -883,7 +889,6 @@ function renderStage({
           onRevealAiLabel={revealAiLabel}
           onContinue={() => navigateToStage("evidence_board")}
           onBackToBlindRead={() => navigateToStage("blind_read")}
-          onSelectStage={navigateToStage}
         />
       );
     case "evidence_board":
@@ -899,7 +904,6 @@ function renderStage({
           }
           onBackToAiReveal={() => navigateToStage("ai_reveal")}
           onContinue={() => navigateToStage("label_duel")}
-          onSelectStage={navigateToStage}
         />
       );
     case "label_duel":
@@ -917,7 +921,6 @@ function renderStage({
           onSetDuelNote={(note) => dispatchArena({ type: "setDuelNote", note })}
           onBackToEvidenceBoard={() => navigateToStage("evidence_board")}
           onContinue={() => navigateToStage("impostor")}
-          onSelectStage={navigateToStage}
         />
       );
     case "impostor":
@@ -930,7 +933,6 @@ function renderStage({
           }
           onBackToLabelDuel={() => navigateToStage("label_duel")}
           onContinue={() => navigateToStage("verdict")}
-          onSelectStage={navigateToStage}
         />
       );
     case "verdict":
@@ -950,7 +952,6 @@ function renderStage({
           onOpenReviewDrawer={openReviewDrawer}
           onCopyJson={handleCopyReviewJson}
           onDownloadJson={handleDownloadReviewJson}
-          onSelectStage={navigateToStage}
         />
       );
     case "landscape":
@@ -965,7 +966,6 @@ function renderStage({
           onPreviewCase={setPreviewCaseId}
           onClearPreview={() => setPreviewCaseId(undefined)}
           onOpenCaseFile={openCaseFile}
-          onSelectStage={navigateToStage}
         />
       );
   }

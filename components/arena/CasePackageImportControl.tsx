@@ -89,7 +89,7 @@ export function CasePackageImportControl({
   }
 
   return (
-    <div className="case-package-import-control">
+    <div className="case-package-import-control tc-masthead__action-group">
       <input
         ref={fileInputRef}
         id={inputId}
@@ -99,17 +99,20 @@ export function CasePackageImportControl({
         onChange={handleFileChange}
         aria-describedby={statusId}
       />
-      <button
-        type="button"
-        className="case-package-import-button"
-        onClick={() => fileInputRef.current?.click()}
-        aria-describedby={statusId}
-      >
-        {status.state === "error" ? "Choose Another File" : "Import CasePackage"}
-      </button>
+      <span className="tc-masthead__group-label tc-masthead__action-label tc-masthead__action-label--empty" aria-hidden="true" />
+      <div className="tc-masthead__action-row tc-masthead__button-row">
+        <button
+          type="button"
+          className="case-package-import-button"
+          onClick={() => fileInputRef.current?.click()}
+          aria-describedby={statusId}
+        >
+          {status.state === "error" ? "Choose Another File" : "Import CasePackage"}
+        </button>
+      </div>
       <p
         id={statusId}
-        className={`case-package-import-status is-${status.state}`}
+        className={`case-package-import-status tc-masthead__helper tc-masthead__action-helper is-${status.state}`}
         role="status"
       >
         {getStatusCopy(status)}
