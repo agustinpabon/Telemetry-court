@@ -40,6 +40,10 @@ Issue #72 is labeled `needs-decision` and `human-in-the-loop`. Treat this
 document as the draft operating protocol for a first credible study, not as
 final approval to use real data, recruit reviewers, or publish findings.
 
+Use [`PILOT_74_PREFLIGHT.md`](./PILOT_74_PREFLIGHT.md) as the execution gate and
+artifact checklist for issue #74. That preflight does not run the pilot or
+replace the requirement for real independent reviewer outputs.
+
 Assumptions that require explicit human approval before execution:
 
 - the selected CasePackages are safe, approved, and sufficiently sanitized;
