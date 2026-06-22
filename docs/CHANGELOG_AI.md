@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-22: Validation Pilot Protocol
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Prepare Telemetry Court for a small validation pilot using 3-5 approved realistic CasePackages, 2-3 independent reviewers, exported/imported ReviewResult bundles, and at least one EvaluationReport, without adding product features, backend persistence, databases, auth, raw telemetry ingestion, SIEM/SOC behavior, chatbot behavior, consensus/adjudication, reviewer scoring, or real Toponymy/DataMapPlot/ACME4/CloudTrail support.
+- Files changed: `docs/VALIDATION_PILOT_PROTOCOL.md` and `docs/CHANGELOG_AI.md`.
+- Summary: Added a concise pilot protocol covering objective, required inputs, CasePackage acceptance checklist, independent reviewer workflow, ReviewResult bundle aggregation workflow, report verification, success and failure criteria, pilot notes template, and post-pilot decision paths.
+- Decisions made: Kept the protocol docs-only and local-utility focused; treated realistic/sanitized CasePackages as approved package-boundary inputs from upstream pipelines or notebooks; preserved exact CasePackage-reference aggregation semantics rather than implying cross-package benchmarking or a report-set contract; explicitly prohibited fake pilot results and unsupported adapter/support claims.
+- Checks run: No separate docs or markdown lint script is configured; `npm test` passed with 164 tests; `npx tsc --noEmit` passed; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed.
+- Assumptions: The merged Local Utility Gate capabilities from PRs #103-#107 are available on `main`, and realistic pilot packages will be approved and sanitized before review.
+- Risks/follow-ups: The protocol may reveal that package authoring or result interpretation needs more guidance before adapter-boundary implementation should begin.
+- Next recommended step: Run the pilot with approved realistic CasePackages, then use the notes and EvaluationReport output to decide whether to improve package authoring, review clarity, report explanations, or start Toponymy/DataMapPlot adapter-boundary work.
+- Suggested commit message: `docs(pilot): add validation protocol`
+
 ## 2026-06-22: Imported Package To EvaluationReport Smoke Test
 
 - Agent/model: Codex (GPT-5)
