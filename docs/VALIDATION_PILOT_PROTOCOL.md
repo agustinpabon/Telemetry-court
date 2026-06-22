@@ -208,12 +208,14 @@ consistently across reviewers.
    it as a separate evidence-rating choice.
 7. Compare candidate labels and select the best-supported label when possible.
 8. Select any impostor or outlier signal requested by the review flow.
-9. Complete the structured verdict. The current local export derives the
-   canonical recommended action from that verdict rather than collecting a
-   separate action choice.
-10. Download or copy the structured `ReviewResult` so it is saved to the local
+9. Select the applicable failure modes using the current structured reason-code
+   vocabulary.
+10. Complete the structured final verdict. The current local export derives the
+    canonical recommended action from that verdict rather than collecting a
+    separate action choice.
+11. Download or copy the structured `ReviewResult` so it is saved to the local
     review store, then export the package `ReviewResult` bundle.
-11. Record manual study notes about confusion, missing evidence, UI friction,
+12. Record manual study notes about confusion, missing evidence, UI friction,
     or package-authoring friction.
 
 Do not create fake reviewer outputs to fill a report. Incomplete or uncertain
