@@ -22,7 +22,8 @@ Reject or rescope work that primarily adds generic dashboards, SIEM/SOC workflow
 
 - Milestone 0 is the current static validation slice.
 - Milestone 1 is repository realignment.
-- Milestone 2 is the next implementation milestone: Case Package Contract and Validation Infrastructure.
+- Milestone 2 is complete: Case Package Contract and Validation Infrastructure.
+- Milestone 3 is the next implementation milestone: Local Utility Gate (focusing on external/approved CasePackage validation workflow, package authoring/inspection support, and realistic/sanitized package readiness).
 - Do not create a generic backend milestone.
 - Do not pull persistence, auth, admin UX, or enterprise concerns ahead of the contract.
 - Keep issues narrow, independently verifiable, and tied to a roadmap outcome.

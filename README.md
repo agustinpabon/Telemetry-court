@@ -115,7 +115,7 @@ See [the approved evidence package workflow](./docs/ADAPTER_BOUNDARY.md#approved
 
 ## Next Milestone
 
-The next implementation milestone is **Case Package Contract and Validation Infrastructure**, not a generic backend. It will define `CasePackage v0.1`, `ReviewResult v0.1`, and `EvaluationReport v0.1`, add package validation rules, and convert the current synthetic cases into package-shaped fixtures while preserving the review UI.
+The next implementation milestone is the **Local Utility Gate**, not a generic backend. It establishes the external/approved CasePackage validation workflow, package authoring/inspection support, and realistic/sanitized package readiness by enabling local CasePackage JSON file import, local ReviewResult persistence/export/import, and local EvaluationReport aggregation.
 
 See:
 

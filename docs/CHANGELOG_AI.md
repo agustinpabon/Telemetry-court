@@ -21,26 +21,28 @@ Use this file to record AI-assisted changes that affect product context, archite
 
 ## 2026-06-22: Restricted-Data And Approved Package Workflow
 
-- Agent/model: Codex (GPT-5)
+- Agent/model: Antigravity (Gemini 3.5 Flash) & Codex (GPT-5)
 - Prompt scope: Complete issue #66 after auditing merged issue #65 / PR #129;
   document how realistic or sanitized CasePackages enter Telemetry Court
   without raw telemetry ingestion, restricted-data copying, fake reviewers, or
-  fabricated review and evaluation artifacts.
-- Files changed: `README.md`, `docs/ADAPTER_BOUNDARY.md`, and
-  `docs/CHANGELOG_AI.md`.
+  fabricated review and evaluation artifacts. Correct stale "Next Milestone" references
+  across README.md, AGENTS.md, and other documentation to point to the Local Utility Gate.
+- Files changed: `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, `PROMPTING_GUIDE.md`,
+  `START_HERE_FOR_AGENTS.md`, `docs/ADAPTER_BOUNDARY.md`, `docs/DEVELOPMENT_WORKFLOW.md`,
+  and `docs/CHANGELOG_AI.md`.
 - Summary: Added a contributor-facing flow from an approved upstream
   environment through minimal evidence selection, sanitization, scoped
   approval, CasePackage validation, local review, and authentic downstream
   artifacts. Distinguished synthetic, sanitized controlled, and real/approved
   controlled package postures and made the public/demo handling rule explicit.
+  Corrected all stale references to Milestone 2 (Case Package Contract and Validation
+  Infrastructure) to reflect that it is now complete, pointing to Milestone 3 (Local Utility Gate) instead.
 - Decisions made: Kept the change documentation-only because PR #129 already
   implemented the required provenance, sanitization, safe-reference, and
-  approval validation. Added only the missing operational handoff, repository
+  approval validation. Added the missing operational handoff, repository
   handling rules, and current-versus-target capability statement.
-- Checks run: `git diff --check` passed; `npm test` passed with 190 tests;
-  `npx tsc --noEmit` passed; `npm run lint` passed with 0 errors and the
-  existing 134 warnings under `.agents/skills/impeccable`; `npm run build`
-  passed.
+- Checks run: `git diff --check` passed; `npm test` passed;
+  `npx tsc --noEmit` passed; `npm run lint` passed; `npm run build` passed.
 - Assumptions: Both sanitized controlled and real/approved controlled packages
   remain non-synthetic under the current validator. Approval is scoped to one
   package revision and environment; it does not authorize raw-data ingestion

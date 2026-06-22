@@ -1,6 +1,6 @@
 # Contributing
 
-Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations. The current application is a static synthetic validation slice; the next implementation milestone is the Case Package Contract and Validation Infrastructure.
+Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations. The current application is a static synthetic validation slice; the next implementation milestone is the Local Utility Gate (external/approved CasePackage validation workflow, package authoring/inspection support, and realistic/sanitized package readiness).
 
 ## Setup
 

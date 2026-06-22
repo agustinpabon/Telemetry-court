@@ -40,6 +40,6 @@ Do not turn the project into a SIEM, SOC dashboard, raw telemetry explorer, aler
 
 ## Next Implementation Milestone
 
-Define and validate `CasePackage v0.1`, `ReviewResult v0.1`, and `EvaluationReport v0.1`; adapt current fixtures without redesigning the UI; and fail loudly on broken evidence, IDs, versions, or provenance.
+The next milestone is the **Local Utility Gate** (focusing on external/approved CasePackage validation workflow, package authoring/inspection support, and realistic/sanitized package readiness). It will support local CasePackage JSON file import, show useful validation failures for invalid inputs, persist and export ReviewResults, and aggregate compatible results into an EvaluationReport.
 
 Before modifying code, inspect git status and the task-relevant files. Do not assume current branch, issues, or capabilities from documentation alone.
