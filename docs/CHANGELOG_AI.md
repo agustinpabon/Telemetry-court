@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-21: Portable ReviewResult Bundles
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement issue #99 by exporting and importing portable local `ReviewResultV01` bundles without implementing #100's results workflow, #101's end-to-end imported-package-to-report smoke test, backend persistence, databases, auth, accounts, upload services, raw telemetry ingestion, SIEM/SOC workflows, chatbot UI, or real Toponymy/ACME4 support.
+- Files changed: `lib/reviewResultBundleV01.ts`, `lib/reviewResultBundleV01.test.ts`, `lib/reviewResultValidationV01.ts`, `lib/reviewResultStorageV01.ts`, `lib/reviewResultStorageV01.test.ts`, `lib/reviewResultV01.ts`, `components/arena/ReviewResultBundleControl.tsx`, `components/arena/ReviewResultBundleControl.test.ts`, `components/arena/AppShell.tsx`, `app/investigation-workflow.css`, `app/page.test.ts`, `docs/REVIEW_RESULT_CONTRACT.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added the versioned `review_result_bundle.v0.1` local JSON envelope with bundle metadata, declared ReviewResult/protocol/CasePackage compatibility, one or more fully validated `ReviewResultV01` artifacts for one CasePackage, deterministic result ordering, and a dated filename. The main shell now exports locally saved reviews for the selected CasePackage and imports local bundle JSON through a compact utility control.
+- Decisions made: Added strict unknown-input ReviewResult and bundle validation; rejected malformed JSON, unsupported or unknown fields, invalid timestamps, inconsistent review identity, incomplete blind-review state, missing evidence decisions, duplicate result IDs, duplicate reviewer/session submissions, mixed CasePackage IDs, incompatible exact CasePackage references, differing blind-review settings, and differing stable evidence-ID sets; staged every import before one local-store write; rejected collisions rather than overwriting existing local results; applied the same ReviewResult validator to the local store; kept single ReviewResult export upsert behavior unchanged.
+- Checks run: Focused bundle, storage, session, export, CasePackage import, component, and app tests passed with 71 tests; `npm test` passed with 153 tests; `npx tsc --noEmit` passed; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed.
+- Assumptions: Each bundle contains ReviewResults for exactly one CasePackage ID and retains the exact package revision, compact package/pipeline/model/prompt compatibility, blind-review setting, and stable evidence-ID set required for later aggregation. Imported results remain browser-local until a user exports them again.
+- Risks/follow-ups: Issue #100 still needs to select and aggregate local/imported ReviewResults into the results workflow. Issue #101 still owns the broader imported CasePackage -> review -> exported/imported result -> EvaluationReport smoke test. Lint still reports 134 pre-existing warnings in local `.agents/skills/impeccable` scripts.
+- Next recommended step: Implement #100 from the validated local ReviewResult store and bundle-import boundary without widening into backend persistence or generic results dashboards.
+- Suggested commit message: `feat(review-results): export and import bundles`
+
 ## 2026-06-21: CasePackage Import Failure Diagnostics
 
 - Agent/model: Codex (GPT-5)

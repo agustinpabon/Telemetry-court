@@ -14,6 +14,10 @@ import { EvidenceBoard } from "@/components/arena/EvidenceBoard";
 import { ImpostorPanel } from "@/components/arena/ImpostorPanel";
 import { LabelDuelPanel } from "@/components/arena/LabelDuelPanel";
 import { ReviewSummaryDrawer } from "@/components/arena/ReviewSummaryDrawer";
+import {
+  ReviewResultBundleControl,
+  type ReviewResultBundleControlStatus,
+} from "@/components/arena/ReviewResultBundleControl";
 import { TelemetryGalaxy } from "@/components/arena/TelemetryGalaxy";
 import { VerdictPanel } from "@/components/arena/VerdictPanel";
 import { ArenaHeader } from "@/components/arena/WorkflowPrimitives";
@@ -42,7 +46,17 @@ import {
   importCasePackageV01Json,
   type CasePackageImportResult,
 } from "@/lib/importCasePackageV01";
-import { saveReviewResultToLocalStoreV01 } from "@/lib/reviewResultStorageV01";
+import {
+  createReviewResultBundleV01,
+  getReviewResultBundleFilename,
+  importReviewResultBundleToLocalStoreV01,
+  importReviewResultBundleV01Json,
+  serializeReviewResultBundleV01,
+} from "@/lib/reviewResultBundleV01";
+import {
+  loadReviewResultsForCasePackageV01,
+  saveReviewResultToLocalStoreV01,
+} from "@/lib/reviewResultStorageV01";
 import type { CaseFile, LandscapeContextNode } from "@/lib/types";
 
 type AppShellProps = {
@@ -99,6 +113,8 @@ export function AppShell({
   const [importStatus, setImportStatus] = useState<CasePackageImportStatus>({
     state: "idle",
   });
+  const [reviewBundleStatus, setReviewBundleStatus] =
+    useState<ReviewResultBundleControlStatus>({ state: "idle" });
 
   const selectedCase = getSelectedCase(activeCases, arenaState);
   const reviewState = getCurrentReviewState(arenaState);
@@ -187,6 +203,7 @@ export function AppShell({
     );
   }
 
+  const selectedCasePackageId = selectedCase.casePackageReference?.package_id;
   const evidenceRatings = getEvidenceRatings(selectedCase, reviewState);
   const evidenceBalance = getEvidenceBalance(selectedCase, evidenceRatings);
   const blindChoice = selectedCase.blindInterpretationOptions.find(
@@ -320,6 +337,112 @@ export function AppShell({
     }
   }
 
+  function handleExportReviewResultBundle() {
+    if (typeof window === "undefined" || !window.localStorage) {
+      setReviewBundleStatus({
+        state: "error",
+        message: "Local ReviewResult storage is unavailable.",
+      });
+      return;
+    }
+
+    try {
+      const packageId = selectedCasePackageId;
+
+      if (!packageId) {
+        setReviewBundleStatus({
+          state: "error",
+          message:
+            "The selected case has no CasePackage reference, so its ReviewResults cannot be exported.",
+        });
+        return;
+      }
+
+      const localReviews = loadReviewResultsForCasePackageV01(
+        window.localStorage,
+        packageId,
+      );
+
+      if (localReviews.length === 0) {
+        setReviewBundleStatus({
+          state: "error",
+          message: `No local ReviewResults are available for CasePackage "${packageId}". Export a completed review for this case first.`,
+        });
+        return;
+      }
+
+      const createdAt = new Date().toISOString();
+      const bundle = createReviewResultBundleV01({
+        reviewResults: localReviews,
+        bundleId: `review-result-bundle:${createdAt}`,
+        createdAt,
+      });
+      downloadJsonFile(
+        serializeReviewResultBundleV01(bundle),
+        getReviewResultBundleFilename(bundle),
+      );
+      setReviewBundleStatus({
+        state: "success",
+        message: `Exported ${localReviews.length} local ReviewResult${localReviews.length === 1 ? "" : "s"} for CasePackage "${packageId}".`,
+      });
+    } catch (error) {
+      setReviewBundleStatus({
+        state: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "ReviewResult bundle export failed.",
+      });
+    }
+  }
+
+  function handleReviewResultBundleImportStart() {
+    setReviewBundleStatus({ state: "reading" });
+  }
+
+  function handleReviewResultBundleImportReadError(message: string) {
+    setReviewBundleStatus({ state: "error", message });
+  }
+
+  function handleImportReviewResultBundleJson(jsonText: string) {
+    const parseResult = importReviewResultBundleV01Json(jsonText);
+
+    if (!parseResult.ok) {
+      setReviewBundleStatus({
+        state: "error",
+        message: parseResult.message,
+      });
+      return;
+    }
+
+    if (typeof window === "undefined" || !window.localStorage) {
+      setReviewBundleStatus({
+        state: "error",
+        message: "Local ReviewResult storage is unavailable.",
+      });
+      return;
+    }
+
+    try {
+      const summary = importReviewResultBundleToLocalStoreV01(
+        window.localStorage,
+        parseResult.bundle,
+      );
+      setReviewBundleStatus({
+        state: "success",
+        message: `Imported ${summary.importedReviewCount} ReviewResult${summary.importedReviewCount === 1 ? "" : "s"} from local JSON. ${summary.totalLocalReviewCount} stored locally.`,
+      });
+    } catch (error) {
+      setReviewBundleStatus({
+        state: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "ReviewResult bundle import failed.",
+      });
+    }
+  }
+
   function startInvestigation() {
     navigateToStage("blind_read");
   }
@@ -432,13 +555,22 @@ export function AppShell({
     <main className={shellClassName}>
       <ArenaHeader
         actions={
-          <CasePackageImportControl
-            status={importStatus}
-            onImportStart={handleImportStart}
-            onImportText={handleImportCasePackageJson}
-            onImportReadError={handleImportReadError}
-            onClearImport={handleClearImport}
-          />
+          <div className="arena-local-file-actions">
+            <CasePackageImportControl
+              status={importStatus}
+              onImportStart={handleImportStart}
+              onImportText={handleImportCasePackageJson}
+              onImportReadError={handleImportReadError}
+              onClearImport={handleClearImport}
+            />
+            <ReviewResultBundleControl
+              status={reviewBundleStatus}
+              onExport={handleExportReviewResultBundle}
+              onImportStart={handleReviewResultBundleImportStart}
+              onImportText={handleImportReviewResultBundleJson}
+              onImportReadError={handleReviewResultBundleImportReadError}
+            />
+          </div>
         }
       />
 
@@ -515,6 +647,19 @@ function formatExportActionMessage(actionMessage: string, saveError?: string) {
   }
 
   return `${actionMessage} Saved ReviewResult locally.`;
+}
+
+function downloadJsonFile(json: string, filename: string) {
+  const exportBlob = new Blob([json], { type: "application/json" });
+  const exportUrl = URL.createObjectURL(exportBlob);
+  const downloadLink = document.createElement("a");
+
+  downloadLink.href = exportUrl;
+  downloadLink.download = filename;
+  document.body.append(downloadLink);
+  downloadLink.click();
+  downloadLink.remove();
+  URL.revokeObjectURL(exportUrl);
 }
 
 function toImportFailureDetails(
