@@ -58,6 +58,10 @@ import {
   loadReviewResultsForCasePackageV01,
   saveReviewResultToLocalStoreV01,
 } from "@/lib/reviewResultStorageV01";
+import {
+  getInsufficientContextGuidance,
+  type ReviewReadinessChoice,
+} from "@/lib/reviewReadiness";
 import type { CaseFile, LandscapeContextNode } from "@/lib/types";
 
 type AppShellProps = {
@@ -116,6 +120,9 @@ export function AppShell({
   });
   const [reviewBundleStatus, setReviewBundleStatus] =
     useState<ReviewResultBundleControlStatus>({ state: "idle" });
+  const [reviewReadinessByCase, setReviewReadinessByCase] = useState<
+    Partial<Record<string, ReviewReadinessChoice>>
+  >({});
 
   const selectedCase = getSelectedCase(activeCases, arenaState);
   const selectedCaseIsImported = selectedCase
@@ -214,7 +221,11 @@ export function AppShell({
     );
   }
 
+  const selectedCaseId = selectedCase.id;
   const selectedCasePackageId = selectedCase.casePackageReference?.package_id;
+  const reviewReadinessChoice = reviewReadinessByCase[selectedCaseId];
+  const insufficientContextGuidance =
+    getInsufficientContextGuidance(reviewReadinessChoice);
   const evidenceRatings = getEvidenceRatings(selectedCase, reviewState);
   const evidenceBalance = getEvidenceBalance(selectedCase, evidenceRatings);
   const blindChoice = selectedCase.blindInterpretationOptions.find(
@@ -244,6 +255,14 @@ export function AppShell({
       sessionPersistableCaseIds,
     );
     rawDispatch(action);
+    setExportMessage(undefined);
+  }
+
+  function chooseReviewReadiness(choice: ReviewReadinessChoice) {
+    setReviewReadinessByCase((currentChoices) => ({
+      ...currentChoices,
+      [selectedCaseId]: choice,
+    }));
     setExportMessage(undefined);
   }
 
@@ -620,10 +639,13 @@ export function AppShell({
               previewCaseId,
               activeStage,
               reviewState,
+              reviewReadinessChoice,
+              insufficientContextGuidance,
               evidenceRatings,
               evidenceBalance,
               setPreviewCaseId,
               dispatchArena,
+              chooseReviewReadiness,
               navigateToStage,
               openCaseFile,
               startInvestigation,
@@ -791,10 +813,13 @@ function renderStage({
   previewCaseId,
   activeStage,
   reviewState,
+  reviewReadinessChoice,
+  insufficientContextGuidance,
   evidenceRatings,
   evidenceBalance,
   setPreviewCaseId,
   dispatchArena,
+  chooseReviewReadiness,
   navigateToStage,
   openCaseFile,
   startInvestigation,
@@ -809,10 +834,13 @@ function renderStage({
   previewCaseId?: string;
   activeStage: ReturnType<typeof createInitialArenaState>["activeStage"];
   reviewState: ReturnType<typeof getCurrentReviewState>;
+  reviewReadinessChoice?: ReviewReadinessChoice;
+  insufficientContextGuidance?: ReturnType<typeof getInsufficientContextGuidance>;
   evidenceRatings: ReturnType<typeof getEvidenceRatings>;
   evidenceBalance: ReturnType<typeof getEvidenceBalance>;
   setPreviewCaseId: (caseId?: string) => void;
   dispatchArena: (action: ArenaAction) => void;
+  chooseReviewReadiness: (choice: ReviewReadinessChoice) => void;
   navigateToStage: (stage: ReturnType<typeof createInitialArenaState>["activeStage"]) => void;
   openCaseFile: () => void;
   startInvestigation: () => void;
@@ -838,6 +866,8 @@ function renderStage({
         <BlindReadPanel
           caseFile={selectedCase}
           reviewState={reviewState}
+          reviewReadinessChoice={reviewReadinessChoice}
+          onChooseReviewReadiness={chooseReviewReadiness}
           onChooseBlindInterpretation={(optionId) =>
             dispatchArena({ type: "chooseBlindInterpretation", optionId })
           }
@@ -863,6 +893,7 @@ function renderStage({
           reviewState={reviewState}
           evidenceRatings={evidenceRatings}
           balance={evidenceBalance}
+          insufficientContextGuidance={insufficientContextGuidance}
           onRateEvidence={(evidenceId, rating) =>
             dispatchArena({ type: "classifyEvidence", evidenceId, rating })
           }
@@ -876,6 +907,7 @@ function renderStage({
         <LabelDuelPanel
           caseFile={selectedCase}
           reviewState={reviewState}
+          insufficientContextGuidance={insufficientContextGuidance}
           onSelectWinner={(candidateId) =>
             dispatchArena({ type: "selectLabelDuelWinner", candidateId })
           }
@@ -907,6 +939,7 @@ function renderStage({
           caseFile={selectedCase}
           reviewState={reviewState}
           balance={evidenceBalance}
+          insufficientContextGuidance={insufficientContextGuidance}
           onSelectVerdict={(verdict) =>
             dispatchArena({ type: "selectVerdict", verdict })
           }

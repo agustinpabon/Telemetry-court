@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-22: Insufficient-Context Review Path
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement issue #115 as a narrow product-safety/usability PR that prevents low-understanding reviews from becoming misleading ReviewResults without changing contracts, routes, stage IDs, protected-stage logic, or export shapes.
+- Files changed: `app/globals.css`, `app/page.test.ts`, `components/arena/AppShell.tsx`, `components/arena/BlindReadPanel.tsx`, `components/arena/EvidenceBoard.tsx`, `components/arena/LabelDuelPanel.tsx`, `components/arena/VerdictPanel.tsx`, `components/arena/WorkflowPrimitives.tsx`, `lib/exportReview.test.ts`, `lib/reviewReadiness.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a compact "Can you judge this case?" checkpoint before AI Claim Check with three plain-language readiness choices, a one-sentence product goal reminder, and a safe domain-context signal derived only from visible case text. Low-context choices remain local UI state and show concise guidance toward existing insufficient-context decisions: Not enough evidence, Needs context, uncertainty-preserving labels, Uncertain, Needs better evidence, and `collect_more_evidence`.
+- Decisions made: Kept `CasePackageV01`, `ReviewResultV01`, and `EvaluationReportV01` unchanged; kept import/export schemas and ReviewResult shape unchanged; kept route IDs, stage IDs, protected-stage logic, and reducer/state-machine semantics unchanged. Did not reveal the AI label, AI explanation, or generated claims before AI Claim Check. Reduced visible text by shortening the orientation/initial-assessment copy and moving the evidence-rating guide and final checklist behind compact disclosure controls.
+- Checks run: Focused `npm test -- app/page.test.ts lib/exportReview.test.ts` passed with 41 tests; full `npm test` passed with 178 tests; `npx tsc --noEmit` passed; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed. Manual Playwright review on `next start --hostname 127.0.0.1 --port 3100` passed for normal and insufficient-context imports of `case_package_case-arena-001`, with no console errors and unchanged ReviewResult v0.1 top-level/decision keys.
+- Assumptions: For early domain-context signaling, only already-visible case text is safe to use before AI Claim Check. For the IAM demo case, that means IAM / CloudTrail / role provisioning rather than the full AI label wording.
+- Risks/follow-ups: The checkpoint is intentionally local UI state only and is not persisted into ReviewResult. If future pilot feedback shows reviewers need a durable reviewer-confidence signal, that should be handled as a separate contract discussion rather than hidden inside this PR.
+- Next recommended step: Open the requested draft PR for issue #115.
+- Suggested commit message: `ux(review): add insufficient-context path`
+
 ## 2026-06-22: First-Time Review Flow Comprehension
 
 - Agent/model: Codex (GPT-5)

@@ -312,6 +312,57 @@ test("review result export maps every current final verdict to canonical values"
   }
 });
 
+test("context-limited review exports existing ReviewResult v0.1 values only", () => {
+  const caseFile = sampleCases[0];
+  const exportResult = buildReviewResultExport({
+    caseFile,
+    exportTimestamp: "2026-06-13T15:00:00.000Z",
+    arenaReview: completeArenaReview(caseFile, {
+      blindChoiceId: "not-enough-evidence",
+      blindChoiceLabel: "Not enough evidence",
+      blindChoiceAgreesWithAi: false,
+      evidenceRatings: Object.fromEntries(
+        caseFile.evidenceItems.map((evidence) => [
+          evidence.id,
+          "needs_context",
+        ]),
+      ),
+      labelDuelWinnerId: "label-iam-uncertain",
+      labelDuelWinnerLabel: "IAM administration with unknown intent",
+      duelReasons: ["preserves_uncertainty"],
+      failureModes: ["missing_evidence", "preserves_uncertainty"],
+      finalVerdict: "uncertain",
+    }),
+  });
+
+  assert.deepEqual(Object.keys(exportResult).sort(), [
+    "case_package",
+    "created_at",
+    "decisions",
+    "protocol",
+    "review_id",
+    "reviewer",
+    "schema_version",
+  ]);
+  assert.deepEqual(Object.keys(exportResult.decisions).sort(), [
+    "blind_interpretation",
+    "evidence_ratings",
+    "failure_modes",
+    "final_verdict",
+    "label_comparison",
+    "outlier_impostor",
+    "recommended_action",
+  ]);
+  assert.deepEqual(
+    exportResult.decisions.evidence_ratings.map((rating) => rating.rating),
+    caseFile.evidenceItems.map(() => "needs_more_context"),
+  );
+  assert.equal(exportResult.decisions.final_verdict, "uncertain");
+  assert.equal(exportResult.decisions.recommended_action, "collect_more_evidence");
+  assert.equal("review_readiness" in exportResult.decisions, false);
+  assert.equal("context_checkpoint" in exportResult.decisions, false);
+});
+
 function completeArenaReview(
   caseFile: CaseFile,
   overrides: Partial<EvidenceArenaReview> = {},

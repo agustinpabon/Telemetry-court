@@ -8,11 +8,20 @@ import {
   SectionHeader,
 } from "@/components/arena/WorkflowPrimitives";
 import type { ArenaStage, CaseReviewState } from "@/lib/arenaReviewState";
+import {
+  getContextLimitedBlindOptionId,
+  getInsufficientContextGuidance,
+  getVisibleDomainContextTerms,
+  reviewReadinessOptions,
+  type ReviewReadinessChoice,
+} from "@/lib/reviewReadiness";
 import type { CaseFile } from "@/lib/types";
 
 type BlindReadPanelProps = {
   caseFile: CaseFile;
   reviewState: CaseReviewState;
+  reviewReadinessChoice?: ReviewReadinessChoice;
+  onChooseReviewReadiness: (choice: ReviewReadinessChoice) => void;
   onChooseBlindInterpretation: (optionId: string) => void;
   onRevealAiLabel: () => void;
   onSelectStage?: (stage: ArenaStage) => void;
@@ -21,17 +30,26 @@ type BlindReadPanelProps = {
 export function BlindReadPanel({
   caseFile,
   reviewState,
+  reviewReadinessChoice,
+  onChooseReviewReadiness,
   onChooseBlindInterpretation,
   onRevealAiLabel,
   onSelectStage,
 }: BlindReadPanelProps) {
   const evidenceSummary = buildEvidenceSummary(caseFile);
+  const domainContextTerms = getVisibleDomainContextTerms(caseFile);
+  const insufficientContextGuidance =
+    getInsufficientContextGuidance(reviewReadinessChoice);
+  const contextLimitedBlindOptionId = getContextLimitedBlindOptionId(caseFile);
+  const hasReadinessChoice = Boolean(reviewReadinessChoice);
   const hasBlindChoice = Boolean(reviewState.blindChoiceId);
-  const actionLabel = hasBlindChoice
-    ? reviewState.aiLabelRevealed
-      ? "Continue to AI Claim Check"
-      : "Reveal AI claim"
-    : "Choose an interpretation to continue";
+  const actionLabel = !hasReadinessChoice
+    ? "Choose context checkpoint to continue"
+    : hasBlindChoice
+      ? reviewState.aiLabelRevealed
+        ? "Continue to AI Claim Check"
+        : "Reveal AI claim"
+      : "Choose an interpretation to continue";
 
   return (
     <ArenaWorkflowShell className="blind-stage" ariaLabel="Initial Assessment">
@@ -47,16 +65,57 @@ export function BlindReadPanel({
             AI claim hidden
           </ArenaStatusBadge>
         }
-        title="Establish an independent baseline."
-        summary="Before seeing the AI label, record what the evidence suggests on its own."
-        context="The AI label remains sealed until you choose one interpretation below."
+        title="Start with what you can judge."
+        summary="Use only the visible evidence. The AI label stays hidden."
       />
 
       <div className="blind-decision-layout">
+        <section
+          className="review-readiness-checkpoint"
+          aria-labelledby="review-readiness-title"
+        >
+          <div className="review-readiness-copy">
+            <span>Checkpoint</span>
+            <h3 id="review-readiness-title">Can you judge this case?</h3>
+            <p>
+              You are not deciding whether the cluster is dangerous; you are
+              deciding whether the AI label is supported by the evidence.
+            </p>
+            {domainContextTerms.length > 0 ? (
+              <p className="domain-context-signal">
+                Domain context may be needed: {domainContextTerms.join(" / ")}.
+              </p>
+            ) : null}
+          </div>
+          <fieldset className="review-readiness-options">
+            <legend className="sr-only">Review context checkpoint</legend>
+            {reviewReadinessOptions.map((option) => {
+              const isSelected = reviewReadinessChoice === option.id;
+
+              return (
+                <label
+                  key={option.id}
+                  className={`readiness-option ${isSelected ? "is-selected" : ""}`}
+                >
+                  <input
+                    checked={isSelected}
+                    name="review-readiness"
+                    onChange={() => onChooseReviewReadiness(option.id)}
+                    type="radio"
+                    value={option.id}
+                  />
+                  <span aria-hidden="true" />
+                  <strong>{option.label}</strong>
+                </label>
+              );
+            })}
+          </fieldset>
+        </section>
+
         <article className="blind-evidence-panel">
           <SectionHeader
             title="Evidence summary"
-            description="A short read of the visible packet before any AI claim is shown."
+            description="Visible packet only. The AI claim is still hidden."
           />
           <div className="blind-evidence-content">
             <div className="evidence-summary-grid">
@@ -81,8 +140,7 @@ export function BlindReadPanel({
                 showEvidenceMetric={false}
               />
               <p>
-                A small locator for the selected behaviour region and nearby
-                sessions.
+                Selected region and nearby sessions.
               </p>
             </aside>
           </div>
@@ -106,20 +164,36 @@ export function BlindReadPanel({
         <article className="blind-choice-panel">
           <SectionHeader
             title="Your interpretation"
-            description="What is the strongest conclusion supported by the evidence?"
+            description="Choose the strongest conclusion the visible evidence supports."
           />
+          {insufficientContextGuidance ? (
+            <aside className="insufficient-context-guidance">
+              <strong>Context-limited review</strong>
+              <p>
+                Use Not enough evidence when missing context blocks judgment.
+              </p>
+            </aside>
+          ) : null}
           <fieldset className="blind-choice-fieldset">
             <legend className="blind-choice-legend">Choose one interpretation</legend>
             <div className="blind-choice-grid">
               {caseFile.blindInterpretationOptions.map((option) => {
                 const isSelected = reviewState.blindChoiceId === option.id;
+                const isContextSafeOption =
+                  insufficientContextGuidance &&
+                  option.id === contextLimitedBlindOptionId;
 
                 return (
                   <label
                     key={option.id}
-                    className={`choice-card ${
-                      isSelected ? "is-selected" : ""
-                    } ${option.id === "none-of-these" ? "is-secondary-option" : ""}`}
+                    className={[
+                      "choice-card",
+                      isSelected ? "is-selected" : "",
+                      option.id === "none-of-these" ? "is-secondary-option" : "",
+                      isContextSafeOption ? "is-guided-option" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
                   >
                     <input
                       checked={isSelected}
@@ -132,6 +206,7 @@ export function BlindReadPanel({
                     <span className="choice-copy">
                       <strong>{option.label}</strong>
                       <span>{option.helper}</span>
+                      {isContextSafeOption ? <small>Context-safe choice</small> : null}
                     </span>
                     {isSelected ? <em>Selected</em> : null}
                   </label>
@@ -145,11 +220,13 @@ export function BlindReadPanel({
             microcopy={
               reviewState.aiLabelRevealed
                 ? "Your initial assessment is already saved."
-                : "Your choice will be saved before the AI label is shown."
+                : hasReadinessChoice
+                  ? "Your choice will be saved before the AI label is shown."
+                  : "Answer the checkpoint, then choose an interpretation before reveal."
             }
             primaryAction={{
               label: actionLabel,
-              disabled: !hasBlindChoice,
+              disabled: !hasReadinessChoice || !hasBlindChoice,
               onClick: onRevealAiLabel,
             }}
           />

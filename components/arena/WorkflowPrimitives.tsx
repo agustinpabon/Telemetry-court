@@ -183,10 +183,8 @@ export function ArenaReviewerGoal() {
     >
       <strong id="review-orientation-title">What you are reviewing</strong>
       <p>
-        You are reviewing one telemetry cluster from a CasePackage. The upstream
-        pipeline produced an AI label for this cluster. Your task is to test
-        whether the available evidence supports that label and export a structured
-        ReviewResult.
+        You are testing whether evidence supports an AI label, not whether the
+        cluster is dangerous.
       </p>
     </aside>
   );
