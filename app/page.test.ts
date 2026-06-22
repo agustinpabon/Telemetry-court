@@ -199,6 +199,58 @@ test("home page static review flow exposes the core Telemetry Court concepts", (
   assert.doesNotMatch(pageText, /Investigation stages/);
 });
 
+test("all workflow stages render one progress rail inside the shared masthead", () => {
+  for (const entry of arenaRouteEntries) {
+    const markup = renderStaticMarkup(
+      React.createElement(AppShell, {
+        cases: sampleCases,
+        landscapeContextNodes: sampleLandscapeContextNodes,
+        initialStage: entry.stage,
+        pathname: entry.path,
+        onNavigatePath: () => undefined,
+      }),
+    );
+    const progressRailCount =
+      markup.match(/<nav class="arena-step-progress(?: |")/g)?.length ?? 0;
+
+    assert.equal(
+      progressRailCount,
+      1,
+      `${entry.stage} must render exactly one shared progress rail`,
+    );
+    assert.match(
+      markup,
+      /<header class="arena-topbar arena-header tc-masthead">[\s\S]*?class="arena-step-progress tc-masthead__progress-row"[\s\S]*?<\/header>/,
+      `${entry.stage} progress must stay inside the masthead`,
+    );
+  }
+});
+
+test("shared masthead keeps actions and helper text in explicit groups", () => {
+  const markup = renderHomePageText();
+
+  assert.match(
+    markup,
+    /class="tc-masthead__action-group tc-masthead__action-group--results"/,
+  );
+  assert.match(
+    markup,
+    /class="case-package-import-control tc-masthead__action-group"/,
+  );
+  assert.match(
+    markup,
+    /class="review-result-bundle-control tc-masthead__action-group"/,
+  );
+  assert.equal(
+    markup.match(/class="tc-masthead__action-row/g)?.length,
+    3,
+  );
+  assert.equal(
+    markup.match(/tc-masthead__helper/g)?.length,
+    2,
+  );
+});
+
 test("invalid package render state shows sanitized validation errors instead of review UI", () => {
   const invalidPackage = structuredClone(casePackageFixtures[0]) as Record<
     string,
@@ -722,7 +774,6 @@ test("AI Reveal presents divergence as an evidence review moment", () => {
     }),
   );
 
-  assert.match(markup, /Step 4 of 8 · AI Claim Check/);
   assert.match(markup, /Your read and the AI label diverge\./);
   assert.match(
     markup,
@@ -816,10 +867,6 @@ test("later workflow panels use compact chrome and descriptive actions", () => {
     ),
   );
 
-  assert.match(markup, /Step 5 of 8 · Evidence Verification/);
-  assert.match(markup, /Step 6 of 8 · Label Selection/);
-  assert.match(markup, /Step 7 of 8 · Cluster Fit Check/);
-  assert.match(markup, /Step 8 of 8 · Final Evaluation/);
   assert.match(markup, /Does the evidence support the AI claim\?/);
   assert.match(markup, /AI claim/);
   assert.match(markup, /Suspicious IAM privilege escalation/);
@@ -1095,7 +1142,6 @@ test("verdict page reads as a final judgment and preserves export actions", () =
     }),
   );
 
-  assert.match(markup, /Step 8 of 8 · Final Evaluation/);
   assert.match(markup, /Final Evaluation · Review complete/);
   assert.match(markup, /Unsupported \/ overclaimed/);
   assert.match(markup, /The AI claim overstates what the evidence supports\./);

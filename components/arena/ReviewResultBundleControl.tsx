@@ -45,8 +45,10 @@ export function ReviewResultBundleControl({
   }
 
   return (
-    <div className="review-result-bundle-control">
-      <span className="review-result-bundle-label">ReviewResult bundle</span>
+    <div className="review-result-bundle-control tc-masthead__action-group">
+      <span className="review-result-bundle-label tc-masthead__group-label tc-masthead__action-label">
+        ReviewResult bundle
+      </span>
       <input
         ref={fileInputRef}
         id={inputId}
@@ -56,7 +58,7 @@ export function ReviewResultBundleControl({
         onChange={handleFileChange}
         aria-describedby={statusId}
       />
-      <div className="review-result-bundle-actions">
+      <div className="tc-masthead__action-row tc-masthead__button-row review-result-bundle-actions">
         <button type="button" onClick={onExport} aria-describedby={statusId}>
           Export reviews
         </button>
@@ -70,7 +72,7 @@ export function ReviewResultBundleControl({
       </div>
       <p
         id={statusId}
-        className={`review-result-bundle-status is-${status.state}`}
+        className={`review-result-bundle-status tc-masthead__helper tc-masthead__action-helper is-${status.state}`}
         role="status"
       >
         {getStatusCopy(status)}

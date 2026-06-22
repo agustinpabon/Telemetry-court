@@ -2,7 +2,6 @@ import { JudgmentReceipt } from "@/components/arena/JudgmentReceipt";
 import {
   ArenaActionFooter,
   ArenaStatusBadge,
-  ArenaStepProgress,
   ArenaWorkflowShell,
   SectionHeader,
 } from "@/components/arena/WorkflowPrimitives";
@@ -13,11 +12,7 @@ import {
 } from "@/components/arena/arenaMeta";
 import { getCompatibleFailureModes } from "@/lib/arenaReviewState";
 import type { InsufficientContextGuidance } from "@/lib/reviewReadiness";
-import type {
-  ArenaStage,
-  CaseReviewState,
-  EvidenceBalance,
-} from "@/lib/arenaReviewState";
+import type { CaseReviewState, EvidenceBalance } from "@/lib/arenaReviewState";
 import type { CaseFile, DuelReason, FinalVerdict } from "@/lib/types";
 
 const verdictGroups: {
@@ -54,7 +49,6 @@ type VerdictPanelProps = {
   onOpenReviewDrawer: () => void;
   onCopyJson: () => void;
   onDownloadJson: () => void;
-  onSelectStage?: (stage: ArenaStage) => void;
 };
 
 export function VerdictPanel({
@@ -68,7 +62,6 @@ export function VerdictPanel({
   onOpenReviewDrawer,
   onCopyJson,
   onDownloadJson,
-  onSelectStage,
 }: VerdictPanelProps) {
   const blindChoice = caseFile.blindInterpretationOptions.find(
     (option) => option.id === reviewState.blindChoiceId,
@@ -98,8 +91,6 @@ export function VerdictPanel({
 
   return (
     <ArenaWorkflowShell className="verdict-stage" ariaLabel="Final Evaluation">
-      <ArenaStepProgress currentStage="verdict" onSelectStage={onSelectStage} />
-
       <section className="verdict-hero" aria-labelledby="verdict-hero-title">
         <div className="verdict-hero-copy">
           <div className="arena-step-hero-meta">

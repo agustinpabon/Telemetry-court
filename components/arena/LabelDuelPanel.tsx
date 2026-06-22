@@ -6,13 +6,11 @@ import {
   ArenaActionFooter,
   ArenaStatusBadge,
   ArenaStepHero,
-  ArenaStepProgress,
   ArenaWorkflowShell,
 } from "@/components/arena/WorkflowPrimitives";
 import {
   getEvidenceBalance,
   getEvidenceRatings,
-  type ArenaStage,
   type CaseReviewState,
 } from "@/lib/arenaReviewState";
 import type { InsufficientContextGuidance } from "@/lib/reviewReadiness";
@@ -36,7 +34,6 @@ type LabelDuelPanelProps = {
   onSetDuelNote: (note: string) => void;
   onBackToEvidenceBoard?: () => void;
   onContinue: () => void;
-  onSelectStage?: (stage: ArenaStage) => void;
 };
 
 export function LabelDuelPanel({
@@ -48,7 +45,6 @@ export function LabelDuelPanel({
   onSetDuelNote,
   onBackToEvidenceBoard,
   onContinue,
-  onSelectStage,
 }: LabelDuelPanelProps) {
   const selectedCandidate = caseFile.candidateLabels.find(
     (candidate) => candidate.id === reviewState.labelDuelWinnerId,
@@ -72,8 +68,6 @@ export function LabelDuelPanel({
 
   return (
     <ArenaWorkflowShell className="label-duel-stage" ariaLabel="Label Selection">
-      <ArenaStepProgress currentStage="label_duel" onSelectStage={onSelectStage} />
-
       <ArenaStepHero
         status={
           <ArenaStatusBadge tone="uncertain">
