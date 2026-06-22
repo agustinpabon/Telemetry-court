@@ -328,8 +328,6 @@ export function createSyntheticToponymyStyleCasePackageV01(
       data_classification: input.dataset_context.data_classification,
       source_environment: input.dataset_context.source_environment,
       approved_use: input.dataset_context.approved_use,
-      approval_notes:
-        "This fixture is safe synthetic data for CasePackage validation only.",
       limitations: [...input.dataset_context.limitations],
     },
     cluster: {

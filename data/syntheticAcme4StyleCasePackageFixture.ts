@@ -317,7 +317,7 @@ export const syntheticAcme4StyleAdapterInputFixture = {
     upstream_run_id: FIXTURE_RUN_ID,
   },
   sanitization: {
-    status: "sanitized",
+    status: "synthetic",
     method:
       "Generated synthetic sanitized summaries with no raw restricted telemetry.",
     redaction_notes: [
@@ -367,8 +367,6 @@ export function createSyntheticAcme4StyleCasePackageV01(
       data_classification: input.dataset_context.data_classification,
       source_environment: input.dataset_context.source_environment,
       approved_use: input.dataset_context.approved_use,
-      approval_notes:
-        "This fixture is safe synthetic data for CasePackage validation only.",
       limitations: [...input.dataset_context.limitations],
     },
     cluster: {

@@ -15,7 +15,7 @@ export const minimalSyntheticCasePackageV01 = {
     case_id: "case-synthetic-iam-001",
     title: "Synthetic IAM role provisioning review",
     summary:
-      "A sanitized CloudTrail-style cluster where the generated label may overclaim suspicious intent.",
+      "A safe synthetic CloudTrail-style cluster where the generated label may overclaim suspicious intent.",
     reviewable_status: "synthetic_demo",
     review_intent: "validate_label",
     limitations: ["Synthetic fixture; not evidence of real ACME4 or Toponymy support."],

@@ -75,6 +75,12 @@ Outputs should support prompt improvement, label refinement, model and embedding
 
 The public or portable app should use synthetic, sanitized, or approved packages. Restricted telemetry should remain in its authorized environment. Adapter code may produce safe summaries and drill-down references, but Telemetry Court must not assume those references can be resolved in every deployment.
 
+Explicit synthetic demos carry synthetic case, dataset, and sanitization
+markers and do not claim real-data approval. Non-synthetic adapter outputs must
+carry adapter/run provenance, concrete safe audit references, sanitization
+details, and a scoped review-approval record. That approval covers the exported
+package revision, not raw telemetry access or ingestion.
+
 Missing provenance, unsupported schema versions, broken evidence links, and invalid references are validation errors. They are not UI warnings to ignore.
 
 ## Current Repository Structure

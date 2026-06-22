@@ -11,6 +11,77 @@ function clonePackage(): Record<string, unknown> {
   return structuredClone(minimalSyntheticCasePackageV01) as Record<string, unknown>;
 }
 
+function createSanitizedAdapterPackage(): Record<string, unknown> {
+  const fixture = structuredClone(minimalSyntheticCasePackageV01);
+
+  return {
+    ...fixture,
+    case: {
+      ...fixture.case,
+      reviewable_status: "reviewable",
+      limitations: [
+        "Sanitized summaries only; raw restricted telemetry remains upstream.",
+      ],
+    },
+    dataset: {
+      ...fixture.dataset,
+      data_classification: "sanitized",
+      source_environment: "authorized-research-environment",
+      approved_use: "Approved evidence review using sanitized summaries.",
+      approval_notes: "Approval is recorded in sanitization.review_approval.",
+      limitations: ["No raw restricted telemetry is included."],
+    },
+    provenance: {
+      ...fixture.provenance,
+      source_system: "approved-upstream-notebook",
+      source_artifact: "artifact-sanitized-cluster-001",
+      generating_tool: "case-package-export-notebook",
+      adapter_name: "sanitized-case-package-adapter",
+      adapter_version: "0.1.0",
+      references: [
+        {
+          reference_id: "ref-sanitized-upstream-run",
+          reference_type: "source_artifact_id",
+          artifact_id: "artifact-sanitized-cluster-001",
+        },
+      ],
+    },
+    sanitization: {
+      status: "sanitized",
+      method: "Derived feature summaries with direct identifiers removed upstream.",
+      redaction_notes: [
+        "Account, principal, host, network, and event identifiers were removed.",
+      ],
+      allowed_display_level: "summary_only",
+      raw_drilldown_allowed: false,
+      safe_reference_type: "source_artifact_id",
+      review_approval: {
+        status: "approved",
+        approved_by: "data-governance-team",
+        approved_at: "2026-06-20T11:59:00.000Z",
+        scope: "Telemetry Court review of this sanitized package revision.",
+        reference: {
+          reference_id: "ref-sanitized-review-approval",
+          reference_type: "source_artifact_id",
+          artifact_id: "approval-sanitized-cluster-001",
+        },
+      },
+    },
+    evidence_items: fixture.evidence_items.map((evidenceItem) => ({
+      ...evidenceItem,
+      sanitization_status: "sanitized",
+      source_reference: {
+        ...evidenceItem.source_reference,
+        safe_reference: {
+          reference_id: `ref-${evidenceItem.evidence_id}`,
+          reference_type: "source_artifact_id",
+          artifact_id: `artifact-sanitized-cluster-001/${evidenceItem.evidence_id}`,
+        },
+      },
+    })),
+  } as Record<string, unknown>;
+}
+
 function arrayField(
   record: Record<string, unknown>,
   key: string,
@@ -67,6 +138,40 @@ test("valid minimal CasePackage v0.1 package passes runtime validation", () => {
 
   assertValid(result);
   assert.equal(result.package.package_id, minimalSyntheticCasePackageV01.package_id);
+});
+
+test("valid synthetic package metadata stays explicit without claiming approval", () => {
+  const input = clonePackage();
+  const sanitization = objectField(input, "sanitization");
+
+  assert.equal(objectField(input, "case").reviewable_status, "synthetic_demo");
+  assert.equal(objectField(input, "dataset").data_classification, "synthetic");
+  assert.equal(sanitization.status, "synthetic");
+  assert.equal("review_approval" in sanitization, false);
+  assertValid(validateCasePackageV01(input));
+});
+
+test("synthetic demo packages cannot claim real review approval", () => {
+  const input = clonePackage();
+  const sanitization = objectField(input, "sanitization");
+  sanitization.review_approval = objectField(
+    createSanitizedAdapterPackage(),
+    "sanitization",
+  ).review_approval;
+
+  assertInvalid(validateCasePackageV01(input), {
+    code: "synthetic_approval_not_allowed",
+    pathIncludes: "sanitization.review_approval",
+  });
+});
+
+test("valid sanitized adapter package carries auditable provenance and approval", () => {
+  const input = createSanitizedAdapterPackage();
+  const serializedInput = JSON.stringify(input);
+
+  assertValid(validateCasePackageV01(input));
+  assert.equal(serializedInput.includes("raw_telemetry"), false);
+  assert.equal(serializedInput.includes("restricted_payload"), false);
 });
 
 test("unsupported schema version fails clearly", () => {
@@ -192,6 +297,24 @@ test("missing provenance metadata fails", () => {
   });
 });
 
+test("adapter packages require adapter and upstream-run provenance", () => {
+  const missingAdapterInput = createSanitizedAdapterPackage();
+  delete objectField(missingAdapterInput, "provenance").adapter_name;
+
+  assertInvalid(validateCasePackageV01(missingAdapterInput), {
+    code: "missing_required_field",
+    pathIncludes: "provenance.adapter_name",
+  });
+
+  const missingRunInput = createSanitizedAdapterPackage();
+  delete objectField(missingRunInput, "provenance").upstream_run_id;
+
+  assertInvalid(validateCasePackageV01(missingRunInput), {
+    code: "missing_required_field",
+    pathIncludes: "provenance.upstream_run_id",
+  });
+});
+
 test("missing sanitization metadata fails", () => {
   const input = clonePackage();
   delete input.sanitization;
@@ -199,6 +322,16 @@ test("missing sanitization metadata fails", () => {
   assertInvalid(validateCasePackageV01(input), {
     code: "missing_required_field",
     pathIncludes: "sanitization",
+  });
+});
+
+test("sanitized adapter packages require review approval metadata", () => {
+  const input = createSanitizedAdapterPackage();
+  delete objectField(input, "sanitization").review_approval;
+
+  assertInvalid(validateCasePackageV01(input), {
+    code: "missing_required_field",
+    pathIncludes: "sanitization.review_approval",
   });
 });
 

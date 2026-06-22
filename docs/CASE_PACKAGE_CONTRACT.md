@@ -87,6 +87,15 @@ Top-level required fields:
 
 `package_revision` is optional and should be used when the same package is corrected or regenerated without changing the schema version.
 
+Issue #65 keeps `case_package.v0.1`. Provenance and sanitization were already
+required top-level sections, and no real adapter output is a supported fixture
+or compatibility promise yet. The new `review_approval` object is optional in
+the TypeScript shape so explicit synthetic demos remain compatible, but runtime
+validation requires it for non-synthetic packages. A future incompatible field
+rename, semantic replacement, or supported-package migration would require a
+new schema version; correcting one package's metadata requires a new
+`package_revision` instead.
+
 ## ID And Reference Conventions
 
 IDs are stable strings, not array indexes. Use deterministic, readable IDs where possible:
@@ -140,7 +149,10 @@ Use `synthetic_demo` for local examples. Use `reviewable` only when the package 
 - optional approval notes
 - limitations
 
-`data_classification` should be honest. Synthetic and sanitized packages are preferred for portable fixtures.
+`data_classification` should be honest. `approved_use` states the intended use;
+it is not an auditable approval record. `approval_notes` may add dataset context
+but do not replace `sanitization.review_approval` when that record is required.
+Synthetic and sanitized packages are preferred for portable fixtures.
 
 ### Cluster Metadata
 
@@ -296,12 +308,15 @@ The v0.1 metrics object supports cluster coherence, feature distinctiveness, evi
 - `source_artifact`
 - `generating_tool`
 - `generated_at`
-- optional upstream run ID
-- optional adapter name and version
+- upstream run ID, required for non-synthetic adapter output
+- adapter name and version, required for non-synthetic adapter output
 - references to notebooks, scripts, files, dashboards, or artifacts
 - optional owner/contact metadata
 
-References should identify approved artifacts without exposing raw restricted data.
+Non-synthetic adapter provenance must link its upstream run ID to
+`pipeline.run_id` and include at least one safe reference with a URI or artifact
+ID. References should identify approved artifacts without exposing raw
+restricted data.
 
 ### Sanitization Metadata
 
@@ -313,9 +328,34 @@ References should identify approved artifacts without exposing raw restricted da
 - allowed display level
 - whether raw drill-down is allowed
 - safe reference type
+- optional `review_approval` for synthetic demos, required for non-synthetic
+  packages
 - optional notes
 
-If raw drill-down is not allowed, references must remain summary-only, synthetic, or otherwise safe.
+`review_approval` records `status: "approved"`, `approved_by`, `approved_at`,
+the approval `scope`, and a safe `reference` to the approval artifact. It
+approves the package revision for the stated review scope; it does not authorize
+Telemetry Court to ingest or expose the upstream restricted data.
+
+```json
+{
+  "review_approval": {
+    "status": "approved",
+    "approved_by": "data-governance-team",
+    "approved_at": "2026-06-20T11:59:00.000Z",
+    "scope": "Telemetry Court review of this sanitized package revision.",
+    "reference": {
+      "reference_id": "ref-review-approval",
+      "reference_type": "source_artifact_id",
+      "artifact_id": "approval-sanitized-cluster-001"
+    }
+  }
+}
+```
+
+If raw drill-down is not allowed, references must remain summary-only,
+synthetic, or otherwise safe. A safe reference is an audit pointer, not an
+embedded raw payload.
 
 ### Review Configuration
 
@@ -559,6 +599,12 @@ Synthetic or demo packages may use:
 - synthetic safe references;
 - compact pipeline metadata.
 
+A synthetic fixture is exempt from real-data approval requirements only when
+all three markers are explicit: `case.reviewable_status` is `synthetic_demo`,
+`dataset.data_classification` is `synthetic`, and `sanitization.status` is
+`synthetic`. It must omit `sanitization.review_approval`; fixture-purpose text
+in `approved_use` is not a claim of real-data approval.
+
 The local fixtures in `data/syntheticToponymyStyleCasePackageFixture.ts` and
 `data/syntheticAcme4StyleCasePackageFixture.ts` are in this category. They use
 synthetic, non-authoritative input shapes to produce validated
@@ -566,15 +612,25 @@ synthetic, non-authoritative input shapes to produce validated
 compatibility, official DataMapPlot output, real ACME4 support, raw telemetry
 ingestion, or a general adapter framework.
 
-Realistic or adapter-produced packages are expected to provide:
+Any package outside that explicit synthetic posture is treated as controlled
+adapter output and must provide:
 
 - honest dataset classification and approved-use notes;
-- source environment and upstream run metadata;
-- enough provenance to reconstruct the package-generation path;
-- sanitization method, redaction notes, and allowed display level;
+- source environment plus an upstream run ID matching `pipeline.run_id`;
+- adapter name and version plus a concrete safe provenance reference;
+- sanitization method, non-empty redaction notes, and allowed display level;
+- `sanitization.review_approval` with approver, timestamp, scope, and safe
+  approval reference;
 - stable claim, evidence, session, label, and cluster IDs;
 - safe references instead of embedded raw restricted telemetry;
 - explicit unavailable metrics rather than invented values.
+
+Restricted telemetry stays in its authorized upstream environment. The package
+contains only the approved summaries, derived features, aggregate metrics, and
+safe audit references needed for review. Runtime validation never requires a
+raw event, raw identifier, credential, or restricted payload. Metadata
+validation cannot prove arbitrary evidence text is safe; the adapter and named
+approver remain responsible for the exported content.
 
 ## Runtime Validation
 
@@ -625,6 +681,9 @@ The v0.1 validator checks:
 - required evidence item structure, source references, provenance references, sanitization status, and safe reference types;
 - bounded metric envelopes and unavailable metric reasons;
 - dataset, pipeline, provenance, sanitization, and review configuration presence;
+- conditional adapter/run provenance, concrete audit references, and
+  sanitization approval for non-synthetic packages;
+- explicit synthetic posture without a real-data approval claim;
 - canonical evidence-rating, verdict, recommended-action, stage, and reviewer-action values.
 
 The validator intentionally does not yet:
