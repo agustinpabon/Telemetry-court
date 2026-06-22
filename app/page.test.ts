@@ -39,6 +39,7 @@ import {
   getEvidenceBalance,
   getEvidenceRatings,
 } from "@/lib/arenaReviewState";
+import { reviewReadinessOptions } from "@/lib/reviewReadiness";
 
 function renderHomePageText(): string {
   const html = renderToStaticMarkup(
@@ -124,6 +125,27 @@ function assertNoMixedVerdictState(markup: string): void {
   if (showsVerdictMissing) {
     assert.match(markup, /disabled="">Export review result/);
   }
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function assertReadinessOptionWrapsRadio(
+  markup: string,
+  option: (typeof reviewReadinessOptions)[number],
+): void {
+  const labelPattern = new RegExp(
+    `<label class="readiness-option[^"]*">[\\s\\S]*?<input[^>]*name="review-readiness"[^>]*value="${escapeRegExp(
+      option.id,
+    )}"[\\s\\S]*?${escapeRegExp(option.label)}[\\s\\S]*?</label>`,
+  );
+
+  assert.match(
+    markup,
+    labelPattern,
+    `${option.id} radio must be wrapped by the visible card label`,
+  );
 }
 
 test("home page static review flow exposes the core Telemetry Court concepts", () => {
@@ -441,6 +463,131 @@ test("blind read protects the AI judgment until the reviewer chooses", () => {
   assert.doesNotMatch(pageText, /Average support/);
   assert.doesNotMatch(pageText, /Avg\. support/);
   assert.doesNotMatch(pageText, /38% evidence/);
+});
+
+test("checkpoint options render as obvious selectable radio cards", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+  const markup = renderStaticMarkup(
+    React.createElement(BlindReadPanel, {
+      caseFile: selectedCase,
+      reviewState: {},
+      onChooseReviewReadiness: () => undefined,
+      onChooseBlindInterpretation: () => undefined,
+      onRevealAiLabel: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /<fieldset class="review-readiness-options">/);
+  assert.equal(
+    markup.match(/<label class="readiness-option(?: is-selected)?">/g)?.length,
+    reviewReadinessOptions.length,
+  );
+
+  for (const option of reviewReadinessOptions) {
+    assertReadinessOptionWrapsRadio(markup, option);
+  }
+
+  assert.match(markup, /class="readiness-option-mark" aria-hidden="true"/);
+});
+
+test("selected checkpoint state is exposed by the native checked radio", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+  const markup = renderStaticMarkup(
+    React.createElement(BlindReadPanel, {
+      caseFile: selectedCase,
+      reviewState: {},
+      reviewReadinessChoice: "need_context",
+      onChooseReviewReadiness: () => undefined,
+      onChooseBlindInterpretation: () => undefined,
+      onRevealAiLabel: () => undefined,
+    }),
+  );
+
+  assert.match(
+    markup,
+    /<label class="readiness-option is-selected">[\s\S]*?<input(?=[^>]*checked="")(?=[^>]*name="review-readiness")(?=[^>]*type="radio")(?=[^>]*value="need_context")[^>]*\/>/,
+  );
+  assert.match(
+    markup,
+    /<span class="readiness-option-state"[^>]*>Selected<\/span>/,
+  );
+});
+
+test("case 002 checkpoint remains blind while showing visible domain terms", () => {
+  const packageFixture = casePackageFixtures[1];
+  assert.ok(packageFixture);
+  const importResult = importCasePackageV01Json(JSON.stringify(packageFixture));
+
+  assert.equal(importResult.ok, true);
+  if (!importResult.ok) {
+    return;
+  }
+
+  const aiLabel = packageFixture.candidate_labels.find(
+    (candidate) => candidate.source === "ai_generated",
+  );
+  const aiClaim = packageFixture.claims[0];
+  assert.ok(aiLabel);
+  assert.ok(aiClaim);
+  const aiRationale = aiLabel.rationale;
+  if (typeof aiRationale !== "string") {
+    throw new Error("case 002 AI label fixture must include a rationale");
+  }
+  const markup = renderStaticMarkup(
+    React.createElement(BlindReadPanel, {
+      caseFile: importResult.caseFile,
+      reviewState: {},
+      onChooseReviewReadiness: () => undefined,
+      onChooseBlindInterpretation: () => undefined,
+      onRevealAiLabel: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /Can you judge this case\?/);
+  assert.match(markup, /Domain context may be needed: PowerShell \/ encoded command\./);
+  assert.doesNotMatch(markup, new RegExp(escapeRegExp(aiLabel.label)));
+  assert.doesNotMatch(markup, new RegExp(escapeRegExp(aiRationale)));
+  assert.doesNotMatch(markup, new RegExp(escapeRegExp(aiClaim.text)));
+});
+
+test("normal and low-context checkpoint paths still allow progression after an interpretation", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+  const normalChoice = selectedCase.blindInterpretationOptions[0];
+  const lowContextChoice = selectedCase.blindInterpretationOptions.find(
+    (option) => option.id === "not-enough-evidence",
+  );
+  assert.ok(normalChoice);
+  assert.ok(lowContextChoice);
+  const normalMarkup = renderStaticMarkup(
+    React.createElement(BlindReadPanel, {
+      caseFile: selectedCase,
+      reviewState: { blindChoiceId: normalChoice.id },
+      reviewReadinessChoice: "ready",
+      onChooseReviewReadiness: () => undefined,
+      onChooseBlindInterpretation: () => undefined,
+      onRevealAiLabel: () => undefined,
+    }),
+  );
+  const lowContextMarkup = renderStaticMarkup(
+    React.createElement(BlindReadPanel, {
+      caseFile: selectedCase,
+      reviewState: { blindChoiceId: lowContextChoice.id },
+      reviewReadinessChoice: "domain_terms",
+      onChooseReviewReadiness: () => undefined,
+      onChooseBlindInterpretation: () => undefined,
+      onRevealAiLabel: () => undefined,
+    }),
+  );
+
+  assert.match(normalMarkup, /Reveal AI claim/);
+  assert.doesNotMatch(normalMarkup, /disabled="">Reveal AI claim/);
+  assert.match(lowContextMarkup, /Context-limited review/);
+  assert.match(lowContextMarkup, /Context-safe choice/);
+  assert.match(lowContextMarkup, /Reveal AI claim/);
+  assert.doesNotMatch(lowContextMarkup, /disabled="">Reveal AI claim/);
 });
 
 test("low-context checkpoint stays blind and points to insufficient-context choices", () => {

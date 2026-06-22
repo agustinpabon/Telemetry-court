@@ -91,21 +91,38 @@ export function BlindReadPanel({
             <legend className="sr-only">Review context checkpoint</legend>
             {reviewReadinessOptions.map((option) => {
               const isSelected = reviewReadinessChoice === option.id;
+              const selectedStateId = `review-readiness-${option.id}-state`;
 
               return (
                 <label
                   key={option.id}
-                  className={`readiness-option ${isSelected ? "is-selected" : ""}`}
+                  className={[
+                    "readiness-option",
+                    isSelected ? "is-selected" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                 >
                   <input
+                    aria-describedby={isSelected ? selectedStateId : undefined}
                     checked={isSelected}
                     name="review-readiness"
                     onChange={() => onChooseReviewReadiness(option.id)}
                     type="radio"
                     value={option.id}
                   />
-                  <span aria-hidden="true" />
-                  <strong>{option.label}</strong>
+                  <span className="readiness-option-mark" aria-hidden="true" />
+                  <span className="readiness-option-copy">
+                    <strong>{option.label}</strong>
+                  </span>
+                  {isSelected ? (
+                    <span
+                      className="readiness-option-state"
+                      id={selectedStateId}
+                    >
+                      Selected
+                    </span>
+                  ) : null}
                 </label>
               );
             })}
