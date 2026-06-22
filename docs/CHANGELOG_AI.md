@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-22: Imported Package To EvaluationReport Smoke Test
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement issue #101 by adding a deterministic end-to-end smoke test for the local Utility Gate path from imported `CasePackage` JSON through structured review, `ReviewResult` bundle exchange, local results loading, `EvaluationReportV01` aggregation, and report exportability, without adding backend persistence, raw telemetry ingestion, auth, SIEM/SOC behavior, chatbot behavior, or product redesign.
+- Files changed: `lib/localUtilityGateSmokeV01.test.ts` and `docs/CHANGELOG_AI.md`.
+- Summary: Added a focused integration smoke test that serializes a safe synthetic Toponymy-style package as external JSON, imports it through `importCasePackageV01Json`, drives the real arena review-state reducer and ReviewResult export builder, exports/imports a strict `review_result_bundle.v0.1`, loads it through the local EvaluationReport path, and verifies deterministic `EvaluationReportV01` traceability plus JSON/CSV export shape. Added a guard proving an incompatible review protocol is rejected before it can contaminate local aggregation.
+- Decisions made: Reused the existing import, validation, review-state, ReviewResult export, bundle validation, local results, aggregation, and export helpers instead of adding a smoke-test-only metrics path. Kept the fixture synthetic and raw-free, with test-local readiness metrics only where the current UI adapter requires available values.
+- Checks run: Focused `npm test -- lib/localUtilityGateSmokeV01.test.ts` passed with 2 tests; related utility-loop suite `npm test -- lib/localUtilityGateSmokeV01.test.ts lib/importCasePackageV01.test.ts lib/reviewResultBundleV01.test.ts lib/localEvaluationResultsV01.test.ts lib/evaluationReportV01.test.ts lib/evaluationReportExportV01.test.ts` passed with 64 tests; `npm test` passed with 164 tests; `npx tsc --noEmit` passed; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed.
+- Assumptions: The synthetic Toponymy-style fixture remains an approved non-authoritative package boundary fixture, not real Toponymy/DataMapPlot support. Full provenance and sanitization metadata remain auditable at the imported package boundary, while ReviewResult and EvaluationReport continue to carry the existing compact CasePackage and pipeline reference by design.
+- Risks/follow-ups: The smoke test proves the local deterministic utility path, not durable multi-user persistence, consensus, real adapter ingestion, or research-grade metrics. Browser-local storage remains a local validation-slice mechanism.
+- Next recommended step: Run a small validation pilot with 3-5 approved realistic CasePackages and 2-3 reviewers after this proof is merged, then return to Toponymy/DataMapPlot adapter-boundary work.
+- Suggested commit message: `test(evaluation): add imported package smoke`
+
 ## 2026-06-21: Local And Imported ReviewResult Results
 
 - Agent/model: Codex (GPT-5)
