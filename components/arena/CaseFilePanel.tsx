@@ -10,11 +10,9 @@ import {
   ArenaActionFooter,
   ArenaStatusBadge,
   ArenaStepHero,
-  ArenaStepProgress,
   ArenaWorkflowShell,
   SectionHeader,
 } from "@/components/arena/WorkflowPrimitives";
-import type { ArenaStage } from "@/lib/arenaReviewState";
 import { formatSupportScore, getAverageSupportScore } from "@/lib/caseMetrics";
 import type {
   CaseFile,
@@ -30,7 +28,6 @@ type CaseFilePanelProps = {
   landscapeContextNodes?: LandscapeContextNode[];
   onBackToLandscape?: () => void;
   onStartInvestigation: () => void;
-  onSelectStage?: (stage: ArenaStage) => void;
 };
 
 type EvidencePreviewType = "feature" | "timing" | "counterexample" | "neighbour";
@@ -111,7 +108,6 @@ export function CaseFilePanel({
   landscapeContextNodes = [],
   onBackToLandscape,
   onStartInvestigation,
-  onSelectStage,
 }: CaseFilePanelProps) {
   const evidencePreviewRows = getEvidencePreviewRows(caseFile);
   const reviewQuestions = getReviewQuestions(caseFile);
@@ -121,8 +117,6 @@ export function CaseFilePanel({
 
   return (
     <ArenaWorkflowShell className="case-file-stage" ariaLabel="Case File">
-      <ArenaStepProgress currentStage="case_file" onSelectStage={onSelectStage} />
-
       <ArenaStepHero
         eyebrow="Case File"
         status={

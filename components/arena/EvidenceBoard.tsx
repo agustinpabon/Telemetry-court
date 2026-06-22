@@ -3,12 +3,10 @@ import {
   ArenaActionFooter,
   ArenaStatusBadge,
   ArenaStepHero,
-  ArenaStepProgress,
   ArenaWorkflowShell,
 } from "@/components/arena/WorkflowPrimitives";
 import { getRelationsForEvidence } from "@/lib/caseMetrics";
 import type {
-  ArenaStage,
   CaseReviewState,
   EvidenceBalance as EvidenceBalanceValue,
 } from "@/lib/arenaReviewState";
@@ -57,7 +55,6 @@ type EvidenceBoardProps = {
   onRateEvidence: (evidenceId: string, rating: EvidenceRating) => void;
   onBackToAiReveal?: () => void;
   onContinue?: () => void;
-  onSelectStage?: (stage: ArenaStage) => void;
 };
 
 export function EvidenceBoard({
@@ -69,7 +66,6 @@ export function EvidenceBoard({
   onRateEvidence,
   onBackToAiReveal,
   onContinue,
-  onSelectStage,
 }: EvidenceBoardProps) {
   const blindChoice = caseFile.blindInterpretationOptions.find(
     (option) => option.id === reviewState.blindChoiceId,
@@ -92,11 +88,6 @@ export function EvidenceBoard({
       className="evidence-board-stage"
       ariaLabel="Evidence Verification"
     >
-      <ArenaStepProgress
-        currentStage="evidence_board"
-        onSelectStage={onSelectStage}
-      />
-
       <ArenaStepHero
         status={
           <ArenaStatusBadge

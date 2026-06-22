@@ -3,11 +3,10 @@ import {
   ArenaActionFooter,
   ArenaStatusBadge,
   ArenaStepHero,
-  ArenaStepProgress,
   ArenaWorkflowShell,
   SectionHeader,
 } from "@/components/arena/WorkflowPrimitives";
-import type { ArenaStage, CaseReviewState } from "@/lib/arenaReviewState";
+import type { CaseReviewState } from "@/lib/arenaReviewState";
 import {
   getContextLimitedBlindOptionId,
   getInsufficientContextGuidance,
@@ -24,7 +23,6 @@ type BlindReadPanelProps = {
   onChooseReviewReadiness: (choice: ReviewReadinessChoice) => void;
   onChooseBlindInterpretation: (optionId: string) => void;
   onRevealAiLabel: () => void;
-  onSelectStage?: (stage: ArenaStage) => void;
 };
 
 export function BlindReadPanel({
@@ -34,7 +32,6 @@ export function BlindReadPanel({
   onChooseReviewReadiness,
   onChooseBlindInterpretation,
   onRevealAiLabel,
-  onSelectStage,
 }: BlindReadPanelProps) {
   const evidenceSummary = buildEvidenceSummary(caseFile);
   const domainContextTerms = getVisibleDomainContextTerms(caseFile);
@@ -53,11 +50,6 @@ export function BlindReadPanel({
 
   return (
     <ArenaWorkflowShell className="blind-stage" ariaLabel="Initial Assessment">
-      <ArenaStepProgress
-        currentStage="blind_read"
-        onSelectStage={onSelectStage}
-      />
-
       <ArenaStepHero
         eyebrow="Initial Assessment"
         status={

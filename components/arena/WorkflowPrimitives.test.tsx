@@ -11,7 +11,6 @@ import {
   ArenaReviewerGoal,
   ArenaStatusBadge,
   ArenaStepHero,
-  ArenaStepProgress,
   ArenaWorkflowShell,
 } from "@/components/arena/WorkflowPrimitives";
 
@@ -24,9 +23,11 @@ test("workflow primitives render the shared arena page language", () => {
     React.createElement(
       ArenaWorkflowShell,
       { ariaLabel: "AI Claim Check", className: "test-stage" },
-      React.createElement(ArenaHeader),
+      React.createElement(ArenaHeader, {
+        currentStage: "ai_reveal",
+        actions: React.createElement("button", { type: "button" }, "Results"),
+      }),
       React.createElement(ArenaReviewerGoal),
-      React.createElement(ArenaStepProgress, { currentStage: "ai_reveal" }),
       React.createElement(ArenaStepHero, {
         eyebrow: "AI Claim Check",
         status: React.createElement(
@@ -55,6 +56,10 @@ test("workflow primitives render the shared arena page language", () => {
   assert.match(markup, /class="arena-workflow-shell stage-surface test-stage"/);
   assert.match(markup, /Telemetry Court/);
   assert.match(markup, /Evidence review for AI-named telemetry clusters\./);
+  assert.match(markup, /class="arena-topbar arena-header tc-masthead"/);
+  assert.match(markup, /class="tc-masthead__inner"/);
+  assert.match(markup, /class="arena-topbar-actions tc-masthead__actions"/);
+  assert.match(markup, /class="arena-step-progress tc-masthead__progress-row"/);
   assert.match(markup, /What you are reviewing/);
   assert.match(markup, /Step 4 of 8 · AI Claim Check/);
   assert.match(markup, /aria-current="step"/);
@@ -69,10 +74,8 @@ test("review orientation explains the CasePackage task without exposing a label"
   const markup = renderStaticMarkup(React.createElement(ArenaReviewerGoal));
 
   assert.match(markup, /What you are reviewing/);
-  assert.match(markup, /one telemetry cluster from a CasePackage/);
-  assert.match(markup, /upstream pipeline produced an AI label/);
-  assert.match(markup, /test whether the available evidence supports that label/);
-  assert.match(markup, /export a structured ReviewResult/);
+  assert.match(markup, /testing whether evidence supports an AI label/);
+  assert.match(markup, /not whether the cluster is dangerous/);
   assert.doesNotMatch(markup, /Suspicious IAM privilege escalation/);
 });
 

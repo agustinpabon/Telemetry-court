@@ -4,18 +4,39 @@ import { arenaStages, type ArenaStage } from "@/lib/arenaReviewState";
 
 type ArenaHeaderProps = {
   actions?: ReactNode;
+  currentStage?: ArenaStage;
+  onSelectStage?: (stage: ArenaStage) => void;
 };
 
-export function ArenaHeader({ actions }: ArenaHeaderProps) {
+export function ArenaHeader({
+  actions,
+  currentStage,
+  onSelectStage,
+}: ArenaHeaderProps) {
   return (
-    <header className="arena-topbar arena-header">
-      <div className="arena-brand">
-        <div>
-          <h1>Telemetry Court</h1>
-          <p>Evidence review for AI-named telemetry clusters.</p>
+    <header className="arena-topbar arena-header tc-masthead">
+      <div className="tc-masthead__inner">
+        <div className="tc-masthead__top-row">
+          <div className="arena-brand tc-masthead__brand">
+            <div>
+              <h1>Telemetry Court</h1>
+              <p>Evidence review for AI-named telemetry clusters.</p>
+            </div>
+          </div>
+          {actions ? (
+            <div className="arena-topbar-actions tc-masthead__actions">
+              {actions}
+            </div>
+          ) : null}
         </div>
+        {currentStage ? (
+          <ArenaStepProgress
+            currentStage={currentStage}
+            className="tc-masthead__progress-row"
+            onSelectStage={onSelectStage}
+          />
+        ) : null}
       </div>
-      {actions ? <div className="arena-topbar-actions">{actions}</div> : null}
     </header>
   );
 }

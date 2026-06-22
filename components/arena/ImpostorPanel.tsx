@@ -4,14 +4,12 @@ import {
   ArenaActionFooter,
   ArenaStatusBadge,
   ArenaStepHero,
-  ArenaStepProgress,
   ArenaWorkflowShell,
 } from "@/components/arena/WorkflowPrimitives";
 import { formatSupportScore } from "@/lib/caseMetrics";
 import {
   getEvidenceBalance,
   getEvidenceRatings,
-  type ArenaStage,
   type CaseReviewState,
 } from "@/lib/arenaReviewState";
 import type { CaseFile, RepresentativeSession } from "@/lib/types";
@@ -22,7 +20,6 @@ type ImpostorPanelProps = {
   onSelectSession: (sessionId: string) => void;
   onBackToLabelDuel?: () => void;
   onContinue: () => void;
-  onSelectStage?: (stage: ArenaStage) => void;
 };
 
 type SessionCardStyle = CSSProperties & {
@@ -36,7 +33,6 @@ export function ImpostorPanel({
   onSelectSession,
   onBackToLabelDuel,
   onContinue,
-  onSelectStage,
 }: ImpostorPanelProps) {
   const selectedSession = caseFile.representativeSessions.find(
     (session) => session.id === reviewState.impostorSessionId,
@@ -48,8 +44,6 @@ export function ImpostorPanel({
   if (!selectedLabel) {
     return (
       <ArenaWorkflowShell className="impostor-stage" ariaLabel="Cluster Fit Check">
-        <ArenaStepProgress currentStage="impostor" onSelectStage={onSelectStage} />
-
         <ArenaStepHero
           status={<ArenaStatusBadge tone="uncertain">Fit check</ArenaStatusBadge>}
           title="Choose a label before the fit check"
@@ -90,8 +84,6 @@ export function ImpostorPanel({
 
   return (
     <ArenaWorkflowShell className="impostor-stage" ariaLabel="Cluster Fit Check">
-      <ArenaStepProgress currentStage="impostor" onSelectStage={onSelectStage} />
-
       <ArenaStepHero
         status={
           <ArenaStatusBadge tone="uncertain">
