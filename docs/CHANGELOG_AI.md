@@ -19,6 +19,32 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-22: Checkpoint Card Copy Collision Fix
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Fix the PR #119 blocking visual regression where new checkpoint card copy inherited old fake-radio direct-span styling.
+- Files changed: `app/investigation-workflow.css` and `docs/CHANGELOG_AI.md`.
+- Summary: Added scoped investigation-shell CSS resets so `.readiness-option-copy` renders as normal text content and `.readiness-option-state` keeps its selected chip shape without inheriting the old 18px fake-radio span sizing or pseudo-dot.
+- Decisions made: Kept the existing `BlindReadPanel` markup, route/stage behavior, review state, contracts, schemas, and ReviewResult export shape unchanged. The actual radio marker remains `.readiness-option-mark`.
+- Checks run: `node --test --import tsx app/page.test.ts` passed with 36 tests; `npm test` passed with 182 tests; `npx tsc --noEmit` passed; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed. Manual Playwright review on `next start --hostname 127.0.0.1 --port 3102` with imported `case_package_case-arena-002` passed desktop and mobile checkpoint rendering, whole-card click selection, keyboard focus ring, selected state, blind AI-label hiding before AI Claim Check, normal ReviewResult export, low-context ReviewResult export, and console-error checks.
+- Assumptions: The blocker is a CSS cascade collision only; no markup, state-machine, route, schema, or copy change is needed.
+- Risks/follow-ups: None.
+- Next recommended step: Review the small CSS follow-up and mark PR #119 ready if acceptable.
+- Suggested commit message: `fix(review): prevent checkpoint copy clipping`
+
+## 2026-06-22: Low-Context Checkpoint Visibility
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement issue #117 as a narrow UI bug fix to make the "Can you judge this case?" checkpoint choices visually obvious without implementing #118 or changing contracts, routes, stage IDs, protected-stage logic, or state-machine semantics.
+- Files changed: `app/investigation-workflow.css`, `app/page.test.ts`, `components/arena/BlindReadPanel.tsx`, and `docs/CHANGELOG_AI.md`.
+- Summary: Converted the checkpoint choices into compact selectable cards using full-card labels, native radio inputs, a visible radio marker, obvious selected styling, a selected chip, and visible focus styling. The low-context guidance still points to existing insufficient-context interpretation paths without adding explanatory paragraphs.
+- Decisions made: Kept `CasePackageV01`, `ReviewResultV01`, and `EvaluationReportV01` unchanged; kept import/export schemas and ReviewResult shape unchanged; kept route IDs, stage IDs, protected-stage logic, and review state-machine semantics unchanged. Preserved blind review by deriving checkpoint context only from visible case text and adding a focused case 002 test that excludes the AI label, AI rationale, and hidden generated claim before AI Claim Check.
+- Checks run: Focused `node --test --import tsx app/page.test.ts` passed with 36 tests; full `npm test` passed with 182 tests; `npx tsc --noEmit` passed; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed. Manual Playwright review on `next start --hostname 127.0.0.1 --port 3102` with imported `case_package_case-arena-002` passed for desktop checkpoint visibility, mobile checkpoint visibility, whole-card clicking, selected state, keyboard focus, blind AI-label hiding before AI Claim Check, normal path, low-context path, ReviewResult JSON export, and no console errors.
+- Assumptions: The appropriate fix for #117 is visual affordance and interaction clarity for the existing checkpoint options, not additional explanatory copy or new ReviewResult data.
+- Risks/follow-ups: Built-in compatibility seed data remains unchanged. Any broader blind-choice label policy or schema-level reviewer-confidence capture should stay in a separate issue, not this PR.
+- Next recommended step: Review the requested draft PR for issue #117.
+- Suggested commit message: `fix(review): clarify checkpoint choices`
+
 ## 2026-06-22: Insufficient-Context Review Path
 
 - Agent/model: Codex (GPT-5)
