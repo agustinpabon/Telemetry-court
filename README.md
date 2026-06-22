@@ -1,14 +1,20 @@
-<p align="center">
-  <img src="public/telemetry-court-logo.png" alt="Telemetry Court Logo" width="120" />
-</p>
+<table align="center" style="border: none; border-collapse: collapse;">
+  <tr style="border: none;">
+    <td align="center" valign="middle" style="border: none; padding: 15px 25px 15px 15px;">
+      <img src="public/telemetry-court-logo.png" alt="Telemetry Court Logo" width="130" />
+    </td>
+    <td align="left" valign="middle" style="border: none; padding: 15px;">
+      <pre style="line-height: 1.25; border: none; background: transparent; margin: 0; padding: 0;">
+╔╦╗ ╔═╗ ╦   ╔═╗ ╔╦╗ ╔═╗ ╔╦╗ ╦═╗ ╦ ╦   ╔═╗ ╔═╗ ╦ ╦ ╦═╗ ╔╦╗
+ ║  ║╣  ║   ║╣  ║║║ ║╣   ║  ╠╦╝ ╚╦╝   ║   ║ ║ ║ ║ ╠╦╝  ║ 
+ ╩  ╚═╝ ╩═╝ ╚═╝ ╩ ╩ ╚═╝  ╩  ╩╚═  ╩    ╚═╝ ╚═╝ ╚═╝ ╩╚═  ╩ 
 
-# Telemetry Court
+    AI names the cluster. Humans test the evidence. —</pre>
+    </td>
+  </tr>
+</table>
 
 Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.
-
-```text
-AI names the cluster. Humans test the evidence.
-```
 
 It exists to answer one question:
 
