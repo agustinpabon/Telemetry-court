@@ -12,6 +12,7 @@ import type {
   CaseReviewState,
   EvidenceBalance as EvidenceBalanceValue,
 } from "@/lib/arenaReviewState";
+import type { InsufficientContextGuidance } from "@/lib/reviewReadiness";
 import type {
   CaseFile,
   EvidenceItem,
@@ -52,6 +53,7 @@ type EvidenceBoardProps = {
   reviewState?: CaseReviewState;
   evidenceRatings: Record<string, EvidenceRating>;
   balance: EvidenceBalanceValue;
+  insufficientContextGuidance?: InsufficientContextGuidance;
   onRateEvidence: (evidenceId: string, rating: EvidenceRating) => void;
   onBackToAiReveal?: () => void;
   onContinue?: () => void;
@@ -63,6 +65,7 @@ export function EvidenceBoard({
   reviewState = {},
   evidenceRatings,
   balance,
+  insufficientContextGuidance,
   onRateEvidence,
   onBackToAiReveal,
   onContinue,
@@ -107,7 +110,7 @@ export function EvidenceBoard({
           </ArenaStatusBadge>
         }
         title="Does the evidence support the AI claim?"
-        summary="Rate whether each evidence item supports the specific claim under review."
+        summary="Rate each item against the claim."
       />
 
       <section className="evidence-review-context" aria-label="Review context">
@@ -124,6 +127,13 @@ export function EvidenceBoard({
           <strong>{signalLabel}</strong>
         </div>
       </section>
+
+      {insufficientContextGuidance ? (
+        <aside className="insufficient-context-guidance">
+          <strong>Context-limited review</strong>
+          <p>Use Needs context instead of guessing support.</p>
+        </aside>
+      ) : null}
 
       <section
         className="evidence-balance-summary"
@@ -187,11 +197,11 @@ export function EvidenceBoard({
             </strong>
           </div>
 
-          <section
+          <details
             className="evidence-rating-legend"
             aria-labelledby="evidence-rating-legend-title"
           >
-            <h3 id="evidence-rating-legend-title">How to rate evidence</h3>
+            <summary id="evidence-rating-legend-title">How to rate evidence</summary>
             <dl>
               {evidenceRatingLegend.map((item) => (
                 <div key={item.label}>
@@ -200,7 +210,7 @@ export function EvidenceBoard({
                 </div>
               ))}
             </dl>
-          </section>
+          </details>
 
           <div className="evidence-review-list">
             {caseFile.evidenceItems.map((evidence) => {

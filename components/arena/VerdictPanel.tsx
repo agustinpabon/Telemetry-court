@@ -12,6 +12,7 @@ import {
   verdictFailureReasonLabel,
 } from "@/components/arena/arenaMeta";
 import { getCompatibleFailureModes } from "@/lib/arenaReviewState";
+import type { InsufficientContextGuidance } from "@/lib/reviewReadiness";
 import type {
   ArenaStage,
   CaseReviewState,
@@ -46,6 +47,7 @@ type VerdictPanelProps = {
   caseFile: CaseFile;
   reviewState: CaseReviewState;
   balance: EvidenceBalance;
+  insufficientContextGuidance?: InsufficientContextGuidance;
   onSelectVerdict: (verdict: FinalVerdict) => void;
   onToggleFailureMode: (reason: DuelReason) => void;
   onBackToImpostor?: () => void;
@@ -59,6 +61,7 @@ export function VerdictPanel({
   caseFile,
   reviewState,
   balance,
+  insufficientContextGuidance,
   onSelectVerdict,
   onToggleFailureMode,
   onBackToImpostor,
@@ -144,11 +147,21 @@ export function VerdictPanel({
             title="Final evaluation"
             description="Choose the structured outcome that best matches the evidence and cluster quality."
           />
-          <section
+          {insufficientContextGuidance ? (
+            <aside className="insufficient-context-guidance">
+              <strong>Context-limited review</strong>
+              <p>
+                Prefer Uncertain or Needs better evidence when context is
+                missing. Collect more evidence is the exported action for these
+                outcomes.
+              </p>
+            </aside>
+          ) : null}
+          <details
             className="final-evaluation-checklist"
             aria-labelledby="final-evaluation-checklist-title"
           >
-            <h4 id="final-evaluation-checklist-title">Before you decide</h4>
+            <summary id="final-evaluation-checklist-title">Decision checks</summary>
             <ul>
               <li>Is the AI label supported by the evidence?</li>
               <li>Is the label too broad, too specific, or overclaimed?</li>
@@ -156,7 +169,7 @@ export function VerdictPanel({
               <li>Does the cluster appear mixed or impure?</li>
               <li>Is the recommended action aligned with the evidence?</li>
             </ul>
-          </section>
+          </details>
           <div className="verdict-sections">
             {verdictGroups.map((group) => (
               <section key={group.title} className="verdict-option-section">
@@ -164,18 +177,31 @@ export function VerdictPanel({
                 <div className="verdict-grid">
                   {group.options.map((verdict) => {
                     const isSelected = finalVerdict === verdict;
+                    const isContextGuided =
+                      Boolean(insufficientContextGuidance) &&
+                      (verdict === "uncertain" ||
+                        verdict === "needs_better_evidence");
 
                     return (
                       <button
                         key={verdict}
                         type="button"
-                        className={`verdict-button ${isSelected ? "is-selected" : ""}`}
+                        className={[
+                          "verdict-button",
+                          isSelected ? "is-selected" : "",
+                          isContextGuided ? "is-guided-option" : "",
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
                         onClick={() => onSelectVerdict(verdict)}
                         aria-pressed={isSelected}
                       >
                         <span className="verdict-button-label">
                           {finalVerdictLabel[verdict]}
                         </span>
+                        {isContextGuided ? (
+                          <small>Context path</small>
+                        ) : null}
                         <span
                           className="verdict-button-indicator"
                           aria-hidden="true"

@@ -15,6 +15,7 @@ import {
   type ArenaStage,
   type CaseReviewState,
 } from "@/lib/arenaReviewState";
+import type { InsufficientContextGuidance } from "@/lib/reviewReadiness";
 import type { CandidateLabel, CaseFile, DuelReason } from "@/lib/types";
 
 const labelDuelReasonOptions: DuelReason[] = [
@@ -29,6 +30,7 @@ const labelDuelReasonOptions: DuelReason[] = [
 type LabelDuelPanelProps = {
   caseFile: CaseFile;
   reviewState: CaseReviewState;
+  insufficientContextGuidance?: InsufficientContextGuidance;
   onSelectWinner: (candidateId: string) => void;
   onToggleReason: (reason: DuelReason) => void;
   onSetDuelNote: (note: string) => void;
@@ -40,6 +42,7 @@ type LabelDuelPanelProps = {
 export function LabelDuelPanel({
   caseFile,
   reviewState,
+  insufficientContextGuidance,
   onSelectWinner,
   onToggleReason,
   onSetDuelNote,
@@ -96,6 +99,15 @@ export function LabelDuelPanel({
         </div>
       </section>
 
+      {insufficientContextGuidance ? (
+        <aside className="insufficient-context-guidance">
+          <strong>Context-limited review</strong>
+          <p>
+            Choose the uncertainty-preserving label when no label is defensible.
+          </p>
+        </aside>
+      ) : null}
+
       <section className="duel-candidate-section" aria-labelledby="duel-candidates-title">
         <div className="duel-section-heading">
           <h3 id="duel-candidates-title">Candidate labels</h3>
@@ -106,6 +118,10 @@ export function LabelDuelPanel({
           <CandidateLabelCard
             candidate={recommendedCandidate}
             isRecommended
+            isContextGuided={
+              Boolean(insufficientContextGuidance) &&
+              recommendedCandidate.source === "uncertain_label"
+            }
             isSelected={reviewState.labelDuelWinnerId === recommendedCandidate.id}
             onSelectWinner={onSelectWinner}
           />
@@ -128,6 +144,10 @@ export function LabelDuelPanel({
               <Fragment key={candidate.id}>
                 <CandidateLabelCard
                   candidate={candidate}
+                  isContextGuided={
+                    Boolean(insufficientContextGuidance) &&
+                    candidate.source === "uncertain_label"
+                  }
                   isSelected={reviewState.labelDuelWinnerId === candidate.id}
                   onSelectWinner={onSelectWinner}
                 />
@@ -218,11 +238,13 @@ function DuelReasonPanel({
 function CandidateLabelCard({
   candidate,
   isRecommended = false,
+  isContextGuided = false,
   isSelected,
   onSelectWinner,
 }: {
   candidate: CandidateLabel;
   isRecommended?: boolean;
+  isContextGuided?: boolean;
   isSelected: boolean;
   onSelectWinner: (candidateId: string) => void;
 }) {
@@ -231,9 +253,14 @@ function CandidateLabelCard({
   return (
     <button
       type="button"
-      className={`duel-card ${isRecommended ? "duel-card-primary" : ""} ${
-        isSelected ? "is-selected" : ""
-      }`}
+      className={[
+        "duel-card",
+        isRecommended ? "duel-card-primary" : "",
+        isSelected ? "is-selected" : "",
+        isContextGuided ? "is-guided-option" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
       onClick={() => onSelectWinner(candidate.id)}
       aria-pressed={isSelected}
     >
@@ -251,6 +278,7 @@ function CandidateLabelCard({
       </div>
       <strong>{candidate.label}</strong>
       <p>{decisionMeta.description}</p>
+      {isContextGuided ? <small>Context-safe option</small> : null}
       {decisionMeta.evidenceNote ? <small>{decisionMeta.evidenceNote}</small> : null}
     </button>
   );

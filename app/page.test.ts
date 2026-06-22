@@ -371,10 +371,10 @@ test("blind read protects the AI judgment until the reviewer chooses", () => {
   const pageText = renderBlindReadPageText();
 
   assert.match(pageText, /Step 3 of 8 · Initial Assessment/);
-  assert.match(pageText, /Establish an independent baseline\./);
+  assert.match(pageText, /Start with what you can judge\./);
   assert.match(
     pageText,
-    /Before seeing the AI label, record what the evidence suggests on its own\./,
+    /Use only the visible evidence\. The AI label stays hidden\./,
   );
   assert.match(pageText, /Landscape/);
   assert.match(pageText, /Case File/);
@@ -386,17 +386,30 @@ test("blind read protects the AI judgment until the reviewer chooses", () => {
   assert.match(pageText, /Final Evaluation/);
   assert.match(pageText, /AI claim hidden/);
   assert.match(pageText, /What you are reviewing/);
-  assert.match(pageText, /one telemetry cluster from a CasePackage/);
-  assert.match(pageText, /upstream pipeline produced an AI label/);
   assert.match(
     pageText,
-    /The AI label remains sealed until you choose one interpretation below\./,
+    /You are testing whether evidence supports an AI label, not whether the cluster is dangerous\./,
+  );
+  assert.match(
+    pageText,
+    /You are not deciding whether the cluster is dangerous; you are deciding whether the AI label is supported by the evidence\./,
+  );
+  assert.match(pageText, /Can you judge this case\?/);
+  assert.match(
+    pageText,
+    /I have enough context to review this case\./,
+  );
+  assert.match(pageText, /I need more context before judging\./);
+  assert.match(
+    pageText,
+    /I do not understand enough domain terms to review this case\./,
+  );
+  assert.match(
+    pageText,
+    /Domain context may be needed: IAM \/ CloudTrail \/ role provisioning\./,
   );
   assert.match(pageText, /Selected behaviour region/);
-  assert.match(
-    pageText,
-    /A small locator for the selected behaviour region and nearby sessions\./,
-  );
+  assert.match(pageText, /Selected region and nearby sessions\./);
   assert.match(pageText, /Evidence summary/);
   assert.match(pageText, /Observed/);
   assert.match(pageText, /Context/);
@@ -405,13 +418,13 @@ test("blind read protects the AI judgment until the reviewer chooses", () => {
   assert.match(pageText, /Your interpretation/);
   assert.match(
     pageText,
-    /What is the strongest conclusion supported by the evidence\?/,
+    /Choose the strongest conclusion the visible evidence supports\./,
   );
   assert.match(pageText, /AI claim hidden/);
-  assert.match(pageText, /Choose an interpretation to continue/);
+  assert.match(pageText, /Choose context checkpoint to continue/);
   assert.match(
     pageText,
-    /Your choice will be saved before the AI label is shown\./,
+    /Answer the checkpoint, then choose an interpretation before reveal\./,
   );
   assert.match(pageText, /Possible privilege escalation/);
   assert.match(pageText, /disabled=""/);
@@ -428,6 +441,30 @@ test("blind read protects the AI judgment until the reviewer chooses", () => {
   assert.doesNotMatch(pageText, /Average support/);
   assert.doesNotMatch(pageText, /Avg\. support/);
   assert.doesNotMatch(pageText, /38% evidence/);
+});
+
+test("low-context checkpoint stays blind and points to insufficient-context choices", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const markup = renderStaticMarkup(
+    React.createElement(BlindReadPanel, {
+      caseFile: selectedCase,
+      reviewState: {},
+      reviewReadinessChoice: "domain_terms",
+      onChooseReviewReadiness: () => undefined,
+      onChooseBlindInterpretation: () => undefined,
+      onRevealAiLabel: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /I do not understand enough domain terms to review this case\./);
+  assert.match(markup, /Use Not enough evidence when missing context blocks judgment\./);
+  assert.match(markup, /Context-safe choice/);
+  assert.match(markup, /Not enough evidence/);
+  assert.match(markup, /Choose an interpretation to continue/);
+  assert.doesNotMatch(markup, /Suspicious IAM privilege escalation/);
+  assert.doesNotMatch(markup, /The baseline model labels this region/);
 });
 
 test("imported Initial Assessment excludes the upstream AI label", () => {
@@ -513,8 +550,8 @@ test("later review routes stay sealed until a blind interpretation exists", () =
     }),
   );
 
-  assert.match(pageText, /Establish an independent baseline\./);
-  assert.match(pageText, /Choose an interpretation to continue/);
+  assert.match(pageText, /Start with what you can judge\./);
+  assert.match(pageText, /Choose context checkpoint to continue/);
   assert.match(pageText, /Selected behaviour region/);
   assert.doesNotMatch(pageText, /Suspicious IAM privilege escalation/);
   assert.doesNotMatch(pageText, /IAM role provisioning region/);
@@ -644,7 +681,7 @@ test("later workflow panels use compact chrome and descriptive actions", () => {
   assert.match(markup, /Evidence balance/);
   assert.match(
     markup,
-    /Rate whether each evidence item supports the specific claim under review\./,
+    /Rate each item against the claim\./,
   );
   assert.match(markup, /1 weak support · 2 contradictions · 1 needs context/);
   assert.match(
@@ -682,6 +719,8 @@ test("each review stage states the decision the reviewer must make", () => {
       React.createElement(BlindReadPanel, {
         caseFile: selectedCase,
         reviewState: {},
+        reviewReadinessChoice: "ready",
+        onChooseReviewReadiness: () => undefined,
         onChooseBlindInterpretation: () => undefined,
         onRevealAiLabel: () => undefined,
       }),
@@ -736,7 +775,7 @@ test("each review stage states the decision the reviewer must make", () => {
 
   assert.match(
     markup,
-    /Before seeing the AI label, record what the evidence suggests on its own\./,
+    /Use only the visible evidence\. The AI label stays hidden\./,
   );
   assert.match(
     markup,
@@ -744,7 +783,7 @@ test("each review stage states the decision the reviewer must make", () => {
   );
   assert.match(
     markup,
-    /Rate whether each evidence item supports the specific claim under review\./,
+    /Rate each item against the claim\./,
   );
   assert.match(
     markup,
@@ -758,6 +797,60 @@ test("each review stage states the decision the reviewer must make", () => {
     markup,
     /Choose the verdict and recommended action based on evidence support, uncertainty, and cluster fit\./,
   );
+});
+
+test("insufficient-context guidance uses existing review choices", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const evidenceRatings = getEvidenceRatings(selectedCase, {});
+  const balance = getEvidenceBalance(selectedCase, evidenceRatings);
+  const reviewState = {
+    blindChoiceId: "not-enough-evidence",
+    aiLabelRevealed: true,
+  };
+  const markup = renderStaticMarkup(
+    React.createElement(
+      React.Fragment,
+      null,
+      React.createElement(EvidenceBoard, {
+        caseFile: selectedCase,
+        reviewState,
+        evidenceRatings,
+        balance,
+        insufficientContextGuidance: "need_context",
+        onRateEvidence: () => undefined,
+      }),
+      React.createElement(LabelDuelPanel, {
+        caseFile: selectedCase,
+        reviewState: {},
+        insufficientContextGuidance: "need_context",
+        onSelectWinner: () => undefined,
+        onToggleReason: () => undefined,
+        onSetDuelNote: () => undefined,
+        onContinue: () => undefined,
+      }),
+      React.createElement(VerdictPanel, {
+        caseFile: selectedCase,
+        reviewState: {},
+        balance,
+        insufficientContextGuidance: "need_context",
+        onSelectVerdict: () => undefined,
+        onToggleFailureMode: () => undefined,
+        onOpenReviewDrawer: () => undefined,
+        onCopyJson: () => undefined,
+        onDownloadJson: () => undefined,
+      }),
+    ),
+  );
+
+  assert.match(markup, /Context-limited review/);
+  assert.match(markup, /Use Needs context instead of guessing support\./);
+  assert.match(markup, /Choose the uncertainty-preserving label when no label is defensible\./);
+  assert.match(markup, /Context-safe option/);
+  assert.match(markup, /Uncertain/);
+  assert.match(markup, /Needs better evidence/);
+  assert.match(markup, /Collect more evidence is the exported action for these outcomes\./);
 });
 
 test("evidence verification explains how to interpret every rating concept", () => {
@@ -816,7 +909,7 @@ test("final evaluation prompts a complete verdict and action check", () => {
     }),
   );
 
-  assert.match(markup, /Before you decide/);
+  assert.match(markup, /Decision checks/);
   assert.match(markup, /Is the AI label supported by the evidence\?/);
   assert.match(markup, /Is the label too broad, too specific, or overclaimed\?/);
   assert.match(markup, /Is uncertainty high enough to avoid a strong conclusion\?/);
@@ -1382,6 +1475,8 @@ test("blind interpretation choices render as accessible radio cards", () => {
     React.createElement(BlindReadPanel, {
       caseFile: selectedCase,
       reviewState: { blindChoiceId: "routine-iam-provisioning" },
+      reviewReadinessChoice: "ready",
+      onChooseReviewReadiness: () => undefined,
       onChooseBlindInterpretation: () => undefined,
       onRevealAiLabel: () => undefined,
     }),
@@ -1407,6 +1502,8 @@ test("blind read offers a clear path to AI Reveal once the label is already reve
         blindChoiceId: "routine-iam-provisioning",
         aiLabelRevealed: true,
       },
+      reviewReadinessChoice: "ready",
+      onChooseReviewReadiness: () => undefined,
       onChooseBlindInterpretation: () => undefined,
       onRevealAiLabel: () => undefined,
     }),
