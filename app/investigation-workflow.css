@@ -147,6 +147,31 @@
   min-width: 0;
 }
 
+.arena-header-link {
+  align-items: center;
+  background: var(--workflow-panel, var(--arena-panel));
+  border: 1px solid var(--workflow-border, var(--arena-border));
+  border-radius: 999px;
+  color: var(--workflow-ink, var(--arena-ink));
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 760;
+  justify-content: center;
+  min-height: 40px;
+  padding: 9px 14px;
+  text-decoration: none;
+}
+
+.arena-header-link:hover {
+  background: var(--workflow-surface, var(--arena-surface));
+  border-color: color-mix(in srgb, var(--workflow-ink, var(--arena-ink)) 20%, transparent);
+}
+
+.arena-header-link:focus-visible {
+  outline: 3px solid var(--workflow-focus, var(--tc-focus));
+  outline-offset: 3px;
+}
+
 .arena-local-file-actions .case-package-import-control {
   display: grid;
   gap: 4px;
@@ -7612,6 +7637,140 @@
   max-width: 1180px;
 }
 
+.local-evaluation-results,
+.local-results-groups {
+  display: grid;
+  gap: 18px;
+}
+
+.local-results-hero,
+.local-results-empty,
+.local-results-error,
+.local-results-provenance {
+  background: var(--workflow-panel);
+  border: 1px solid var(--workflow-border);
+  border-radius: 18px;
+}
+
+.local-results-hero {
+  align-items: flex-start;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  padding: clamp(20px, 2.4vw, 30px);
+}
+
+.local-results-hero h2 {
+  color: var(--workflow-ink);
+  font-size: 32px;
+  line-height: 1.08;
+  margin: 6px 0 0;
+  text-wrap: balance;
+}
+
+.local-results-hero > div > p:not(.eyebrow),
+.local-results-empty p,
+.local-results-error p,
+.local-results-provenance p {
+  color: var(--workflow-muted);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 8px 0 0;
+  max-width: 68ch;
+}
+
+.local-results-import {
+  display: grid;
+  gap: 8px;
+  justify-items: end;
+  max-width: 360px;
+}
+
+.local-results-import button {
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 780;
+  min-height: 40px;
+  padding: 9px 14px;
+}
+
+.local-results-import-status {
+  color: var(--workflow-muted);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+  text-align: right;
+}
+
+.local-results-import-status.is-success {
+  color: var(--workflow-supported);
+}
+
+.local-results-import-status.is-error,
+.local-results-error strong {
+  color: var(--workflow-contradicted);
+}
+
+.local-results-empty,
+.local-results-error {
+  padding: clamp(20px, 2.4vw, 30px);
+}
+
+.local-results-empty strong,
+.local-results-error strong {
+  font-size: 18px;
+}
+
+.local-results-group {
+  display: grid;
+  gap: 16px;
+}
+
+.local-results-provenance {
+  align-items: flex-start;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.8fr);
+  padding: 18px;
+}
+
+.local-results-provenance h3 {
+  color: var(--workflow-ink);
+  font-size: 20px;
+  margin: 6px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.local-results-provenance-label {
+  color: var(--workflow-muted);
+  display: block;
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.local-results-provenance dl {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+
+.local-results-provenance dt {
+  color: var(--workflow-muted);
+  font-size: 11px;
+  font-weight: 720;
+  text-transform: uppercase;
+}
+
+.local-results-provenance dd {
+  color: var(--workflow-ink);
+  font-size: 13px;
+  font-weight: 680;
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
+
 .arena-shell .evaluation-report-stage {
   gap: 16px;
   margin: 0 auto;
@@ -7839,6 +7998,27 @@
 }
 
 @media (max-width: 860px) {
+  .local-results-hero {
+    flex-direction: column;
+  }
+
+  .local-results-import {
+    justify-items: start;
+    max-width: none;
+  }
+
+  .local-results-import-status {
+    text-align: left;
+  }
+
+  .local-results-provenance {
+    grid-template-columns: 1fr;
+  }
+
+  .local-results-provenance dl {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .arena-shell .evaluation-report-hero,
   .arena-shell .evaluation-report-list li,
   .arena-shell .evaluation-disagreement-flag {

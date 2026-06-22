@@ -226,28 +226,30 @@ one available group or an explicit unavailable entry. Cross-package or
 cross-pipeline benchmarking needs a later report-set contract; it must not be
 implied by these single-package rollups.
 
-## Read-Only Results View v0.1
+## Local Results View v0.1
 
-The first results view is the `/results` route backed by a deterministic
-synthetic `EvaluationReportV01` fixture. It renders reviewer count, verdict
-distribution, label-winner distribution, evidence-rating distribution, and
-disagreement indicators from an already-built report. It renders reviewer
-agreement coverage and observed values, identifies disputed evidence by stable
-ID, and marks single-review or partial comparisons unavailable or incomplete
-rather than aligned. It also renders the
-comparison rollups as descriptive groups, marks single-value dimensions as
-context rather than cross-variant comparison, and shows missing dimensions as
-unavailable.
+The `/results` route reads the strict browser-local ReviewResult store and
+builds one `EvaluationReportV01` for each compatible CasePackage reference by
+calling the existing `aggregateReviewResultsV01` utility. It renders an empty
+state when no ReviewResults exist, total result and package coverage, compact
+package/pipeline provenance, verdict and label-winner distributions,
+evidence-rating sufficiency signals, reviewer agreement, disputed evidence,
+disagreement indicators, comparison rollups, and per-report JSON/CSV export.
 
-The view is intentionally presentation-only. It distinguishes reviewer output
-from upstream CasePackage evidence, shows unavailable aggregate data as
-unavailable rather than as zero-confidence truth, and does not expose claims,
-evidence content, raw telemetry, package import, scoring, adjudication, or
-consensus behavior.
+Locally completed reviews and validated imported bundle results enter the same
+versioned local store. The route accepts local ReviewResult bundle JSON through
+the existing strict bundle and store-import boundaries. Invalid, incompatible,
+and duplicate imports are rejected atomically, remain excluded from the report,
+and leave the current aggregate unchanged. Results for different CasePackage
+IDs are displayed as separate report groups; exact-reference compatibility is
+still required within each group.
 
-This is the current local capability for reading an EvaluationReport shape. It
-is not a generic dashboard, BI surface, backend API, durable multi-user report
-workflow, account system, admin surface, or adapter implementation.
+The view distinguishes reviewer output from upstream CasePackage evidence and
+shows unavailable aggregate data as unavailable rather than as zero-confidence
+truth. It does not expose claims, evidence content, raw telemetry, scoring,
+adjudication, consensus behavior, a generic dashboard, backend API, durable
+multi-user report workflow, account system, admin surface, or adapter
+implementation.
 
 ## EvaluationReport Export v0.1
 
@@ -270,11 +272,12 @@ verdict/evidence counts, missing-review counts, and unavailable reasons.
 Agreement rows preserve compared and unavailable review counts, observed values,
 distinct-value counts, incomplete reasons, and per-evidence dispute flags.
 
-The `/results` fixture view offers JSON and CSV downloads for the already-built
-fixture report. This is a portable artifact export for the static validation
-slice, not a durable report-generation workflow, backend API, BI dashboard,
-raw telemetry export, live model evaluation, cross-package benchmark workflow,
-scoring system, adjudication system, or consensus mechanism.
+The `/results` view offers JSON and CSV downloads for each report built from a
+compatible local CasePackage group. This is a portable artifact export for the
+local validation slice, not a durable report-generation workflow, backend API,
+BI dashboard, raw telemetry export, live model evaluation, cross-package
+benchmark workflow, scoring system, adjudication system, or consensus
+mechanism.
 
 ## Local ReviewResult Persistence v0.1
 
@@ -301,20 +304,19 @@ multi-user study store.
 
 ## Current State And Next Proof
 
-The current application stores review state locally, exports a single
-structured JSON record from synthetic fixtures, and can save ReviewResult
-artifacts in browser-local storage by CasePackage ID. The repository now
-provides CasePackage validation, local ReviewResult persistence, and
-deterministic in-memory aggregation of compatible ReviewResult objects, plus a
-fixture-backed read-only results view with JSON/CSV export for an
-EvaluationReport. It does not yet provide package uploads, durable server-side
-review storage, a multi-reviewer service, a report-generation workflow, or
-research-grade metrics.
+The current application imports validated local CasePackage JSON, preserves the
+synthetic demo flow, exports structured ReviewResults, stores them in browser
+local storage by CasePackage ID, and exchanges strict local ReviewResult
+bundles. The repository provides deterministic in-memory aggregation of
+compatible ReviewResult objects and a local results view with per-package
+EvaluationReport JSON/CSV export. It does not provide server uploads, durable
+server-side review storage, a multi-reviewer service, a durable report workflow,
+or research-grade metrics.
 
-The next proof after this contract slice is a narrow end-to-end exercise with a
-realistic package: import the package from local JSON, fail visibly if the
-package is invalid, complete independent reviews, retain and exchange the
-resulting ReviewResult artifacts, and aggregate them into an EvaluationReport
+The next proof after this local results slice is a narrow end-to-end exercise
+with a realistic package: import the package from local JSON, fail visibly if
+the package is invalid, complete independent reviews, retain and exchange the
+resulting ReviewResult artifacts, and verify the resulting EvaluationReport
 without relying on synthetic-only assumptions.
 
 ## Deferred Concerns

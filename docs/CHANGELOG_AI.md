@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-21: Local And Imported ReviewResult Results
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement issue #100 by replacing the fixture-only `/results` route with a local EvaluationReport-style summary built from validated browser-local and imported `ReviewResultV01` artifacts, while preserving the synthetic demo, CasePackage import diagnostics, #99 bundle exchange, and the local-only architecture boundary.
+- Files changed: `app/results/page.tsx`, `app/results/page.test.ts`, `app/page.test.ts`, `app/investigation-workflow.css`, `components/arena/AppShell.tsx`, `components/evaluation/LocalEvaluationResults.tsx`, `components/evaluation/LocalEvaluationResults.test.ts`, `lib/localEvaluationResultsV01.ts`, `lib/localEvaluationResultsV01.test.ts`, `docs/PRODUCT_VISION.md`, `docs/EVALUATION_INFRASTRUCTURE.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a results-page loader over the versioned local ReviewResult store, grouped exact CasePackage references into separate reports, reused `aggregateReviewResultsV01`, exposed total result and package coverage, compact package/pipeline provenance, existing verdict/label/evidence/agreement/disagreement signals, per-report JSON/CSV export, an empty state, and direct local bundle import. Added minimal Results and Review cases navigation.
+- Decisions made: Kept aggregation local-only and one exact CasePackage reference per report; reused #99 bundle validation and atomic store import; rejected invalid, incompatible, and duplicate bundle results without changing the current snapshot; showed exclusions explicitly; retained all existing EvaluationReport semantics rather than adding rates, scores, consensus, or a parallel metrics system.
+- Checks run: Focused #100, demo, CasePackage-import, invalid-package, bundle, storage, and results tests passed with 72 tests; `npm test` passed with 162 tests; `npx tsc --noEmit` passed; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed and kept `/results` statically prerendered; `git diff --check` passed. Headless Playwright verified the home-to-results navigation, empty state, validated localStorage populated state, package provenance, report signals, zero framework overlays/console errors, and zero horizontal overflow at a 390px viewport.
+- Assumptions: Browser-local and imported ReviewResults share the same strict versioned store after import. Result origin is not added to the ReviewResult contract, so the page reports store and package provenance rather than inventing local/imported origin metadata per review.
+- Risks/follow-ups: Browser localStorage remains device-local and is not durable multi-user study infrastructure. Exact package-reference compatibility intentionally prevents cross-package aggregation. Issue #101 still owns the imported CasePackage -> review -> exported/imported ReviewResult -> EvaluationReport smoke test.
+- Next recommended step: Implement #101 as a focused end-to-end utility-loop smoke test using the now-complete local results surface.
+- Suggested commit message: `feat(evaluation): build local results page`
+
 ## 2026-06-21: Portable ReviewResult Bundles
 
 - Agent/model: Codex (GPT-5)

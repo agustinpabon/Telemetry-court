@@ -1,0 +1,101 @@
+import {
+  aggregateReviewResultsV01,
+  type EvaluationReportV01,
+} from "@/lib/evaluationReportV01";
+import {
+  importReviewResultBundleToLocalStoreV01,
+  importReviewResultBundleV01Json,
+} from "@/lib/reviewResultBundleV01";
+import {
+  readReviewResultLocalStoreV01,
+  type ReviewResultStorageLike,
+} from "@/lib/reviewResultStorageV01";
+
+export type LocalEvaluationReportGroupV01 = {
+  casePackageId: string;
+  reviewResultCount: number;
+  report: EvaluationReportV01;
+};
+
+export type LocalEvaluationResultsSnapshotV01 = {
+  totalReviewResultCount: number;
+  packageGroups: LocalEvaluationReportGroupV01[];
+};
+
+export type LocalEvaluationResultsBundleImportV01 =
+  | {
+      ok: true;
+      importedReviewResultCount: number;
+      snapshot: LocalEvaluationResultsSnapshotV01;
+    }
+  | {
+      ok: false;
+      message: string;
+      excludedReviewResultCount: number;
+      snapshot: LocalEvaluationResultsSnapshotV01;
+    };
+
+export function loadLocalEvaluationResultsV01(
+  storage: ReviewResultStorageLike,
+): LocalEvaluationResultsSnapshotV01 {
+  const store = readReviewResultLocalStoreV01(storage);
+  const packageGroups = Object.entries(
+    store.review_results_by_case_package_id,
+  )
+    .filter(([, reviewResults]) => reviewResults.length > 0)
+    .sort(([leftPackageId], [rightPackageId]) =>
+      leftPackageId < rightPackageId ? -1 : leftPackageId > rightPackageId ? 1 : 0,
+    )
+    .map(([casePackageId, reviewResults]) => ({
+      casePackageId,
+      reviewResultCount: reviewResults.length,
+      report: aggregateReviewResultsV01(reviewResults),
+    }));
+
+  return {
+    totalReviewResultCount: packageGroups.reduce(
+      (total, group) => total + group.reviewResultCount,
+      0,
+    ),
+    packageGroups,
+  };
+}
+
+export function importLocalEvaluationResultsBundleV01(
+  storage: ReviewResultStorageLike,
+  jsonText: string,
+): LocalEvaluationResultsBundleImportV01 {
+  const validation = importReviewResultBundleV01Json(jsonText);
+
+  if (!validation.ok) {
+    return {
+      ok: false,
+      message: validation.message,
+      excludedReviewResultCount: 0,
+      snapshot: loadLocalEvaluationResultsV01(storage),
+    };
+  }
+
+  try {
+    const summary = importReviewResultBundleToLocalStoreV01(
+      storage,
+      validation.bundle,
+    );
+
+    return {
+      ok: true,
+      importedReviewResultCount: summary.importedReviewCount,
+      snapshot: loadLocalEvaluationResultsV01(storage),
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "ReviewResult bundle import failed.",
+      excludedReviewResultCount: validation.bundle.review_results.length,
+      snapshot: loadLocalEvaluationResultsV01(storage),
+    };
+  }
+}

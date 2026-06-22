@@ -102,7 +102,15 @@ failure-mode reason codes are defined in
 
 ## Current Static Validation Slice
 
-The current Next.js interface uses five synthetic cases and local state. It demonstrates the review protocol, structured JSON export, browser-local `ReviewResult` persistence keyed by CasePackage ID, deterministic in-memory `EvaluationReport` aggregation, and a fixture-backed read-only results view with JSON/CSV export. It does not yet prove real-world validation value, run Toponymy, ingest ACME4, provide durable server-side persistence, or support a multi-reviewer report workflow.
+The current Next.js interface uses five synthetic demo cases and also accepts
+validated local `CasePackage` JSON. It demonstrates the review protocol,
+structured JSON export, browser-local `ReviewResult` persistence keyed by
+CasePackage ID, strict ReviewResult bundle exchange, and deterministic
+in-memory `EvaluationReport` aggregation. The `/results` route now summarizes
+validated local or imported ReviewResults, separates exact CasePackage
+references, and exports each resulting report as JSON or CSV. It does not yet
+prove real-world validation value, run Toponymy, ingest ACME4, provide durable
+server-side persistence, or support a durable multi-user report workflow.
 
 The current EvaluationReport shape includes descriptive reviewer-signal rollups
 for selected label IDs and compact package/pipeline metadata already carried by
