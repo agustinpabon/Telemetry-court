@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-22: ReviewResult Export Purpose Copy
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement issue #118 as a narrow product-clarity UX change that explains the purpose of ReviewResult export and the EvaluationReport next step without changing contracts, schemas, export shapes, routes, stage IDs, protected-stage logic, or review-state semantics.
+- Files changed: `app/globals.css`, `app/investigation-workflow.css`, `app/page.test.ts`, `components/arena/JudgmentReceipt.tsx`, `components/arena/ReviewSummaryDrawer.tsx`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added concise export-moment copy in the verdict receipt and JSON drawer flow explaining that the downloaded JSON is one reviewer’s `ReviewResult`, that it preserves structured review decisions, that compatible ReviewResults for the same CasePackage should be collected together, that aggregation produces an `EvaluationReport`, and that the report is used to evaluate and improve upstream labels, prompts, embeddings, evidence extraction, and clustering. Also relabeled the drawer title to `Structured ReviewResult JSON`.
+- Decisions made: Kept `CasePackageV01`, `ReviewResultV01`, and `EvaluationReportV01` unchanged; kept ReviewResult export/import shapes and schema versions unchanged; kept blind review, route/stage IDs, protected-stage logic, and reducer/state-machine semantics unchanged. The change is explanatory copy plus light receipt styling only.
+- Checks run: Focused `node --test --import tsx app/page.test.ts` passed with 36 tests after new export-copy assertions were added first; `npm test` passed with 182 tests; `npx tsc --noEmit` passed; `npm run lint` passed with 0 errors and the existing 134 warnings under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check` passed. Manual Playwright review on `next start --hostname 127.0.0.1 --port 3104` confirmed the new ReviewResult/EvaluationReport copy is visible on desktop and mobile, the JSON drawer title/copy renders correctly, the export action remains visible, and the mobile verdict page has no horizontal overflow.
+- Assumptions: The most effective place for this clarification is the existing receipt/export surface the reviewer already sees at verdict completion and inside the JSON drawer, rather than a new page or tutorial.
+- Risks/follow-ups: This explains the current workflow but does not add ReviewResult import or EvaluationReport generation beyond the existing local results surface. If pilot reviewers still miss the next step, a later issue can add a more explicit Results CTA.
+- Next recommended step: Run the full required validation suite, perform a browser pass on the verdict/export flow, then open the requested draft PR for #118.
+- Suggested commit message: `ux(review): clarify ReviewResult export purpose`
+
 ## 2026-06-22: Checkpoint Card Copy Collision Fix
 
 - Agent/model: Codex (GPT-5)
