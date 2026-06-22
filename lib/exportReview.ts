@@ -95,7 +95,7 @@ export function buildReviewResultExport({
   assertCompletePackageReference(packageReference);
 
   if (
-    packageReference.case_id !== caseFile.id ||
+    !caseFileMatchesPackageReference(caseFile, packageReference) ||
     packageReference.cluster_id !== caseFile.cluster.id
   ) {
     throw new Error(
@@ -132,7 +132,8 @@ export function buildReviewResultExport({
   }
   const evidenceRatings = buildEvidenceRatings(caseFile, arenaReview);
   const reviewResultReviewer =
-    reviewer ?? createLocalDemoReviewer(packageReference.package_id, caseFile.id);
+    reviewer ??
+    createLocalDemoReviewer(packageReference.package_id, packageReference.case_id);
   assertCompleteReviewer(reviewResultReviewer);
   const { blind_review_enabled: blindReviewEnabled, ...casePackage } =
     packageReference;
@@ -193,6 +194,27 @@ function assertCompletePackageReference(
   requireValue(packageReference.pipeline.generated_at, "pipeline generation timestamp");
 }
 
+function caseFileMatchesPackageReference(
+  caseFile: CaseFile,
+  packageReference: CasePackageReferenceV01,
+): boolean {
+  return (
+    caseFile.id === packageReference.case_id ||
+    caseFile.id === createImportedCaseReviewId(packageReference)
+  );
+}
+
+function createImportedCaseReviewId(
+  packageReference: CasePackageReferenceV01,
+): string {
+  return [
+    "imported",
+    packageReference.package_id,
+    packageReference.package_revision ?? "unrevisioned",
+    packageReference.case_id,
+  ].join(":");
+}
+
 function assertKnownReviewReferences(
   caseFile: CaseFile,
   blindChoiceId: string,
@@ -238,7 +260,7 @@ export function serializeReviewResultExport(exportResult: ReviewResultV01): stri
 }
 
 export function getReviewResultExportFilename(caseFile: CaseFile): string {
-  return `${caseFile.id}-review-result.json`;
+  return `${caseFile.casePackageReference?.case_id ?? caseFile.id}-review-result.json`;
 }
 
 function requireBlindInterpretation(

@@ -77,8 +77,20 @@ export function importCasePackageV01Json(
   return {
     ok: true,
     package: validation.package,
-    caseFile: adapterResult.caseFile,
+    caseFile: {
+      ...adapterResult.caseFile,
+      id: createImportedCaseReviewId(validation.package),
+    },
   };
+}
+
+function createImportedCaseReviewId(casePackage: CasePackageV01): string {
+  return [
+    "imported",
+    casePackage.package_id,
+    casePackage.package_revision ?? "unrevisioned",
+    casePackage.case.case_id,
+  ].join(":");
 }
 
 function parseCasePackageJson(

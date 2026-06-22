@@ -1164,7 +1164,7 @@ test("blind interpretation choices render as accessible radio cards", () => {
   assert.doesNotMatch(markup, /disabled=""/);
 });
 
-test("blind read returns to AI Reveal once the label is already revealed", () => {
+test("blind read offers a clear path to AI Reveal once the label is already revealed", () => {
   const selectedCase = sampleCases[0];
   assert.ok(selectedCase);
 
@@ -1180,7 +1180,8 @@ test("blind read returns to AI Reveal once the label is already revealed", () =>
     }),
   );
 
-  assert.match(markup, /Return to AI Reveal/);
+  assert.match(markup, /Continue to AI Reveal/);
+  assert.doesNotMatch(markup, /Return to AI Reveal/);
 });
 
 test("shared review UI keeps contradicted and unsupported styling distinct", () => {
