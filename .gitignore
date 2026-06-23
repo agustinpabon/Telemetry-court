@@ -42,3 +42,7 @@ logs
 
 # typescript
 *.tsbuildinfo
+
+# local test logs
+test-results.txt
+
