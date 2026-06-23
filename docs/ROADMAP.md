@@ -32,8 +32,8 @@ package import, result exchange, and aggregation are usable.
 | Milestone 0 - Current Static Validation Slice | Complete/current baseline | Synthetic interface demonstrates the review protocol without claiming real validation infrastructure. |
 | Milestone 1 - Product Realignment And Documentation | Complete | Repository language, planning, architecture, and agent guidance align around the validation-bench direction. |
 | Milestone 2 - Case Package Contract And Validation Infrastructure | Complete/current foundation | Versioned `CasePackage`, `ReviewResult`, and `EvaluationReport` contracts, package validation, package-shaped fixtures, and local export/aggregation foundations. |
-| Milestone 3 - Local Utility Gate | Active next | Local CasePackage import, useful invalid-package failure UI, ReviewResult persistence/export/import, results from local/imported ReviewResults, and an end-to-end imported-package smoke test. |
-| Milestone 4 - Toponymy / ACME4 Adapter Prototype | Planned after utility gate | One approved adapter converts a real or realistic cluster output into a case package without raw restricted telemetry ingestion. |
+| Milestone 3 - Local Utility Gate | Complete | Local CasePackage import, useful invalid-package failure UI, ReviewResult persistence/export/import, results from local/imported ReviewResults, and an end-to-end imported-package smoke test. |
+| Milestone 4 - Toponymy / ACME4 Adapter Prototype | Active/In progress | One approved adapter converts a real or realistic cluster output into a case package without raw restricted telemetry ingestion. See [MILESTONE_4_ADAPTER_BOUNDARY.md](./MILESTONE_4_ADAPTER_BOUNDARY.md). |
 | Milestone 5 - Evidence-Constrained AI Assistance | Later/deferred | Predefined evidence-citing questions with explicit missing-evidence behavior after import/results/aggregation are usable. |
 | Milestone 6 - Research Validation Study | Target proof | Multiple reviewers demonstrate useful evaluation signals on real or realistic cases. |
 
@@ -66,7 +66,7 @@ Definition of done: contributors can identify the validation-bench purpose and l
 
 Definition of done: one versioned package-shaped fixture passes runtime validation and drives the current flow; invalid packages fail before rendering; review export identifies the package and protocol versions; contract decisions precede database or auth work.
 
-## Milestone 3 - Local Utility Gate
+## Milestone 3 - Local Utility Gate (Complete)
 
 - Import external `CasePackage` JSON from a local file.
 - Validate imported packages before review and show useful failures for broken
@@ -89,12 +89,13 @@ artifacts, and produce an auditable EvaluationReport without a backend service.
 
 ## Milestone 4 - Toponymy / ACME4 Adapter Prototype
 
+- Define the adapter boundary and loop refinement spec. See [MILESTONE_4_ADAPTER_BOUNDARY.md](./MILESTONE_4_ADAPTER_BOUNDARY.md).
 - Build one script or notebook-level adapter for an approved real or realistic precomputed cluster output.
 - Emit minimal, auditable `CasePackage` JSON.
 - Preserve provenance and sanitization metadata.
 - Keep raw restricted telemetry outside the public or portable app.
 
-Definition of done: one adapter-generated package validates and completes the review-to-report path without inventing Toponymy APIs or ACME4 access.
+Definition of done: the adapter boundary is documented; one adapter-generated package validates and completes the review-to-report path; and the refinement feedback loop is defined without inventing Toponymy APIs or ACME4 access.
 
 ## Milestone 5 - Evidence-Constrained AI Assistance
 
@@ -122,7 +123,7 @@ Telemetry Court becomes a serious tool only when it can ingest a real or realist
 - Do not start with auth, production database design, admin UX, user management, or generic CRUD.
 - Do not add SIEM, SOC, alert-triage, raw-search, or live-ingestion work.
 - Do not schedule UI polish as a substitute for package and evaluation proof.
-- Keep the Local Utility Gate as the next implementation milestone.
+- Keep the Adapter Prototype and Refinement Integration as the active implementation milestone.
 - Keep evidence-constrained AI assistance later until import/results/aggregation
   can produce an auditable EvaluationReport.
 - Create only a small executable issue batch for the active milestone and its immediate blocker.
