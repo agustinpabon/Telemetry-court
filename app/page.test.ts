@@ -183,7 +183,7 @@ test("home page static review flow exposes the core Telemetry Court concepts", (
   assert.match(pageText, /72%/);
   assert.match(pageText, /Open case file/);
   assert.match(pageText, /Import CasePackage/);
-  assert.match(pageText, /ReviewResult bundle/);
+  assert.match(pageText, /ReviewResult import/);
   assert.match(pageText, /Export reviews/);
   assert.match(pageText, /Import review results/);
   assert.match(pageText, /Local JSON for portable review outputs/);

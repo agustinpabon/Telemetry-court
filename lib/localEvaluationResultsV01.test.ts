@@ -63,6 +63,28 @@ test("imported ReviewResult bundles are included in local evaluation results", (
   assert.equal(result.snapshot.packageGroups[0]?.report.reviewer_count, 1);
 });
 
+test("single imported ReviewResult JSON is included through the same local results boundary", () => {
+  const storage = createMemoryStorage();
+  const reviewResult = createReviewResult({ reviewerId: "reviewer-single" });
+
+  const result = importLocalEvaluationResultsBundleV01(
+    storage,
+    JSON.stringify(reviewResult),
+  );
+
+  assert.equal(result.ok, true);
+  if (!result.ok) {
+    return;
+  }
+  assert.equal(result.importedReviewResultCount, 1);
+  assert.equal(result.inspectionSummary.artifactType, "ReviewResult");
+  assert.deepEqual(result.inspectionSummary.referencedPackageIds, [
+    "pkg-results-001",
+  ]);
+  assert.equal(result.snapshot.totalReviewResultCount, 1);
+  assert.equal(result.snapshot.packageGroups[0]?.report.reviewer_count, 1);
+});
+
 test("incompatible imported results are excluded without contaminating aggregation", () => {
   const storage = createMemoryStorage();
   saveReviewResultToLocalStoreV01(storage, createReviewResult());

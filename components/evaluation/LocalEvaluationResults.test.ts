@@ -7,6 +7,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { LocalEvaluationResultsView } from "@/components/evaluation/LocalEvaluationResults";
 import { sampleEvaluationReportV01 } from "@/data/evaluationReportFixtures";
 import type { LocalEvaluationResultsSnapshotV01 } from "@/lib/localEvaluationResultsV01";
+import type { ReviewResultImportInspectionSummaryV01 } from "@/lib/reviewResultInspectionV01";
 
 const populatedSnapshot: LocalEvaluationResultsSnapshotV01 = {
   totalReviewResultCount: sampleEvaluationReportV01.reviewer_count,
@@ -54,10 +55,16 @@ test("results view renders imported ReviewResult bundle status with its report",
     state: "success",
     message:
       "Imported 2 ReviewResults. The local summary now includes 2 results.",
+    inspectionSummary: inlineInspectionSummary,
   });
 
   assert.match(markup, /Imported 2 ReviewResults/);
   assert.match(markup, /The local summary now includes 2 results/);
+  assert.match(markup, /Imported ReviewResult summary/);
+  assert.match(markup, /bundle-inline-001/);
+  assert.match(markup, /pkg-inline-001/);
+  assert.match(markup, /Review protocol versions/);
+  assert.match(markup, /supported: 1, uncertain: 1/);
   assert.match(markup, /Aggregated reviewer results/);
 });
 
@@ -86,3 +93,45 @@ function renderResults(
     }),
   ).replace(/\s+/g, " ");
 }
+
+const inlineInspectionSummary: ReviewResultImportInspectionSummaryV01 = {
+  artifactType: "ReviewResultBundle",
+  artifactSchemaVersion: "review_result_bundle.v0.1",
+  bundleId: "bundle-inline-001",
+  resultCount: 2,
+  uniqueReviewerSessionCount: 2,
+  reviewerSessions: [
+    { reviewerId: "reviewer-a", reviewSessionId: "session-a" },
+    { reviewerId: "reviewer-b", reviewSessionId: "session-b" },
+  ],
+  referencedPackageIds: ["pkg-inline-001"],
+  referencedCaseIds: ["case-inline-001"],
+  reviewResultSchemaVersions: ["review_result.v0.1"],
+  casePackageSchemaVersions: ["case_package.v0.1"],
+  reviewProtocolVersions: ["telemetry_court_review.v0.1"],
+  casePackageReferences: [
+    {
+      packageId: "pkg-inline-001",
+      caseId: "case-inline-001",
+      clusterId: "cluster-inline-001",
+      pipelineRunId: "run-inline-001",
+      upstreamTool: "inline-test-generator",
+    },
+  ],
+  verdictDistribution: [
+    { value: "supported", count: 1 },
+    { value: "uncertain", count: 1 },
+  ],
+  confidenceSummary: {
+    capturedCount: 1,
+    missingCount: 1,
+    distribution: [{ value: "high", count: 1 }],
+  },
+  failureModeCounts: [{ value: "missing_evidence", count: 2 }],
+  compatibilitySummary: {
+    status: "compatible",
+    message:
+      "Strict validation confirmed one compatible CasePackage/protocol/evidence set for local aggregation.",
+  },
+  warnings: [],
+};

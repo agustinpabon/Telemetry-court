@@ -1,9 +1,16 @@
 import { useId, useRef, type ChangeEvent } from "react";
 
+import { ReviewResultImportSummaryPanel } from "@/components/arena/ReviewResultImportSummaryPanel";
+import type { ReviewResultImportInspectionSummaryV01 } from "@/lib/reviewResultInspectionV01";
+
 export type ReviewResultBundleControlStatus =
   | { state: "idle" }
   | { state: "reading" }
-  | { state: "success"; message: string }
+  | {
+      state: "success";
+      message: string;
+      inspectionSummary?: ReviewResultImportInspectionSummaryV01;
+    }
   | { state: "error"; message: string };
 
 type ReviewResultBundleControlProps = {
@@ -23,6 +30,7 @@ export function ReviewResultBundleControl({
 }: ReviewResultBundleControlProps) {
   const inputId = useId();
   const statusId = useId();
+  const summaryTitleId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -38,7 +46,7 @@ export function ReviewResultBundleControl({
     try {
       onImportText(await file.text(), file.name);
     } catch {
-      onImportReadError("Could not read the selected ReviewResult bundle.");
+      onImportReadError("Could not read the selected ReviewResult JSON file.");
     } finally {
       input.value = "";
     }
@@ -47,7 +55,7 @@ export function ReviewResultBundleControl({
   return (
     <div className="review-result-bundle-control tc-masthead__action-group">
       <span className="review-result-bundle-label tc-masthead__group-label tc-masthead__action-label">
-        ReviewResult bundle
+        ReviewResult import
       </span>
       <input
         ref={fileInputRef}
@@ -77,6 +85,12 @@ export function ReviewResultBundleControl({
       >
         {getStatusCopy(status)}
       </p>
+      {status.state === "success" && status.inspectionSummary ? (
+        <ReviewResultImportSummaryPanel
+          summary={status.inspectionSummary}
+          titleId={summaryTitleId}
+        />
+      ) : null}
     </div>
   );
 }
@@ -84,7 +98,7 @@ export function ReviewResultBundleControl({
 function getStatusCopy(status: ReviewResultBundleControlStatus): string {
   switch (status.state) {
     case "reading":
-      return "Validating local ReviewResult bundle JSON.";
+      return "Validating local ReviewResult JSON.";
     case "success":
     case "error":
       return status.message;

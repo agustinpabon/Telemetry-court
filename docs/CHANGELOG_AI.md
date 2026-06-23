@@ -19,6 +19,52 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-23: Imported ReviewResult Inspection Summary
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Add the symmetric UI inspection step for imported
+  `ReviewResult` / `ReviewResultBundle` JSON, mirroring the imported
+  `CasePackage` summary while preserving strict local validation and
+  aggregation boundaries.
+- Files changed: `app/investigation-workflow.css`, `app/page.test.ts`,
+  `app/results/page.test.ts`, `components/arena/AppShell.tsx`,
+  `components/arena/ReviewResultBundleControl.tsx`,
+  `components/arena/ReviewResultBundleControl.test.ts`,
+  `components/arena/ReviewResultImportSummaryPanel.tsx`,
+  `components/evaluation/LocalEvaluationResults.tsx`,
+  `components/evaluation/LocalEvaluationResults.test.ts`,
+  `lib/localEvaluationResultsV01.ts`,
+  `lib/localEvaluationResultsV01.test.ts`, `lib/reviewResultImportV01.ts`,
+  `lib/reviewResultImportV01.test.ts`, `lib/reviewResultInspectionV01.ts`,
+  `lib/reviewResultInspectionV01.test.ts`, `scripts/validate-review-results.ts`,
+  and `docs/CHANGELOG_AI.md`.
+- Summary: Added a shared pure ReviewResult inspection helper for already
+  validated single-result and bundle artifacts, reused it in the validation CLI,
+  and rendered a compact imported result summary in both the review masthead
+  import surface and the `/results` import surface. The UI now summarizes result
+  counts, referenced CasePackage/case IDs, package and review schema versions,
+  protocol versions, verdicts, confidence capture, failure modes, and strict
+  compatibility status before users inspect aggregate results.
+- Decisions made: Kept invalid imports on the existing loud failure path and
+  kept aggregation, `ReviewResult`, `ReviewResultBundle`, and `EvaluationReport`
+  shapes unchanged. Added a thin import router so valid single `ReviewResult`
+  JSON uses the same one-result bundle storage/import path as bundles.
+- Checks run: Focused tests for ReviewResult inspection/import, CLI validation,
+  ReviewResult import UI, local results, and results page passed; final
+  `npm test` passed with 215 tests after fixing one stale masthead-label
+  assertion; `npx tsc --noEmit` passed; `npm run lint` passed with the
+  existing 134 warnings under `.agents/skills/impeccable`; `npm run build`
+  passed; `git diff --check` passed.
+- Assumptions: Showing the imported-result summary at the import control and
+  above `/results` report groups is the symmetric counterpart to the imported
+  CasePackage masthead summary.
+- Risks/follow-ups: The summary is metadata-only and cannot prove reviewer
+  independence or evidence quality; it reports validated artifact contents
+  without scoring, adjudication, consensus, backend persistence, or pilot data.
+- Next recommended step: Use this inspection affordance in the Local Utility
+  Gate smoke path for exported review results and aggregation handoff.
+- Suggested commit message: `feat(review-result): show imported result summary`
+
 ## 2026-06-23: Local ReviewResult and Bundle Validation CLI
 
 - Agent/model: Antigravity (Gemini 3.5 Flash)
