@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --test --import tsx",
-    "validate-package": "tsx scripts/validate-package.ts"
+    "validate-package": "tsx scripts/validate-package.ts",
+    "validate-review-results": "tsx scripts/validate-review-results.ts"
   },
   "dependencies": {
     "next": "16.2.9",

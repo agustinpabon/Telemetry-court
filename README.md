@@ -159,6 +159,14 @@ The in-app CasePackage import summary mirrors this local validator inspection
 boundary after a valid import. It summarizes validated CasePackage metadata
 only and remains separate from ReviewResult or EvaluationReport creation.
 
+Validate and inspect one local `ReviewResult` JSON or `ReviewResultBundle` JSON file:
+
+```bash
+npm run validate-review-results -- path/to/review-results.json
+```
+
+This command validates the supplied results file strictly against existing validation contracts, summarizes the verdict/confidence distributions, compatibility status, and reviewer sessions, and exits with a non-zero status code on parsing or validation failures. It operates strictly locally on existing reviewer output files and does not fabricate reviews, produce pilot outputs, or write new EvaluationReports.
+
 ## License
 
 MIT. See [LICENSE](./LICENSE).
