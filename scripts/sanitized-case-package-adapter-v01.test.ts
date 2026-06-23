@@ -270,7 +270,7 @@ test("invalid draft fails preflight mapping validation cleanly and does not writ
     await writeFile(inputPath, draftStr, "utf8");
 
     const res = await runCli([inputPath, "--out", outputPath]);
-    
+
     try {
       await readFile(outputPath, "utf8");
       outputWritten = true;
@@ -290,13 +290,7 @@ test("invalid draft fails preflight mapping validation cleanly and does not writ
 
 test("mapped package failing CasePackage validation fails cleanly and does not write output", async () => {
   const draft = createValidSanitizedDraft();
-  // Set invalid schema_version or another field that buildCasePackage allows but validateCasePackageV01 rejects.
-  // E.g., CasePackage dataset limitations is required string array in validation, but lets check what validates.
-  // Actually, we can make CasePackage validation fail by using an invalid sanitization status like 'unknown' which is
-  // allowed in CasePackageValidationStatusV01 but preflight adapter check blocks it unless it is synthetic.
-  // Wait, let's see how we can fail CasePackage validation.
-  // Let's check `lib/casePackageValidation.ts`:
-  // E.g., `dataset.dataset_type` must be in `DATASET_TYPES`. Let's set it to an invalid value.
+  // Use a draft value that maps successfully, then fails strict CasePackage validation.
   draft.dataset.dataset_type = "invalid_type" as unknown as "cloudtrail";
   const draftStr = JSON.stringify(draft);
 
@@ -307,7 +301,7 @@ test("mapped package failing CasePackage validation fails cleanly and does not w
     await writeFile(inputPath, draftStr, "utf8");
 
     const res = await runCli([inputPath, "--out", outputPath]);
-    
+
     try {
       await readFile(outputPath, "utf8");
       outputWritten = true;
