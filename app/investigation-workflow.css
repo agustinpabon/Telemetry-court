@@ -161,7 +161,31 @@
   z-index: 50;
 }
 
+.case-package-import-summary-panel {
+  background: var(--workflow-surface, var(--color-surface));
+  border: 1px solid var(--workflow-border-strong, var(--color-border-strong));
+  border-radius: 18px;
+  box-shadow: 0 18px 48px rgba(50, 48, 47, 0.12);
+  color: var(--workflow-ink, var(--color-ink));
+  display: grid;
+  gap: 12px;
+  max-height: min(70vh, 640px);
+  overflow: auto;
+  padding: 14px;
+  position: absolute;
+  right: 0;
+  text-align: left;
+  top: calc(100% + 10px);
+  width: min(560px, calc(100vw - 32px));
+  z-index: 45;
+}
+
 .case-package-import-failure-header {
+  display: grid;
+  gap: 6px;
+}
+
+.case-package-import-summary-header {
   display: grid;
   gap: 6px;
 }
@@ -174,14 +198,24 @@
   margin: 0;
 }
 
+.case-package-import-summary-kicker {
+  color: var(--workflow-supported, var(--color-supported));
+  font-size: 12px;
+  font-weight: 780;
+  letter-spacing: 0;
+  margin: 0;
+}
+
 .case-package-import-failure-panel h2,
-.case-package-import-failure-panel h3 {
+.case-package-import-failure-panel h3,
+.case-package-import-summary-panel h2 {
   color: var(--workflow-ink, var(--color-ink));
   letter-spacing: 0;
   margin: 0;
 }
 
-.case-package-import-failure-panel h2 {
+.case-package-import-failure-panel h2,
+.case-package-import-summary-panel h2 {
   font-size: 18px;
   line-height: 1.25;
 }
@@ -205,20 +239,30 @@
   margin: 0;
 }
 
+.case-package-import-summary-facts {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
 .case-package-import-failure-facts div,
+.case-package-import-summary-facts div,
 .case-package-import-errors li {
   background: var(--workflow-panel, var(--color-panel));
   border: 1px solid var(--workflow-border, var(--color-border));
   border-radius: 12px;
 }
 
-.case-package-import-failure-facts div {
+.case-package-import-failure-facts div,
+.case-package-import-summary-facts div {
   display: grid;
   gap: 4px;
   padding: 10px;
 }
 
-.case-package-import-failure-panel dt {
+.case-package-import-failure-panel dt,
+.case-package-import-summary-panel dt {
   color: var(--workflow-soft, var(--color-muted-soft));
   font-size: 11px;
   font-weight: 800;
@@ -226,11 +270,13 @@
   text-transform: uppercase;
 }
 
-.case-package-import-failure-panel dd {
+.case-package-import-failure-panel dd,
+.case-package-import-summary-panel dd {
   color: var(--workflow-ink, var(--color-ink));
   font-size: 13px;
   line-height: 1.4;
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .case-package-import-suggested-fix {
@@ -8337,12 +8383,14 @@
     min-height: 32px;
   }
 
-  .case-package-import-failure-panel {
+  .case-package-import-failure-panel,
+  .case-package-import-summary-panel {
     left: 0;
     right: auto;
   }
 
-  .case-package-import-failure-facts {
+  .case-package-import-failure-facts,
+  .case-package-import-summary-facts {
     grid-template-columns: 1fr;
   }
 }

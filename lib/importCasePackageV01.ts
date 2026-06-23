@@ -3,6 +3,10 @@ import {
   createCaseFileCompatibilitySeedFromCasePackageV01,
 } from "@/lib/casePackageV01ToCaseFile";
 import {
+  inspectCasePackageV01,
+  type CasePackageInspectionSummary,
+} from "@/lib/casePackageInspection";
+import {
   validateCasePackageV01,
   type CasePackageValidationError,
 } from "@/lib/casePackageValidation";
@@ -23,6 +27,7 @@ export type CasePackageImportResult =
       ok: true;
       caseFile: CaseFile;
       package: CasePackageV01;
+      inspectionSummary: CasePackageInspectionSummary;
     }
   | {
       ok: false;
@@ -77,6 +82,7 @@ export function importCasePackageV01Json(
   return {
     ok: true,
     package: validation.package,
+    inspectionSummary: inspectCasePackageV01(validation.package),
     caseFile: {
       ...adapterResult.caseFile,
       id: createImportedCaseReviewId(validation.package),

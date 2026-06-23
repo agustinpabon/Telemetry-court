@@ -7,6 +7,7 @@ import {
   sampleCases,
 } from "@/data/sampleCases";
 import { sampleCaseSeedData } from "@/data/sampleCaseSeedData";
+import { inspectCasePackageV01 } from "@/lib/casePackageInspection";
 import {
   arenaReducer,
   buildArenaReview,
@@ -17,6 +18,79 @@ import {
 } from "@/lib/arenaReviewState";
 import { buildReviewResultExport } from "@/lib/exportReview";
 import { importCasePackageV01Json } from "@/lib/importCasePackageV01";
+import type { CasePackageV01 } from "@/lib/types";
+
+function createSanitizedControlledPackage(): CasePackageV01 {
+  const fixture = structuredClone(casePackageFixtures[0]);
+
+  return {
+    ...fixture,
+    case: {
+      ...fixture.case,
+      reviewable_status: "reviewable",
+      limitations: [
+        "Sanitized summaries only; raw restricted telemetry remains upstream.",
+      ],
+    },
+    dataset: {
+      ...fixture.dataset,
+      data_classification: "sanitized",
+      source_environment: "authorized-research-environment",
+      approved_use: "Approved evidence review using sanitized summaries.",
+      approval_notes: "Approval is recorded in sanitization.review_approval.",
+      limitations: ["No raw restricted telemetry is included."],
+    },
+    provenance: {
+      ...fixture.provenance,
+      source_system: "approved-upstream-notebook",
+      source_artifact: "artifact-sanitized-cluster-001",
+      generating_tool: "case-package-export-notebook",
+      adapter_name: "sanitized-case-package-adapter",
+      adapter_version: "0.1.0",
+      references: [
+        {
+          reference_id: "ref-sanitized-upstream-run",
+          reference_type: "source_artifact_id",
+          artifact_id: "artifact-sanitized-cluster-001",
+        },
+      ],
+    },
+    sanitization: {
+      status: "sanitized",
+      method:
+        "Derived feature summaries with direct identifiers removed upstream.",
+      redaction_notes: [
+        "Account, principal, host, network, and event identifiers were removed.",
+      ],
+      allowed_display_level: "summary_only",
+      raw_drilldown_allowed: false,
+      safe_reference_type: "source_artifact_id",
+      review_approval: {
+        status: "approved",
+        approved_by: "data-governance-team",
+        approved_at: "2026-06-20T11:59:00.000Z",
+        scope: "Telemetry Court review of this sanitized package revision.",
+        reference: {
+          reference_id: "ref-sanitized-review-approval",
+          reference_type: "source_artifact_id",
+          artifact_id: "approval-sanitized-cluster-001",
+        },
+      },
+    },
+    evidence_items: fixture.evidence_items.map((evidenceItem) => ({
+      ...evidenceItem,
+      sanitization_status: "sanitized",
+      source_reference: {
+        ...evidenceItem.source_reference,
+        safe_reference: {
+          reference_id: `ref-${evidenceItem.evidence_id}`,
+          reference_type: "source_artifact_id",
+          artifact_id: `artifact-sanitized-cluster-001/${evidenceItem.evidence_id}`,
+        },
+      },
+    })),
+  };
+}
 
 test("valid CasePackage JSON imports and opens as review state", () => {
   const packageFixture = casePackageFixtures[0];
@@ -47,6 +121,19 @@ test("valid CasePackage JSON imports and opens as review state", () => {
     importResult.caseFile.evidenceItems.length,
     packageFixture.evidence_items.length,
   );
+  assert.deepEqual(
+    importResult.inspectionSummary,
+    inspectCasePackageV01(packageFixture),
+  );
+  assert.equal(importResult.inspectionSummary.packagePosture, "synthetic demo");
+  assert.equal(
+    Object.hasOwn(importResult as Record<string, unknown>, "reviewResult"),
+    false,
+  );
+  assert.equal(
+    Object.hasOwn(importResult as Record<string, unknown>, "evaluationReport"),
+    false,
+  );
 
   const cases = [
     importResult.caseFile,
@@ -65,6 +152,43 @@ test("valid CasePackage JSON imports and opens as review state", () => {
   assert.equal(arenaState.activeStage, "case_file");
   assert.deepEqual(arenaState.reviewsByCase[importResult.caseFile.id], {});
   assert.equal(getSelectedCase(cases, arenaState)?.id, importResult.caseFile.id);
+});
+
+test("valid controlled sanitized CasePackage import includes approval and adapter inspection metadata", () => {
+  const packageFixture = createSanitizedControlledPackage();
+  const importResult = importCasePackageV01Json(JSON.stringify(packageFixture));
+
+  assert.equal(importResult.ok, true);
+  if (!importResult.ok) {
+    return;
+  }
+
+  assert.deepEqual(
+    importResult.inspectionSummary,
+    inspectCasePackageV01(packageFixture),
+  );
+  assert.equal(
+    importResult.inspectionSummary.packagePosture,
+    "sanitized/controlled",
+  );
+  assert.equal(importResult.inspectionSummary.approvalStatus, "approved");
+  assert.equal(
+    importResult.inspectionSummary.approvalScope,
+    "Telemetry Court review of this sanitized package revision.",
+  );
+  assert.equal(
+    importResult.inspectionSummary.adapterName,
+    "sanitized-case-package-adapter",
+  );
+  assert.equal(importResult.inspectionSummary.adapterVersion, "0.1.0");
+  assert.equal(
+    Object.hasOwn(importResult as Record<string, unknown>, "reviewResult"),
+    false,
+  );
+  assert.equal(
+    Object.hasOwn(importResult as Record<string, unknown>, "evaluationReport"),
+    false,
+  );
 });
 
 test("importing a package with a demo case ID does not inherit seeded verdict state", () => {

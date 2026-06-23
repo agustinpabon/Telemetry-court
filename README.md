@@ -155,6 +155,10 @@ npm run validate-package -- path/to/case-package.json
 This command validates the supplied package file only. It does not read raw
 telemetry, resolve source artifacts, or follow safe references.
 
+The in-app CasePackage import summary mirrors this local validator inspection
+boundary after a valid import. It summarizes validated CasePackage metadata
+only and remains separate from ReviewResult or EvaluationReport creation.
+
 ## License
 
 MIT. See [LICENSE](./LICENSE).

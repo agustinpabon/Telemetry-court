@@ -19,6 +19,40 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-23: Imported CasePackage Inspection Summary
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement issue #133 by showing the shared CasePackage
+  inspection summary after a valid local import without reading raw telemetry,
+  following safe references, creating ReviewResults, or creating
+  EvaluationReports.
+- Files changed: `components/arena/CasePackageImportControl.tsx`,
+  `components/arena/AppShell.tsx`, `lib/importCasePackageV01.ts`,
+  `components/arena/WorkflowPrimitives.test.tsx`,
+  `lib/importCasePackageV01.test.ts`, `app/investigation-workflow.css`,
+  `README.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Successful imports now carry the shared
+  `inspectCasePackageV01` summary through the import result and render a compact
+  UI inspection panel with schema, package/case IDs, reviewable status,
+  synthetic-versus-controlled posture, dataset/sanitization/approval metadata,
+  pipeline/adapter metadata, and evidence/claim/label/session counts.
+- Decisions made: Reused `lib/casePackageInspection.ts` for summary data and
+  kept invalid imports on the existing loud failure path. The UI summarizes only
+  already-validated CasePackage metadata; it does not resolve safe references,
+  read source artifacts, or imply pilot/reviewer/report execution.
+- Checks run: `node --test --import tsx components/arena/WorkflowPrimitives.test.tsx lib/importCasePackageV01.test.ts`;
+  `npm test`; `npx tsc --noEmit`; `npm run lint` (passed with the existing 134
+  warnings under `.agents/skills/impeccable`); `npm run build`;
+  `git diff --check`.
+- Assumptions: The current import masthead is the right surface for a compact
+  summary because it already owns import success and failure state.
+- Risks/follow-ups: The panel confirms metadata presence but cannot prove that
+  arbitrary package text is safe; upstream authors and approvers remain
+  responsible for release scope.
+- Next recommended step: Continue the Local Utility Gate by improving package
+  authoring/inspection support or the imported review-to-results workflow.
+- Suggested commit message: `feat(case-package): show import inspection summary`
+
 ## 2026-06-22: Local CasePackage Validation CLI
 
 - Agent/model: Codex (GPT-5)

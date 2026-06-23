@@ -1,5 +1,6 @@
 import { useId, useRef, useState, type ChangeEvent } from "react";
 
+import type { CasePackageInspectionSummary } from "@/lib/casePackageInspection";
 import type { CasePackageImportResult } from "@/lib/importCasePackageV01";
 
 export type CasePackageImportFailureDetails =
@@ -21,6 +22,7 @@ export type CasePackageImportStatus =
       packageId: string;
       caseId: string;
       title: string;
+      inspectionSummary: CasePackageInspectionSummary;
     }
   | { state: "error"; failure: CasePackageImportFailureDetails };
 
@@ -44,6 +46,7 @@ export function CasePackageImportControl({
 }: CasePackageImportControlProps) {
   const inputId = useId();
   const statusId = useId();
+  const inspectionPanelTitleId = useId();
   const failurePanelTitleId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [copyMessage, setCopyMessage] = useState<string>();
@@ -125,6 +128,12 @@ export function CasePackageImportControl({
           onChooseAnotherFile={() => fileInputRef.current?.click()}
           onClearImport={onClearImport}
           onCopyDiagnostics={handleCopyDiagnostics}
+        />
+      ) : null}
+      {status.state === "success" ? (
+        <ImportInspectionSummaryPanel
+          summary={status.inspectionSummary}
+          titleId={inspectionPanelTitleId}
         />
       ) : null}
     </div>
@@ -244,6 +253,94 @@ function ImportFailurePanel({
       ) : null}
     </section>
   );
+}
+
+function ImportInspectionSummaryPanel({
+  summary,
+  titleId,
+}: {
+  summary: CasePackageInspectionSummary;
+  titleId: string;
+}) {
+  const facts = getInspectionSummaryFacts(summary);
+
+  return (
+    <section
+      className="case-package-import-summary-panel"
+      aria-labelledby={titleId}
+    >
+      <div className="case-package-import-summary-header">
+        <p className="case-package-import-summary-kicker">
+          {summary.packagePosture}
+        </p>
+        <h2 id={titleId}>Imported package summary</h2>
+      </div>
+
+      <dl className="case-package-import-summary-facts">
+        {facts.map((fact) => (
+          <div key={fact.label}>
+            <dt>{fact.label}</dt>
+            <dd>{fact.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
+}
+
+function getInspectionSummaryFacts(
+  summary: CasePackageInspectionSummary,
+): Array<{ label: string; value: string }> {
+  return [
+    { label: "Schema version", value: summary.schemaVersion },
+    {
+      label: "Package ID",
+      value: formatMaybeRevision(summary.packageId, summary.packageRevision),
+    },
+    { label: "Case ID", value: summary.caseId },
+    { label: "Reviewable status", value: summary.reviewableStatus },
+    { label: "Package posture", value: summary.packagePosture },
+    {
+      label: "Dataset classification",
+      value: summary.datasetClassification,
+    },
+    { label: "Sanitization status", value: summary.sanitizationStatus },
+    { label: "Approval status", value: summary.approvalStatus },
+    summary.approvalScope
+      ? { label: "Approval scope", value: summary.approvalScope }
+      : null,
+    {
+      label: "Pipeline",
+      value: formatNameAndVersion(summary.pipelineName, summary.pipelineVersion),
+    },
+    summary.adapterName
+      ? {
+          label: "Adapter",
+          value: formatNameAndVersion(
+            summary.adapterName,
+            summary.adapterVersion,
+          ),
+        }
+      : null,
+    { label: "Evidence count", value: String(summary.evidenceCount) },
+    { label: "Claim count", value: String(summary.claimCount) },
+    {
+      label: "Candidate label count",
+      value: String(summary.candidateLabelCount),
+    },
+    {
+      label: "Representative session count",
+      value: String(summary.representativeSessionCount),
+    },
+  ].filter((fact): fact is { label: string; value: string } => fact !== null);
+}
+
+function formatMaybeRevision(packageId: string, revision: string | undefined) {
+  return revision ? `${packageId} (${revision})` : packageId;
+}
+
+function formatNameAndVersion(name: string, version: string | undefined) {
+  return version ? `${name} ${version}` : name;
 }
 
 function getFailureCategoryLabel(
