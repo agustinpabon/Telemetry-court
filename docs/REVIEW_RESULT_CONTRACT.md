@@ -229,6 +229,10 @@ building the results workflow from them. Issue #101 remains responsible for the
 broader imported-package-to-EvaluationReport smoke test. Bundle import itself
 does not aggregate, adjudicate, score, or render an EvaluationReport.
 
+## Preflight Validation CLI
+
+A local preflight validation command (`npm run validate-review-results`) validates a supplied `ReviewResult` JSON or `ReviewResultBundle` JSON path before import or aggregation. It performs strict validation using the same schema check and bundle compatibility logic used at the application boundary, printing a safe summary of reviewer counts, referenced CasePackages, and verdict distributions, without requiring backend persistence, raw telemetry files, or fabricating reviewer data.
+
 ## Deferred Work
 
 This contract does not implement backend persistence, reviewer accounts,
