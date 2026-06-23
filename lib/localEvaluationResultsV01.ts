@@ -2,10 +2,9 @@ import {
   aggregateReviewResultsV01,
   type EvaluationReportV01,
 } from "@/lib/evaluationReportV01";
-import {
-  importReviewResultBundleToLocalStoreV01,
-  importReviewResultBundleV01Json,
-} from "@/lib/reviewResultBundleV01";
+import { importReviewResultBundleToLocalStoreV01 } from "@/lib/reviewResultBundleV01";
+import { importReviewResultArtifactV01Json } from "@/lib/reviewResultImportV01";
+import type { ReviewResultImportInspectionSummaryV01 } from "@/lib/reviewResultInspectionV01";
 import {
   readReviewResultLocalStoreV01,
   type ReviewResultStorageLike,
@@ -26,6 +25,7 @@ export type LocalEvaluationResultsBundleImportV01 =
   | {
       ok: true;
       importedReviewResultCount: number;
+      inspectionSummary: ReviewResultImportInspectionSummaryV01;
       snapshot: LocalEvaluationResultsSnapshotV01;
     }
   | {
@@ -65,7 +65,7 @@ export function importLocalEvaluationResultsBundleV01(
   storage: ReviewResultStorageLike,
   jsonText: string,
 ): LocalEvaluationResultsBundleImportV01 {
-  const validation = importReviewResultBundleV01Json(jsonText);
+  const validation = importReviewResultArtifactV01Json(jsonText);
 
   if (!validation.ok) {
     return {
@@ -85,6 +85,7 @@ export function importLocalEvaluationResultsBundleV01(
     return {
       ok: true,
       importedReviewResultCount: summary.importedReviewCount,
+      inspectionSummary: validation.inspectionSummary,
       snapshot: loadLocalEvaluationResultsV01(storage),
     };
   } catch (error) {

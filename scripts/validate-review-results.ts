@@ -8,9 +8,14 @@ import {
 } from "@/lib/reviewResultValidationV01";
 import {
   importReviewResultBundleV01Json,
-  type ReviewResultBundleV01,
 } from "@/lib/reviewResultBundleV01";
-import type { ReviewResultV01 } from "@/lib/reviewResultV01";
+import {
+  inspectReviewResultBundleV01,
+  inspectReviewResultV01,
+  type ReviewResultImportInspectionSummaryV01,
+  type ReviewResultInspectionCount,
+  type ReviewResultReviewerInspectionReference,
+} from "@/lib/reviewResultInspectionV01";
 
 type WriteOutput = (value: string) => void;
 type ReadFile = (filePath: string) => Promise<string>;
@@ -21,20 +26,6 @@ export type ValidateReviewResultsCliOptions = {
   readFile?: ReadFile;
   writeStdout?: WriteOutput;
   writeStderr?: WriteOutput;
-};
-
-type ReviewInspectionSummary = {
-  schemaVersion: string;
-  protocolVersion: string;
-  resultCount: number;
-  reviewers: string[];
-  casePackageIds: string[];
-  casePackageSchemaVersions: string[];
-  verdictDistribution: Record<string, number>;
-  confidenceDistribution: Record<string, number>;
-  failureModeCounts: Record<string, number>;
-  compatibilityStatus: string;
-  missingRequiredMetadataCount: number;
 };
 
 export async function runValidateReviewResultsCli(
@@ -89,7 +80,7 @@ export async function runValidateReviewResultsCli(
       return 1;
     }
 
-    const summary = generateSingleResultSummary(validationResult.reviewResult);
+    const summary = inspectReviewResultV01(validationResult.reviewResult);
     writeStdout(formatValidationSuccess(filePath, summary));
     return 0;
   } else if (schemaVersion === "review_result_bundle.v0.1") {
@@ -101,7 +92,7 @@ export async function runValidateReviewResultsCli(
       return 1;
     }
 
-    const summary = generateBundleSummary(importResult.bundle);
+    const summary = inspectReviewResultBundleV01(importResult.bundle);
     writeStdout(formatValidationSuccess(filePath, summary));
     return 0;
   } else {
@@ -154,97 +145,6 @@ function parseJson(
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function truncateId(id: string): string {
-  if (id.length <= 8) return id;
-  return `${id.slice(0, 4)}...${id.slice(-4)}`;
-}
-
-function generateSingleResultSummary(result: ReviewResultV01): ReviewInspectionSummary {
-  const reviewerSummary = `${truncateId(result.reviewer.reviewer_id)} (${truncateId(
-    result.reviewer.review_session_id,
-  )})`;
-
-  const verdictDistribution: Record<string, number> = {
-    [result.decisions.final_verdict]: 1,
-  };
-
-  const confidenceDistribution: Record<string, number> = {};
-  if (result.decisions.confidence?.level) {
-    confidenceDistribution[result.decisions.confidence.level] = 1;
-  }
-
-  const failureModeCounts: Record<string, number> = {};
-  if (Array.isArray(result.decisions.failure_modes)) {
-    for (const fm of result.decisions.failure_modes) {
-      failureModeCounts[fm] = (failureModeCounts[fm] ?? 0) + 1;
-    }
-  }
-
-  return {
-    schemaVersion: result.schema_version,
-    protocolVersion: result.protocol.protocol_version,
-    resultCount: 1,
-    reviewers: [reviewerSummary],
-    casePackageIds: [result.case_package.package_id],
-    casePackageSchemaVersions: [result.case_package.schema_version],
-    verdictDistribution,
-    confidenceDistribution,
-    failureModeCounts,
-    compatibilityStatus: "compatible (single result)",
-    missingRequiredMetadataCount: 0,
-  };
-}
-
-function generateBundleSummary(bundle: ReviewResultBundleV01): ReviewInspectionSummary {
-  const uniqueReviewers = new Set<string>();
-  const casePackageIds = new Set<string>();
-  const casePackageSchemaVersions = new Set<string>();
-  const verdictDistribution: Record<string, number> = {};
-  const confidenceDistribution: Record<string, number> = {};
-  const failureModeCounts: Record<string, number> = {};
-
-  for (const r of bundle.review_results) {
-    const pair = `${r.reviewer.reviewer_id}:${r.reviewer.review_session_id}`;
-    uniqueReviewers.add(pair);
-
-    casePackageIds.add(r.case_package.package_id);
-    casePackageSchemaVersions.add(r.case_package.schema_version);
-
-    const verdict = r.decisions.final_verdict;
-    verdictDistribution[verdict] = (verdictDistribution[verdict] ?? 0) + 1;
-
-    if (r.decisions.confidence?.level) {
-      const conf = r.decisions.confidence.level;
-      confidenceDistribution[conf] = (confidenceDistribution[conf] ?? 0) + 1;
-    }
-
-    if (Array.isArray(r.decisions.failure_modes)) {
-      for (const fm of r.decisions.failure_modes) {
-        failureModeCounts[fm] = (failureModeCounts[fm] ?? 0) + 1;
-      }
-    }
-  }
-
-  const reviewers = Array.from(uniqueReviewers).map((pair) => {
-    const [revId, sesId] = pair.split(":");
-    return `${truncateId(revId)} (${truncateId(sesId)})`;
-  });
-
-  return {
-    schemaVersion: bundle.schema_version,
-    protocolVersion: bundle.compatibility.review_protocol_version,
-    resultCount: bundle.review_results.length,
-    reviewers,
-    casePackageIds: Array.from(casePackageIds).sort(),
-    casePackageSchemaVersions: Array.from(casePackageSchemaVersions).sort(),
-    verdictDistribution,
-    confidenceDistribution,
-    failureModeCounts,
-    compatibilityStatus: "compatible",
-    missingRequiredMetadataCount: 0,
-  };
 }
 
 function formatUsageError(argumentCount: number): string {
@@ -315,39 +215,67 @@ function formatBundleValidationFailure(filePath: string, reason: string, message
   ].join("\n");
 }
 
-function formatValidationSuccess(filePath: string, summary: ReviewInspectionSummary): string {
+function formatValidationSuccess(
+  filePath: string,
+  summary: ReviewResultImportInspectionSummaryV01,
+): string {
   const lines = [
     "Validation: PASS",
     `Path: ${filePath}`,
-    `Schema version: ${summary.schemaVersion}`,
-    `Protocol version: ${summary.protocolVersion}`,
+    `Schema version: ${summary.artifactSchemaVersion}`,
+    `Protocol version: ${summary.reviewProtocolVersions.join(", ")}`,
     `Review result count: ${summary.resultCount}`,
-    `Reviewers: ${summary.reviewers.join(", ")}`,
-    `Case package IDs referenced: ${summary.casePackageIds.join(", ")}`,
+    `Reviewers: ${formatReviewers(summary.reviewerSessions)}`,
+    `Case package IDs referenced: ${summary.referencedPackageIds.join(", ")}`,
     `Package schema versions referenced: ${summary.casePackageSchemaVersions.join(", ")}`,
     `Verdict distribution: ${formatDistribution(summary.verdictDistribution)}`,
   ];
 
-  if (Object.keys(summary.confidenceDistribution).length > 0) {
-    lines.push(`Confidence distribution: ${formatDistribution(summary.confidenceDistribution)}`);
+  if (summary.confidenceSummary.distribution.length > 0) {
+    lines.push(
+      `Confidence distribution: ${formatDistribution(summary.confidenceSummary.distribution)}`,
+    );
   }
 
-  if (Object.keys(summary.failureModeCounts).length > 0) {
+  if (summary.failureModeCounts.length > 0) {
     lines.push(`Failure mode counts: ${formatDistribution(summary.failureModeCounts)}`);
   }
 
-  lines.push(`Compatibility status: ${summary.compatibilityStatus}`);
-  lines.push(`Missing required metadata count: ${summary.missingRequiredMetadataCount}`);
+  lines.push(`Compatibility status: ${formatCompatibilityStatus(summary)}`);
+  lines.push("Missing required metadata count: 0");
   lines.push("");
 
   return lines.join("\n");
 }
 
-function formatDistribution(dist: Record<string, number>): string {
-  return Object.entries(dist)
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .map(([key, count]) => `${key}: ${count}`)
+function formatReviewers(
+  reviewers: readonly ReviewResultReviewerInspectionReference[],
+): string {
+  return reviewers
+    .map(
+      (reviewer) =>
+        `${truncateId(reviewer.reviewerId)} (${truncateId(reviewer.reviewSessionId)})`,
+    )
     .join(", ");
+}
+
+function truncateId(id: string): string {
+  if (id.length <= 8) return id;
+  return `${id.slice(0, 4)}...${id.slice(-4)}`;
+}
+
+function formatDistribution(dist: readonly ReviewResultInspectionCount[]): string {
+  return dist
+    .map(({ value, count }) => `${value}: ${count}`)
+    .join(", ");
+}
+
+function formatCompatibilityStatus(
+  summary: ReviewResultImportInspectionSummaryV01,
+): string {
+  return summary.artifactType === "ReviewResult"
+    ? "compatible (single result)"
+    : "compatible";
 }
 
 function hasNodeErrorCode(error: unknown, code: string): boolean {

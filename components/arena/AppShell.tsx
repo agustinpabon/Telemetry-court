@@ -51,9 +51,9 @@ import {
   createReviewResultBundleV01,
   getReviewResultBundleFilename,
   importReviewResultBundleToLocalStoreV01,
-  importReviewResultBundleV01Json,
   serializeReviewResultBundleV01,
 } from "@/lib/reviewResultBundleV01";
+import { importReviewResultArtifactV01Json } from "@/lib/reviewResultImportV01";
 import {
   loadReviewResultsForCasePackageV01,
   saveReviewResultToLocalStoreV01,
@@ -441,7 +441,7 @@ export function AppShell({
   }
 
   function handleImportReviewResultBundleJson(jsonText: string) {
-    const parseResult = importReviewResultBundleV01Json(jsonText);
+    const parseResult = importReviewResultArtifactV01Json(jsonText);
 
     if (!parseResult.ok) {
       setReviewBundleStatus({
@@ -467,6 +467,7 @@ export function AppShell({
       setReviewBundleStatus({
         state: "success",
         message: `Imported ${summary.importedReviewCount} ReviewResult${summary.importedReviewCount === 1 ? "" : "s"} from local JSON. ${summary.totalLocalReviewCount} stored locally.`,
+        inspectionSummary: parseResult.inspectionSummary,
       });
     } catch (error) {
       setReviewBundleStatus({

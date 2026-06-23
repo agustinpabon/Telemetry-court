@@ -1,19 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useId, useRef, useState, type ChangeEvent } from "react";
 
 import { MetricCard } from "@/components/arena/WorkflowPrimitives";
+import { ReviewResultImportSummaryPanel } from "@/components/arena/ReviewResultImportSummaryPanel";
 import { EvaluationReportResults } from "@/components/evaluation/EvaluationReportResults";
 import {
   importLocalEvaluationResultsBundleV01,
   loadLocalEvaluationResultsV01,
   type LocalEvaluationResultsSnapshotV01,
 } from "@/lib/localEvaluationResultsV01";
+import type { ReviewResultImportInspectionSummaryV01 } from "@/lib/reviewResultInspectionV01";
 
 type ResultsImportStatus =
   | { state: "idle" }
   | { state: "reading" }
-  | { state: "success"; message: string }
+  | {
+      state: "success";
+      message: string;
+      inspectionSummary?: ReviewResultImportInspectionSummaryV01;
+    }
   | { state: "error"; message: string };
 
 const emptySnapshot: LocalEvaluationResultsSnapshotV01 = {
@@ -72,6 +78,7 @@ export function LocalEvaluationResults() {
         setImportStatus({
           state: "success",
           message: `Imported ${formatCount(result.importedReviewResultCount, "ReviewResult", "ReviewResults")}. The local summary now includes ${formatCount(result.snapshot.totalReviewResultCount, "result", "results")}.`,
+          inspectionSummary: result.inspectionSummary,
         });
       } else {
         setImportStatus({
@@ -118,6 +125,7 @@ export function LocalEvaluationResultsView({
   onFileChange?: (event: ChangeEvent<HTMLInputElement>) => void;
 }) {
   const hasResults = snapshot.totalReviewResultCount > 0;
+  const importSummaryTitleId = useId();
 
   return (
     <div className="local-evaluation-results">
@@ -141,7 +149,7 @@ export function LocalEvaluationResultsView({
             onChange={onFileChange}
           />
           <button type="button" onClick={onChooseFile}>
-            Import ReviewResult bundle
+            Import ReviewResult JSON
           </button>
           <p
             className={`local-results-import-status is-${importStatus.state}`}
@@ -151,6 +159,14 @@ export function LocalEvaluationResultsView({
           </p>
         </div>
       </header>
+
+      {importStatus.state === "success" && importStatus.inspectionSummary ? (
+        <ReviewResultImportSummaryPanel
+          summary={importStatus.inspectionSummary}
+          titleId={importSummaryTitleId}
+          variant="inline"
+        />
+      ) : null}
 
       {loadError ? (
         <section className="local-results-error" role="alert">
@@ -168,7 +184,7 @@ export function LocalEvaluationResultsView({
           <strong>No ReviewResults available</strong>
           <p>
             Complete and export a review to save it locally, or import a
-            compatible ReviewResult bundle. No report is calculated from an
+            compatible ReviewResult JSON file. No report is calculated from an
             empty result set.
           </p>
         </section>
@@ -272,7 +288,7 @@ export function LocalEvaluationResultsView({
 function getImportStatusCopy(status: ResultsImportStatus): string {
   switch (status.state) {
     case "reading":
-      return "Validating ReviewResult bundle and compatibility.";
+      return "Validating ReviewResult JSON and compatibility.";
     case "success":
     case "error":
       return status.message;

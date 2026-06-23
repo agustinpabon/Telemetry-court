@@ -180,12 +180,39 @@
   z-index: 45;
 }
 
+.review-result-import-summary-panel {
+  background: var(--workflow-surface, var(--color-surface));
+  border: 1px solid var(--workflow-border-strong, var(--color-border-strong));
+  border-radius: 18px;
+  color: var(--workflow-ink, var(--color-ink));
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  text-align: left;
+}
+
+.review-result-import-summary-panel.is-popover {
+  box-shadow: 0 18px 48px rgba(50, 48, 47, 0.12);
+  max-height: min(70vh, 640px);
+  overflow: auto;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  width: min(640px, calc(100vw - 32px));
+  z-index: 45;
+}
+
+.review-result-import-summary-panel.is-inline {
+  background: var(--workflow-panel, var(--color-panel));
+}
+
 .case-package-import-failure-header {
   display: grid;
   gap: 6px;
 }
 
-.case-package-import-summary-header {
+.case-package-import-summary-header,
+.review-result-import-summary-header {
   display: grid;
   gap: 6px;
 }
@@ -206,16 +233,27 @@
   margin: 0;
 }
 
+.review-result-import-summary-kicker {
+  color: var(--workflow-supported, var(--color-supported));
+  font-size: 12px;
+  font-weight: 780;
+  letter-spacing: 0;
+  margin: 0;
+  text-transform: capitalize;
+}
+
 .case-package-import-failure-panel h2,
 .case-package-import-failure-panel h3,
-.case-package-import-summary-panel h2 {
+.case-package-import-summary-panel h2,
+.review-result-import-summary-panel h2 {
   color: var(--workflow-ink, var(--color-ink));
   letter-spacing: 0;
   margin: 0;
 }
 
 .case-package-import-failure-panel h2,
-.case-package-import-summary-panel h2 {
+.case-package-import-summary-panel h2,
+.review-result-import-summary-panel h2 {
   font-size: 18px;
   line-height: 1.25;
 }
@@ -226,6 +264,13 @@
 }
 
 .case-package-import-failure-panel p {
+  color: var(--workflow-muted, var(--color-muted));
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.review-result-import-summary-panel p {
   color: var(--workflow-muted, var(--color-muted));
   font-size: 13px;
   line-height: 1.5;
@@ -246,8 +291,16 @@
   margin: 0;
 }
 
+.review-result-import-summary-facts {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
 .case-package-import-failure-facts div,
 .case-package-import-summary-facts div,
+.review-result-import-summary-facts div,
 .case-package-import-errors li {
   background: var(--workflow-panel, var(--color-panel));
   border: 1px solid var(--workflow-border, var(--color-border));
@@ -255,14 +308,16 @@
 }
 
 .case-package-import-failure-facts div,
-.case-package-import-summary-facts div {
+.case-package-import-summary-facts div,
+.review-result-import-summary-facts div {
   display: grid;
   gap: 4px;
   padding: 10px;
 }
 
 .case-package-import-failure-panel dt,
-.case-package-import-summary-panel dt {
+.case-package-import-summary-panel dt,
+.review-result-import-summary-panel dt {
   color: var(--workflow-soft, var(--color-muted-soft));
   font-size: 11px;
   font-weight: 800;
@@ -271,12 +326,40 @@
 }
 
 .case-package-import-failure-panel dd,
-.case-package-import-summary-panel dd {
+.case-package-import-summary-panel dd,
+.review-result-import-summary-panel dd {
   color: var(--workflow-ink, var(--color-ink));
   font-size: 13px;
   line-height: 1.4;
   margin: 0;
   overflow-wrap: anywhere;
+}
+
+.review-result-import-summary-warnings {
+  background: var(--workflow-context-soft, var(--color-accent-soft));
+  border: 1px solid var(--workflow-border, var(--color-border));
+  border-radius: 12px;
+  color: var(--workflow-muted, var(--color-muted));
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+}
+
+.review-result-import-summary-warnings strong {
+  color: var(--workflow-ink, var(--color-ink));
+  font-size: 12px;
+}
+
+.review-result-import-summary-warnings ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.review-result-import-summary-warnings li {
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .case-package-import-suggested-fix {
@@ -8384,13 +8467,15 @@
   }
 
   .case-package-import-failure-panel,
-  .case-package-import-summary-panel {
+  .case-package-import-summary-panel,
+  .review-result-import-summary-panel.is-popover {
     left: 0;
     right: auto;
   }
 
   .case-package-import-failure-facts,
-  .case-package-import-summary-facts {
+  .case-package-import-summary-facts,
+  .review-result-import-summary-facts {
     grid-template-columns: 1fr;
   }
 }
