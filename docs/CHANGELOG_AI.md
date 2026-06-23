@@ -19,6 +19,36 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-23: Sanitized Adapter Input Contract
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #156 as a documentation-only slice for
+  the sanitized upstream adapter input consumed by the existing mapper and CLI.
+- Files changed: `docs/SANITIZED_ADAPTER_INPUT_CONTRACT.md`,
+  `docs/CASE_PACKAGE_CONTRACT.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a dedicated contract page explaining that the sanitized
+  adapter draft is a pre-CasePackage object, documenting the notebook/script
+  boundary, exact top-level draft fields, mapper-derived fields, CLI usage,
+  validation failure expectations, and prohibited use.
+- Decisions made: Kept the change documentation-only; added no runtime app or
+  UI behavior, scripts, fixtures, fake CasePackages, fake ReviewResults, fake
+  EvaluationReports, fake topology coordinates, pilot data, reviewers, raw
+  telemetry examples, or upstream processing execution.
+- Checks run: `git status --short` verified only the intended docs changes
+  plus pre-existing forbidden untracked paths; `git diff --check` passed;
+  `git diff --cached --check` passed; ECC pre-push verification ran
+  `npm run lint`, `npm test` (245 tests passed), and `npm run build`
+  successfully.
+- Assumptions: The existing TypeScript mapper and CLI remain the implemented
+  boundary; upstream notebooks/scripts are responsible for approval,
+  sanitization, and safe handoff before invoking the CLI.
+- Risks/follow-ups: Documentation cannot prove that an upstream producer is
+  correctly sanitized; future notebook work still needs approved source
+  artifacts and validation without raw telemetry crossing into Telemetry Court.
+- Next recommended step: Use this contract as the notebook-author handoff for
+  the next Milestone 4 adapter prototype slice.
+- Suggested commit message: `docs: document sanitized adapter input contract`
+
 ## 2026-06-23: Sanitized CasePackage Adapter CLI
 
 - Agent/model: Antigravity (Gemini 3.5 Flash)
