@@ -19,6 +19,38 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-23: Explicit Sanitized Adapter CLI Flags
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #162 as a focused CLI ergonomics slice
+  for the sanitized CasePackage adapter.
+- Files changed: `scripts/sanitized-case-package-adapter-v01.ts`,
+  `scripts/sanitized-case-package-adapter-v01.test.ts`,
+  `docs/NOTEBOOK_HANDOFF_CHECKLIST.md`,
+  `docs/SANITIZED_ADAPTER_INPUT_CONTRACT.md`, and
+  `docs/CHANGELOG_AI.md`.
+- Summary: Preserved positional input and `--out` output behavior while adding
+  explicit `--input` and `--output` aliases. Added deterministic parser errors
+  for duplicate or conflicting input and output paths before any package is
+  written, plus focused fixture-free CLI tests using isolated temp directories.
+- Decisions made: Kept the npm script name unchanged and left mapper semantics,
+  app/UI/runtime behavior, package metadata, fixtures, public CasePackages,
+  ReviewResults, EvaluationReports, pilot data, raw telemetry, and upstream
+  processing execution unchanged.
+- Checks run: `node --test --import tsx scripts/sanitized-case-package-adapter-v01.test.ts`,
+  `npm test`, `npx tsc --noEmit`, `npm run lint`, `npm run build`,
+  `git diff --check`, and `git status --short`.
+- Assumptions: Notebook and script authors benefit from self-describing CLI
+  handoff syntax, but generated packages still belong only in approved local
+  or restricted environments unless separately authorized for publication.
+- Risks/follow-ups: CLI argument checks cannot prove that arbitrary sanitized
+  drafts are safe; upstream producers and approvers remain responsible for
+  content minimization, sanitization, and safe storage.
+- Next recommended step: Use the explicit flag form in the next approved
+  notebook handoff while preserving the existing positional form for current
+  scripts.
+- Suggested commit message: `feat: support explicit sanitized adapter CLI flags`
+
 ## 2026-06-23: Notebook Handoff Checklist
 
 - Agent/model: Codex (GPT-5)

@@ -234,6 +234,75 @@ test("--out mode writes valid JSON and doesn't print package to stdout", async (
   assert.equal(parsed.package_id, "pkg-sanitized-adapter-test");
 });
 
+test("--input mode produces valid CasePackageV01 output on stdout", async () => {
+  const draft = createValidSanitizedDraft();
+  const draftStr = JSON.stringify(draft);
+
+  const result = await withTempDir(async (tempDir) => {
+    const inputPath = join(tempDir, "draft.json");
+    await writeFile(inputPath, draftStr, "utf8");
+
+    return await runCli(["--input", inputPath]);
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.stderr, "");
+
+  const parsed = JSON.parse(result.stdout);
+  assert.equal(parsed.schema_version, "case_package.v0.1");
+  assert.equal(parsed.package_id, "pkg-sanitized-adapter-test");
+});
+
+test("--input and --output mode writes valid JSON and doesn't print package to stdout", async () => {
+  const draft = createValidSanitizedDraft();
+  const draftStr = JSON.stringify(draft);
+
+  let writtenContent = "";
+  const result = await withTempDir(async (tempDir) => {
+    const inputPath = join(tempDir, "draft.json");
+    const outputPath = join(tempDir, "output.json");
+    await writeFile(inputPath, draftStr, "utf8");
+
+    const res = await runCli(["--input", inputPath, "--output", outputPath]);
+
+    writtenContent = await readFile(outputPath, "utf8");
+    return res;
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.stdout, "");
+  assert.equal(result.stderr, "");
+
+  const parsed = JSON.parse(writtenContent);
+  assert.equal(parsed.schema_version, "case_package.v0.1");
+  assert.equal(parsed.package_id, "pkg-sanitized-adapter-test");
+});
+
+test("positional input and --output mode writes valid JSON", async () => {
+  const draft = createValidSanitizedDraft();
+  const draftStr = JSON.stringify(draft);
+
+  let writtenContent = "";
+  const result = await withTempDir(async (tempDir) => {
+    const inputPath = join(tempDir, "draft.json");
+    const outputPath = join(tempDir, "output.json");
+    await writeFile(inputPath, draftStr, "utf8");
+
+    const res = await runCli([inputPath, "--output", outputPath]);
+
+    writtenContent = await readFile(outputPath, "utf8");
+    return res;
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.stdout, "");
+  assert.equal(result.stderr, "");
+
+  const parsed = JSON.parse(writtenContent);
+  assert.equal(parsed.schema_version, "case_package.v0.1");
+  assert.equal(parsed.package_id, "pkg-sanitized-adapter-test");
+});
+
 test("invalid JSON exits nonzero and fails cleanly", async () => {
   const invalidJson = "{invalid-json";
 
@@ -270,6 +339,36 @@ test("invalid draft fails preflight mapping validation cleanly and does not writ
     await writeFile(inputPath, draftStr, "utf8");
 
     const res = await runCli([inputPath, "--out", outputPath]);
+
+    try {
+      await readFile(outputPath, "utf8");
+      outputWritten = true;
+    } catch {
+      outputWritten = false;
+    }
+
+    return res;
+  });
+
+  assert.notEqual(result.exitCode, 0);
+  assert.match(result.stderr, /Adapter mapping: FAIL/);
+  assert.match(result.stderr, /\$\.sanitization\.review_approval: Non-synthetic sanitized/);
+  assert.equal(result.stdout, "");
+  assert.equal(outputWritten, false);
+});
+
+test("invalid draft with --output fails preflight mapping validation and does not write output", async () => {
+  const draft = createValidSanitizedDraft();
+  delete draft.sanitization.review_approval;
+  const draftStr = JSON.stringify(draft);
+
+  let outputWritten = false;
+  const result = await withTempDir(async (tempDir) => {
+    const inputPath = join(tempDir, "draft.json");
+    const outputPath = join(tempDir, "output.json");
+    await writeFile(inputPath, draftStr, "utf8");
+
+    const res = await runCli(["--input", inputPath, "--output", outputPath]);
 
     try {
       await readFile(outputPath, "utf8");
@@ -374,11 +473,165 @@ test("input file is never mutated", async () => {
   assert.equal(postRunInputStr, draftStr);
 });
 
-test("incorrect CLI usage fails with usage message", async () => {
+test("missing input path fails with usage message", async () => {
   const resultNoArgs = await runCli([]);
   assert.notEqual(resultNoArgs.exitCode, 0);
   assert.match(resultNoArgs.stderr, /Reason: CLI usage error/);
+  assert.match(resultNoArgs.stderr, /expected exactly one input draft JSON path/);
+});
 
+test("duplicate input path arguments fail clearly before writing output", async () => {
+  const draft = createValidSanitizedDraft();
+  const draftStr = JSON.stringify(draft);
+
+  let outputWritten = false;
+  const result = await withTempDir(async (tempDir) => {
+    const inputPath = join(tempDir, "draft.json");
+    const outputPath = join(tempDir, "output.json");
+    await writeFile(inputPath, draftStr, "utf8");
+
+    const res = await runCli([
+      "--input",
+      inputPath,
+      "--input",
+      inputPath,
+      "--output",
+      outputPath,
+    ]);
+
+    try {
+      await readFile(outputPath, "utf8");
+      outputWritten = true;
+    } catch {
+      outputWritten = false;
+    }
+
+    return res;
+  });
+
+  assert.notEqual(result.exitCode, 0);
+  assert.match(result.stderr, /Reason: Duplicate input path/);
+  assert.equal(result.stdout, "");
+  assert.equal(outputWritten, false);
+});
+
+test("conflicting input path arguments fail clearly before writing output", async () => {
+  const draft = createValidSanitizedDraft();
+  const draftStr = JSON.stringify(draft);
+
+  let outputWritten = false;
+  const result = await withTempDir(async (tempDir) => {
+    const inputPath = join(tempDir, "draft.json");
+    const otherInputPath = join(tempDir, "other-draft.json");
+    const outputPath = join(tempDir, "output.json");
+    await writeFile(inputPath, draftStr, "utf8");
+    await writeFile(otherInputPath, draftStr, "utf8");
+
+    const res = await runCli([
+      inputPath,
+      "--input",
+      otherInputPath,
+      "--output",
+      outputPath,
+    ]);
+
+    try {
+      await readFile(outputPath, "utf8");
+      outputWritten = true;
+    } catch {
+      outputWritten = false;
+    }
+
+    return res;
+  });
+
+  assert.notEqual(result.exitCode, 0);
+  assert.match(result.stderr, /Reason: Conflicting input paths/);
+  assert.equal(result.stdout, "");
+  assert.equal(outputWritten, false);
+});
+
+test("duplicate output path arguments fail clearly before writing output", async () => {
+  const draft = createValidSanitizedDraft();
+  const draftStr = JSON.stringify(draft);
+
+  let outputWritten = false;
+  const result = await withTempDir(async (tempDir) => {
+    const inputPath = join(tempDir, "draft.json");
+    const outputPath = join(tempDir, "output.json");
+    await writeFile(inputPath, draftStr, "utf8");
+
+    const res = await runCli([
+      "--input",
+      inputPath,
+      "--output",
+      outputPath,
+      "--output",
+      outputPath,
+    ]);
+
+    try {
+      await readFile(outputPath, "utf8");
+      outputWritten = true;
+    } catch {
+      outputWritten = false;
+    }
+
+    return res;
+  });
+
+  assert.notEqual(result.exitCode, 0);
+  assert.match(result.stderr, /Reason: Duplicate output path/);
+  assert.equal(result.stdout, "");
+  assert.equal(outputWritten, false);
+});
+
+test("conflicting output path arguments fail clearly before writing output", async () => {
+  const draft = createValidSanitizedDraft();
+  const draftStr = JSON.stringify(draft);
+
+  let firstOutputWritten = false;
+  let secondOutputWritten = false;
+  const result = await withTempDir(async (tempDir) => {
+    const inputPath = join(tempDir, "draft.json");
+    const firstOutputPath = join(tempDir, "output-a.json");
+    const secondOutputPath = join(tempDir, "output-b.json");
+    await writeFile(inputPath, draftStr, "utf8");
+
+    const res = await runCli([
+      "--input",
+      inputPath,
+      "--out",
+      firstOutputPath,
+      "--output",
+      secondOutputPath,
+    ]);
+
+    try {
+      await readFile(firstOutputPath, "utf8");
+      firstOutputWritten = true;
+    } catch {
+      firstOutputWritten = false;
+    }
+
+    try {
+      await readFile(secondOutputPath, "utf8");
+      secondOutputWritten = true;
+    } catch {
+      secondOutputWritten = false;
+    }
+
+    return res;
+  });
+
+  assert.notEqual(result.exitCode, 0);
+  assert.match(result.stderr, /Reason: Conflicting output paths/);
+  assert.equal(result.stdout, "");
+  assert.equal(firstOutputWritten, false);
+  assert.equal(secondOutputWritten, false);
+});
+
+test("too many positional input paths fail with usage message", async () => {
   const resultTooManyArgs = await runCli(["one.json", "two.json"]);
   assert.notEqual(resultTooManyArgs.exitCode, 0);
   assert.match(resultTooManyArgs.stderr, /expected exactly one input draft JSON path/);

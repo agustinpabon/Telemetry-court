@@ -379,22 +379,30 @@ declaring that evidence is absent for the claim.
 ## CLI Usage
 
 A notebook or script author should write an approved sanitized draft JSON file
-outside Telemetry Court, then call the existing CLI with placeholder paths:
+outside Telemetry Court, then call the existing CLI with placeholder paths.
+The existing positional input form remains supported:
 
 ```bash
 npm run sanitized-case-package-adapter-v01 -- path/to/approved-sanitized-draft.json --out path/to/case-package-v01.json
 ```
 
-Without `--out`, the CLI prints the mapped `CasePackageV01` JSON to standard
-output:
+The explicit flag form is also supported:
+
+```bash
+npm run sanitized-case-package-adapter-v01 -- --input path/to/approved-sanitized-draft.json --output path/to/case-package-v01.json
+```
+
+Without `--out` or `--output`, the CLI prints the mapped `CasePackageV01` JSON
+to standard output:
 
 ```bash
 npm run sanitized-case-package-adapter-v01 -- path/to/approved-sanitized-draft.json
 ```
 
-The CLI does not mutate the input file. It reads exactly one draft JSON path,
+The CLI does not mutate the input file. It accepts exactly one draft JSON path,
 maps the draft, validates the mapped package, and writes output only on
-success. The output can be inspected with the existing package validator:
+success. Duplicate or conflicting input or output paths fail before a package
+is written. The output can be inspected with the existing package validator:
 
 ```bash
 npm run validate-package -- path/to/case-package-v01.json
@@ -428,7 +436,9 @@ metadata, and unsafe controlled-package safe-reference posture.
 
 CLI parsing and filesystem failures also exit nonzero:
 
-- wrong argument count or missing `--out` path;
+- wrong input path count or missing `--input`, `--out`, or `--output` path;
+- duplicate or conflicting input paths;
+- duplicate or conflicting output paths;
 - missing or unreadable input file;
 - invalid JSON;
 - output write failure.

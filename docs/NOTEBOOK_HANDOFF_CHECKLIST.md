@@ -53,16 +53,22 @@ pipeline.
 
 ## CLI Handoff
 
-The current npm script accepts one positional input path and an optional
+The npm script keeps the existing positional input form with an optional
 `--out` output path:
 
 ```bash
 npm run sanitized-case-package-adapter-v01 -- <approved-sanitized-draft.json> --out <case-package.json>
 ```
 
-The input and output roles may be described as `--input` and `--output` in
-handoff discussions, but those are not supported CLI flags. Use the executable
-command shape above.
+It also accepts the explicit input and output flag form:
+
+```bash
+npm run sanitized-case-package-adapter-v01 -- --input <approved-sanitized-draft.json> --output <case-package.json>
+```
+
+Omit the output flag to print the mapped package to standard output. Use
+exactly one input path and at most one output path. Duplicate or conflicting
+input or output paths fail before the CLI writes a package.
 
 These are placeholder paths only. They are not fixture paths, generated public
 examples, or permission to write sensitive artifacts into the repository. Use
