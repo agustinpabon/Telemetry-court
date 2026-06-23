@@ -20,7 +20,7 @@ Potential upstream producers include Toponymy, notebooks and clustering pipeline
 Upstream systems own raw telemetry processing, sessionization, embeddings, clustering, and initial label generation. Telemetry Court must not invent those capabilities or require one specific upstream implementation.
 
 The adapter boundary for those producer categories is documented in
-[`ADAPTER_BOUNDARY.md`](./ADAPTER_BOUNDARY.md). It frames future Toponymy,
+[`ADAPTER_BOUNDARY.md`](./ADAPTER_BOUNDARY.md). The spec for Milestone 4, detailing the adapter interface mapping and the refinement consumer loop, is documented in [`MILESTONE_4_ADAPTER_BOUNDARY.md`](./MILESTONE_4_ADAPTER_BOUNDARY.md). It frames future Toponymy,
 DataMapPlot, ACME4-style, CloudTrail-style, and synthetic/sanitized producers
 as sources of approved `CasePackage` JSON, not as raw telemetry integrations.
 
@@ -95,12 +95,9 @@ These folders describe the present implementation, not the final service decompo
 
 ## Next Architectural Milestone
 
-The next architectural milestone is the Local Utility Gate: import external
-`CasePackage` JSON from a local file, validate it strictly before rendering,
-produce structured `ReviewResult` artifacts, export and import result bundles,
-and aggregate local or imported results into an auditable `EvaluationReport`.
+The next architectural milestone is the Toponymy / ACME4 Adapter Prototype and loop refinement integration (Milestone 4). This includes writing notebook/script-level adapters that convert realistic cluster outputs into conforming `CasePackage` JSON, and consuming exported `cluster_refinement.v0.1` JSON to perform outlier pruning, splitting, and merging.
 
-This milestone should stay local and contract-first. Do not choose a production
+This milestone should stay contract-first. Do not choose a production
 database, authentication system, workspace model, admin interface, broad API
-surface, raw telemetry ingestion path, SIEM connector, or chatbot-first UI
-before the imported-package review-to-report loop is proven.
+surface, raw telemetry ingestion path, or chatbot-first UI
+before the loop refinement integration is proven.

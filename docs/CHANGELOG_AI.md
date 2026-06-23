@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-23: Define Milestone 4 Adapter Boundary Spec
+
+- Agent/model: Antigravity (Gemini 3.5 Flash)
+- Prompt scope: Implement GitHub issue #146 by defining the adapter boundary and loop refinement specs for Milestone 4, linking upstream pipeline concepts to CasePackageV01, and setting expectations for refinement consumer workflows.
+- Files changed: `docs/MILESTONE_4_ADAPTER_BOUNDARY.md`, `docs/ROADMAP.md`, `docs/ARCHITECTURE.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Documented the division of ownership between upstream clustering/naming pipelines and Telemetry Court, mapped upstream cluster metrics/positions to CasePackageV01, documented Pandas/Python consumer expectations for processing refinement JSON, specified provenance/sanitization guidelines, and updated the project roadmap and architecture milestones.
+- Decisions made: Created a dedicated spec document (`docs/MILESTONE_4_ADAPTER_BOUNDARY.md`) rather than changing runtime code, UI components, or test fixtures. Ensured that zero raw telemetry crosses the boundary.
+- Checks run: Full validation check suite: `npm test`, `npx tsc --noEmit`, `npm run lint`, `npm run build`, and `git diff --check`.
+- Assumptions: Milestone 3 is complete and its local utility gate functionality forms the basis of the refinement feedback loop.
+- Risks/follow-ups: Upstream Python notebooks must strictly implement the refinement schema parsing to utilize session exclusions, split, and merge recommendations.
+- Next recommended step: Review and merge the adapter boundary spec, then open a focused follow-up issue for a docs-first adapter prototype plan.
+- Suggested commit message: `docs: define milestone 4 adapter boundary`
+
 ## 2026-06-23: Milestone 3 Import-To-Refinement Smoke
 
 - Agent/model: Codex (GPT-5)
