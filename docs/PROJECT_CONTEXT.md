@@ -1,6 +1,6 @@
 # Project Context
 
-_Last updated: 2026-06-21._
+_Last updated: 2026-06-23._
 
 This document supersedes the older Evidence Arena framing as the repository's concise product context. `docs/PRODUCT_VISION.md` and `docs/PRODUCT_POSITIONING.md` define the broader product direction; this file is the compact operating context for planning, issues, and coding agents.
 
@@ -30,18 +30,28 @@ A polished review UI is not enough. Prioritize features only when they improve o
 
 ## Current Truth
 
-- The current application is a static validation slice using synthetic cases.
-- It demonstrates the evidence-first review flow, local structured export, and browser-local `ReviewResult` persistence by CasePackage ID.
+- The current application is a local validation slice using synthetic demo
+  cases and validated local `CasePackage` JSON import.
+- It demonstrates the evidence-first review flow, strict package validation
+  and invalid-package failure surfaces, local structured export, browser-local
+  `ReviewResult` persistence by CasePackage ID, and strict local
+  `ReviewResult` bundle exchange.
 - It does not implement real Toponymy or ACME4 ingestion.
-- It does not yet provide local file import for external `CasePackage` JSON.
+- It does not yet include a real approved Toponymy/DataMapPlot/ACME4 notebook
+  adapter, upstream refinement consumer, or real-data pilot.
 - It includes synthetic, non-authoritative adapter-boundary fixtures for Toponymy/DataMapPlot-style and ACME4-style `CasePackage v0.1` shapes.
-- It includes deterministic in-memory `EvaluationReportV01` aggregation and a fixture-backed read-only results view with JSON/CSV downloads for the existing fixture report.
-- It does not yet provide a complete external-package workflow: local package import, invalid-package failure UI, imported-result bundles, and a real results workflow must move earlier than further polish or AI assistance.
-- It does not provide durable server-side review storage, multi-user persistence, package import, or a real report workflow.
+- It includes deterministic in-memory `EvaluationReportV01` aggregation and a
+  local results view with per-package EvaluationReport JSON/CSV downloads and
+  `cluster_refinement.v0.1` export when compatible source ReviewResults are
+  available.
+- It does not provide durable server-side review storage, multi-user
+  persistence, a durable report workflow, or research-grade metrics.
 - Because one report still requires one exact compact CasePackage reference, package/pipeline/model/prompt/embedding rollups are currently single-value context or explicitly unavailable, not cross-run rankings.
-- The main product risk is not visual quality. The main risk is remaining a beautiful synthetic demo with no real evaluation loop.
-- Evidence-constrained AI assistance remains later priority until import,
-  result exchange, and aggregation are usable.
+- The main product risk is not visual quality. The main risk is mistaking the
+  local validation loop for real-world validation before an approved adapter,
+  realistic packages, and independent reviewer exercise prove the loop.
+- Evidence-constrained AI assistance remains later priority until the approved
+  adapter, refinement, and pilot loop has evidence beyond synthetic demos.
 
 ## Intended Architecture
 
@@ -109,15 +119,29 @@ Do not add Splunk, Elastic, remediation, or operational action generation as a c
 
 This is not a full product reset. Preserve the CasePackage -> ReviewResult -> EvaluationReport direction. The priority correction is to move the real utility loop ahead of further cosmetic polish or evidence-constrained AI assistance.
 
-Prioritize next (Milestone 4 — Toponymy / ACME4 Adapter Prototype):
+Milestone 4 is active: Toponymy / DataMapPlot / ACME4 Adapter Prototype.
 
-1. Define the adapter boundary and loop refinement spec (completed).
-2. Complete the docs-first sanitized adapter prototype plan (completed).
-3. Implement the pure sanitized CasePackage adapter mapper helper (completed).
-4. Create the CLI wrapper for the sanitized CasePackage adapter mapper (completed).
-5. Build and verify one Jupyter/Python adapter prototype using real or realistic precomputed cluster output.
-6. Connect the cluster refinement recipe JSON export to an upstream Jupyter notebook split/merge consumer.
-7. Run a small pilot with 3-5 real or realistic packages and 2-3 reviewers.
+Completed local Milestone 4 producer pieces:
+
+1. Define the adapter boundary and loop refinement spec.
+2. Complete the sanitized adapter prototype plan.
+3. Implement the pure sanitized `CasePackageV01` adapter mapper helper.
+4. Create the CLI wrapper for the sanitized CasePackage adapter mapper.
+5. Document the sanitized adapter input contract and notebook handoff.
+6. Add deterministic mapper/CLI preflight validation.
+7. Add explicit CLI input and output flags.
+
+Prioritize next:
+
+1. Build and verify one approved notebook or script adapter prototype using
+   real or realistic precomputed cluster output outside Telemetry Court.
+2. Consume `cluster_refinement.v0.1` in the upstream notebook or pipeline
+   outside Telemetry Court.
+3. Produce the next approved sanitized draft and mapped `CasePackageV01`
+   iteration through the existing adapter path.
+4. Run a small approved pilot with 3-5 real or realistic packages and 2-3
+   reviewers only after artifact handling is approved for the intended
+   environment.
 
 Evidence-constrained AI assistance remains a later milestone. It should cite evidence IDs, admit missing evidence, and avoid generic chatbot behavior.
 

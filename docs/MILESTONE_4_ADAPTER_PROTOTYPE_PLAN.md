@@ -1,16 +1,46 @@
 # Milestone 4 - Sanitized Adapter Prototype Plan
 
-This plan defines the docs-first prototype workflow for producing sanitized
-`CasePackageV01` files from an upstream clustering or naming environment and
-for consuming Telemetry Court refinement exports back upstream. It is a planning
-document only. It does not add adapter scripts, fixtures, runtime behavior, UI,
-public packages, pilot data, or raw telemetry access.
+This plan tracks the Milestone 4 adapter prototype workflow for producing
+sanitized `CasePackageV01` files from an upstream clustering or naming
+environment and for consuming Telemetry Court refinement exports back upstream.
+It now distinguishes completed local producer pieces from the remaining
+approved-notebook and refinement-consumer work. It does not authorize fixtures,
+runtime behavior, UI changes, public packages, pilot data, or raw telemetry
+access.
 
 The contract source of truth remains `CasePackageV01` in
 [`lib/types.ts`](../lib/types.ts), the package guidance in
 [`CASE_PACKAGE_CONTRACT.md`](./CASE_PACKAGE_CONTRACT.md), and the refinement
 artifact shape in
 [`lib/clusterRefinementTypesV01.ts`](../lib/clusterRefinementTypesV01.ts).
+The implemented sanitized adapter draft shape is documented in
+[`SANITIZED_ADAPTER_INPUT_CONTRACT.md`](./SANITIZED_ADAPTER_INPUT_CONTRACT.md),
+producer-side notebook/script operations are covered by
+[`NOTEBOOK_HANDOFF_CHECKLIST.md`](./NOTEBOOK_HANDOFF_CHECKLIST.md), and
+upstream refinement consumption is covered by
+[`CLUSTER_REFINEMENT_HANDOFF.md`](./CLUSTER_REFINEMENT_HANDOFF.md).
+
+## Current Milestone 4 Status
+
+Completed local producer pieces:
+
+- sanitized adapter boundary and prototype plan;
+- implemented sanitized draft-to-`CasePackageV01` mapper;
+- CLI wrapper for the sanitized mapper;
+- sanitized adapter input contract and notebook handoff checklist;
+- mapper/CLI preflight validation;
+- explicit CLI input and output flags.
+
+Remaining prototype work:
+
+- build and verify one approved notebook or script adapter using real or
+  realistic precomputed cluster output outside Telemetry Court;
+- consume `cluster_refinement.v0.1` in the upstream notebook or pipeline using
+  the refinement handoff;
+- produce the next approved sanitized draft and mapped `CasePackageV01`
+  iteration through the existing adapter path;
+- run a small approved pilot only after the package and artifact handling are
+  approved for the intended environment.
 
 ## 1. Sanitized Prototype Flow
 
@@ -40,8 +70,9 @@ artifact shape in
 5. Compatible review results can be aggregated into `EvaluationReportV01`, and
    Telemetry Court can export a `cluster_refinement.v0.1` recipe from compatible
    human review signals.
-6. The upstream notebook reads the refinement JSON and applies pruning, split,
-   or merge decisions only inside the upstream environment.
+6. The upstream notebook reads the refinement JSON, applies any approved
+   pruning only inside the upstream environment, and treats split or merge
+   recommendations as upstream rerun hints.
 7. The upstream team reruns embedding, clustering, naming, and evidence
    extraction externally, then produces a new approved and sanitized
    `CasePackageV01` iteration if the revised cluster should be reviewed.
@@ -174,58 +205,16 @@ Telemetry Court import when it has any of these conditions:
 
 ## 5. Consumer Checklist For cluster_refinement.v0.1
 
-The upstream consumer should treat `cluster_refinement.v0.1` as an analyst
-review recipe, not as an automatic clustering command. The schema concepts are
-defined in `lib/clusterRefinementTypesV01.ts`.
+Use [`CLUSTER_REFINEMENT_HANDOFF.md`](./CLUSTER_REFINEMENT_HANDOFF.md) as the
+standalone upstream consumer handoff for `cluster_refinement.v0.1`.
 
-- Read the refinement JSON and verify `schema_version` is
-  `cluster_refinement.v0.1` and `calculation_version` is compatible.
-- Preserve `refinement_id`, `source_review_ids`, and `source_reviews` when
-  available so the next upstream run can be audited back to the human reviews.
-- Use `prune_session_ids` to filter rows externally in the upstream notebook or
-  pipeline. These IDs are derived from human outlier/impostor selections plus
-  qualifying cluster-quality signals.
-- Inspect `session_exclusion_recommendations` for supporting counts,
-  reviewer counts, qualifying source reviews, signals, and disagreement before
-  pruning.
-- Treat `split_recommendations` as analyst-approved hints that a cluster may
-  need sub-clustering, parameter changes, or evidence package revision. Do not
-  apply an automatic split inside Telemetry Court.
-- Treat `merge_recommendations` as analyst-approved hints that a cluster may
-  need comparison or merging with neighbors. In v0.1, merge target details can
-  be explicitly unavailable and must not be inferred from map proximity alone.
-- Carry uncertainty and disagreement forward. A single-review artifact can be
-  useful but cannot establish reviewer agreement.
-- Rerun embedding, clustering, naming, evidence extraction, and map generation
-  externally in the upstream environment.
-- Generate a new approved and sanitized `CasePackageV01` iteration when the
-  revised cluster should return to Telemetry Court.
-
-Illustrative non-executable pseudocode:
-
-```python
-# Pseudocode only. Keep this logic in the upstream notebook or pipeline.
-recipe = read_json("cluster_refinement_export.json")
-assert recipe["schema_version"] == "cluster_refinement.v0.1"
-
-rows = rows.exclude(session_id in recipe["prune_session_ids"])
-
-for split_hint in recipe["split_recommendations"]:
-    note_for_upstream_rerun(split_hint["cluster_id"], split_hint["signals"])
-
-for merge_hint in recipe["merge_recommendations"]:
-    note_for_upstream_comparison(
-        merge_hint["cluster_id"],
-        merge_hint["target"]["neighbor_cluster_ids"],
-    )
-
-rerun_embedding_and_clustering_externally(rows)
-write_next_sanitized_case_package(
-    source_refinement_id=recipe["refinement_id"],
-    source_review_ids=recipe["source_review_ids"],
-    source_reviews=recipe.get("source_reviews", []),
-)
-```
+At the plan level, the important boundary is that Telemetry Court exports a
+reviewer-derived recipe and the upstream environment consumes it externally.
+The consumer must verify schema and calculation versions, preserve refinement
+and source-review IDs, inspect exclusion counts, uncertainty, and disagreement,
+apply `prune_session_ids` only upstream, treat split and merge recommendations
+as hints, rerun upstream outside Telemetry Court, and return through the
+existing approved sanitized draft and `CasePackageV01` adapter path.
 
 ## 6. Non-Goals And Boundaries
 
@@ -237,7 +226,7 @@ write_next_sanitized_case_package(
   execution in Telemetry Court.
 - No backend, auth, database, server persistence, or production API surface.
 - No runtime UI changes.
-- No scripts, notebooks, package fixtures, public CasePackages, or adapter
-  implementation in this planning slice.
+- No additional scripts, notebooks, package fixtures, public CasePackages, or
+  adapter implementation in this documentation cleanup.
 - No claim that current synthetic fixtures are real Toponymy, DataMapPlot,
   ACME4, or pilot compatibility evidence.

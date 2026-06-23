@@ -49,7 +49,8 @@ Telemetry Court:
 
 `cluster_refinement.json` is an output for an upstream notebook or script to
 interpret. It is not a trigger for Telemetry Court to rerun any upstream
-pipeline.
+pipeline. For the consumer-side refinement handoff, see
+[`CLUSTER_REFINEMENT_HANDOFF.md`](./CLUSTER_REFINEMENT_HANDOFF.md).
 
 ## CLI Handoff
 
@@ -131,6 +132,10 @@ After the upstream draft is approved:
 - [ ] Treat `cluster_refinement.json` as reviewer-derived guidance for upstream
       interpretation, not as a Telemetry Court instruction or trigger to rerun
       clustering.
+- [ ] Follow
+      [`CLUSTER_REFINEMENT_HANDOFF.md`](./CLUSTER_REFINEMENT_HANDOFF.md)
+      before pruning sessions, acting on split or merge hints, or producing the
+      next approved sanitized draft.
 
 ## Non-Goals And Prohibitions
 

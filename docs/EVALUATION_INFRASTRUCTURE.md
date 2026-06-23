@@ -27,6 +27,11 @@ connectors, operational action generation, or broad dashboards.
 
 ## Priority Order
 
+Milestone 3 implemented the local version of the package import, review result
+exchange, aggregation, results, and export loop. Milestone 4 now focuses on
+approved adapter producer and refinement consumer usage outside Telemetry
+Court, without adding raw ingestion or in-app upstream processing.
+
 1. Import external `CasePackage` JSON through the versioned contract.
 2. Validate package identity, provenance, references, sanitization, and
    integrity before rendering.
@@ -322,6 +327,13 @@ This is not an in-app clustering engine, Toponymy/DataMapPlot/UMAP/HDBSCAN
 executor, raw telemetry workflow, backend persistence API, scoring system, or
 automatic correctness claim.
 
+For upstream operator guidance, use
+[`CLUSTER_REFINEMENT_HANDOFF.md`](./CLUSTER_REFINEMENT_HANDOFF.md). That page
+describes how to verify the artifact, preserve source review IDs, inspect
+session exclusion counts, carry uncertainty and disagreement forward, apply
+`prune_session_ids` externally, and return through the existing sanitized
+adapter path.
+
 ## Local ReviewResult Persistence v0.1
 
 The first persistence boundary is `lib/reviewResultStorageV01.ts`. It is a pure
@@ -356,11 +368,12 @@ EvaluationReport JSON/CSV export. It does not provide server uploads, durable
 server-side review storage, a multi-reviewer service, a durable report workflow,
 or research-grade metrics.
 
-The next proof after this local results slice is a narrow end-to-end exercise
-with a realistic package: import the package from local JSON, fail visibly if
-the package is invalid, complete independent reviews, retain and exchange the
-resulting ReviewResult artifacts, and verify the resulting EvaluationReport
-without relying on synthetic-only assumptions.
+The next proof after this local results slice is a narrow Milestone 4 adapter
+exercise: produce an approved sanitized draft outside Telemetry Court, map it
+through the existing adapter path, import and review the resulting package,
+export ReviewResults, EvaluationReport, and `cluster_refinement.v0.1`, consume
+the refinement artifact upstream, and produce the next approved package
+iteration without relying on synthetic-only assumptions.
 
 ## Deferred Concerns
 
