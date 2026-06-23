@@ -26,6 +26,10 @@ For the upstream adapter boundary, including Toponymy, DataMapPlot,
 ACME4-style, CloudTrail-style, and synthetic/sanitized producer categories, see
 [`ADAPTER_BOUNDARY.md`](./ADAPTER_BOUNDARY.md).
 
+For the implemented pre-CasePackage draft shape consumed by the sanitized
+mapper and CLI, see
+[`SANITIZED_ADAPTER_INPUT_CONTRACT.md`](./SANITIZED_ADAPTER_INPUT_CONTRACT.md).
+
 ## What A CasePackage Is
 
 A `CasePackage` is a versioned, provenance-bearing object under review. It contains a precomputed cluster, candidate labels, generated claims, reviewable evidence, explicit evidence-to-claim mappings, representative sessions, comparison context, metrics, provenance, sanitization metadata, and review configuration.
