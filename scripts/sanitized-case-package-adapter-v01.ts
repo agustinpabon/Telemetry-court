@@ -12,6 +12,13 @@ import {
 type WriteOutput = (value: string) => void;
 type ReadFile = (filePath: string) => Promise<string>;
 type WriteFile = (filePath: string, content: string) => Promise<void>;
+type CliInputFlag = "--input";
+type CliOutputFlag = "--out" | "--output";
+type CliRecognizedFlag = CliInputFlag | CliOutputFlag;
+type CliFlagValue<TFlag extends CliRecognizedFlag> = {
+  flag: TFlag;
+  value: string;
+};
 
 export type SanitizedCasePackageAdapterCliOptions = {
   argv?: string[];
@@ -40,25 +47,13 @@ export async function runSanitizedCasePackageAdapterCli(
       process.stderr.write(value);
     });
 
-  // Extract --out argument if present
-  const args = [...argv];
-  let outPath: string | undefined;
-  const outIndex = args.indexOf("--out");
-  if (outIndex !== -1) {
-    if (outIndex + 1 >= args.length) {
-      writeStderr("Error: --out option requires a file path.\n");
-      return 2;
-    }
-    outPath = args[outIndex + 1];
-    args.splice(outIndex, 2);
-  }
-
-  if (args.length !== 1) {
-    writeStderr(formatUsageError(argv.length));
+  const cliArguments = parseCliArguments(argv);
+  if (!cliArguments.ok) {
+    writeStderr(cliArguments.message);
     return 2;
   }
 
-  const suppliedInputPath = args[0];
+  const suppliedInputPath = cliArguments.inputPath;
   const inputPath = resolve(cwd, suppliedInputPath);
 
   const readResult = await readJsonFile(inputPath, readFile);
@@ -107,8 +102,8 @@ export async function runSanitizedCasePackageAdapterCli(
   // Format the output JSON
   const outputJson = JSON.stringify(validationResult.package, null, 2) + "\n";
 
-  if (outPath) {
-    const resolvedOutPath = resolve(cwd, outPath);
+  if (cliArguments.outPath) {
+    const resolvedOutPath = resolve(cwd, cliArguments.outPath);
     try {
       await writeFile(resolvedOutPath, outputJson);
     } catch (error) {
@@ -162,16 +157,168 @@ function parseJson(
   }
 }
 
-function formatUsageError(argumentCount: number): string {
+function parseCliArguments(
+  argv: string[],
+):
+  | { ok: true; inputPath: string; outPath?: string }
+  | { ok: false; message: string } {
+  let state: {
+    positionalInputPaths: string[];
+    inputFlagValues: CliFlagValue<CliInputFlag>[];
+    outputFlagValues: CliFlagValue<CliOutputFlag>[];
+  } = {
+    positionalInputPaths: [],
+    inputFlagValues: [],
+    outputFlagValues: [],
+  };
+
+  let index = 0;
+  while (index < argv.length) {
+    const arg = argv[index];
+
+    if (arg === "--input") {
+      const optionValue = readCliOptionValue(argv, index, arg);
+      if (!optionValue.ok) {
+        return optionValue;
+      }
+      state = {
+        ...state,
+        inputFlagValues: [
+          ...state.inputFlagValues,
+          { flag: arg, value: optionValue.value },
+        ],
+      };
+      index = optionValue.nextIndex;
+      continue;
+    }
+
+    if (arg === "--out" || arg === "--output") {
+      const optionValue = readCliOptionValue(argv, index, arg);
+      if (!optionValue.ok) {
+        return optionValue;
+      }
+      state = {
+        ...state,
+        outputFlagValues: [
+          ...state.outputFlagValues,
+          { flag: arg, value: optionValue.value },
+        ],
+      };
+      index = optionValue.nextIndex;
+      continue;
+    }
+
+    state = {
+      ...state,
+      positionalInputPaths: [...state.positionalInputPaths, arg],
+    };
+    index += 1;
+  }
+
+  if (
+    state.inputFlagValues.length === 0 &&
+    state.positionalInputPaths.length !== 1
+  ) {
+    return {
+      ok: false,
+      message: formatUsageError(state.positionalInputPaths.length),
+    };
+  }
+
+  const inputPathValues = [
+    ...state.positionalInputPaths,
+    ...state.inputFlagValues.map(({ value }) => value),
+  ];
+  if (inputPathValues.length === 0) {
+    return { ok: false, message: formatUsageError(0) };
+  }
+  if (inputPathValues.length > 1) {
+    return {
+      ok: false,
+      message: formatAmbiguousPathError("input", inputPathValues),
+    };
+  }
+
+  const outputPathValues = state.outputFlagValues.map(({ value }) => value);
+  if (outputPathValues.length > 1) {
+    return {
+      ok: false,
+      message: formatAmbiguousPathError("output", outputPathValues),
+    };
+  }
+
+  return {
+    ok: true,
+    inputPath: inputPathValues[0],
+    outPath: outputPathValues[0],
+  };
+}
+
+function readCliOptionValue(
+  argv: string[],
+  optionIndex: number,
+  flag: CliRecognizedFlag,
+):
+  | { ok: true; value: string; nextIndex: number }
+  | { ok: false; message: string } {
+  const value = argv[optionIndex + 1];
+  if (!value || isRecognizedCliFlag(value)) {
+    return {
+      ok: false,
+      message: `Error: ${flag} option requires a file path.\n`,
+    };
+  }
+
+  return { ok: true, value, nextIndex: optionIndex + 2 };
+}
+
+function isRecognizedCliFlag(value: string): value is CliRecognizedFlag {
+  return value === "--input" || value === "--out" || value === "--output";
+}
+
+function formatUsageError(inputPathCount: number): string {
   return [
     "Adapter CLI: FAIL",
     "Reason: CLI usage error",
-    `Received ${argumentCount} positional argument${
-      argumentCount === 1 ? "" : "s"
+    `Received ${inputPathCount} input draft JSON path${
+      inputPathCount === 1 ? "" : "s"
     }; expected exactly one input draft JSON path.`,
-    "Usage: npm run sanitized-case-package-adapter-v01 -- path/to/draft.json [--out path/to/output.json]",
+    ...formatUsageLines(),
     "",
   ].join("\n");
+}
+
+function formatAmbiguousPathError(
+  pathKind: "input" | "output",
+  pathValues: string[],
+): string {
+  const uniquePathCount = new Set(pathValues).size;
+  const reason =
+    uniquePathCount === 1
+      ? `Duplicate ${pathKind} path`
+      : `Conflicting ${pathKind} paths`;
+  const inputGuidance =
+    "Use either one positional input path or one --input path, not both.";
+  const outputGuidance = "Use only one output flag: --out or --output.";
+
+  return [
+    "Adapter CLI: FAIL",
+    `Reason: ${reason}`,
+    `Received ${pathValues.length} ${pathKind} path${
+      pathValues.length === 1 ? "" : "s"
+    }.`,
+    pathKind === "input" ? inputGuidance : outputGuidance,
+    ...formatUsageLines(),
+    "",
+  ].join("\n");
+}
+
+function formatUsageLines(): string[] {
+  return [
+    "Usage:",
+    "  npm run sanitized-case-package-adapter-v01 -- path/to/draft.json [--out path/to/output.json]",
+    "  npm run sanitized-case-package-adapter-v01 -- --input path/to/draft.json [--output path/to/output.json]",
+  ];
 }
 
 function formatReadFailure(
