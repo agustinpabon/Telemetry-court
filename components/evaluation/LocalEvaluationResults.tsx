@@ -371,7 +371,10 @@ export function LocalEvaluationResultsView({
                       </div>
                     </dl>
                   </header>
-                  <EvaluationReportResults report={group.report} />
+                  <EvaluationReportResults
+                    report={group.report}
+                    sourceReviewResults={group.sourceReviewResults}
+                  />
                 </article>
               );
             })}
