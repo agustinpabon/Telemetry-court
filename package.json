@@ -10,7 +10,8 @@
     "lint": "eslint",
     "test": "node --test --import tsx",
     "validate-package": "tsx scripts/validate-package.ts",
-    "validate-review-results": "tsx scripts/validate-review-results.ts"
+    "validate-review-results": "tsx scripts/validate-review-results.ts",
+    "sanitized-case-package-adapter-v01": "tsx scripts/sanitized-case-package-adapter-v01.ts"
   },
   "dependencies": {
     "next": "16.2.9",
