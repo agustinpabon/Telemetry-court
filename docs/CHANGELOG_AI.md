@@ -29,7 +29,7 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Checks run: Full validation check suite: `npm test`, `npx tsc --noEmit`, `npm run lint`, `npm run build`, and `git diff --check`.
 - Assumptions: Milestone 3 is complete and its local utility gate functionality forms the basis of the refinement feedback loop.
 - Risks/follow-ups: Upstream Python notebooks must strictly implement the refinement schema parsing to utilize session exclusions, split, and merge recommendations.
-- Next recommended step: Begin prototyping the first script-level adapter using these boundaries.
+- Next recommended step: Review and merge the adapter boundary spec, then open a focused follow-up issue for a docs-first adapter prototype plan.
 - Suggested commit message: `docs: define milestone 4 adapter boundary`
 
 ## 2026-06-23: Milestone 3 Import-To-Refinement Smoke
