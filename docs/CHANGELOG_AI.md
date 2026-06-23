@@ -19,6 +19,37 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-23: Milestone 3 Import-To-Refinement Smoke
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Add narrow helper-level smoke coverage proving the completed
+  local Milestone 3 loop connects validated CasePackage-shaped input,
+  compatible ReviewResult bundle import, local EvaluationReport aggregation,
+  results galaxy map coordinates, and validated `cluster_refinement.v0.1`
+  export availability.
+- Files changed: `lib/milestone3RefinementLoop.test.ts` and
+  `docs/CHANGELOG_AI.md`.
+- Summary: Added inline synthetic test objects that validate package metadata,
+  import compatible review results through the local bundle boundary, aggregate
+  them into an EvaluationReport, derive a visible results map node from package
+  coordinates, and build a validated cluster refinement artifact. The smoke
+  also checks that session pruning only includes a selected session when that
+  same review carries a qualifying cluster-quality signal, and that missing or
+  incompatible package/result references stay unavailable or rejected.
+- Decisions made: Kept the test at pure helper level and did not add fixtures,
+  public demo data, pilot data, UI automation, backend persistence, raw
+  telemetry ingestion, AI assistance, adapter execution, or clustering
+  pipeline execution.
+- Checks run: Focused smoke test passed with 2 tests.
+- Assumptions: Existing helper contracts are the correct integration boundary
+  for this smoke; existing EvaluationReport JSON/CSV export coverage remains
+  part of the full test suite.
+- Risks/follow-ups: This is deterministic local coverage only. It does not
+  replace future realistic package pilots or upstream notebook consumers.
+- Next recommended step: Run the full required validation suite before opening
+  the draft PR.
+- Suggested commit message: `test(results): add milestone 3 refinement smoke`
+
 ## 2026-06-23: Pruning Recipe Export
 
 - Agent/model: Codex (GPT-5)
