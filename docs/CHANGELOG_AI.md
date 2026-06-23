@@ -39,8 +39,9 @@ Use this file to record AI-assisted changes that affect product context, archite
   mapper, CLI, package, config, fixture, pilot-data, reviewer, or upstream
   processing changes.
 - Checks run: `git status --short`, `git diff --check`, and
-  `git diff main...HEAD --check` passed before PR handoff. Full tests and build
-  were skipped because this slice changes Markdown documentation only.
+  `git diff main...HEAD --check` passed. The ECC pre-push hook also ran
+  `npm run lint`, `npm test` (253 tests passed), and `npm run build`
+  successfully.
 - Assumptions: Upstream authors and named approvers remain responsible for
   sanitization, source approval, safe storage, and coordinate preparation
   before the draft crosses the Telemetry Court boundary.
