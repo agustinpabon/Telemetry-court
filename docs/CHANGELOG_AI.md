@@ -19,6 +19,40 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-23: Sanitized Adapter Validation Hardening
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #158 as a focused validation/test
+  hardening slice for the documented sanitized adapter draft contract.
+- Files changed: `lib/sanitizedCasePackageAdapterV01.ts`,
+  `lib/sanitizedCasePackageAdapterV01Preflight.ts`,
+  `lib/sanitizedCasePackageAdapterV01PreflightHelpers.ts`,
+  `lib/sanitizedCasePackageAdapterV01.test.ts`,
+  `scripts/sanitized-case-package-adapter-v01.test.ts`, and
+  `docs/CHANGELOG_AI.md`.
+- Summary: Added deterministic mapper preflight validation for malformed
+  sanitized adapter draft shape, cluster identity, candidate labels, claims,
+  evidence summaries, claim/evidence links, topology metadata, provenance,
+  sanitization metadata, neighbor references, and outlier/impostor references.
+  Added focused mapper and CLI tests proving structurally invalid drafts are
+  rejected and the CLI does not write output on invalid input.
+- Decisions made: Kept valid adapter output behavior and the CLI command shape
+  unchanged. Added no runtime app/UI behavior, fixtures, public CasePackages,
+  fake ReviewResults, fake EvaluationReports, pilot data, realistic telemetry
+  examples, or upstream processing execution.
+- Checks run: Focused adapter and CLI tests passed; `npm test`,
+  `npx tsc --noEmit`, `npm run lint`, `npm run build`, and `git diff --check`
+  were run before PR handoff.
+- Assumptions: The existing `CasePackageV01` validator remains the final
+  package boundary; mapper preflight now catches draft-local issues earlier for
+  notebook/script authors.
+- Risks/follow-ups: This does not prove real Toponymy, DataMapPlot, ACME4, or
+  pilot compatibility; approved upstream producers are still responsible for
+  sanitization and safe content before the draft crosses this boundary.
+- Next recommended step: Use these deterministic preflight failures while
+  building the next approved sanitized adapter producer prototype.
+- Suggested commit message: `test: harden sanitized adapter validation`
+
 ## 2026-06-23: Sanitized Adapter Input Contract
 
 - Agent/model: Codex (GPT-5)

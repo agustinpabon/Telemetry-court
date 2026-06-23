@@ -288,6 +288,43 @@ test("invalid draft fails preflight mapping validation cleanly and does not writ
   assert.equal(outputWritten, false);
 });
 
+test("structurally invalid sanitized draft fails adapter validation and does not write output", async () => {
+  const draft = {
+    package_id: "pkg-placeholder-001",
+    created_at: "2026-06-23T12:00:00.000Z",
+  };
+  const draftStr = JSON.stringify(draft);
+
+  let outputWritten = false;
+  const result = await withTempDir(async (tempDir) => {
+    const inputPath = join(tempDir, "draft.json");
+    const outputPath = join(tempDir, "output.json");
+    await writeFile(inputPath, draftStr, "utf8");
+
+    const res = await runCli([inputPath, "--out", outputPath]);
+
+    try {
+      await readFile(outputPath, "utf8");
+      outputWritten = true;
+    } catch {
+      outputWritten = false;
+    }
+
+    return res;
+  });
+
+  assert.notEqual(result.exitCode, 0);
+  assert.match(result.stderr, /Adapter mapping: FAIL/);
+  assert.match(
+    result.stderr,
+    /Reason: Invalid sanitized CasePackage adapter draft/,
+  );
+  assert.match(result.stderr, /\$\.case: \$\.case is required\./);
+  assert.match(result.stderr, /\$\.cluster: \$\.cluster is required\./);
+  assert.equal(result.stdout, "");
+  assert.equal(outputWritten, false);
+});
+
 test("mapped package failing CasePackage validation fails cleanly and does not write output", async () => {
   const draft = createValidSanitizedDraft();
   // Use a draft value that maps successfully, then fails strict CasePackage validation.
