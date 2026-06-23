@@ -13,6 +13,8 @@ import {
   ArenaStepHero,
   ArenaWorkflowShell,
 } from "@/components/arena/WorkflowPrimitives";
+import { inspectCasePackageV01 } from "@/lib/casePackageInspection";
+import { minimalSyntheticCasePackageV01 } from "@/lib/casePackageV01Fixture";
 
 function renderStaticMarkup(element: React.ReactElement): string {
   return renderToStaticMarkup(element).replace(/\s+/g, " ");
@@ -80,6 +82,7 @@ test("review orientation explains the CasePackage task without exposing a label"
 });
 
 test("CasePackage import control renders local import status", () => {
+  const syntheticSummary = inspectCasePackageV01(minimalSyntheticCasePackageV01);
   const successMarkup = renderStaticMarkup(
     React.createElement(CasePackageImportControl, {
       status: {
@@ -87,6 +90,7 @@ test("CasePackage import control renders local import status", () => {
         packageId: "pkg-imported-001",
         caseId: "case-imported-001",
         title: "Imported validation package",
+        inspectionSummary: syntheticSummary,
       },
       onImportStart: () => undefined,
       onImportText: () => undefined,
@@ -128,6 +132,21 @@ test("CasePackage import control renders local import status", () => {
   assert.match(successMarkup, /accept="application\/json,.json"/);
   assert.match(successMarkup, /Imported CasePackage pkg-imported-001/);
   assert.match(successMarkup, /case-imported-001/);
+  assert.match(successMarkup, /Imported package summary/);
+  assert.match(successMarkup, /Package posture/);
+  assert.match(successMarkup, /synthetic demo/);
+  assert.match(successMarkup, /Dataset classification/);
+  assert.match(successMarkup, /synthetic/);
+  assert.match(successMarkup, /Approval status/);
+  assert.match(successMarkup, /not required for synthetic demo/);
+  assert.match(successMarkup, /Evidence count/);
+  assert.match(successMarkup, />3</);
+  assert.match(successMarkup, /Candidate label count/);
+  assert.match(successMarkup, />2</);
+  assert.match(successMarkup, /Representative session count/);
+  assert.match(successMarkup, />2</);
+  assert.doesNotMatch(successMarkup, /ReviewResult/);
+  assert.doesNotMatch(successMarkup, /EvaluationReport/);
   assert.match(errorMarkup, /role="alert"/);
   assert.match(errorMarkup, /Package validation/);
   assert.match(errorMarkup, /Missing or unsupported schema version/);
@@ -140,5 +159,55 @@ test("CasePackage import control renders local import status", () => {
   assert.match(errorMarkup, /Choose Another File/);
   assert.match(errorMarkup, /Clear failed import \/ return to demo/);
   assert.match(errorMarkup, /Copy diagnostics/);
+  assert.doesNotMatch(errorMarkup, /Imported package summary/);
+  assert.doesNotMatch(errorMarkup, /case-package-import-summary-panel/);
   assert.doesNotMatch(errorMarkup, /case_package\.v9-secret-account-111111111111/);
+});
+
+test("CasePackage import control renders controlled sanitized inspection metadata", () => {
+  const controlledSummary = {
+    ...inspectCasePackageV01(minimalSyntheticCasePackageV01),
+    reviewableStatus: "reviewable",
+    packagePosture: "sanitized/controlled" as const,
+    datasetClassification: "sanitized",
+    sanitizationStatus: "sanitized",
+    approvalStatus: "approved",
+    approvalScope: "Telemetry Court review of this sanitized package revision.",
+    adapterName: "sanitized-case-package-adapter",
+    adapterVersion: "0.1.0",
+  };
+  const markup = renderStaticMarkup(
+    React.createElement(CasePackageImportControl, {
+      status: {
+        state: "success",
+        packageId: controlledSummary.packageId,
+        caseId: controlledSummary.caseId,
+        title: "Controlled validation package",
+        inspectionSummary: controlledSummary,
+      },
+      onImportStart: () => undefined,
+      onImportText: () => undefined,
+      onImportReadError: () => undefined,
+      onClearImport: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /Imported package summary/);
+  assert.match(markup, /sanitized\/controlled/);
+  assert.match(markup, /Reviewable status/);
+  assert.match(markup, /reviewable/);
+  assert.match(markup, /Dataset classification/);
+  assert.match(markup, /sanitized/);
+  assert.match(markup, /Sanitization status/);
+  assert.match(markup, /Approval status/);
+  assert.match(markup, /approved/);
+  assert.match(markup, /Approval scope/);
+  assert.match(
+    markup,
+    /Telemetry Court review of this sanitized package revision\./,
+  );
+  assert.match(markup, /Adapter/);
+  assert.match(markup, /sanitized-case-package-adapter 0\.1\.0/);
+  assert.doesNotMatch(markup, /ReviewResult/);
+  assert.doesNotMatch(markup, /EvaluationReport/);
 });

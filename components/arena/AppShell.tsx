@@ -344,6 +344,7 @@ export function AppShell({
       packageId: importResult.package.package_id,
       caseId: importResult.package.case.case_id,
       title: importResult.package.case.title,
+      inspectionSummary: importResult.inspectionSummary,
     });
 
     const caseFilePath = getPathForArenaStage("case_file");
