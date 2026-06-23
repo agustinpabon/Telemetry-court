@@ -41,10 +41,10 @@ Use this file to record AI-assisted changes that affect product context, archite
   mapper, CLI, validation, test, package, config, fixture, notebook, public
   package, fake result, pilot data, raw telemetry, or upstream processing
   changes.
-- Checks run: `git status --short`, `git diff --check`, and
-  `git diff main...HEAD --check`. Full tests/build were skipped because this
-  is a documentation-only change with no app, runtime, package, config, or test
-  edits.
+- Checks run: `git status --short`, `git diff --check`,
+  `git diff main...HEAD --check`, and `git diff --cached --check`. The ECC
+  pre-push hook also ran `npm run lint`, `npm test` (262 tests passed), and
+  `npm run build` successfully.
 - Assumptions: The next Milestone 4 proof is an approved external notebook or
   script adapter plus upstream refinement consumption, not public generated
   artifacts or in-repo upstream execution.
