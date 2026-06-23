@@ -2,7 +2,7 @@
 
 ## Project Identity
 
-Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.
+Telemetry Court is an evidence-based human-in-the-loop validation and topological refinement bench for AI-generated telemetry cluster interpretations.
 
 ```text
 AI names the cluster. Humans test the evidence.
@@ -19,9 +19,11 @@ Treat `docs/PRODUCT_VISION.md`, `docs/PRODUCT_POSITIONING.md`, and `docs/PROJECT
 
 ## Current State And Next Milestone
 
-- The current application is a static validation slice with synthetic cases, local package validation, and local review export.
+- The current application is a static/local validation slice with synthetic cases, local package validation, local review export, local/imported ReviewResult aggregation, and results JSON/CSV export.
+- The `/results` page does not yet render imported CasePackage projection coordinates as a verdict-colored topology map.
+- `cluster_refinement.json` export is not yet implemented.
 - Real Toponymy ingestion and ACME4 ingestion are not implemented.
-- The next implementation milestone is the Local Utility Gate (external/approved CasePackage validation workflow, package authoring/inspection support, and realistic/sanitized package readiness).
+- The next implementation milestone is the Local Utility Gate (external/approved CasePackage validation workflow, package authoring/inspection support, realistic/sanitized package readiness, results topology visualization, and refinement export design).
 - Backend work must start with `CasePackage`, `ReviewResult`, and `EvaluationReport` contracts, not generic APIs, databases, or authentication.
 
 ## Product Boundary
@@ -32,10 +34,11 @@ Upstream clustering and labeling systems
 -> Telemetry Court validation and review
 -> ReviewResult JSON
 -> EvaluationReport metrics
+-> cluster_refinement.json
 -> upstream pipeline improvement
 ```
 
-Telemetry Court owns reviewability, evidence grounding, auditability, structured human verdicts, and evaluation output. It does not own raw telemetry processing, live detection, or operational response.
+Telemetry Court owns reviewability, evidence grounding, auditability, structured human verdicts, evaluation output, and actionable refinement export. It does not own raw telemetry processing, live detection, or operational response.
 
 ## Core Review Workflow
 
@@ -50,6 +53,8 @@ Telemetry landscape
 -> structured verdict
 -> ReviewResult export
 -> multi-reviewer EvaluationReport
+-> visual results topology
+-> cluster_refinement export
 ```
 
 ## Product Rules
@@ -68,6 +73,8 @@ Telemetry landscape
 ## Do Not Drift Toward
 
 - generic dashboards or telemetry explorers;
+- generic cyber dashboards that ignore UMAP/DataMapPlot-style topological
+  refinement;
 - SIEM, SOC, EDR, alert-triage, or incident-response workflows;
 - raw log search or live telemetry ingestion;
 - chat-first UX or gamification;
@@ -83,8 +90,10 @@ Telemetry landscape
 3. Evidence provenance and sanitization.
 4. Structured review results.
 5. Multi-reviewer aggregation.
-6. Evaluation exports and deterministic metrics.
-7. Toponymy and ACME4 adapter boundaries.
+6. Visual results topology from approved package coordinates.
+7. Evaluation exports and deterministic metrics.
+8. `cluster_refinement.json` export for pruning, split, and merge decisions.
+9. Toponymy and ACME4 adapter boundaries.
 
 ## Design Rules
 

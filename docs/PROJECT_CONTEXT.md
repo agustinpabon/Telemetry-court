@@ -1,22 +1,22 @@
 # Project Context
 
-_Last updated: 2026-06-21._
+_Last updated: 2026-06-23._
 
 This document supersedes the older Evidence Arena framing as the repository's concise product context. `docs/PRODUCT_VISION.md` and `docs/PRODUCT_POSITIONING.md` define the broader product direction; this file is the compact operating context for planning, issues, and coding agents.
 
 ## Product Identity
 
-Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.
+Telemetry Court is an evidence-based human-in-the-loop validation and topological refinement bench for AI-generated telemetry cluster interpretations.
 
 ```text
 AI names the cluster. Humans test the evidence.
 ```
 
-It turns generated cluster labels into testable claims and records structured human judgments that can improve labels, prompts, embeddings, evidence extraction, and clustering pipelines.
+It turns generated cluster labels into testable claims, shows how those judgments sit on the cluster topology, and records structured human judgments that can improve labels, prompts, embeddings, evidence extraction, and clustering pipelines.
 
 ## Utility Gate
 
-Telemetry Court is useful only if it can ingest real or realistic `CasePackage` JSON, collect structured `ReviewResult` objects, and produce auditable `EvaluationReport` outputs that help improve an upstream clustering or naming pipeline.
+Telemetry Court is useful only if it can ingest real or realistic `CasePackage` JSON, collect structured `ReviewResult` objects, produce auditable `EvaluationReport` outputs, and export actionable refinement configuration that helps improve an upstream clustering or naming pipeline.
 
 A polished review UI is not enough. Prioritize features only when they improve one of these capabilities:
 
@@ -25,6 +25,8 @@ A polished review UI is not enough. Prioritize features only when they improve o
 - `ReviewResult` persistence, export, or import;
 - multi-reviewer aggregation;
 - `EvaluationReport` quality;
+- visual results topology from package-provided projection coordinates;
+- `cluster_refinement.json` output for split, merge, and pruning decisions;
 - adapter compatibility with Toponymy, DataMapPlot, notebooks, or sanitized telemetry experiments;
 - execution of a small validation pilot.
 
@@ -37,7 +39,12 @@ A polished review UI is not enough. Prioritize features only when they improve o
 - It includes synthetic, non-authoritative adapter-boundary fixtures for Toponymy/DataMapPlot-style and ACME4-style `CasePackage v0.1` shapes.
 - It includes deterministic in-memory `EvaluationReportV01` aggregation and a fixture-backed read-only results view with JSON/CSV downloads for the existing fixture report.
 - It does not yet provide a complete external-package workflow: local package import, invalid-package failure UI, imported-result bundles, and a real results workflow must move earlier than further polish or AI assistance.
-- It does not provide durable server-side review storage, multi-user persistence, package import, or a real report workflow.
+- It does not yet render imported CasePackage projection coordinates on the
+  `/results` page or color a topology map by aggregated verdict status.
+- It does not yet export `cluster_refinement.json` for upstream pruning, split,
+  or merge workflows.
+- It does not provide durable server-side review storage, multi-user
+  persistence, or a durable report workflow.
 - Because one report still requires one exact compact CasePackage reference, package/pipeline/model/prompt/embedding rollups are currently single-value context or explicitly unavailable, not cross-run rankings.
 - The main product risk is not visual quality. The main risk is remaining a beautiful synthetic demo with no real evaluation loop.
 - Evidence-constrained AI assistance remains later priority until import,
@@ -57,14 +64,16 @@ Boundary:
 Telemetry Court:
   package validation, blind review, evidence classification,
   label comparison, outlier review, structured verdict capture,
-  review result persistence/export/import, multi-reviewer aggregation
+  review result persistence/export/import, multi-reviewer aggregation,
+  visual results map, refinement export
 
 Outputs:
-  ReviewResult JSON and EvaluationReport JSON/CSV
+  ReviewResult JSON, EvaluationReport JSON/CSV, cluster_refinement.json
 
 Downstream:
   prompt improvement, label refinement, embedding comparison,
   evidence extraction improvement, split/merge decisions,
+  HDBSCAN/UMAP/DataMapPlot refinement notebooks,
   research reports and validation studies
 ```
 
@@ -87,6 +96,8 @@ local CasePackage import
 -> ReviewResult persistence/export/import
 -> local or imported result aggregation
 -> EvaluationReport JSON/CSV
+-> visual topology validation on /results
+-> cluster_refinement.json export
 ```
 
 Features that do not improve this path should wait unless they fix correctness, validation, data handling, or serious review usability blockers.
@@ -96,6 +107,8 @@ Features that do not improve this path should wait unless they fix correctness, 
 Do not drift toward:
 
 - generic dashboards;
+- generic cyber dashboards that ignore UMAP/DataMapPlot-style topological
+  refinement;
 - SIEM, SOC, EDR, or alert-triage workflows;
 - raw telemetry search or live ingestion;
 - chat-first UX or gamification;
@@ -116,9 +129,13 @@ Prioritize next:
 3. Harden local `ReviewResult` persistence without adding a backend.
 4. Export and import `ReviewResult` bundles.
 5. Build the results page from local/imported `ReviewResult` objects, not only static fixtures.
-6. Add an end-to-end smoke test: imported package -> review -> exported result -> aggregated `EvaluationReport`.
-7. Continue Toponymy/DataMapPlot adapter-boundary work after the import/results path is usable.
-8. Run a small pilot with 3-5 real or realistic packages and 2-3 reviewers.
+6. Render imported package topology on `/results` using approved projection
+   coordinates and aggregated verdict status.
+7. Define and export `cluster_refinement.json` with session exclusions and
+   split/merge recommendations for upstream notebook consumption.
+8. Add an end-to-end smoke test: imported package -> review -> exported result -> aggregated `EvaluationReport` -> refinement export.
+9. Continue Toponymy/DataMapPlot adapter-boundary work after the import/results path is usable.
+10. Run a small pilot with 3-5 real or realistic packages and 2-3 reviewers.
 
 Evidence-constrained AI assistance remains a later milestone. It should cite evidence IDs, admit missing evidence, and avoid generic chatbot behavior.
 
@@ -147,7 +164,9 @@ external real or realistic CasePackage
 -> structured ReviewResult export
 -> multi-reviewer import/aggregation
 -> EvaluationReport showing label support, overclaim, evidence sufficiency, cluster impurity, and reviewer disagreement
--> upstream prompt/model/embedding/evidence extraction improvement
+-> /results topology showing where support, uncertainty, impurity, split, or merge signals land spatially
+-> cluster_refinement.json identifying excluded sessions and split/merge recommendations
+-> upstream prompt/model/embedding/evidence extraction/clustering improvement
 ```
 
 A credible proof point is 3-5 real or realistic case packages, 2-3 independent reviewers, exported ReviewResults, and one EvaluationReport that identifies what should be accepted, renamed, split, merged, rerun, or marked uncertain.

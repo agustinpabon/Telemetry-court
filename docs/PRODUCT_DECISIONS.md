@@ -2,6 +2,42 @@
 
 This is the initial decision log for Telemetry Court. Add new entries when product direction, architecture, or evidence-model assumptions change.
 
+## 2026-06-23: Realignment to Topological Cluster Refiner
+
+Decision: Telemetry Court remains an evidence-based human-in-the-loop
+validation bench, but its core utility now centers on topological cluster
+refinement for Toponymy-style workflows. The results workflow must connect
+human verdicts back to the cluster map and export actionable refinement data,
+not only textual evaluation summaries.
+
+Rationale: Toponymy-style pipelines bridge high-dimensional embedding spaces,
+UMAP/HDBSCAN/DataMapPlot projections, and LLM-generated semantic labels. A
+passive text-only review loop risks becoming tedious mechanical validation.
+The higher-value loop is visual and corrective: reviewers judge whether labels
+are supported over the spatial topology, identify impure regions, outliers,
+split candidates, and merge candidates, then hand those decisions back to the
+upstream data-science pipeline. This helps resolve the trial-and-error loop of
+parameter tuning by turning human review into structured refinement signals.
+
+Consequences:
+
+- The `/results` page should evolve from report summaries into a visual
+  results map that uses imported CasePackage projection coordinates when those
+  coordinates are available.
+- Existing `TelemetryGalaxy` / `EvidenceGalaxyAtlas` components are the first
+  implementation direction for the results-map visualization.
+- Result-map nodes should be colored or otherwise encoded by aggregated human
+  verdict state, such as supported green, unsupported red, uncertain neutral,
+  and needs-split or impure orange/striped treatments.
+- The results export surface should add `cluster_refinement.json` as a separate
+  actionable artifact for upstream notebooks or Python pipelines.
+- `cluster_refinement.json` should compile human-approved session exclusions,
+  outlier or impostor IDs, split recommendations, and merge recommendations
+  without replacing `ReviewResult` or `EvaluationReport`.
+- The Local Utility Gate now includes visual topology validation and refinement
+  export design, while real Toponymy/HDBSCAN/DataMapPlot execution remains
+  upstream and unimplemented until a later adapter milestone.
+
 ## 2026-06-21: Utility Gate Comes Before AI Assistance
 
 Decision: A feature is useful only if it helps produce or improve an auditable

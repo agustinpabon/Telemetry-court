@@ -19,6 +19,42 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-23: Topological Cluster Refiner Alignment
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Update product source-of-truth docs, roadmap, agent guidance,
+  changelog, and local issue artifacts for the strategic realignment from a
+  passive text-only validation bench toward a Topological Cluster Refiner for
+  Toponymy-style workflows. Do not modify core code components or commit.
+- Files changed: `AGENTS.md`, `docs/PRODUCT_DECISIONS.md`,
+  `docs/PRODUCT_VISION.md`, `docs/PRODUCT_POSITIONING.md`,
+  `docs/PROJECT_CONTEXT.md`, `docs/ROADMAP.md`, `docs/CHANGELOG_AI.md`,
+  `issues/#140-results-galaxy-map-visualization.md`, and
+  `issues/#141-pruning-recipe-export.md`.
+- Summary: Documented the new visual results-map and refinement-export
+  direction, updated the Utility Gate and real-usefulness criteria to include
+  `/results` topology validation and `cluster_refinement.json`, refined
+  Milestone 3 and Milestone 4, and created two human-in-the-loop vertical-slice
+  issue files for the results galaxy map and pruning recipe export. After user
+  approval, synced the corresponding GitHub issues as
+  agustinpabon/Telemetry-court#139 and agustinpabon/Telemetry-court#140, and
+  updated the remote Milestone 3 and Milestone 4 descriptions.
+- Decisions made: Kept `CasePackage`, `ReviewResult`, and `EvaluationReport`
+  separate; framed `cluster_refinement.json` as a separate actionable export
+  derived from human review aggregation; kept Toponymy, HDBSCAN, UMAP, and
+  DataMapPlot execution upstream and unimplemented in this documentation phase.
+- Checks run: `npm test` passed with 215 tests; `npm run lint` passed with 0
+  errors and the existing 134 warnings under `.agents/skills/impeccable`.
+- Assumptions: The user-specified issue numbers, filenames, and
+  `human-in-the-loop` status are the approved local issue breakdown.
+- Risks/follow-ups: The `cluster_refinement.json` schema still needs product
+  and contract approval before implementation. GitHub issue numbering differs
+  from local filenames because repository issue numbers are shared with pull
+  requests.
+- Next recommended step: Review and approve the first `cluster_refinement.json`
+  schema before implementation starts.
+- Suggested commit message: `docs(product): align roadmap around topological refinement`
+
 ## 2026-06-23: Imported ReviewResult Inspection Summary
 
 - Agent/model: Codex (GPT-5)

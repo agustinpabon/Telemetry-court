@@ -15,7 +15,7 @@ is that interpretation actually supported by the evidence?
 
 ## Product Thesis
 
-Generated cluster names are easy to accept when they sound coherent. That fluency can hide unsupported claims, overreach, mixed clusters, weak evidence coverage, or instability across models and prompts. Telemetry Court makes those interpretations reviewable and turns human judgment into evaluation data for the upstream pipeline.
+Generated cluster names are easy to accept when they sound coherent. That fluency can hide unsupported claims, overreach, mixed clusters, weak evidence coverage, or instability across models and prompts. Telemetry Court makes those interpretations reviewable, validates them against the cluster topology, and turns human judgment into evaluation and refinement data for the upstream pipeline.
 
 ```text
 Precomputed cluster
@@ -25,6 +25,7 @@ Precomputed cluster
 -> structured human verdict
 -> ReviewResult
 -> multi-reviewer EvaluationReport
+-> cluster_refinement.json
 -> upstream pipeline improvement
 ```
 
@@ -33,8 +34,9 @@ The current landscape, case file, evidence board, label comparison, outlier revi
 ## Utility Gate
 
 Telemetry Court is useful only if it helps produce or improve an auditable
-`EvaluationReport` from real or realistic `CasePackage` inputs. A feature
-passes the Utility Gate when it improves at least one part of this loop:
+`EvaluationReport` and actionable topological refinement output from real or
+realistic `CasePackage` inputs. A feature passes the Utility Gate when it
+improves at least one part of this loop:
 
 ```text
 import CasePackage JSON
@@ -43,13 +45,15 @@ import CasePackage JSON
 -> persist/export ReviewResult
 -> import or aggregate ReviewResults
 -> produce EvaluationReport output
+-> render visual results topology from package projection coordinates
+-> export cluster_refinement.json for upstream split/merge/pruning work
 ```
 
 The next proof of value is this external-package validation loop, not more
 synthetic polish, generic backend infrastructure, or evidence-constrained AI
 assistance. AI assistance remains later priority until reviewers can import a
 package, complete reviews, exchange result bundles, and aggregate them into a
-report.
+report and refinement artifact.
 
 ## Product Responsibilities
 
@@ -63,7 +67,11 @@ Telemetry Court is responsible for:
 - supporting structured evidence classification and verdicts;
 - collecting independent reviews from multiple people;
 - aggregating judgments and disagreement;
-- exporting evaluation data for labels, prompts, models, embeddings, evidence extraction, and cluster design.
+- rendering package-provided cluster topology on the results page when
+  projection coordinates are available;
+- exporting evaluation data for labels, prompts, models, embeddings, evidence extraction, and cluster design;
+- exporting refinement data that can guide upstream pruning, split, merge, and
+  rerun decisions.
 
 Telemetry Court is not responsible for the full telemetry processing stack, live detection, operational alert response, or unrestricted raw data ingestion.
 
@@ -109,8 +117,10 @@ CasePackage ID, strict ReviewResult bundle exchange, and deterministic
 in-memory `EvaluationReport` aggregation. The `/results` route now summarizes
 validated local or imported ReviewResults, separates exact CasePackage
 references, and exports each resulting report as JSON or CSV. It does not yet
-prove real-world validation value, run Toponymy, ingest ACME4, provide durable
-server-side persistence, or support a durable multi-user report workflow.
+render the imported package topology on `/results`, color map nodes by
+aggregated verdict state, export `cluster_refinement.json`, prove real-world
+validation value, run Toponymy, ingest ACME4, provide durable server-side
+persistence, or support a durable multi-user report workflow.
 
 The current EvaluationReport shape includes descriptive reviewer-signal rollups
 for selected label IDs and compact package/pipeline metadata already carried by
@@ -131,12 +141,18 @@ Synthetic cases remain useful for UI and protocol testing, but they must be desc
 Telemetry Court becomes a serious tool only when it can:
 
 - ingest a real or realistic precomputed cluster;
+- preserve and render its approved projection coordinates on the results page;
 - generate or accept a defensible evidence package;
 - let multiple humans review it;
 - preserve blind review before AI-label reveal;
 - store structured verdicts;
 - aggregate reviewer judgments;
-- export metrics that improve labels, prompts, embeddings, or pipeline design.
+- visually show where verdicts support, contradict, split, merge, or mark
+  uncertainty across the cluster topology;
+- export metrics that improve labels, prompts, embeddings, or pipeline design;
+- export `cluster_refinement.json` so upstream notebooks or Python pipelines
+  can prune excluded sessions and apply human-approved split or merge
+  recommendations in the next clustering iteration.
 
 If it cannot do those things, it remains a polished interface rather than validation infrastructure.
 

@@ -2,11 +2,11 @@
 
 ## One-Sentence Definition
 
-Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.
+Telemetry Court is an evidence-based human-in-the-loop validation and topological refinement bench for AI-generated telemetry cluster interpretations.
 
 ## Product Thesis
 
-AI-generated cluster labels can sound plausible while being unsupported, overbroad, overly specific, unstable, or based on impure clusters. The useful product is not another place to display those labels. It is a disciplined environment for turning them into testable claims, judging them against representative evidence, and producing reusable human evaluation data.
+AI-generated cluster labels can sound plausible while being unsupported, overbroad, overly specific, unstable, or based on impure clusters. The useful product is not another place to display those labels. It is a disciplined environment for turning them into testable claims, judging them against representative evidence and topology, and producing reusable human evaluation and cluster-refinement data.
 
 ## What Telemetry Court Is
 
@@ -15,6 +15,7 @@ AI-generated cluster labels can sound plausible while being unsupported, overbro
 - A validation layer between clustering or labeling pipelines and the teams improving those pipelines.
 - A source of reviewer agreement, evidence sufficiency, overclaim, impurity, split, merge, and uncertainty signals.
 - A downstream companion to Toponymy-style cluster naming workflows.
+- A topological cluster refiner that helps translate visual UMAP/HDBSCAN/DataMapPlot structure into actionable split, merge, and pruning recommendations.
 
 ## What Telemetry Court Is Not
 
@@ -31,6 +32,8 @@ AI-generated cluster labels can sound plausible while being unsupported, overbro
 - Researchers evaluating AI-assisted telemetry interpretation.
 - Toponymy users or contributors validating generated cluster names.
 - AI/ML and cyber data science teams comparing prompts, models, embeddings, evidence extraction, or clustering choices.
+- Data scientists tuning UMAP, HDBSCAN, DataMapPlot-adjacent projections, or
+  notebook-based cluster naming loops.
 - Analysts and senior reviewers judging whether generated interpretations are defensible.
 - Educators and research institutions teaching evidence-grounded interpretation.
 
@@ -40,24 +43,26 @@ Telemetry Court is not primarily for frontline SOC analysts responding to live a
 
 ## Real-World Problem
 
-Clustering pipelines can produce coherent-looking maps and confident labels without proving that the labels reflect the underlying sessions or events. Teams often lack a repeatable way to review the evidence, preserve pre-label human judgment, compare alternative interpretations, aggregate disagreements, and feed the results back into the pipeline.
+Clustering pipelines can produce coherent-looking maps and confident labels without proving that the labels reflect the underlying sessions or events. Teams often lack a repeatable way to review the evidence over the spatial topology, preserve pre-label human judgment, compare alternative interpretations, aggregate disagreements, and feed precise pruning, split, or merge guidance back into the pipeline instead of tuning parameters by trial and error.
 
 ## Strongest Use Case
 
-A research or AI/ML team imports a real or realistic precomputed cluster as a versioned case package, has multiple reviewers inspect it without seeing the generated label first, captures structured evidence ratings and verdicts, and exports an evaluation report that identifies which label, prompt, model, embedding, or evidence package performed better.
+A research or AI/ML team imports a real or realistic precomputed cluster as a versioned case package, has multiple reviewers inspect it without seeing the generated label first, views the aggregated verdicts over the cluster topology, and exports both an `EvaluationReport` and `cluster_refinement.json` so an upstream Toponymy/HDBSCAN notebook can prune noisy sessions, split mixed regions, merge confusing neighbors, or rerun the labeling pass with better evidence.
 
 ## Utility Gate
 
 A feature is useful only if it helps produce or improve an auditable
-`EvaluationReport` from real or realistic `CasePackage` inputs. The near-term
-product should prioritize local package import, strict invalid-package failure,
-structured `ReviewResult` persistence/export/import, and aggregation from
-local or imported results before evidence-constrained AI assistance.
+`EvaluationReport` or actionable `cluster_refinement.json` output from real or
+realistic `CasePackage` inputs. The near-term product should prioritize local
+package import, strict invalid-package failure, structured `ReviewResult`
+persistence/export/import, visual results topology from imported package
+coordinates, refinement export, and aggregation from local or imported results
+before evidence-constrained AI assistance.
 
 The target proof is small but real: several real or realistic packages,
 multiple independent reviewers, exported ReviewResults, and one report that
-surfaces label support, overclaim, evidence sufficiency, cluster impurity, and
-reviewer disagreement.
+surfaces label support, overclaim, evidence sufficiency, cluster impurity,
+reviewer disagreement, and actionable split, merge, or pruning signals.
 
 ## Contract Separation
 
@@ -93,10 +98,13 @@ Telemetry Court is successful when it can:
 - support blind, structured review by multiple people;
 - expose missing, weak, irrelevant, and contradictory evidence;
 - aggregate reviewer judgments and disagreements;
-- export evaluation metrics that lead to measurable improvements in labels, prompts, embeddings, evidence extraction, or clustering decisions.
+- show aggregated judgments over the approved projection map;
+- export evaluation metrics and refinement configuration that lead to
+  measurable improvements in labels, prompts, embeddings, evidence extraction,
+  or clustering decisions.
 
 Visual polish and review completion alone are not success criteria.
 
 ## Positioning Statement
 
-Telemetry Court is an evidence review bench for AI-labeled telemetry clusters. It helps researchers and analysts test whether generated cluster names are supported by representative evidence, identify overclaims and impure clusters, and produce structured human review data for improving Toponymy-style labeling, prompts, embeddings, and validation workflows.
+Telemetry Court is an evidence and topology review bench for AI-labeled telemetry clusters. It helps researchers, analysts, and data scientists test whether generated cluster names are supported by representative evidence, identify overclaims and impure regions, and produce structured human review plus refinement data for improving Toponymy-style labeling, prompts, embeddings, HDBSCAN parameters, and validation workflows.
