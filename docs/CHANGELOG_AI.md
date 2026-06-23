@@ -19,6 +19,41 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-23: Sanitized CasePackage Adapter Mapper
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #150 as the first minimal Milestone 4
+  implementation slice: a fixture-free, schema-validated, sanitized
+  CasePackage producer mapping helper.
+- Files changed: `lib/sanitizedCasePackageAdapterV01.ts`,
+  `lib/sanitizedCasePackageAdapterV01.test.ts`, and
+  `docs/CHANGELOG_AI.md`.
+- Summary: Added a pure TypeScript mapper from an already-approved,
+  already-sanitized upstream cluster draft into `CasePackageV01`, with narrow
+  preflight errors for missing non-synthetic review approval, missing linked
+  claim evidence, missing embedding-map coordinates, and invalid sanitization
+  status. Focused inline tests prove the mapped package validates through the
+  existing `validateCasePackageV01` runtime validator and keep
+  outlier/impostor candidates separate from representative sessions.
+- Decisions made: Kept this as a contract-layer mapping seam only. Added no
+  runtime app behavior, UI changes, scripts, fixtures, public CasePackages,
+  fake pilot data, raw telemetry ingestion, backend/auth/database work,
+  Toponymy/DataMapPlot/UMAP/HDBSCAN/ACME4 execution, clustering engine, or
+  clustering pipeline execution.
+- Checks run: `git diff --check` passed; focused
+  `node --test --import tsx lib/sanitizedCasePackageAdapterV01.test.ts` passed
+  with 6 tests; `npm test` passed with 237 tests; `npx tsc --noEmit`
+  passed; `npm run lint` passed; `npm run build` passed.
+- Assumptions: Upstream producers have already completed sanitization,
+  approval, projection, clustering, naming, and evidence summarization before
+  calling this helper.
+- Risks/follow-ups: This helper does not prove real Toponymy, DataMapPlot,
+  ACME4, or pilot compatibility; future work still needs approved upstream
+  producer usage and package import/review validation.
+- Next recommended step: Use the mapper only from an approved upstream
+  producer boundary after sanitized draft contracts are accepted.
+- Suggested commit message: `feat: add sanitized CasePackage adapter mapper`
+
 ## 2026-06-23: Milestone 4 Sanitized Adapter Prototype Plan
 
 - Agent/model: Codex (GPT-5)
