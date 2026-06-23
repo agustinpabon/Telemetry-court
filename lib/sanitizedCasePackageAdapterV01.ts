@@ -22,6 +22,7 @@ import {
   type CasePackageSanitizationStatusV01,
   type CasePackageV01,
 } from "@/lib/types";
+import { getSanitizedAdapterDraftPreflightIssues } from "@/lib/sanitizedCasePackageAdapterV01Preflight";
 
 export type SanitizedCasePackageAdapterIssueV01 = {
   path: string;
@@ -104,25 +105,10 @@ export type SanitizedCasePackageAdapterDraftV01 = {
 
 export type SanitizedAdapterDraftInput = SanitizedCasePackageAdapterDraftV01;
 
-const CASE_PACKAGE_SANITIZATION_STATUSES = [
-  "synthetic",
-  "sanitized",
-  "deidentified",
-  "redacted",
-  "aggregate_only",
-  "approved_internal",
-  "unknown",
-] as const satisfies CasePackageSanitizationStatusV01[];
-
-const CLAIM_EVIDENCE_STATUSES = [
-  "linked",
-  "missing_evidence_declared",
-] as const;
-
 export function buildCasePackageV01FromSanitizedAdapterDraft(
   input: SanitizedAdapterDraftInput,
 ): CasePackageV01 {
-  const issues = getPreflightIssues(input);
+  const issues = getSanitizedAdapterDraftPreflightIssues(input);
 
   if (issues.length > 0) {
     throw new SanitizedCasePackageAdapterV01Error(issues);
@@ -170,160 +156,6 @@ export function buildCasePackageV01FromSanitizedAdapterDraft(
     sanitization: cloneValue(input.sanitization),
     review_configuration: buildReviewConfiguration(input),
   };
-}
-
-function getPreflightIssues(
-  input: SanitizedAdapterDraftInput,
-): SanitizedCasePackageAdapterIssueV01[] {
-  return [
-    ...getSanitizationStatusIssues(input),
-    ...getReviewApprovalIssues(input),
-    ...getEmbeddingMapIssues(input),
-    ...getClaimEvidenceIssues(input),
-  ];
-}
-
-function getSanitizationStatusIssues(
-  input: SanitizedAdapterDraftInput,
-): SanitizedCasePackageAdapterIssueV01[] {
-  const status = input.sanitization.status;
-
-  if (isCasePackageSanitizationStatus(status)) {
-    return [];
-  }
-
-  return [
-    {
-      path: "$.sanitization.status",
-      message:
-        "Sanitization status must be a CasePackageSanitizationStatusV01 value.",
-    },
-  ];
-}
-
-function getReviewApprovalIssues(
-  input: SanitizedAdapterDraftInput,
-): SanitizedCasePackageAdapterIssueV01[] {
-  if (isExplicitSyntheticPosture(input)) {
-    return [];
-  }
-
-  const issues: SanitizedCasePackageAdapterIssueV01[] = [];
-
-  if (
-    input.sanitization.status === "synthetic" ||
-    input.sanitization.status === "unknown"
-  ) {
-    issues.push({
-      path: "$.sanitization.status",
-      message:
-        "Non-synthetic sanitized adapter drafts require a concrete sanitization status.",
-    });
-  }
-
-  if (!input.sanitization.review_approval) {
-    issues.push({
-      path: "$.sanitization.review_approval",
-      message:
-        "Non-synthetic sanitized adapter drafts require review approval.",
-    });
-  }
-
-  return issues;
-}
-
-function getEmbeddingMapIssues(
-  input: SanitizedAdapterDraftInput,
-): SanitizedCasePackageAdapterIssueV01[] {
-  const embeddingMap = input.cluster.embedding_map;
-  const coordinates = embeddingMap?.coordinates;
-  const issues: SanitizedCasePackageAdapterIssueV01[] = [];
-
-  if (!embeddingMap) {
-    return [
-      {
-        path: "$.cluster.embedding_map",
-        message: "Embedding map metadata is required for adapter drafts.",
-      },
-    ];
-  }
-
-  for (const field of ["map_id", "map_tool", "coordinate_space"] as const) {
-    if (typeof embeddingMap[field] !== "string" || embeddingMap[field]?.trim() === "") {
-      issues.push({
-        path: `$.cluster.embedding_map.${field}`,
-        message: "Embedding map metadata must include non-empty map fields.",
-      });
-    }
-  }
-
-  if (
-    !coordinates ||
-    !Number.isFinite(coordinates.x) ||
-    !Number.isFinite(coordinates.y)
-  ) {
-    issues.push({
-      path: "$.cluster.embedding_map.coordinates",
-      message: "Embedding map coordinates with numeric x and y are required.",
-    });
-    return issues;
-  }
-
-  if (coordinates.z !== undefined && !Number.isFinite(coordinates.z)) {
-    issues.push({
-      path: "$.cluster.embedding_map.coordinates.z",
-      message: "Embedding map z coordinate must be numeric when present.",
-    });
-  }
-
-  return issues;
-}
-
-function getClaimEvidenceIssues(
-  input: SanitizedAdapterDraftInput,
-): SanitizedCasePackageAdapterIssueV01[] {
-  const claimEvidenceLinksByClaimId = groupClaimEvidenceLinksByClaimId(
-    input.claim_evidence_links,
-  );
-
-  return input.claims.flatMap((claim, index) => {
-    const evidenceStatus = claim.evidence_status ?? "linked";
-    const linkedEvidenceIds = claimEvidenceLinksByClaimId.get(claim.claim_id) ?? [];
-
-    if (!CLAIM_EVIDENCE_STATUSES.includes(evidenceStatus)) {
-      return [
-        {
-          path: `$.claims[${index}].evidence_status`,
-          message:
-            'Claim evidence status must be "linked" or "missing_evidence_declared".',
-        },
-      ];
-    }
-
-    if (evidenceStatus === "linked" && linkedEvidenceIds.length === 0) {
-      return [
-        {
-          path: `$.claims[${index}].claim_evidence_links`,
-          message: "Linked claims must have at least one claim-to-evidence link.",
-        },
-      ];
-    }
-
-    if (
-      evidenceStatus === "missing_evidence_declared" &&
-      linkedEvidenceIds.length > 0
-    ) {
-      return [
-        {
-          path: `$.claims[${index}].claim_evidence_links`,
-          message:
-            "Claims declaring missing evidence must not include claim-to-evidence links.",
-        },
-      ];
-    }
-
-    return [];
-  });
 }
 
 function mapCluster(
@@ -454,24 +286,6 @@ function groupClaimIdsByEvidenceId(
       link.claim_id,
     ]);
   }, new Map<string, string[]>());
-}
-
-function isExplicitSyntheticPosture(
-  input: SanitizedAdapterDraftInput,
-): boolean {
-  return (
-    input.case.reviewable_status === "synthetic_demo" &&
-    input.dataset.data_classification === "synthetic" &&
-    input.sanitization.status === "synthetic"
-  );
-}
-
-function isCasePackageSanitizationStatus(
-  status: unknown,
-): status is CasePackageSanitizationStatusV01 {
-  return CASE_PACKAGE_SANITIZATION_STATUSES.includes(
-    status as CasePackageSanitizationStatusV01,
-  );
 }
 
 function uniqueStrings(values: string[]): string[] {

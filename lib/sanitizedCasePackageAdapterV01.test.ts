@@ -270,17 +270,29 @@ function assertAdapterError(
   expectedPath: string,
   expectedMessage: string,
 ) {
+  assertAdapterIssues(action, [
+    { path: expectedPath, message: expectedMessage },
+  ]);
+}
+
+function assertAdapterIssues(
+  action: () => unknown,
+  expectedIssues: Array<{ path: string; message: string }>,
+) {
   assert.throws(action, (error: unknown) => {
     assert.ok(error instanceof SanitizedCasePackageAdapterV01Error);
-    assert.ok(
-      error.issues.some(
-        (issue) =>
-          issue.path === expectedPath && issue.message.includes(expectedMessage),
-      ),
-      `Expected ${expectedPath} to include ${expectedMessage}, got ${JSON.stringify(
-        error.issues,
-      )}`,
-    );
+    for (const expectedIssue of expectedIssues) {
+      assert.ok(
+        error.issues.some(
+          (issue) =>
+            issue.path === expectedIssue.path &&
+            issue.message.includes(expectedIssue.message),
+        ),
+        `Expected ${expectedIssue.path} to include ${
+          expectedIssue.message
+        }, got ${JSON.stringify(error.issues)}`,
+      );
+    }
     return true;
   });
 }
@@ -374,5 +386,201 @@ test("rejects an invalid sanitization status before mapping", () => {
     () => buildCasePackageV01FromSanitizedAdapterDraft(draft),
     "$.sanitization.status",
     "Sanitization status must be a CasePackageSanitizationStatusV01 value.",
+  );
+});
+
+test("rejects non-object draft input before mapping", () => {
+  assertAdapterError(
+    () =>
+      buildCasePackageV01FromSanitizedAdapterDraft(
+        null as unknown as SanitizedCasePackageAdapterDraftV01,
+      ),
+    "$",
+    "Sanitized adapter draft input must be a non-array object.",
+  );
+});
+
+test("rejects missing required top-level draft fields before mapping", () => {
+  const draft =
+    createMinimalSanitizedDraft() as Partial<SanitizedCasePackageAdapterDraftV01>;
+  delete draft.case;
+  delete draft.cluster;
+  delete draft.evidence_summaries;
+
+  assertAdapterIssues(
+    () =>
+      buildCasePackageV01FromSanitizedAdapterDraft(
+        draft as SanitizedCasePackageAdapterDraftV01,
+      ),
+    [
+      { path: "$.case", message: "$.case is required." },
+      { path: "$.cluster", message: "$.cluster is required." },
+      {
+        path: "$.evidence_summaries",
+        message: "$.evidence_summaries is required.",
+      },
+    ],
+  );
+});
+
+test("rejects malformed cluster identity before mapping", () => {
+  const draft = createMinimalSanitizedDraft();
+  draft.cluster.cluster_id = " ";
+  draft.cluster.cluster_size = Number.NaN;
+  delete (
+    draft.cluster as Partial<
+      SanitizedCasePackageAdapterDraftV01["cluster"]
+    >
+  ).cluster_method;
+
+  assertAdapterIssues(
+    () => buildCasePackageV01FromSanitizedAdapterDraft(draft),
+    [
+      {
+        path: "$.cluster.cluster_id",
+        message: "$.cluster.cluster_id must be a non-empty string.",
+      },
+      {
+        path: "$.cluster.cluster_size",
+        message: "$.cluster.cluster_size must be a finite number.",
+      },
+      {
+        path: "$.cluster.cluster_method",
+        message: "$.cluster.cluster_method is required.",
+      },
+    ],
+  );
+});
+
+test("rejects malformed AI label and claim fields before mapping", () => {
+  const draft = createMinimalSanitizedDraft();
+  draft.candidate_labels[0].label_id = " ";
+  draft.candidate_labels[0].label = " ";
+  draft.claims[0].claim_id = " ";
+  draft.claims[0].text = " ";
+
+  assertAdapterIssues(
+    () => buildCasePackageV01FromSanitizedAdapterDraft(draft),
+    [
+      {
+        path: "$.candidate_labels[0].label_id",
+        message: "$.candidate_labels[0].label_id must be a non-empty string.",
+      },
+      {
+        path: "$.candidate_labels[0].label",
+        message: "$.candidate_labels[0].label must be a non-empty string.",
+      },
+      {
+        path: "$.claims[0].claim_id",
+        message: "$.claims[0].claim_id must be a non-empty string.",
+      },
+      {
+        path: "$.claims[0].text",
+        message: "$.claims[0].text must be a non-empty string.",
+      },
+    ],
+  );
+});
+
+test("rejects evidence summaries with missing IDs and blank text content before mapping", () => {
+  const draft = createMinimalSanitizedDraft();
+  delete (
+    draft.evidence_summaries[0] as Partial<
+      SanitizedCasePackageAdapterDraftV01["evidence_summaries"][number]
+    >
+  ).evidence_id;
+  draft.evidence_summaries[0].content = {
+    content_type: "text",
+    text: " ",
+  };
+
+  assertAdapterIssues(
+    () => buildCasePackageV01FromSanitizedAdapterDraft(draft),
+    [
+      {
+        path: "$.evidence_summaries[0].evidence_id",
+        message: "$.evidence_summaries[0].evidence_id is required.",
+      },
+      {
+        path: "$.evidence_summaries[0].content.text",
+        message:
+          "$.evidence_summaries[0].content.text must be a non-empty string.",
+      },
+    ],
+  );
+});
+
+test("rejects claim-evidence links that point to unknown draft IDs before mapping", () => {
+  const draft = createMinimalSanitizedDraft();
+  const claimId = draft.claims[0].claim_id;
+  const evidenceId = draft.evidence_summaries[0].evidence_id;
+  draft.claim_evidence_links = [
+    draft.claim_evidence_links[0],
+    {
+      claim_id: "claim-placeholder-missing",
+      evidence_id: evidenceId,
+      relationship: "supports",
+    },
+    {
+      claim_id: claimId,
+      evidence_id: "evidence-placeholder-missing",
+      relationship: "supports",
+    },
+  ];
+
+  assertAdapterIssues(
+    () => buildCasePackageV01FromSanitizedAdapterDraft(draft),
+    [
+      {
+        path: "$.claim_evidence_links[1].claim_id",
+        message:
+          'Claim-evidence link references missing claim ID: "claim-placeholder-missing".',
+      },
+      {
+        path: "$.claim_evidence_links[2].evidence_id",
+        message:
+          'Claim-evidence link references missing evidence ID: "evidence-placeholder-missing".',
+      },
+    ],
+  );
+});
+
+test("rejects malformed outlier, impostor, and neighbor references before mapping", () => {
+  const draft = createMinimalSanitizedDraft();
+  draft.outlier_impostor_candidates = [
+    {
+      candidate_id: "candidate-placeholder-001",
+      session_id: "session-placeholder-missing",
+      evidence_id: "evidence-placeholder-missing",
+      reason: "Placeholder candidate reference.",
+      expected_review_use: "outlier_check",
+    },
+  ];
+  draft.neighbor_clusters = [
+    {
+      neighbor_cluster_id: draft.cluster.cluster_id,
+      reason_this_neighbor_matters: "Placeholder neighbor reference.",
+    },
+  ];
+
+  assertAdapterIssues(
+    () => buildCasePackageV01FromSanitizedAdapterDraft(draft),
+    [
+      {
+        path: "$.outlier_impostor_candidates[0].session_id",
+        message:
+          'Outlier/impostor candidate references missing representative session ID: "session-placeholder-missing".',
+      },
+      {
+        path: "$.outlier_impostor_candidates[0].evidence_id",
+        message:
+          'Outlier/impostor candidate references missing evidence ID: "evidence-placeholder-missing".',
+      },
+      {
+        path: "$.neighbor_clusters[0].neighbor_cluster_id",
+        message:
+          "Neighbor cluster must not reference the package's primary cluster ID.",
+      },
+    ],
   );
 });
