@@ -8061,6 +8061,206 @@
   gap: 16px;
 }
 
+.results-topology-map,
+.results-topology-unavailable {
+  background: var(--workflow-panel);
+  border: 1px solid var(--workflow-border);
+  border-radius: 18px;
+}
+
+.results-topology-map {
+  display: grid;
+  gap: 14px;
+  overflow: hidden;
+  padding: 16px;
+}
+
+.results-topology-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+}
+
+.results-topology-header h2 {
+  color: var(--workflow-ink);
+  font-size: clamp(24px, 2.4vw, 34px);
+  line-height: 1.1;
+  margin: 6px 0 0;
+}
+
+.results-topology-header p {
+  color: var(--workflow-muted);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 8px 0 0;
+  max-width: 78ch;
+}
+
+.results-topology-header dl {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  margin: 0;
+  min-width: min(320px, 100%);
+}
+
+.results-topology-header dl div,
+.results-topology-node-list li {
+  background: var(--workflow-surface);
+  border: 1px solid var(--workflow-border);
+  border-radius: 14px;
+}
+
+.results-topology-header dt {
+  color: var(--workflow-muted);
+  font-size: 11px;
+  font-weight: 780;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.results-topology-header dd {
+  color: var(--workflow-ink);
+  font-size: 14px;
+  font-weight: 780;
+  margin: 4px 0 0;
+}
+
+.results-topology-header dl div {
+  padding: 11px 12px;
+}
+
+.results-topology-atlas {
+  border-radius: 16px;
+  min-height: 520px;
+  overflow: hidden;
+}
+
+.results-topology-node-list {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.results-topology-node-list li {
+  border-left: 4px solid var(--result-status-accent);
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 11px 12px;
+}
+
+.results-topology-node-list span {
+  color: var(--workflow-muted);
+  font-size: 11px;
+  font-weight: 780;
+  overflow-wrap: anywhere;
+}
+
+.results-topology-node-list strong {
+  color: var(--workflow-ink);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.results-topology-node-list em {
+  color: var(--workflow-muted);
+  font-size: 12px;
+  font-style: normal;
+  line-height: 1.35;
+}
+
+.results-status-chip {
+  border-color: rgba(50, 48, 47, 0.16);
+}
+
+.results-status-supported {
+  background: rgba(127, 168, 131, 0.16);
+  color: #416c4d;
+}
+
+.results-status-partially-supported,
+.results-status-needs-merge {
+  background: rgba(143, 168, 213, 0.16);
+  color: #496280;
+}
+
+.results-status-unsupported-overclaimed {
+  background: rgba(201, 131, 120, 0.16);
+  color: #7b3f37;
+}
+
+.results-status-uncertain,
+.results-status-needs-better-evidence {
+  background: rgba(182, 159, 122, 0.18);
+  color: #6d5632;
+}
+
+.results-status-cluster-impure,
+.results-status-needs-split {
+  background: rgba(201, 166, 98, 0.18);
+  color: #735223;
+}
+
+.results-topology-unavailable {
+  padding: clamp(18px, 2.2vw, 26px);
+}
+
+.results-topology-unavailable.is-partial {
+  background: var(--workflow-context-soft);
+  border-color: rgba(81, 103, 132, 0.2);
+}
+
+.results-topology-unavailable strong {
+  color: var(--workflow-contradicted);
+  display: block;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.results-topology-unavailable p {
+  color: var(--workflow-muted);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 8px 0 0;
+  max-width: 76ch;
+}
+
+.results-topology-unavailable ol {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+}
+
+.results-topology-unavailable li {
+  background: var(--workflow-surface);
+  border: 1px solid var(--workflow-border);
+  border-radius: 12px;
+  display: grid;
+  gap: 4px;
+  padding: 10px 11px;
+}
+
+.results-topology-unavailable li span {
+  color: var(--workflow-ink);
+  font-size: 13px;
+  font-weight: 780;
+  overflow-wrap: anywhere;
+}
+
+.results-topology-unavailable li em {
+  color: var(--workflow-muted);
+  font-size: 12px;
+  font-style: normal;
+  line-height: 1.35;
+}
+
 .local-results-provenance {
   align-items: flex-start;
   display: grid;
@@ -8351,6 +8551,20 @@
 
   .local-results-provenance dl {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .results-topology-header {
+    flex-direction: column;
+  }
+
+  .results-topology-header dl,
+  .results-topology-node-list {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .results-topology-atlas {
+    min-height: 620px;
   }
 
   .arena-shell .evaluation-report-hero,

@@ -4,6 +4,13 @@ import { landscapeStatusMeta } from "@/components/arena/arenaMeta";
 import { formatSupportScore } from "@/lib/caseMetrics";
 import type { CaseFile } from "@/lib/types";
 
+export type ClusterNodeStatusPresentation = {
+  label: string;
+  className: string;
+  nodeClassName: string;
+  accent: string;
+};
+
 type ClusterNodeProps = {
   caseFile: CaseFile;
   selected: boolean;
@@ -12,6 +19,7 @@ type ClusterNodeProps = {
   connected?: boolean;
   displayPosition?: CaseFile["mapPosition"];
   accent?: string;
+  statusPresentation?: ClusterNodeStatusPresentation;
   nodeId?: string;
   onSelect: (caseId: string) => void;
   onPreview: (caseId: string) => void;
@@ -50,12 +58,13 @@ export function ClusterNode({
   connected = false,
   displayPosition,
   accent,
+  statusPresentation,
   nodeId,
   onSelect,
   onPreview,
   onClearPreview,
 }: ClusterNodeProps) {
-  const status = landscapeStatusMeta[caseFile.landscapeStatus];
+  const status = statusPresentation ?? landscapeStatusMeta[caseFile.landscapeStatus];
   const shortName = getShortClusterName(caseFile.id, caseFile.cluster.name);
   const position = displayPosition ?? caseFile.mapPosition;
   const nodeAccent = accent ?? status.accent;

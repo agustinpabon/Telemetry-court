@@ -5,9 +5,13 @@ import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { LocalEvaluationResultsView } from "@/components/evaluation/LocalEvaluationResults";
+import { casePackageFixtures } from "@/data/casePackageFixtures";
 import { sampleEvaluationReportV01 } from "@/data/evaluationReportFixtures";
+import { aggregateReviewResultsV01 } from "@/lib/evaluationReportV01";
 import type { LocalEvaluationResultsSnapshotV01 } from "@/lib/localEvaluationResultsV01";
 import type { ReviewResultImportInspectionSummaryV01 } from "@/lib/reviewResultInspectionV01";
+import type { ReviewResultV01 } from "@/lib/reviewResultV01";
+import type { CasePackageV01 } from "@/lib/types";
 
 const populatedSnapshot: LocalEvaluationResultsSnapshotV01 = {
   totalReviewResultCount: sampleEvaluationReportV01.reviewer_count,
@@ -50,6 +54,82 @@ test("results view renders locally stored ReviewResults by compatible package", 
   assert.match(markup, /Disagreement detected/);
 });
 
+test("results view renders a topology map when compatible package coordinates exist", () => {
+  const mapPackage = requireCasePackageFixture();
+  const snapshot = createSnapshotFromPackage(mapPackage, [
+    createReviewResultFromPackage(mapPackage, {
+      finalVerdict: "needs_split",
+      recommendedAction: "split_cluster",
+    }),
+  ]);
+
+  const markup = renderResults(snapshot, undefined, [mapPackage]);
+
+  assert.match(markup, /Results topology map/);
+  assert.match(markup, /imported or local CasePackage coordinates/);
+  assert.match(markup, /data-result-status="needs_split"/);
+  assert.match(markup, /Needs split/);
+  assert.match(markup, /Download JSON/);
+  assert.match(markup, /Download CSV/);
+  assert.doesNotMatch(markup, /Results map unavailable/);
+});
+
+test("results view makes missing package coordinates a loud unavailable map state", () => {
+  const packageWithoutCoordinates = createPackageWithoutCoordinates(
+    requireCasePackageFixture(),
+  );
+  const snapshot = createSnapshotFromPackage(packageWithoutCoordinates, [
+    createReviewResultFromPackage(packageWithoutCoordinates),
+  ]);
+
+  const markup = renderResults(snapshot, undefined, [packageWithoutCoordinates]);
+
+  assert.match(markup, /Results map unavailable/);
+  assert.match(markup, /does not include cluster embedding_map coordinates/);
+  assert.doesNotMatch(markup, /evidence-galaxy-atlas/);
+});
+
+test("results view makes missing or incompatible package references unavailable", () => {
+  const mapPackage = requireCasePackageFixture();
+  const snapshot = createSnapshotFromPackage(mapPackage, [
+    createReviewResultFromPackage(mapPackage),
+  ]);
+  const missingPackageMarkup = renderResults(snapshot, undefined, []);
+  const incompatiblePackageMarkup = renderResults(snapshot, undefined, [
+    createPackageWithPipelineRun(mapPackage, "run-results-map-incompatible"),
+  ]);
+
+  assert.match(missingPackageMarkup, /Results map unavailable/);
+  assert.match(
+    missingPackageMarkup,
+    /No local or imported CasePackage metadata is available/,
+  );
+  assert.match(incompatiblePackageMarkup, /Results map unavailable/);
+  assert.match(
+    incompatiblePackageMarkup,
+    /compact package or pipeline reference does not match/,
+  );
+});
+
+test("results map status encoding is derived from aggregated ReviewResults", () => {
+  const mapPackage = createPackageWithId(
+    requireCasePackageFixture(),
+    "pkg-results-map-derived-status",
+  );
+  const snapshot = createSnapshotFromPackage(mapPackage, [
+    createReviewResultFromPackage(mapPackage, {
+      finalVerdict: "unsupported_or_overclaimed",
+      recommendedAction: "rename_label",
+    }),
+  ]);
+
+  const markup = renderResults(snapshot, undefined, [mapPackage]);
+
+  assert.match(markup, /data-result-status="unsupported_or_overclaimed"/);
+  assert.match(markup, /Unsupported or overclaimed/);
+  assert.doesNotMatch(markup, /data-result-status="supported"/);
+});
+
 test("results view renders imported ReviewResult bundle status with its report", () => {
   const markup = renderResults(populatedSnapshot, {
     state: "success",
@@ -85,13 +165,158 @@ function renderResults(
   importStatus?: React.ComponentProps<
     typeof LocalEvaluationResultsView
   >["importStatus"],
+  availableCasePackages?: CasePackageV01[],
 ) {
   return renderToStaticMarkup(
     React.createElement(LocalEvaluationResultsView, {
       snapshot,
       importStatus,
+      availableCasePackages,
     }),
   ).replace(/\s+/g, " ");
+}
+
+function createSnapshotFromPackage(
+  casePackage: CasePackageV01,
+  reviewResults: ReviewResultV01[],
+): LocalEvaluationResultsSnapshotV01 {
+  const report = aggregateReviewResultsV01(reviewResults);
+
+  return {
+    totalReviewResultCount: reviewResults.length,
+    packageGroups: [
+      {
+        casePackageId: casePackage.package_id,
+        reviewResultCount: reviewResults.length,
+        report,
+      },
+    ],
+  };
+}
+
+function createReviewResultFromPackage(
+  casePackage: CasePackageV01,
+  {
+    finalVerdict = "supported",
+    recommendedAction = "accept_label",
+    reviewId = "review-map-a",
+    reviewerId = "reviewer-map-a",
+  }: {
+    finalVerdict?: ReviewResultV01["decisions"]["final_verdict"];
+    recommendedAction?: ReviewResultV01["decisions"]["recommended_action"];
+    reviewId?: string;
+    reviewerId?: string;
+  } = {},
+): ReviewResultV01 {
+  return {
+    schema_version: "review_result.v0.1",
+    review_id: reviewId,
+    created_at: "2026-06-21T12:00:00.000Z",
+    case_package: {
+      schema_version: casePackage.schema_version,
+      package_id: casePackage.package_id,
+      package_revision: casePackage.package_revision,
+      case_id: casePackage.case.case_id,
+      cluster_id: casePackage.cluster.cluster_id,
+      pipeline: {
+        pipeline_id: casePackage.pipeline.pipeline_id,
+        run_id: casePackage.pipeline.run_id,
+        upstream_tool: casePackage.pipeline.upstream_tool,
+        pipeline_version: casePackage.pipeline.pipeline_version,
+        embedding_model: casePackage.pipeline.embedding_model,
+        clustering_method: casePackage.pipeline.clustering_method,
+        dimensionality_reduction_method:
+          casePackage.pipeline.dimensionality_reduction_method,
+        naming_model: casePackage.pipeline.naming_model,
+        prompt_id: casePackage.pipeline.prompt?.prompt_id,
+        prompt_version: casePackage.pipeline.prompt?.prompt_version,
+        prompt_digest: casePackage.pipeline.prompt?.prompt_digest,
+        generated_at: casePackage.pipeline.generated_at,
+      },
+    },
+    reviewer: {
+      reviewer_id: reviewerId,
+      review_session_id: `session-${reviewerId}`,
+      context: "synthetic_demo",
+    },
+    protocol: {
+      protocol_version: "telemetry_court_review.v0.1",
+      blind_review_enabled:
+        casePackage.review_configuration.blind_review_enabled,
+      ai_label_revealed: true,
+    },
+    decisions: {
+      blind_interpretation: {
+        option_id: "blind-option-1",
+        label: "Synthetic interpretation",
+        agrees_with_ai: true,
+      },
+      label_comparison: {
+        selected_label_id: casePackage.candidate_labels[0]?.label_id ?? "label-a",
+        reason_codes: ["better_supported"],
+      },
+      evidence_ratings: casePackage.evidence_items.map((evidence) => ({
+        evidence_id: evidence.evidence_id,
+        rating: "supports",
+      })),
+      outlier_impostor: {
+        selected_session_id:
+          casePackage.representative_sessions[0]?.session_id ?? "session-a",
+      },
+      failure_modes: finalVerdict === "needs_split" ? ["cluster_seems_mixed"] : [],
+      final_verdict: finalVerdict,
+      recommended_action: recommendedAction,
+    },
+  };
+}
+
+function requireCasePackageFixture(): CasePackageV01 {
+  const fixture = casePackageFixtures[0];
+
+  if (!fixture) {
+    throw new Error("Expected at least one CasePackage fixture.");
+  }
+
+  return fixture;
+}
+
+function createPackageWithoutCoordinates(
+  casePackage: CasePackageV01,
+): CasePackageV01 {
+  return {
+    ...casePackage,
+    package_id: `${casePackage.package_id}-missing-coordinates`,
+    cluster: {
+      ...casePackage.cluster,
+      embedding_map: {
+        ...(casePackage.cluster.embedding_map ?? {}),
+        coordinates: undefined,
+      },
+    },
+  };
+}
+
+function createPackageWithPipelineRun(
+  casePackage: CasePackageV01,
+  runId: string,
+): CasePackageV01 {
+  return {
+    ...casePackage,
+    pipeline: {
+      ...casePackage.pipeline,
+      run_id: runId,
+    },
+  };
+}
+
+function createPackageWithId(
+  casePackage: CasePackageV01,
+  packageId: string,
+): CasePackageV01 {
+  return {
+    ...casePackage,
+    package_id: packageId,
+  };
 }
 
 const inlineInspectionSummary: ReviewResultImportInspectionSummaryV01 = {

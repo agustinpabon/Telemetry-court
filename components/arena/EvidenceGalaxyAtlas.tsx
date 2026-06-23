@@ -5,7 +5,10 @@ import {
   getEvidenceStrengthTaxonomyLabel,
   landscapeStatusMeta,
 } from "@/components/arena/arenaMeta";
-import { ClusterNode } from "@/components/arena/ClusterNode";
+import {
+  ClusterNode,
+  type ClusterNodeStatusPresentation,
+} from "@/components/arena/ClusterNode";
 import { formatSupportScore } from "@/lib/caseMetrics";
 import type {
   CaseFile,
@@ -18,6 +21,16 @@ type EvidenceGalaxyAtlasProps = {
   landscapeContextNodes?: LandscapeContextNode[];
   selectedCase: CaseFile;
   previewCaseId?: string;
+  ariaLabel?: string;
+  keyNote?: string;
+  statusLegend?: Array<{
+    id: string;
+    label: string;
+    accent: string;
+  }>;
+  selectedRegionLabel?: string;
+  statusMetricLabel?: string;
+  getNodePresentation?: (node: LandscapeNode) => ClusterNodeStatusPresentation;
   onSelectCase: (caseId: string) => void;
   onPreviewCase: (caseId: string) => void;
   onClearPreview: () => void;
@@ -66,6 +79,12 @@ export function EvidenceGalaxyAtlas({
   landscapeContextNodes = [],
   selectedCase,
   previewCaseId,
+  ariaLabel = "Evidence landscape. Select a behavioural region to open its case preview. Use arrow keys to move between regions.",
+  keyNote = "Proximity groups related behaviour; size, ring, and tint encode review signals.",
+  statusLegend,
+  selectedRegionLabel = "Selected region",
+  statusMetricLabel = "Verdict",
+  getNodePresentation = getDefaultNodePresentation,
   onSelectCase,
   onPreviewCase,
   onClearPreview,
@@ -93,8 +112,9 @@ export function EvidenceGalaxyAtlas({
   );
   const focusPosition = getLandscapeAtlasPosition(previewCase);
   const selectedPosition = getLandscapeAtlasPosition(selectedCase);
-  const selectedAccent = getGalaxyStatusAccent(selectedCase);
-  const selectedStatus = landscapeStatusMeta[selectedCase.landscapeStatus];
+  const selectedPresentation = getNodePresentation(selectedCase);
+  const selectedAccent = selectedPresentation.accent;
+  const selectedStatus = selectedPresentation;
   const selectedEvidenceStrength = getEvidenceStrengthTaxonomyLabel(
     selectedCase.evidenceStrength,
     selectedCase.landscapeStatus,
@@ -147,7 +167,7 @@ export function EvidenceGalaxyAtlas({
       style={mapStyle}
       aria-describedby={atlasDescriptionId}
       aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
-      aria-label="Evidence landscape. Select a behavioural region to open its case preview. Use arrow keys to move between regions."
+      aria-label={ariaLabel}
     >
       <div className="atlas-space-surface" aria-hidden="true">
         <span className="galaxy-depth-haze galaxy-depth-haze-a" />
@@ -176,8 +196,7 @@ export function EvidenceGalaxyAtlas({
           <span>{landscapeNodes.length} nodes</span>
         </div>
         <p className="atlas-key-note" id={atlasDescriptionId}>
-          Proximity groups related behaviour; size, ring, and tint encode review
-          signals.
+          {keyNote}
         </p>
         <dl className="atlas-key-encodings">
           <div className="atlas-key-row atlas-key-row-size">
@@ -212,14 +231,13 @@ export function EvidenceGalaxyAtlas({
           </div>
         </dl>
         <div className="atlas-status-legend" aria-label="Verdict taxonomy">
-          {landscapeStatusOrder.map((statusKey) => {
-            const status = landscapeStatusMeta[statusKey];
+          {(statusLegend ?? getDefaultStatusLegend()).map((status) => {
 
             return (
               <span
-                key={statusKey}
+                key={status.id}
                 style={
-                  { "--legend-accent": galaxyStatusAccents[statusKey] } as CSSProperties
+                  { "--legend-accent": status.accent } as CSSProperties
                 }
               >
                 {status.label}
@@ -237,7 +255,7 @@ export function EvidenceGalaxyAtlas({
         aria-atomic="true"
       >
         <div className="atlas-selection-copy">
-          <span className="atlas-summary-kicker">Selected region</span>
+          <span className="atlas-summary-kicker">{selectedRegionLabel}</span>
           <strong>{getShortAtlasName(selectedCase)}</strong>
         </div>
         <dl className="atlas-selection-metrics">
@@ -246,7 +264,7 @@ export function EvidenceGalaxyAtlas({
             <dd>{selectedCase.cluster.size ?? "—"}</dd>
           </div>
           <div>
-            <dt>Verdict</dt>
+            <dt>{statusMetricLabel}</dt>
             <dd>
               <span className={selectedStatus.className}>{selectedStatus.label}</span>
             </dd>
@@ -269,7 +287,8 @@ export function EvidenceGalaxyAtlas({
       <div className="galaxy-camera">
         <div className="galaxy-ambient" aria-hidden="true">
           {landscapeNodes.map((node, index) => {
-            const accent = getGalaxyStatusAccent(node);
+            const presentation = getNodePresentation(node);
+            const accent = presentation.accent;
             const focusDistance = getMapDistance(node, previewCase);
             const position = getLandscapeAtlasPosition(node);
             const isLinked = linkedCaseIds.has(node.id);
@@ -360,7 +379,8 @@ export function EvidenceGalaxyAtlas({
             }
             connected={linkedCaseIds.has(caseFile.id)}
             displayPosition={getLandscapeAtlasPosition(caseFile)}
-            accent={getGalaxyStatusAccent(caseFile)}
+            accent={getNodePresentation(caseFile).accent}
+            statusPresentation={getNodePresentation(caseFile)}
             nodeId={getAtlasNodeId(caseFile.id)}
             onSelect={onSelectCase}
             onPreview={onPreviewCase}
@@ -416,6 +436,33 @@ type GalaxyConnectionType = "similarity" | "uncertain" | "overclaim";
 
 export function getGalaxyStatusAccent(node: LandscapeNode): string {
   return galaxyStatusAccents[node.landscapeStatus];
+}
+
+function getDefaultNodePresentation(node: LandscapeNode): ClusterNodeStatusPresentation {
+  const status = landscapeStatusMeta[node.landscapeStatus];
+
+  return {
+    label: status.label,
+    className: status.className,
+    nodeClassName: status.nodeClassName,
+    accent: galaxyStatusAccents[node.landscapeStatus],
+  };
+}
+
+function getDefaultStatusLegend(): Array<{
+  id: string;
+  label: string;
+  accent: string;
+}> {
+  return landscapeStatusOrder.map((statusKey) => {
+    const status = landscapeStatusMeta[statusKey];
+
+    return {
+      id: statusKey,
+      label: status.label,
+      accent: galaxyStatusAccents[statusKey],
+    };
+  });
 }
 
 function LandscapeContextPoint({

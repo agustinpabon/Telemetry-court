@@ -5,12 +5,19 @@ import { useEffect, useId, useRef, useState, type ChangeEvent } from "react";
 import { MetricCard } from "@/components/arena/WorkflowPrimitives";
 import { ReviewResultImportSummaryPanel } from "@/components/arena/ReviewResultImportSummaryPanel";
 import { EvaluationReportResults } from "@/components/evaluation/EvaluationReportResults";
+import { ResultsGalaxyMap } from "@/components/evaluation/ResultsGalaxyMap";
+import { casePackageFixtures } from "@/data/casePackageFixtures";
 import {
   importLocalEvaluationResultsBundleV01,
   loadLocalEvaluationResultsV01,
   type LocalEvaluationResultsSnapshotV01,
 } from "@/lib/localEvaluationResultsV01";
 import type { ReviewResultImportInspectionSummaryV01 } from "@/lib/reviewResultInspectionV01";
+import {
+  importResultsMapCasePackageV01Json,
+  type ResultsMapCasePackageImportV01,
+} from "@/lib/resultsGalaxyMapV01";
+import type { CasePackageV01 } from "@/lib/types";
 
 type ResultsImportStatus =
   | { state: "idle" }
@@ -20,6 +27,12 @@ type ResultsImportStatus =
       message: string;
       inspectionSummary?: ReviewResultImportInspectionSummaryV01;
     }
+  | { state: "error"; message: string };
+
+type ResultsMapPackageImportStatus =
+  | { state: "idle" }
+  | { state: "reading" }
+  | { state: "success"; message: string }
   | { state: "error"; message: string };
 
 const emptySnapshot: LocalEvaluationResultsSnapshotV01 = {
@@ -34,6 +47,13 @@ export function LocalEvaluationResults() {
     state: "idle",
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const mapPackageInputRef = useRef<HTMLInputElement>(null);
+  const [availableCasePackages, setAvailableCasePackages] =
+    useState<CasePackageV01[]>(casePackageFixtures);
+  const [mapPackageImportStatus, setMapPackageImportStatus] =
+    useState<ResultsMapPackageImportStatus>({
+      state: "idle",
+    });
 
   useEffect(() => {
     const hydrationTimer = window.setTimeout(() => {
@@ -97,14 +117,60 @@ export function LocalEvaluationResults() {
     }
   }
 
+  async function handleMapPackageFileChange(
+    event: ChangeEvent<HTMLInputElement>,
+  ) {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    setMapPackageImportStatus({ state: "reading" });
+
+    try {
+      const result = importResultsMapCasePackageV01Json(await file.text());
+
+      if (!result.ok) {
+        setMapPackageImportStatus({
+          state: "error",
+          message: result.message,
+        });
+        return;
+      }
+
+      setAvailableCasePackages((currentPackages) =>
+        replaceCasePackage(currentPackages, result.package),
+      );
+      setMapPackageImportStatus({
+        state: "success",
+        message: formatMapPackageImportSuccess(result),
+      });
+    } catch {
+      setMapPackageImportStatus({
+        state: "error",
+        message:
+          "The selected CasePackage map JSON could not be read. No map coordinates were imported.",
+      });
+    } finally {
+      input.value = "";
+    }
+  }
+
   return (
     <LocalEvaluationResultsView
       snapshot={snapshot}
       loadError={loadError}
       importStatus={importStatus}
+      mapPackageImportStatus={mapPackageImportStatus}
+      availableCasePackages={availableCasePackages}
       fileInputRef={fileInputRef}
+      mapPackageInputRef={mapPackageInputRef}
       onChooseFile={() => fileInputRef.current?.click()}
+      onChooseMapPackageFile={() => mapPackageInputRef.current?.click()}
       onFileChange={handleFileChange}
+      onMapPackageFileChange={handleMapPackageFileChange}
     />
   );
 }
@@ -113,16 +179,26 @@ export function LocalEvaluationResultsView({
   snapshot,
   loadError,
   importStatus = { state: "idle" },
+  mapPackageImportStatus = { state: "idle" },
+  availableCasePackages = [],
   fileInputRef,
+  mapPackageInputRef,
   onChooseFile = () => undefined,
+  onChooseMapPackageFile = () => undefined,
   onFileChange = () => undefined,
+  onMapPackageFileChange = () => undefined,
 }: {
   snapshot: LocalEvaluationResultsSnapshotV01;
   loadError?: string;
   importStatus?: ResultsImportStatus;
+  mapPackageImportStatus?: ResultsMapPackageImportStatus;
+  availableCasePackages?: CasePackageV01[];
   fileInputRef?: React.RefObject<HTMLInputElement | null>;
+  mapPackageInputRef?: React.RefObject<HTMLInputElement | null>;
   onChooseFile?: () => void;
+  onChooseMapPackageFile?: () => void;
   onFileChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+  onMapPackageFileChange?: (event: ChangeEvent<HTMLInputElement>) => void;
 }) {
   const hasResults = snapshot.totalReviewResultCount > 0;
   const importSummaryTitleId = useId();
@@ -148,14 +224,30 @@ export function LocalEvaluationResultsView({
             accept="application/json,.json"
             onChange={onFileChange}
           />
+          <input
+            ref={mapPackageInputRef}
+            className="case-package-import-input"
+            type="file"
+            accept="application/json,.json"
+            onChange={onMapPackageFileChange}
+          />
           <button type="button" onClick={onChooseFile}>
             Import ReviewResult JSON
+          </button>
+          <button type="button" onClick={onChooseMapPackageFile}>
+            Import CasePackage map JSON
           </button>
           <p
             className={`local-results-import-status is-${importStatus.state}`}
             role="status"
           >
             {getImportStatusCopy(importStatus)}
+          </p>
+          <p
+            className={`local-results-import-status is-${mapPackageImportStatus.state}`}
+            role="status"
+          >
+            {getMapPackageImportStatusCopy(mapPackageImportStatus)}
           </p>
         </div>
       </header>
@@ -228,6 +320,11 @@ export function LocalEvaluationResultsView({
             </p>
           </section>
 
+          <ResultsGalaxyMap
+            packageGroups={snapshot.packageGroups}
+            availableCasePackages={availableCasePackages}
+          />
+
           <div className="local-results-groups">
             {snapshot.packageGroups.map((group) => {
               const { case_package: casePackage } = group.report;
@@ -298,6 +395,21 @@ function getImportStatusCopy(status: ResultsImportStatus): string {
   }
 }
 
+function getMapPackageImportStatusCopy(
+  status: ResultsMapPackageImportStatus,
+): string {
+  switch (status.state) {
+    case "reading":
+      return "Validating CasePackage coordinates for results mapping.";
+    case "success":
+    case "error":
+      return status.message;
+    case "idle":
+    default:
+      return "Optional: import matching CasePackage JSON to enable map coordinates.";
+  }
+}
+
 function formatRejectedImportMessage(
   result: Extract<
     ReturnType<typeof importLocalEvaluationResultsBundleV01>,
@@ -314,4 +426,35 @@ function formatRejectedImportMessage(
 
 function formatCount(count: number, singular: string, plural: string) {
   return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function replaceCasePackage(
+  currentPackages: CasePackageV01[],
+  nextPackage: CasePackageV01,
+): CasePackageV01[] {
+  const nextPackageKey = getCasePackageListKey(nextPackage);
+
+  return [
+    nextPackage,
+    ...currentPackages.filter(
+      (currentPackage) => getCasePackageListKey(currentPackage) !== nextPackageKey,
+    ),
+  ];
+}
+
+function getCasePackageListKey(casePackage: CasePackageV01): string {
+  return [
+    casePackage.package_id,
+    casePackage.package_revision ?? "unrevisioned",
+    casePackage.pipeline.run_id,
+  ].join(":");
+}
+
+function formatMapPackageImportSuccess(
+  result: Extract<ResultsMapCasePackageImportV01, { ok: true }>,
+): string {
+  const coordinates = result.package.cluster.embedding_map?.coordinates;
+  const coordinateState = coordinates ? "with coordinates" : "without coordinates";
+
+  return `Imported CasePackage ${result.package.package_id} ${coordinateState} for results mapping.`;
 }

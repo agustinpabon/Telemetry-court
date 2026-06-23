@@ -19,6 +19,43 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-23: Results Topology Galaxy Map
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement issue #139 by rendering a `/results` topology map
+  from compatible local or imported `CasePackage` coordinates and aggregated
+  human review status, without changing review/result/report schemas or adding
+  refinement export behavior.
+- Files changed: `app/investigation-workflow.css`,
+  `components/arena/ClusterNode.tsx`,
+  `components/arena/EvidenceGalaxyAtlas.tsx`,
+  `components/evaluation/LocalEvaluationResults.tsx`,
+  `components/evaluation/LocalEvaluationResults.test.ts`,
+  `components/evaluation/ResultsGalaxyMap.tsx`,
+  `lib/resultsGalaxyMapV01.ts`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a results-specific adapter and UI surface that reuses the
+  existing galaxy atlas to render verdict-colored nodes only when an aggregated
+  result can be matched to compatible `CasePackage` map coordinates. Missing
+  coordinates, absent packages, incompatible references, and unsupported
+  coordinate ranges now produce explicit unavailable states instead of fake
+  positions.
+- Decisions made: Kept `CasePackage`, `ReviewResult`, `ReviewResultBundle`,
+  and `EvaluationReport` semantics unchanged. The map consumes imported/local
+  package coordinates and local aggregation output only; it does not execute
+  Toponymy, DataMapPlot, UMAP, HDBSCAN, ACME4, or raw telemetry ingestion.
+- Checks run: Focused local-results map tests passed; full validation covered
+  `npm test`, `npx tsc --noEmit`, `npm run lint`, `npm run build`,
+  `git diff --check`, and browser smoke checks on `/results`.
+- Assumptions: The compact package reference is the compatibility boundary
+  between an aggregated report group and the package coordinates used for the
+  map.
+- Risks/follow-ups: Imported map coverage depends on users supplying the
+  matching `CasePackage` JSON alongside compatible `ReviewResult` artifacts.
+  `cluster_refinement.json` export remains a later milestone.
+- Next recommended step: Implement the separate refinement export design only
+  when issue #140 is explicitly in scope.
+- Suggested commit message: `feat(results): add topology galaxy map`
+
 ## 2026-06-23: Imported ReviewResult Inspection Summary
 
 - Agent/model: Codex (GPT-5)
