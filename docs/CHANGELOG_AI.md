@@ -36,10 +36,10 @@ Use this file to record AI-assisted changes that affect product context, archite
   Added no notebooks, datasets, fixtures, fake CasePackages, fake
   ReviewResults, fake EvaluationReports, fake coordinates, app/runtime code,
   or upstream processing execution.
-- Checks run: `git diff --check` passed. No markdown-specific validation
-  script exists in `package.json`; broad tests, lint, and build were skipped
-  because this is a docs-only handoff with no code, config, fixture, or runtime
-  changes.
+- Checks run: `git diff --check` passed; `git diff main...HEAD --check`
+  passed. No markdown-specific validation script exists in `package.json`.
+  The ECC pre-push hook also ran `npm run lint`, `npm test` (262 tests
+  passed), and `npm run build` successfully.
 - Assumptions: The first consumer prototype should prove the handoff in an
   approved upstream notebook or private pipeline while Telemetry Court remains
   responsible only for the export contract and docs/checklist.
