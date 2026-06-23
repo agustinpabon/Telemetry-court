@@ -14,9 +14,11 @@ import type {
   CasePackageEvidenceRatingV01,
   CasePackageVerdictV01,
 } from "@/lib/types";
+import type { ReviewResultV01 } from "@/lib/reviewResultV01";
 
 type EvaluationReportResultsProps = {
   report: EvaluationReportV01;
+  sourceReviewResults?: readonly ReviewResultV01[];
 };
 
 const verdictLabels: Record<CasePackageVerdictV01, string> = {
@@ -56,7 +58,10 @@ const comparisonDimensionLabels: Record<ComparisonDimensionV01, string> = {
   prompt_digest: "Prompt digest",
 };
 
-export function EvaluationReportResults({ report }: EvaluationReportResultsProps) {
+export function EvaluationReportResults({
+  report,
+  sourceReviewResults,
+}: EvaluationReportResultsProps) {
   const hasReviewerOutput = report.reviewer_count > 0;
   const verdictTotal = sumCounts(report.verdict_distribution);
   const evidenceRatingTotal = sumCounts(report.evidence_rating_distribution);
@@ -82,7 +87,10 @@ export function EvaluationReportResults({ report }: EvaluationReportResultsProps
           <ArenaStatusBadge tone={reportStatus.tone}>
             {reportStatus.label}
           </ArenaStatusBadge>
-          <EvaluationReportExportActions report={report} />
+          <EvaluationReportExportActions
+            report={report}
+            sourceReviewResults={sourceReviewResults}
+          />
         </div>
       </header>
 

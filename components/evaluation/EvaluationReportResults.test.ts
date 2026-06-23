@@ -12,7 +12,7 @@ import {
 import type { ReviewResultV01 } from "@/lib/reviewResultV01";
 
 test("evaluation report results view shows reviewer distributions and disagreement", () => {
-  const report = aggregateReviewResultsV01([
+  const reviewResults = [
     createReviewResult({
       evidenceTwoRating: "contradicts",
       finalVerdict: "unsupported_or_overclaimed",
@@ -26,9 +26,10 @@ test("evaluation report results view shows reviewer distributions and disagreeme
       finalVerdict: "supported",
       recommendedAction: "accept_label",
     }),
-  ]);
+  ];
+  const report = aggregateReviewResultsV01(reviewResults);
 
-  const markup = renderReportText(report);
+  const markup = renderReportText(report, reviewResults);
 
   assert.match(markup, /Evaluation Report/);
   assert.match(markup, /Reviewer output, not upstream evidence/);
@@ -54,6 +55,11 @@ test("evaluation report results view shows reviewer distributions and disagreeme
   assert.match(markup, /Contradicts: 1, Insufficient: 1/);
   assert.match(markup, /Download JSON/);
   assert.match(markup, /Download CSV/);
+  assert.match(markup, /Download refinement JSON/);
+  assert.match(
+    markup,
+    /upstream refinement recipe derived from human review aggregation/i,
+  );
   assert.match(markup, /Disagreement detected/);
   assert.match(markup, /Verdict/);
   assert.match(markup, /Label winner/);
@@ -163,6 +169,8 @@ test("evaluation report results view marks unavailable aggregate data explicitly
   assert.match(markup, /Reviewer agreement unavailable/);
   assert.match(markup, /Disagreement comparison unavailable/);
   assert.match(markup, /Comparison rollups unavailable/);
+  assert.match(markup, /Refinement recipe unavailable/);
+  assert.match(markup, /Compatible source ReviewResults are required/);
   assert.doesNotMatch(markup, /No disagreement detected/);
   assert.doesNotMatch(markup, /Aligned/);
   assert.doesNotMatch(markup, /0%/);
@@ -180,9 +188,15 @@ test("a single review is not presented as reviewer alignment", () => {
   assert.doesNotMatch(markup, />Aligned</);
 });
 
-function renderReportText(report: EvaluationReportV01): string {
+function renderReportText(
+  report: EvaluationReportV01,
+  sourceReviewResults?: ReviewResultV01[],
+): string {
   return renderToStaticMarkup(
-    React.createElement(EvaluationReportResults, { report }),
+    React.createElement(EvaluationReportResults, {
+      report,
+      sourceReviewResults,
+    }),
   ).replace(/\s+/g, " ");
 }
 

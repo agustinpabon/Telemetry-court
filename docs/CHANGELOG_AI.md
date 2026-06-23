@@ -19,6 +19,47 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-23: Pruning Recipe Export
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #140 by adding a validated
+  `cluster_refinement.v0.1` local JSON export derived from compatible human
+  ReviewResults and EvaluationReport aggregation context.
+- Files changed: `app/investigation-workflow.css`,
+  `components/evaluation/EvaluationReportExportActions.tsx`,
+  `components/evaluation/EvaluationReportResults.tsx`,
+  `components/evaluation/LocalEvaluationResults.tsx`,
+  `docs/EVALUATION_INFRASTRUCTURE.md`, `lib/clusterRefinementV01.ts`,
+  `lib/clusterRefinementTypesV01.ts`,
+  `lib/clusterRefinementValidationV01.ts`,
+  `lib/clusterRefinementValidationHelpersV01.ts`,
+  `lib/localEvaluationResultsV01.ts`, and focused tests.
+- Summary: Added a pure cluster-refinement builder, validation result, JSON
+  serializer, deterministic filename, and results-page download button beside
+  the existing EvaluationReport JSON/CSV exports. Local results groups now
+  retain the exact compatible source ReviewResults needed to derive session
+  exclusions, split recommendations, merge recommendations, uncertainty, and
+  disagreement.
+- Decisions made: Implemented the approved `cluster_refinement.v0.1` /
+  `cluster_refinement_calculation.v0.1` contract without redesign. Pruning is
+  derived only from a human-selected outlier/impostor session plus a qualifying
+  human cluster-quality signal. Merge targets remain explicitly unavailable
+  because `ReviewResultV01` does not capture a reviewer-selected neighbor
+  target.
+- Checks run: Focused refinement/results tests passed; `npm test` passed with
+  229 tests; `npx tsc --noEmit` passed; `npm run lint` passed; `npm run build`
+  passed; `git diff --check` passed.
+- Assumptions: Compatible source ReviewResults are available in the local
+  results snapshot for reports built from browser-local or imported results.
+  Single-review recipes are useful but cannot establish disagreement or
+  consensus.
+- Risks/follow-ups: The artifact is a local upstream recipe, not a clustering
+  engine. Downstream notebooks/scripts still need to decide how strictly to use
+  `selected_count`, `supporting_review_count`, uncertainty, and disagreement.
+- Next recommended step: Validate the recipe shape against an upstream notebook
+  consumer when a realistic sanitized CasePackage review set exists.
+- Suggested commit message: `feat(results): export cluster refinement recipe`
+
 ## 2026-06-23: Results Topology Galaxy Map
 
 - Agent/model: Codex (GPT-5)

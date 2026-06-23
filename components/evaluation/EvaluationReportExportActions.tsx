@@ -2,6 +2,12 @@
 
 import { useState } from "react";
 
+import {
+  buildClusterRefinementV01,
+  getClusterRefinementExportAvailabilityV01,
+  getClusterRefinementJsonExportFilenameV01,
+  serializeClusterRefinementJsonV01,
+} from "@/lib/clusterRefinementV01";
 import type { EvaluationReportV01 } from "@/lib/evaluationReportV01";
 import {
   getEvaluationReportCsvExportFilenameV01,
@@ -9,15 +15,22 @@ import {
   serializeEvaluationReportCsvV01,
   serializeEvaluationReportJsonV01,
 } from "@/lib/evaluationReportExportV01";
+import type { ReviewResultV01 } from "@/lib/reviewResultV01";
 
 type EvaluationReportExportActionsProps = {
   report: EvaluationReportV01;
+  sourceReviewResults?: readonly ReviewResultV01[];
 };
 
 export function EvaluationReportExportActions({
   report,
+  sourceReviewResults,
 }: EvaluationReportExportActionsProps) {
   const [message, setMessage] = useState<string>();
+  const refinementAvailability = getClusterRefinementExportAvailabilityV01(
+    report,
+    sourceReviewResults,
+  );
 
   function downloadJson() {
     downloadReportArtifact({
@@ -37,6 +50,32 @@ export function EvaluationReportExportActions({
     setMessage("Downloaded EvaluationReport CSV.");
   }
 
+  function downloadRefinementJson() {
+    if (!refinementAvailability.available) {
+      setMessage(`Refinement recipe unavailable: ${refinementAvailability.reason}`);
+      return;
+    }
+
+    if (!sourceReviewResults) {
+      setMessage(
+        "Refinement recipe unavailable: compatible source ReviewResults are required.",
+      );
+      return;
+    }
+
+    const artifact = buildClusterRefinementV01({
+      report,
+      sourceReviewResults,
+    });
+
+    downloadReportArtifact({
+      content: serializeClusterRefinementJsonV01(artifact),
+      filename: getClusterRefinementJsonExportFilenameV01(artifact),
+      mimeType: "application/json",
+    });
+    setMessage("Downloaded cluster refinement recipe JSON.");
+  }
+
   return (
     <div className="evaluation-report-export-actions">
       <div>
@@ -46,7 +85,20 @@ export function EvaluationReportExportActions({
         <button type="button" className="primary-action" onClick={downloadCsv}>
           Download CSV
         </button>
+        <button
+          type="button"
+          className="secondary-action"
+          onClick={downloadRefinementJson}
+          disabled={!refinementAvailability.available}
+        >
+          Download refinement JSON
+        </button>
       </div>
+      <p>
+        {refinementAvailability.available
+          ? "Exports an upstream refinement recipe derived from human review aggregation."
+          : `Refinement recipe unavailable: ${refinementAvailability.reason}`}
+      </p>
       {message ? <p aria-live="polite">{message}</p> : null}
     </div>
   );

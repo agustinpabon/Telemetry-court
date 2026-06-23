@@ -282,6 +282,46 @@ BI dashboard, raw telemetry export, live model evaluation, cross-package
 benchmark workflow, scoring system, adjudication system, or consensus
 mechanism.
 
+## Cluster Refinement Export v0.1
+
+`lib/clusterRefinementV01.ts` builds and validates the first local
+`cluster_refinement.v0.1` artifact. Its calculation version is
+`cluster_refinement_calculation.v0.1`.
+
+The artifact is a small upstream refinement recipe derived from compatible
+human `ReviewResultV01` objects and their existing `EvaluationReportV01`
+aggregation context. It preserves stable package, case, cluster, pipeline,
+source review, review-session, and created-at metadata; it does not copy claims,
+evidence content, safe-reference contents, raw telemetry, or full CasePackages.
+
+Session pruning is intentionally conservative. `prune_session_ids` is only the
+sorted list of `session_exclusion_recommendations` with
+`status: "recommended"`. A session can be recommended only when a human review
+selected `decisions.outlier_impostor.selected_session_id` and that same review
+also captured at least one cluster-quality signal: `cluster_impure`,
+`needs_split`, `split_cluster`, or `cluster_seems_mixed`. Selected sessions
+without one of those human signals remain `not_recommended`; map position,
+coordinates, outlier score, model score, cluster metrics, neighbor position, AI
+label text, and package evidence alone do not create pruning recommendations.
+
+Split recommendations come only from human split or impurity signals:
+`needs_split`, `cluster_impure`, `split_cluster`, or
+`cluster_seems_mixed`. Merge recommendations come only from `needs_merge` or
+`merge_cluster`. Because `ReviewResultV01` does not capture a
+reviewer-selected neighbor merge target, merge targets are exported as
+explicitly unavailable rather than inferred.
+
+The export preserves reviewer counts, supporting review counts, sorted source
+review IDs, uncertainty, and disagreement state. A single-review recipe remains
+valid but marks disagreement comparison unavailable instead of claiming
+consensus. The `/results` view exposes this JSON download beside the existing
+EvaluationReport JSON and CSV downloads, and disables the refinement export if
+compatible source ReviewResults are not available for the report.
+
+This is not an in-app clustering engine, Toponymy/DataMapPlot/UMAP/HDBSCAN
+executor, raw telemetry workflow, backend persistence API, scoring system, or
+automatic correctness claim.
+
 ## Local ReviewResult Persistence v0.1
 
 The first persistence boundary is `lib/reviewResultStorageV01.ts`. It is a pure

@@ -20,6 +20,7 @@ const populatedSnapshot: LocalEvaluationResultsSnapshotV01 = {
       casePackageId: sampleEvaluationReportV01.case_package.package_id,
       reviewResultCount: sampleEvaluationReportV01.reviewer_count,
       report: sampleEvaluationReportV01,
+      sourceReviewResults: createSampleSourceReviewResults(),
     },
   ],
 };
@@ -52,6 +53,13 @@ test("results view renders locally stored ReviewResults by compatible package", 
   assert.match(markup, /Insufficient.*1 decision/);
   assert.match(markup, /Reviewer agreement/);
   assert.match(markup, /Disagreement detected/);
+  assert.match(markup, /Download JSON/);
+  assert.match(markup, /Download CSV/);
+  assert.match(markup, /Download refinement JSON/);
+  assert.match(
+    markup,
+    /upstream refinement recipe derived from human review aggregation/i,
+  );
 });
 
 test("results view renders a topology map when compatible package coordinates exist", () => {
@@ -189,6 +197,7 @@ function createSnapshotFromPackage(
         casePackageId: casePackage.package_id,
         reviewResultCount: reviewResults.length,
         report,
+        sourceReviewResults: reviewResults,
       },
     ],
   };
@@ -360,3 +369,82 @@ const inlineInspectionSummary: ReviewResultImportInspectionSummaryV01 = {
   },
   warnings: [],
 };
+
+function createSampleSourceReviewResults(): ReviewResultV01[] {
+  return [
+    createReviewResultFromPackageReference({
+      reviewId: "review-a",
+      reviewerId: "reviewer-a",
+      selectedLabelId: "label-a",
+      evidenceTwoRating: "contradicts",
+      failureModes: ["missing_evidence"],
+      finalVerdict: "unsupported_or_overclaimed",
+      recommendedAction: "rename_label",
+    }),
+    createReviewResultFromPackageReference({
+      reviewId: "review-b",
+      reviewerId: "reviewer-b",
+      selectedLabelId: "label-b",
+      evidenceTwoRating: "insufficient",
+      failureModes: ["missing_evidence", "too_broad"],
+      finalVerdict: "supported",
+      recommendedAction: "accept_label",
+    }),
+  ];
+}
+
+function createReviewResultFromPackageReference({
+  reviewId,
+  reviewerId,
+  selectedLabelId,
+  evidenceTwoRating,
+  failureModes,
+  finalVerdict,
+  recommendedAction,
+}: {
+  reviewId: string;
+  reviewerId: string;
+  selectedLabelId: string;
+  evidenceTwoRating: ReviewResultV01["decisions"]["evidence_ratings"][number]["rating"];
+  failureModes: ReviewResultV01["decisions"]["failure_modes"];
+  finalVerdict: ReviewResultV01["decisions"]["final_verdict"];
+  recommendedAction: ReviewResultV01["decisions"]["recommended_action"];
+}): ReviewResultV01 {
+  return {
+    schema_version: "review_result.v0.1",
+    review_id: reviewId,
+    created_at: "2026-06-21T12:00:00.000Z",
+    case_package: sampleEvaluationReportV01.case_package,
+    reviewer: {
+      reviewer_id: reviewerId,
+      review_session_id: `session-${reviewerId}`,
+      context: "synthetic_demo",
+    },
+    protocol: {
+      protocol_version: "telemetry_court_review.v0.1",
+      blind_review_enabled: true,
+      ai_label_revealed: true,
+    },
+    decisions: {
+      blind_interpretation: {
+        option_id: "blind-option-1",
+        label: "Synthetic interpretation",
+        agrees_with_ai: false,
+      },
+      label_comparison: {
+        selected_label_id: selectedLabelId,
+        reason_codes: ["better_supported"],
+      },
+      evidence_ratings: [
+        { evidence_id: "evidence-1", rating: "supports" },
+        { evidence_id: "evidence-2", rating: evidenceTwoRating },
+      ],
+      outlier_impostor: {
+        selected_session_id: "session-outlier-1",
+      },
+      failure_modes: failureModes,
+      final_verdict: finalVerdict,
+      recommended_action: recommendedAction,
+    },
+  };
+}

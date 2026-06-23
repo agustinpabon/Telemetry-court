@@ -39,6 +39,12 @@ test("local ReviewResults are aggregated with EvaluationReportV01 logic", () => 
   );
   assert.equal(group.report.verdict_distribution.supported, 1);
   assert.equal(group.report.evidence_rating_distribution.supports, 1);
+  assert.deepEqual(
+    group.sourceReviewResults.map((reviewResult) => reviewResult.review_id),
+    [
+      "review:pkg-results-001:reviewer-a:session-reviewer-a:2026-06-21T12:00:00.000Z",
+    ],
+  );
 });
 
 test("imported ReviewResult bundles are included in local evaluation results", () => {

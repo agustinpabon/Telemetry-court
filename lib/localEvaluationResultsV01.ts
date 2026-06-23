@@ -5,6 +5,7 @@ import {
 import { importReviewResultBundleToLocalStoreV01 } from "@/lib/reviewResultBundleV01";
 import { importReviewResultArtifactV01Json } from "@/lib/reviewResultImportV01";
 import type { ReviewResultImportInspectionSummaryV01 } from "@/lib/reviewResultInspectionV01";
+import type { ReviewResultV01 } from "@/lib/reviewResultV01";
 import {
   readReviewResultLocalStoreV01,
   type ReviewResultStorageLike,
@@ -14,6 +15,7 @@ export type LocalEvaluationReportGroupV01 = {
   casePackageId: string;
   reviewResultCount: number;
   report: EvaluationReportV01;
+  sourceReviewResults: ReviewResultV01[];
 };
 
 export type LocalEvaluationResultsSnapshotV01 = {
@@ -46,11 +48,22 @@ export function loadLocalEvaluationResultsV01(
     .sort(([leftPackageId], [rightPackageId]) =>
       leftPackageId < rightPackageId ? -1 : leftPackageId > rightPackageId ? 1 : 0,
     )
-    .map(([casePackageId, reviewResults]) => ({
-      casePackageId,
-      reviewResultCount: reviewResults.length,
-      report: aggregateReviewResultsV01(reviewResults),
-    }));
+    .map(([casePackageId, reviewResults]) => {
+      const sourceReviewResults = [...reviewResults].sort((left, right) =>
+        left.review_id < right.review_id
+          ? -1
+          : left.review_id > right.review_id
+            ? 1
+            : 0,
+      );
+
+      return {
+        casePackageId,
+        reviewResultCount: sourceReviewResults.length,
+        report: aggregateReviewResultsV01(sourceReviewResults),
+        sourceReviewResults,
+      };
+    });
 
   return {
     totalReviewResultCount: packageGroups.reduce(
