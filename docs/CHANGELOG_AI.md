@@ -19,6 +19,43 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-23: Milestone 4 Refinement Consumer Handoff
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #164 as a documentation-only cleanup
+  for Milestone 4 adapter status and refinement consumer handoff guidance.
+- Files changed: `docs/CLUSTER_REFINEMENT_HANDOFF.md`,
+  `docs/MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md`,
+  `docs/MILESTONE_4_ADAPTER_BOUNDARY.md`, `docs/PROJECT_CONTEXT.md`,
+  `docs/DEVELOPMENT_WORKFLOW.md`, `docs/EVALUATION_INFRASTRUCTURE.md`,
+  `docs/NOTEBOOK_HANDOFF_CHECKLIST.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a standalone upstream consumer handoff for
+  `cluster_refinement.v0.1`; reconciled stale Milestone 4 language that
+  predated the completed sanitized mapper, CLI, preflight validation, notebook
+  checklist, and explicit CLI flags; and updated current-state breadcrumbs now
+  that the local Milestone 3 import/review/export/results/refinement loop is in
+  place.
+- Decisions made: Kept the sanitized adapter input contract as the producer
+  draft source of truth and treated the refinement artifact as reviewer-derived
+  upstream guidance, not an in-app clustering command. Added no app/UI/runtime,
+  mapper, CLI, validation, test, package, config, fixture, notebook, public
+  package, fake result, pilot data, raw telemetry, or upstream processing
+  changes.
+- Checks run: `git status --short`, `git diff --check`, and
+  `git diff main...HEAD --check`. Full tests/build were skipped because this
+  is a documentation-only change with no app, runtime, package, config, or test
+  edits.
+- Assumptions: The next Milestone 4 proof is an approved external notebook or
+  script adapter plus upstream refinement consumption, not public generated
+  artifacts or in-repo upstream execution.
+- Risks/follow-ups: Documentation cannot prove that generated packages or
+  refinement artifacts are safe for public release; exact artifacts still need
+  explicit approval before any public commit or publication.
+- Next recommended step: Apply the handoff to the first approved upstream
+  notebook/script consumer and return through the existing sanitized adapter
+  path for the next package iteration.
+- Suggested commit message: `docs: reconcile milestone 4 handoff guidance`
+
 ## 2026-06-23: Explicit Sanitized Adapter CLI Flags
 
 - Agent/model: Codex (GPT-5)

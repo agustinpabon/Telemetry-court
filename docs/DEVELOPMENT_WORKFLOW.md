@@ -24,7 +24,7 @@ Reject or rescope work that primarily adds generic dashboards, SIEM/SOC workflow
 - Milestone 1 is repository realignment.
 - Milestone 2 is complete: Case Package Contract and Validation Infrastructure.
 - Milestone 3 is complete: Local Utility Gate (focusing on external/approved CasePackage validation workflow, package authoring/inspection support, and realistic/sanitized package readiness).
-- Milestone 4 is the active implementation milestone: Toponymy / ACME4 Adapter Prototype (focusing on adapter boundary scripts, sanitized mappers, and notebook loop prototypes).
+- Milestone 4 is the active implementation milestone: Toponymy / DataMapPlot / ACME4 Adapter Prototype (the local sanitized mapper, CLI, preflight validation, and handoff docs are in place; remaining work focuses on an approved upstream notebook/script adapter and refinement consumer usage outside Telemetry Court).
 - Do not create a generic backend milestone.
 - Do not pull persistence, auth, admin UX, or enterprise concerns ahead of the contract.
 - Keep issues narrow, independently verifiable, and tied to a roadmap outcome.
@@ -52,6 +52,8 @@ If those questions have no concrete answer, the work is premature.
 - Update `docs/CHANGELOG_AI.md` after material AI-assisted changes.
 - Use `docs/NOTEBOOK_HANDOFF_CHECKLIST.md` for Milestone 4 notebook or script
   exports into the existing sanitized adapter mapper and CLI.
+- Use `docs/CLUSTER_REFINEMENT_HANDOFF.md` for upstream consumers of
+  Telemetry Court `cluster_refinement.v0.1` exports.
 
 ## Required Checks
 

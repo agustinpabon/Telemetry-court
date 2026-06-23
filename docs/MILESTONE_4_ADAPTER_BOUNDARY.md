@@ -1,12 +1,19 @@
 # Milestone 4 - Adapter Boundary Spec
 
-This document defines the interface boundary between upstream clustering/labeling pipelines and Telemetry Court for Milestone 4. It establishes the rules, contracts, and sanitization boundaries required before implementing any adapter code.
+This document defines the interface boundary between upstream
+clustering/labeling pipelines and Telemetry Court for Milestone 4. It
+establishes the rules, contracts, and sanitization boundaries for the local
+sanitized adapter producer path and the remaining upstream notebook/refinement
+consumer work.
 
 The docs-first prototype workflow for this boundary is documented in
 [`MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md`](./MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md).
-That plan defines the sanitized producer checklist, schema mapping checklist,
-rejection cases, and upstream refinement-consumer checklist to complete before
-any adapter implementation.
+The implemented sanitized producer draft contract is documented in
+[`SANITIZED_ADAPTER_INPUT_CONTRACT.md`](./SANITIZED_ADAPTER_INPUT_CONTRACT.md).
+Producer-side notebook/script operations are covered by
+[`NOTEBOOK_HANDOFF_CHECKLIST.md`](./NOTEBOOK_HANDOFF_CHECKLIST.md), and
+upstream consumption of Telemetry Court refinement exports is covered by
+[`CLUSTER_REFINEMENT_HANDOFF.md`](./CLUSTER_REFINEMENT_HANDOFF.md).
 
 ---
 
@@ -91,57 +98,55 @@ Upstream producers must map their internal clustering outputs to the versioned `
 
 Once reviews are completed, Telemetry Court generates a `cluster_refinement.v0.1` JSON recipe file. Upstream notebook/Python/Pandas workflows consume this recipe to refine their datasets and retrain their pipelines.
 
-### Consumer Workflow Steps
-1. **Read exported refinement JSON**: Parse the `cluster_refinement.v0.1` schema fields.
-2. **Prune session IDs**: Exclude or filter out rows corresponding to the session IDs listed in `prune_session_ids` from the clustering dataset.
-3. **Split recommendations**: Treat `split_recommendations` as analyst-approved indicators that the cluster is impure. The upstream pipeline should split the cluster (e.g., by adjusting clustering density parameters or performing a sub-clustering step) rather than applying an automatic split.
-4. **Merge recommendations**: Treat `merge_recommendations` as analyst-approved hints that two clusters should be combined (e.g., by lowering distance thresholds or merging the topics).
-5. **Rerun embedding/clustering**: Execute the clustering pipeline externally in the upstream environment with the updated dataset and parameters.
-6. **Preserve audit/provenance links**: When creating a new iteration of a `CasePackage`, carry forward the `refinement_id`, `source_review_ids`, and, where useful, the `source_reviews` summaries in the new package's `provenance` metadata to ensure complete auditability of the refinement loop.
+For the standalone consumer handoff, see
+[`CLUSTER_REFINEMENT_HANDOFF.md`](./CLUSTER_REFINEMENT_HANDOFF.md). The summary
+below is intentionally not a schema replacement.
 
-### Illustrative Python / Pandas Pseudocode (Non-Executable Spec)
+### Consumer Workflow Steps
+1. **Read exported refinement JSON**: Parse the `cluster_refinement.v0.1` schema
+   fields, verify the schema and calculation versions, and preserve
+   `refinement_id`, `source_review_ids`, and `source_reviews`.
+2. **Inspect reviewer signals first**: Review session exclusion counts,
+   qualifying reviews, uncertainty, and disagreement before pruning anything.
+3. **Prune session IDs externally**: Exclude or filter rows corresponding to
+   `prune_session_ids` only inside the upstream environment.
+4. **Split recommendations**: Treat `split_recommendations` as
+   analyst-approved hints that the cluster may need sub-clustering, parameter
+   changes, or evidence-package revision. They are not executable split
+   commands.
+5. **Merge recommendations**: Treat `merge_recommendations` as
+   analyst-approved hints that the cluster may need upstream comparison with
+   neighbors. Do not infer unavailable merge targets from map proximity alone.
+6. **Rerun embedding/clustering**: Execute any chosen rerun externally in the
+   upstream environment.
+7. **Preserve audit/provenance links**: When creating a new iteration of a
+   `CasePackage`, carry forward the `refinement_id`, `source_review_ids`, and,
+   where useful, the `source_reviews` summaries in the new package's
+   `provenance` metadata to ensure complete auditability of the refinement
+   loop.
+
+### Illustrative Pseudocode (Non-Executable Spec)
 
 ```python
-import json
-import pandas as pd
-
-# 1. Load the dataset currently under refinement
-df = pd.read_parquet("upstream_telemetry_dataset.parquet")
-
-# 2. Read the exported refinement recipe from Telemetry Court
-with open("cluster_refinement_export.json", "r") as f:
-    recipe = json.load(f)
-
-# Assert schema version compatibility
+recipe = read_json("<cluster-refinement-export.json>")
 assert recipe["schema_version"] == "cluster_refinement.v0.1"
 
-# 3. Apply session exclusions (pruning) based on reviewer feedback
-prune_ids = recipe.get("prune_session_ids", [])
-if prune_ids:
-    print(f"Pruning {len(prune_ids)} sessions from upstream dataset.")
-    df = df[~df["session_id"].isin(prune_ids)]
+inspect_session_exclusion_counts(recipe["session_exclusion_recommendations"])
+inspect_uncertainty_and_disagreement(recipe["uncertainty"], recipe["disagreement"])
 
-# 4. Inspect split and merge recommendations
-for split_rec in recipe.get("split_recommendations", []):
-    cluster_id = split_rec["cluster_id"]
-    print(f"Analyst recommended split for: {cluster_id}")
-    # Conceptual: Run sub-clustering or increase HDBSCAN min_cluster_size locally
+approved_working_set = exclude_by_session_id(
+    "<approved-upstream-working-set>",
+    recipe["prune_session_ids"],
+)
 
-for merge_rec in recipe.get("merge_recommendations", []):
-    cluster_id = merge_rec["cluster_id"]
-    print(f"Analyst recommended merge for: {cluster_id}")
-    # Conceptual: Merge with closest neighbor clusters documented in the recipe
+record_refinement_provenance(
+    source_refinement_id=recipe["refinement_id"],
+    source_review_ids=recipe["source_review_ids"],
+    source_reviews=recipe.get("source_reviews", []),
+)
 
-# 5. Rerun the clustering pipeline externally
-# df['new_cluster_id'] = rerun_clustering_pipeline(df)
-
-# 6. Export new dataset and log refinement provenance
-# save_refinement_run_metadata(
-#     run_id="run-upstream-refinement-002",
-#     source_refinement_id=recipe["refinement_id"],
-#     source_review_ids=recipe["source_review_ids"],
-#     source_reviews=recipe.get("source_reviews", [])
-# )
+rerun_upstream_pipeline_externally(approved_working_set)
+write_next_approved_sanitized_draft("<approved-sanitized-draft.json>")
 ```
 
 ---
