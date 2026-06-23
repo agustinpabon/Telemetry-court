@@ -19,6 +19,35 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-23: Milestone 4 Sanitized Adapter Prototype Plan
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #148 as a docs-only planning slice for
+  the sanitized adapter prototype workflow before any executable adapter work.
+- Files changed:
+  `docs/MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md`,
+  `docs/MILESTONE_4_ADAPTER_BOUNDARY.md`, `docs/ROADMAP.md`, and
+  `docs/CHANGELOG_AI.md`.
+- Summary: Added a dedicated Milestone 4 prototype plan covering the sanitized
+  upstream-to-CasePackage flow, producer readiness checklist, schema-accurate
+  `CasePackageV01` mapping checklist, rejection/failure cases, and
+  `cluster_refinement.v0.1` consumer checklist for upstream notebooks.
+- Decisions made: Kept the change documentation-only and linked it from the
+  existing adapter boundary and roadmap instead of adding scripts, fixtures,
+  public CasePackages, runtime behavior, UI changes, fake pilot data, raw
+  telemetry ingestion, backend/auth/database work, or clustering execution.
+- Checks run: `git diff --check` passed; `npm test` passed with 231 tests;
+  `npx tsc --noEmit` passed; `npm run lint` passed; `npm run build` passed.
+- Assumptions: Milestone 4 should complete this planning handoff before an
+  approved sanitized adapter implementation is attempted.
+- Risks/follow-ups: The eventual adapter still needs an approved upstream
+  environment, real sanitization/provenance review, and package validation with
+  no raw telemetry crossing into Telemetry Court.
+- Next recommended step: Review the docs plan, then open a separate scoped
+  implementation issue only after the package producer and approval workflow
+  are accepted.
+- Suggested commit message: `docs: plan milestone 4 sanitized adapter prototype`
+
 ## 2026-06-23: Define Milestone 4 Adapter Boundary Spec
 
 - Agent/model: Antigravity (Gemini 3.5 Flash)

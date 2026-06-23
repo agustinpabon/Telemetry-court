@@ -33,7 +33,7 @@ package import, result exchange, and aggregation are usable.
 | Milestone 1 - Product Realignment And Documentation | Complete | Repository language, planning, architecture, and agent guidance align around the validation-bench direction. |
 | Milestone 2 - Case Package Contract And Validation Infrastructure | Complete/current foundation | Versioned `CasePackage`, `ReviewResult`, and `EvaluationReport` contracts, package validation, package-shaped fixtures, and local export/aggregation foundations. |
 | Milestone 3 - Local Utility Gate | Complete | Local CasePackage import, useful invalid-package failure UI, ReviewResult persistence/export/import, results from local/imported ReviewResults, and an end-to-end imported-package smoke test. |
-| Milestone 4 - Toponymy / ACME4 Adapter Prototype | Active/In progress | One approved adapter converts a real or realistic cluster output into a case package without raw restricted telemetry ingestion. See [MILESTONE_4_ADAPTER_BOUNDARY.md](./MILESTONE_4_ADAPTER_BOUNDARY.md). |
+| Milestone 4 - Toponymy / ACME4 Adapter Prototype | Active/In progress | One approved adapter converts a real or realistic cluster output into a case package without raw restricted telemetry ingestion. See [MILESTONE_4_ADAPTER_BOUNDARY.md](./MILESTONE_4_ADAPTER_BOUNDARY.md) and [MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md](./MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md). |
 | Milestone 5 - Evidence-Constrained AI Assistance | Later/deferred | Predefined evidence-citing questions with explicit missing-evidence behavior after import/results/aggregation are usable. |
 | Milestone 6 - Research Validation Study | Target proof | Multiple reviewers demonstrate useful evaluation signals on real or realistic cases. |
 
@@ -90,6 +90,9 @@ artifacts, and produce an auditable EvaluationReport without a backend service.
 ## Milestone 4 - Toponymy / ACME4 Adapter Prototype
 
 - Define the adapter boundary and loop refinement spec. See [MILESTONE_4_ADAPTER_BOUNDARY.md](./MILESTONE_4_ADAPTER_BOUNDARY.md).
+- Complete the docs-first sanitized adapter prototype plan before adding any
+  executable adapter workflow. See
+  [MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md](./MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md).
 - Build one script or notebook-level adapter for an approved real or realistic precomputed cluster output.
 - Emit minimal, auditable `CasePackage` JSON.
 - Preserve provenance and sanitization metadata.
