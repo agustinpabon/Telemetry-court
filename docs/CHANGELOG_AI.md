@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-23: Fix Blind-Read Checkpoint Option Card Squeezing
+
+- Agent/model: Antigravity (Gemini 3.5 Flash)
+- Prompt scope: Fix the visual wrapping bug on `/blind-read` in the "Can you judge this case?" checkpoint cards.
+- Files changed: `app/investigation-workflow.css`, `docs/CHANGELOG_AI.md`.
+- Summary: Absolute-positioned the "Selected" badge at the bottom-right corner of the `.readiness-option` cards and adjusted the card's grid layout and internal padding to be symmetrical (`padding: 14px 14px 38px 14px;` with `align-items: start;`). This ensures the text container width is preserved and identical in both selected and unselected states, preventing any bad wrapping or layout shifts when selecting options.
+- Decisions made: Kept all CasePackage, ReviewResult, and EvaluationReport structures and logic unchanged. Fixed layout surgically using CSS without modifying component templates or TSX.
+- Checks run: `npm test` (all 262 tests passed), `npx tsc --noEmit` (passed), `npm run lint` (passed), `npm run build` (passed), `git diff --check`, and browser subagent visual checks.
+- Assumptions: A bottom-right aligned badge with top-left aligned radio button provides a clean, premium, and responsive visual layout without changing the text container width.
+- Risks/follow-ups: None.
+- Next recommended step: Let the user verify the layout visual improvements in their browser.
+- Suggested commit message: `style(arena): fix blind-read checkpoint selected card text wrapping`
+
 ## 2026-06-23: Milestone 4 Refinement Consumer Handoff
 
 - Agent/model: Codex (GPT-5)
