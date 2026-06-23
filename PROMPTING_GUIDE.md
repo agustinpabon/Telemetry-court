@@ -125,7 +125,7 @@ Do not merge or commit unless explicitly asked.
 ```text
 Plan only the next small executable issue batch from docs/ROADMAP.md.
 
-Milestone 3 (Local Utility Gate) is the next implementation milestone.
+Milestone 4 (Toponymy / ACME4 Adapter Prototype) is the active implementation milestone.
 Prefer thin vertical slices that connect contract, validation, fixture,
 UI compatibility, export, and tests where applicable.
 
