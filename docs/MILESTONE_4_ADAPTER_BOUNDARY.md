@@ -2,6 +2,12 @@
 
 This document defines the interface boundary between upstream clustering/labeling pipelines and Telemetry Court for Milestone 4. It establishes the rules, contracts, and sanitization boundaries required before implementing any adapter code.
 
+The docs-first prototype workflow for this boundary is documented in
+[`MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md`](./MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md).
+That plan defines the sanitized producer checklist, schema mapping checklist,
+rejection cases, and upstream refinement-consumer checklist to complete before
+any adapter implementation.
+
 ---
 
 ## 1. Adapter Boundary Overview
