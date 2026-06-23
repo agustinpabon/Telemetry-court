@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-23: Sanitized CasePackage Adapter CLI
+
+- Agent/model: Antigravity (Gemini 3.5 Flash)
+- Prompt scope: Implement GitHub issue #152 to add a fixture-free local CLI wrapper around the sanitized CasePackage adapter mapper.
+- Files changed: `scripts/sanitized-case-package-adapter-v01.ts`, `scripts/sanitized-case-package-adapter-v01.test.ts`, `package.json`, and `docs/CHANGELOG_AI.md`.
+- Summary: Created a local TypeScript CLI wrapper (`scripts/sanitized-case-package-adapter-v01.ts`) that reads a sanitized adapter draft JSON file, maps it to a `CasePackageV01`, validates the mapped package using `validateCasePackageV01`, and writes the output JSON either to a file specified by `--out` or prints it directly to `stdout`. Added full unit tests (`scripts/sanitized-case-package-adapter-v01.test.ts`) verifying input file immutability, exit codes/failures on invalid JSON, validation failures, missing files, and incorrect CLI usage. Registered the CLI script as `"sanitized-case-package-adapter-v01": "tsx scripts/sanitized-case-package-adapter-v01.ts"` under `"scripts"` in `package.json`.
+- Decisions made: Followed the repository's existing script/CLI pattern to pass options (`argv`, `cwd`, custom read/write/stdout/stderr functions) for full in-memory and OS-level testing. Avoided executing clustering components (Toponymy, DataMapPlot, UMAP, HDBSCAN, ACME4), importing raw telemetry, creating public fixtures, modifying runtime UI, or introducing database/backend behavior.
+- Checks run: `git diff main...HEAD --check` passed; focused test execution `node --test --import tsx scripts/sanitized-case-package-adapter-v01.test.ts` passed (8 tests); focused test execution `node --test --import tsx lib/sanitizedCasePackageAdapterV01.test.ts` passed (6 tests); complete test suite `npm test` passed (245 tests); typecheck `npx tsc --noEmit` passed; linter `npm run lint` passed; production build `npm run build` passed; `git status --short` verified.
+- Assumptions: The CLI input file is already approved and sanitized, containing necessary redaction notes and governance approval references.
+- Risks/follow-ups: Integrators must ensure the generated `CasePackageV01` output is successfully processed by the Telemetry Court review workflow.
+- Next recommended step: Review the CLI integration and verify output generation with a sanitized upstream producer.
+- Suggested commit message: `feat: add sanitized CasePackage adapter CLI`
+
 ## 2026-06-23: Sanitized CasePackage Adapter Mapper
 
 - Agent/model: Codex (GPT-5)
