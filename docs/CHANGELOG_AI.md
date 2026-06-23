@@ -19,6 +19,41 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-23: Notebook Handoff Checklist
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #160 as a documentation-only handoff
+  checklist for sanitized upstream notebook and script exports.
+- Files changed: `docs/NOTEBOOK_HANDOFF_CHECKLIST.md`,
+  `docs/SANITIZED_ADAPTER_INPUT_CONTRACT.md`,
+  `docs/DEVELOPMENT_WORKFLOW.md`, and `docs/CHANGELOG_AI.md`.
+- Summary: Added a concrete pre-export and post-export checklist that assigns
+  upstream sanitization, topology, evidence, provenance, approval, and storage
+  responsibilities; documents the existing mapper/CLI handoff; and preserves
+  `cluster_refinement.json` as guidance for an upstream notebook rather than an
+  in-app clustering trigger.
+- Decisions made: Kept the sanitized adapter input contract as the only source
+  of truth for draft shape. Documented the current executable CLI syntax
+  (positional input plus `--out`) and clarified that conceptual `--input` and
+  `--output` role labels are not supported flags. Added no app/UI/runtime,
+  mapper, CLI, package, config, fixture, pilot-data, reviewer, or upstream
+  processing changes.
+- Checks run: `git status --short`, `git diff --check`, and
+  `git diff main...HEAD --check` passed. The ECC pre-push hook also ran
+  `npm run lint`, `npm test` (253 tests passed), and `npm run build`
+  successfully.
+- Assumptions: Upstream authors and named approvers remain responsible for
+  sanitization, source approval, safe storage, and coordinate preparation
+  before the draft crosses the Telemetry Court boundary.
+- Risks/follow-ups: Documentation and metadata validation cannot prove that
+  arbitrary exported content is safe. Generated packages and refinement
+  artifacts must remain in their approved environment unless publication is
+  separately authorized.
+- Next recommended step: Apply the checklist to the next approved Milestone 4
+  notebook adapter prototype without adding raw telemetry or upstream
+  processing to Telemetry Court.
+- Suggested commit message: `docs: add notebook handoff checklist`
+
 ## 2026-06-23: Sanitized Adapter Validation Hardening
 
 - Agent/model: Codex (GPT-5)

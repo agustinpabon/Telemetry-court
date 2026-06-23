@@ -50,6 +50,11 @@ upstream notebook or script
 The draft object is a handoff artifact, not a durable product artifact. The
 durable review boundary remains the validated `CasePackageV01` JSON.
 
+For the operational pre-export and post-export handoff steps, see
+[`NOTEBOOK_HANDOFF_CHECKLIST.md`](./NOTEBOOK_HANDOFF_CHECKLIST.md). That
+checklist applies this contract for notebook and script authors; it does not
+define a separate input shape.
+
 ## Contract Shape
 
 The draft intentionally omits `schema_version`. The mapper sets the final

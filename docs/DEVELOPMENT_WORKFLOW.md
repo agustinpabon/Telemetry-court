@@ -50,6 +50,8 @@ If those questions have no concrete answer, the work is premature.
 - Update `docs/DATA_MODEL.md` when implemented types or fixture shapes change.
 - Update `docs/GITHUB_PLANNING.md` when milestone or issue strategy changes.
 - Update `docs/CHANGELOG_AI.md` after material AI-assisted changes.
+- Use `docs/NOTEBOOK_HANDOFF_CHECKLIST.md` for Milestone 4 notebook or script
+  exports into the existing sanitized adapter mapper and CLI.
 
 ## Required Checks
 
