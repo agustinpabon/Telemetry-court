@@ -21,7 +21,7 @@ Treat `docs/PRODUCT_VISION.md`, `docs/PRODUCT_POSITIONING.md`, and `docs/PROJECT
 
 - The current application is a static validation slice with synthetic cases, local package validation, and local review export.
 - Real Toponymy ingestion and ACME4 ingestion are not implemented.
-- The next implementation milestone is the Local Utility Gate (external/approved CasePackage validation workflow, package authoring/inspection support, and realistic/sanitized package readiness).
+- The active implementation milestone is the Toponymy / ACME4 Adapter Prototype (focusing on script-level adapter boundaries, sanitized mappers, and notebook-level loop refinements).
 - Backend work must start with `CasePackage`, `ReviewResult`, and `EvaluationReport` contracts, not generic APIs, databases, or authentication.
 
 ## Product Boundary

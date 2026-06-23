@@ -35,17 +35,16 @@ Historical Evidence Arena and static MVP milestones may remain closed for record
 
 ## Immediate Planning Priority
 
-Milestone 3 - Local Utility Gate is the next implementation milestone. Its
+Milestone 4 - Toponymy / ACME4 Adapter Prototype is the active implementation milestone. Its
 issue batch should stay small and dependency ordered:
 
-1. Import `CasePackage` JSON from a local file (`AFK`).
-2. Show useful invalid-package failures during import (`AFK`).
-3. Persist `ReviewResult` artifacts locally without backend infrastructure
-   (`AFK`; existing local storage should be reused and hardened).
-4. Export and import `ReviewResult` bundles (`AFK`).
-5. Build the results page from local or imported ReviewResults (`AFK`).
-6. Add an end-to-end imported package -> review -> exported result ->
-   EvaluationReport smoke test (`AFK`).
+1. Define the adapter boundary and loop refinement spec (completed).
+2. Complete the docs-first sanitized adapter prototype plan (completed).
+3. Implement the pure sanitized CasePackage adapter mapper helper (completed).
+4. Create the CLI wrapper for the sanitized CasePackage adapter mapper (completed).
+5. Build and verify one Jupyter/Python adapter prototype using real or realistic precomputed cluster output.
+6. Connect the cluster refinement recipe JSON export to an upstream Jupyter notebook split/merge consumer.
+7. Run a small pilot with 3-5 real or realistic packages and 2-3 reviewers.
 
 Do not create issues yet for auth, production databases, admin UX, broad
 analytics dashboards, enterprise features, raw telemetry ingestion, SIEM

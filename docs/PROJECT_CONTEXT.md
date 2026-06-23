@@ -109,16 +109,15 @@ Do not add Splunk, Elastic, remediation, or operational action generation as a c
 
 This is not a full product reset. Preserve the CasePackage -> ReviewResult -> EvaluationReport direction. The priority correction is to move the real utility loop ahead of further cosmetic polish or evidence-constrained AI assistance.
 
-Prioritize next:
+Prioritize next (Milestone 4 — Toponymy / ACME4 Adapter Prototype):
 
-1. Import `CasePackage` JSON from a local file.
-2. Show useful invalid-package failure UI during import.
-3. Harden local `ReviewResult` persistence without adding a backend.
-4. Export and import `ReviewResult` bundles.
-5. Build the results page from local/imported `ReviewResult` objects, not only static fixtures.
-6. Add an end-to-end smoke test: imported package -> review -> exported result -> aggregated `EvaluationReport`.
-7. Continue Toponymy/DataMapPlot adapter-boundary work after the import/results path is usable.
-8. Run a small pilot with 3-5 real or realistic packages and 2-3 reviewers.
+1. Define the adapter boundary and loop refinement spec (completed).
+2. Complete the docs-first sanitized adapter prototype plan (completed).
+3. Implement the pure sanitized CasePackage adapter mapper helper (completed).
+4. Create the CLI wrapper for the sanitized CasePackage adapter mapper (completed).
+5. Build and verify one Jupyter/Python adapter prototype using real or realistic precomputed cluster output.
+6. Connect the cluster refinement recipe JSON export to an upstream Jupyter notebook split/merge consumer.
+7. Run a small pilot with 3-5 real or realistic packages and 2-3 reviewers.
 
 Evidence-constrained AI assistance remains a later milestone. It should cite evidence IDs, admit missing evidence, and avoid generic chatbot behavior.
 
