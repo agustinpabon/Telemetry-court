@@ -2319,9 +2319,9 @@
   cursor: pointer;
   display: grid;
   gap: 10px;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr);
   min-height: 70px;
-  padding: 12px;
+  padding: 14px;
   position: relative;
   transition:
     background 160ms ease,
@@ -2394,6 +2394,7 @@
   min-width: 0;
   position: static;
   width: auto;
+  padding-right: 64px;
 }
 
 .arena-shell-investigate .readiness-option-copy strong {
@@ -2415,7 +2416,10 @@
   height: auto;
   line-height: 1;
   padding: 6px 8px;
-  position: static;
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
   white-space: nowrap;
   width: auto;
 }

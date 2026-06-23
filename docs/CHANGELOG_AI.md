@@ -19,6 +19,19 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-23: Fix Blind-Read Checkpoint Option Card Squeezing
+
+- Agent/model: Antigravity (Gemini 3.5 Flash)
+- Prompt scope: Fix the visual wrapping bug and vertical alignment on `/blind-read` in the "Can you judge this case?" checkpoint cards.
+- Files changed: `app/investigation-workflow.css`, `docs/CHANGELOG_AI.md`.
+- Summary: Absolute-positioned the "Selected" badge vertically centered at the right edge (`top: 50%; transform: translateY(-50%); right: 14px;`) of the `.readiness-option` cards. Left-aligned radio mark and copy using symmetrical grid padding (`padding: 14px;` with `align-items: center;`). Added `padding-right: 64px;` to the `.readiness-option-copy` text wrapper to reserve horizontal space for the badge. This guarantees the text container width is preserved and identical in both selected and unselected states, preventing any bad wrapping or layout shifts while maintaining vertical balance inside each card.
+- Decisions made: Kept all CasePackage, ReviewResult, and EvaluationReport structures and logic unchanged. Fixed layout surgically using CSS without modifying component templates or TSX.
+- Checks run: `npm test` (all 262 tests passed), `npx tsc --noEmit` (passed), `npm run lint` (passed), `npm run build` (passed), `git diff --check`, and browser subagent visual checks.
+- Assumptions: Reserving horizontal space with padding on the inner copy wrapper prevents badge collisions while allowing perfect vertical alignment of content.
+- Risks/follow-ups: None.
+- Next recommended step: Let the user verify the layout visual improvements in their browser.
+- Suggested commit message: `style(arena): fix blind-read checkpoint selected card text wrapping and alignment`
+
 ## 2026-06-23: Milestone 4 Refinement Consumer Handoff
 
 - Agent/model: Codex (GPT-5)
