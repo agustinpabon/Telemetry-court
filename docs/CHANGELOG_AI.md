@@ -19,6 +19,38 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-23: External Refinement Consumer Handoff
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #167 as a docs-only external consumer
+  handoff for `cluster_refinement.v0.1`.
+- Files changed: `docs/CLUSTER_REFINEMENT_HANDOFF.md` and
+  `docs/CHANGELOG_AI.md`.
+- Summary: Added a reference upstream consumer pattern that defines expected
+  in-memory input, expected external output, minimal validation behavior,
+  provenance retention, a Python-style notebook cell, and a private run
+  verification checklist for consuming Telemetry Court refinement exports
+  outside the repo.
+- Decisions made: Kept the change documentation-only and used the existing
+  cluster refinement handoff as the target instead of adding another document.
+  Added no notebooks, datasets, fixtures, fake CasePackages, fake
+  ReviewResults, fake EvaluationReports, fake coordinates, app/runtime code,
+  or upstream processing execution.
+- Checks run: `git diff --check` passed; `git diff main...HEAD --check`
+  passed. No markdown-specific validation script exists in `package.json`.
+  The ECC pre-push hook also ran `npm run lint`, `npm test` (262 tests
+  passed), and `npm run build` successfully.
+- Assumptions: The first consumer prototype should prove the handoff in an
+  approved upstream notebook or private pipeline while Telemetry Court remains
+  responsible only for the export contract and docs/checklist.
+- Risks/follow-ups: Documentation cannot verify a private upstream consumer or
+  prove artifact safety; any real or realistic data, generated packages, and
+  notebook outputs still need explicit approval in their target environment.
+- Next recommended step: Use the pattern in the first approved external
+  notebook or pipeline consumer, then return through the sanitized adapter path
+  for the next `CasePackageV01` candidate.
+- Suggested commit message: `docs: add external refinement consumer handoff`
+
 ## 2026-06-23: Fix Blind-Read Checkpoint Option Card Squeezing
 
 - Agent/model: Antigravity (Gemini 3.5 Flash)
