@@ -146,6 +146,15 @@ npm run lint
 npm run build
 ```
 
+Validate and inspect one local `CasePackage` JSON file:
+
+```bash
+npm run validate-package -- path/to/case-package.json
+```
+
+This command validates the supplied package file only. It does not read raw
+telemetry, resolve source artifacts, or follow safe references.
+
 ## License
 
 MIT. See [LICENSE](./LICENSE).

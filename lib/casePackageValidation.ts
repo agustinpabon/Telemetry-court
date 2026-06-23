@@ -18,6 +18,8 @@ export type CasePackageValidationResult =
   | { ok: true; package: CasePackageV01 }
   | { ok: false; errors: CasePackageValidationError[] };
 
+export type CasePackageValidationPosture = "synthetic_demo" | "controlled";
+
 type ObjectRecord = Record<string, unknown>;
 
 const REVIEWABLE_STATUSES = [
@@ -298,6 +300,22 @@ export function validateCasePackageV01(
   }
 
   return { ok: true, package: input as CasePackageV01 };
+}
+
+export function getCasePackageValidationPosture(
+  casePackage: Pick<CasePackageV01, "case" | "dataset" | "sanitization">,
+): CasePackageValidationPosture {
+  if (
+    isExplicitSyntheticPosture(
+      casePackage.case.reviewable_status,
+      casePackage.dataset.data_classification,
+      casePackage.sanitization.status,
+    )
+  ) {
+    return "synthetic_demo";
+  }
+
+  return "controlled";
 }
 
 function validateCaseMetadata(
@@ -1055,14 +1073,28 @@ function determinePackagePosture(
   }
 
   if (
-    caseMetadata.reviewable_status === "synthetic_demo" &&
-    dataset.data_classification === "synthetic" &&
-    sanitization.status === "synthetic"
+    isExplicitSyntheticPosture(
+      caseMetadata.reviewable_status,
+      dataset.data_classification,
+      sanitization.status,
+    )
   ) {
     return "synthetic";
   }
 
   return "controlled";
+}
+
+function isExplicitSyntheticPosture(
+  reviewableStatus: unknown,
+  dataClassification: unknown,
+  sanitizationStatus: unknown,
+): boolean {
+  return (
+    reviewableStatus === "synthetic_demo" &&
+    dataClassification === "synthetic" &&
+    sanitizationStatus === "synthetic"
+  );
 }
 
 function hasConcreteSafeReferenceTarget(reference: unknown): boolean {

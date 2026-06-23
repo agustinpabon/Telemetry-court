@@ -19,6 +19,46 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-22: Local CasePackage Validation CLI
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement issue #131 by adding a local command that validates
+  and inspects one `CasePackage` JSON file without reading raw telemetry,
+  following safe references, creating ReviewResults, or creating
+  EvaluationReports.
+- Files changed: `package.json`, `lib/casePackageValidation.ts`,
+  `lib/casePackageInspection.ts`, `scripts/validate-package.ts`,
+  `scripts/validate-package.test.ts`, `README.md`,
+  `docs/CASE_PACKAGE_CONTRACT.md`, `docs/ADAPTER_BOUNDARY.md`, and
+  `docs/CHANGELOG_AI.md`.
+- Summary: Added `npm run validate-package -- path/to/case-package.json`.
+  The command accepts exactly one JSON path, parses the supplied file, validates
+  through `validateCasePackageV01`, prints readable failure diagnostics with
+  path/code/message values, and prints a compact inspection summary for valid
+  packages including schema, package/case ID, reviewable status, posture,
+  dataset and sanitization metadata, approval scope, pipeline/adapter metadata,
+  and evidence/claim/label/session counts.
+- Decisions made: Reused the validator's explicit synthetic-versus-controlled
+  posture logic through a tiny exported helper, then mapped validated packages
+  into synthetic demo, sanitized/controlled, or real/approved controlled
+  inspection labels. Kept the utility local and file-based; it does not resolve
+  source artifacts or safe references.
+- Checks run: Focused
+  `node --test --import tsx scripts/validate-package.test.ts lib/casePackageValidation.test.ts data/casePackageFixtures.test.ts`
+  passed with 30 tests; `npm test` passed with 197 tests; `npx tsc --noEmit`
+  passed; `npm run lint` passed with 0 errors and the existing 134 warnings
+  under `.agents/skills/impeccable`; `npm run build` passed; `git diff --check`
+  passed.
+- Assumptions: `approved_internal`, `internal`, and `confidential` identify the
+  inspection summary's real/approved controlled posture; other non-synthetic
+  valid controlled packages are summarized as sanitized/controlled.
+- Risks/follow-ups: The CLI can validate metadata and references but cannot
+  prove arbitrary evidence text is safe. Upstream package authors and named
+  approvers remain responsible for content minimization and release scope.
+- Next recommended step: Use the command as the local preflight before
+  importing approved package JSON into the review workflow.
+- Suggested commit message: `feat(case-package): add local validation cli`
+
 ## 2026-06-22: Restricted-Data And Approved Package Workflow
 
 - Agent/model: Antigravity (Gemini 3.5 Flash) & Codex (GPT-5)
