@@ -35,9 +35,10 @@ Use this file to record AI-assisted changes that affect product context, archite
   EvaluationReports, fake topology coordinates, pilot data, reviewers, raw
   telemetry examples, or upstream processing execution.
 - Checks run: `git status --short` verified only the intended docs changes
-  plus pre-existing forbidden untracked paths; `git diff --check` passed. Full
-  tests, lint, and build were skipped because this is documentation-only and no
-  runtime, script, fixture, TypeScript, or UI files changed.
+  plus pre-existing forbidden untracked paths; `git diff --check` passed;
+  `git diff --cached --check` passed; ECC pre-push verification ran
+  `npm run lint`, `npm test` (245 tests passed), and `npm run build`
+  successfully.
 - Assumptions: The existing TypeScript mapper and CLI remain the implemented
   boundary; upstream notebooks/scripts are responsible for approval,
   sanitization, and safe handoff before invoking the CLI.
