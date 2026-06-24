@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState, type ChangeEvent } from "react";
 import { MetricCard } from "@/components/arena/WorkflowPrimitives";
 import { ReviewResultImportSummaryPanel } from "@/components/arena/ReviewResultImportSummaryPanel";
 import { EvaluationReportResults } from "@/components/evaluation/EvaluationReportResults";
+import { ReviewResultProgression } from "@/components/evaluation/ReviewResultProgression";
 import { ResultsGalaxyMap } from "@/components/evaluation/ResultsGalaxyMap";
 import { casePackageFixtures } from "@/data/casePackageFixtures";
 import {
@@ -292,6 +293,8 @@ export function LocalEvaluationResultsView({
           </p>
         </div>
       </header>
+
+      <ReviewResultProgression variant="results" />
 
       {importStatus.state === "success" && importStatus.inspectionSummary ? (
         <ReviewResultImportSummaryPanel

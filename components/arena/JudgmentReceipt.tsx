@@ -5,6 +5,7 @@ import {
   splitRecommendationReasonLabel,
 } from "@/components/arena/arenaMeta";
 import { ReviewTerminologyHelp } from "@/components/arena/ReviewTerminologyHelp";
+import { ReviewResultProgression } from "@/components/evaluation/ReviewResultProgression";
 import { getCompatibleFailureModes } from "@/lib/arenaReviewState";
 import type { CaseReviewState, EvidenceBalance } from "@/lib/arenaReviewState";
 import type {
@@ -109,16 +110,7 @@ export function JudgmentReceipt({
         summary="Export terms"
       />
 
-      <div className="receipt-purpose" aria-label="ReviewResult purpose">
-        <p>
-          A ReviewResult is one reviewer&apos;s structured judgment for one
-          CasePackage. It preserves the verdict, evidence ratings, failure modes,
-          and recommended action.
-        </p>
-        <p>
-          The JSON stays local until you copy or download it.
-        </p>
-      </div>
+      <ReviewResultProgression variant="receipt" />
 
       <div className="receipt-actions">
         {showJsonAction ? (

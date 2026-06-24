@@ -35,6 +35,22 @@ test("results view renders locally stored ReviewResults by compatible package", 
     markup,
     /A ReviewResult is one reviewer&#x27;s structured judgment for one CasePackage\./,
   );
+  assert.match(markup, /ReviewResult to EvaluationReport/);
+  assert.match(
+    markup,
+    /Individual reviews roll up into multi-reviewer EvaluationReport-style metrics/,
+  );
+  assert.match(markup, /Import on \/results/);
+  assert.match(markup, /Group compatible reviews/);
+  assert.match(
+    markup,
+    /matching package \/ case \/ cluster references and protocol/,
+  );
+  assert.match(markup, /Generate EvaluationReport metrics/);
+  assert.match(
+    markup,
+    /Local-file workflow only: no backend, auth, database, server-side persistence, or cloud sync\./,
+  );
   assert.match(
     markup,
     /compatible CasePackage reference and ReviewResult protocol/,
