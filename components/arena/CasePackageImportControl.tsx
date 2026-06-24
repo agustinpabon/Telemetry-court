@@ -173,7 +173,7 @@ function getStatusCopy(status: CasePackageImportStatus): string {
     case "reading":
       return "Validating CasePackage JSON.";
     case "success":
-      return `Imported CasePackage ${status.packageId} - ${status.caseId} - ${status.title}`;
+      return "Imported package";
     case "error":
       return status.failure.message;
     case "idle":

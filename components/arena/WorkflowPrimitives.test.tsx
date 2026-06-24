@@ -130,8 +130,9 @@ test("CasePackage import control renders local import status", () => {
 
   assert.match(successMarkup, /Import CasePackage/);
   assert.match(successMarkup, /accept="application\/json,.json"/);
-  assert.match(successMarkup, /Imported CasePackage pkg-imported-001/);
-  assert.match(successMarkup, /case-imported-001/);
+  assert.match(successMarkup, /Imported package/);
+  assert.match(successMarkup, /pkg-synthetic-cloudtrail-iam-001/);
+  assert.match(successMarkup, /case-synthetic-iam-001/);
   assert.match(successMarkup, /Imported package summary/);
   assert.match(successMarkup, /Package posture/);
   assert.match(successMarkup, /synthetic demo/);

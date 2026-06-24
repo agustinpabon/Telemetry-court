@@ -22,7 +22,7 @@ Use this file to record AI-assisted changes that affect product context, archite
 ## 2026-06-23: CasePackage Summary Reopen Trigger and Suggested Fix Contrast
 
 - Agent/model: Antigravity (Gemini 3.5 Flash)
-- Prompt scope: Add a control to reopen the package details after dismissal and fix the low contrast of the suggested-fix text.
+- Prompt scope: Add a control to reopen the package details after dismissal, fix the low contrast of the suggested-fix text, and keep the masthead compact on import success.
 - Files changed:
   - [components/arena/CasePackageImportControl.tsx](file:///Users/agus/Documents/Telemetry%20court/components/arena/CasePackageImportControl.tsx)
   - [app/investigation-workflow.css](file:///Users/agus/Documents/Telemetry%20court/app/investigation-workflow.css)
@@ -31,10 +31,12 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Summary:
   - Added a keyboard-focusable, accessible button (`Package details`) aligned directly next to the `Import CasePackage` action button inside the masthead header to reopen the dismissed summary popup.
   - Converted the status element from `<p>` to `<div>` to keep HTML validation clean.
+  - Simplified the success status message to a compact `"Imported package"` string so it remains single-line and fits the default masthead row height without wrapping.
   - Explicitly styled `.case-package-import-suggested-fix` and its `span` children with `--workflow-ink` to ensure high-contrast dark text against the light blue-gray background in failure panels.
   - Added unit tests verifying the reopen trigger renders on dismiss, and that the suggested-fix block behaves correctly.
 - Decisions made:
   - Placed the `Package details` button adjacent to other action buttons in the masthead button row to keep layout balanced and avoid extra height or misaligned rows.
+  - Trimmed the long success status message to prevent vertical text wrapping from stretching the masthead actions subgrid.
   - Used `--workflow-ink` token for suggested-fix text to ensure optimal contrast ratio.
   - Allowed custom test property `initialDismissedForTesting` to test the dismissed component state in Node static test environment.
 - Checks run:
