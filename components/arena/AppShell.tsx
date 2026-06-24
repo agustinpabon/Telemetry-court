@@ -71,7 +71,7 @@ import {
 } from "@/lib/reviewResultStorageV01";
 import {
   getInsufficientContextGuidance,
-  type ReviewReadinessChoice,
+  resolveReviewReadinessChoice,
 } from "@/lib/reviewReadiness";
 import type {
   CaseFile,
@@ -147,10 +147,6 @@ export function AppShell({
   const seenHotFolderCandidateIdsRef = useRef(new Set<string>());
   const pendingHotFolderCandidatesRef = useRef<HotFolderCasePackageValidCandidate[]>([]);
   const hotFolderInitialScanRef = useRef(false);
-  const [reviewReadinessByCase, setReviewReadinessByCase] = useState<
-    Partial<Record<string, ReviewReadinessChoice>>
-  >({});
-
   const selectedCase = getSelectedCase(activeCases, arenaState);
   const selectedCaseIsImported = selectedCase
     ? importedCaseIds.has(selectedCase.id)
@@ -469,9 +465,11 @@ export function AppShell({
     );
   }
 
-  const selectedCaseId = selectedCase.id;
   const selectedCasePackageId = selectedCase.casePackageReference?.package_id;
-  const reviewReadinessChoice = reviewReadinessByCase[selectedCaseId];
+  const reviewReadinessChoice = resolveReviewReadinessChoice(
+    selectedCase,
+    reviewState,
+  );
   const insufficientContextGuidance =
     getInsufficientContextGuidance(reviewReadinessChoice);
   const evidenceRatings = getEvidenceRatings(selectedCase, reviewState);
@@ -503,14 +501,6 @@ export function AppShell({
       sessionPersistableCaseIds,
     );
     rawDispatch(action);
-    setExportMessage(undefined);
-  }
-
-  function chooseReviewReadiness(choice: ReviewReadinessChoice) {
-    setReviewReadinessByCase((currentChoices) => ({
-      ...currentChoices,
-      [selectedCaseId]: choice,
-    }));
     setExportMessage(undefined);
   }
 
@@ -880,13 +870,11 @@ export function AppShell({
               previewCaseId,
               activeStage,
               reviewState,
-              reviewReadinessChoice,
               insufficientContextGuidance,
               evidenceRatings,
               evidenceBalance,
               setPreviewCaseId,
               dispatchArena,
-              chooseReviewReadiness,
               navigateToStage,
               openCaseFile,
               startInvestigation,
@@ -1140,13 +1128,11 @@ function renderStage({
   previewCaseId,
   activeStage,
   reviewState,
-  reviewReadinessChoice,
   insufficientContextGuidance,
   evidenceRatings,
   evidenceBalance,
   setPreviewCaseId,
   dispatchArena,
-  chooseReviewReadiness,
   navigateToStage,
   openCaseFile,
   startInvestigation,
@@ -1161,13 +1147,11 @@ function renderStage({
   previewCaseId?: string;
   activeStage: ReturnType<typeof createInitialArenaState>["activeStage"];
   reviewState: ReturnType<typeof getCurrentReviewState>;
-  reviewReadinessChoice?: ReviewReadinessChoice;
   insufficientContextGuidance?: ReturnType<typeof getInsufficientContextGuidance>;
   evidenceRatings: ReturnType<typeof getEvidenceRatings>;
   evidenceBalance: ReturnType<typeof getEvidenceBalance>;
   setPreviewCaseId: (caseId?: string) => void;
   dispatchArena: (action: ArenaAction) => void;
-  chooseReviewReadiness: (choice: ReviewReadinessChoice) => void;
   navigateToStage: (stage: ReturnType<typeof createInitialArenaState>["activeStage"]) => void;
   openCaseFile: () => void;
   startInvestigation: () => void;
@@ -1192,8 +1176,9 @@ function renderStage({
         <BlindReadPanel
           caseFile={selectedCase}
           reviewState={reviewState}
-          reviewReadinessChoice={reviewReadinessChoice}
-          onChooseReviewReadiness={chooseReviewReadiness}
+          onChooseReviewReadiness={(choice) =>
+            dispatchArena({ type: "chooseReviewReadiness", choice })
+          }
           onChooseBlindInterpretation={(optionId) =>
             dispatchArena({ type: "chooseBlindInterpretation", optionId })
           }

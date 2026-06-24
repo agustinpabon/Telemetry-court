@@ -3,15 +3,21 @@ import type { CaseFile } from "@/lib/types";
 export const reviewReadinessOptions = [
   {
     id: "ready",
-    label: "I have enough context to review this case.",
+    label: "Yes — I can judge from this evidence",
+    helper: "Choose the best-supported interpretation below.",
+    tone: "ready",
   },
   {
     id: "need_context",
-    label: "I need more context before judging.",
+    label: "No — I cannot judge from this evidence",
+    helper: "Record insufficient context and continue without guessing.",
+    tone: "cannot_judge",
   },
   {
     id: "domain_terms",
     label: "I do not understand enough domain terms to review this case.",
+    helper: "Record a domain-context limitation instead of forcing a judgment.",
+    tone: "domain_context",
   },
 ] as const;
 
@@ -28,6 +34,31 @@ export function getInsufficientContextGuidance(
   return choice === "need_context" || choice === "domain_terms"
     ? choice
     : undefined;
+}
+
+export function resolveReviewReadinessChoice(
+  caseFile: CaseFile,
+  reviewState: {
+    reviewReadiness?: ReviewReadinessChoice;
+    blindChoiceId?: string;
+  },
+): ReviewReadinessChoice | undefined {
+  if (
+    reviewState.reviewReadiness &&
+    reviewReadinessOptions.some(
+      (option) => option.id === reviewState.reviewReadiness,
+    )
+  ) {
+    return reviewState.reviewReadiness;
+  }
+
+  if (!reviewState.blindChoiceId) {
+    return undefined;
+  }
+
+  return reviewState.blindChoiceId === getContextLimitedBlindOptionId(caseFile)
+    ? "need_context"
+    : "ready";
 }
 
 export function getContextLimitedBlindOptionId(
