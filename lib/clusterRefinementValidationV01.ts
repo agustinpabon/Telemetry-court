@@ -30,7 +30,11 @@ import {
   type ClusterRefinementV01,
 } from "@/lib/clusterRefinementTypesV01";
 import { REVIEW_PROTOCOL_V01_VERSION, REVIEW_RESULT_V01_SCHEMA_VERSION } from "@/lib/reviewResultV01";
-import { CASE_PACKAGE_V01_SCHEMA_VERSION } from "@/lib/types";
+import {
+  CASE_PACKAGE_V01_SCHEMA_VERSION,
+  MERGE_RECOMMENDATION_REASONS,
+  SPLIT_RECOMMENDATION_REASONS,
+} from "@/lib/types";
 
 const TOP_LEVEL_FIELDS = [
   "schema_version", "calculation_version", "refinement_id", "generated_at",
@@ -59,6 +63,9 @@ const SESSION_RECOMMENDATION_FIELDS = [
 const RECOMMENDATION_FIELDS = [
   "cluster_id", "status", "supporting_review_count", "reviewer_count",
   "source_review_ids", "signals", "disagreement",
+] as const;
+const SPLIT_DETAILS_FIELDS = [
+  "reason_codes", "affected_session_ids", "evidence_ids",
 ] as const;
 
 export function validateClusterRefinementV01(
@@ -369,7 +376,13 @@ function validateSplitRecommendations(
     path,
     value,
     label: "Split",
+    extraFields: ["details"],
     validateSignals: validateSplitSignals,
+    validateExtra: (itemPath, recommendation) => {
+      if (recommendation.details !== undefined) {
+        validateSplitDetails(`${itemPath}.details`, recommendation.details, errors);
+      }
+    },
     errors,
   });
 }
@@ -539,6 +552,34 @@ function validateMergeTarget(
     return;
   }
 
+  if (value.status === "selected") {
+    rejectUnexpectedKeys(
+      path,
+      value,
+      ["status", "neighbor_cluster_ids", "reason_codes"],
+      errors,
+    );
+    requireExactString(
+      `${path}.status`,
+      value.status,
+      "selected",
+      "unsupported_target_status",
+      errors,
+    );
+    requireSortedStringArray(
+      `${path}.neighbor_cluster_ids`,
+      value.neighbor_cluster_ids,
+      errors,
+    );
+    requireSortedEnumArray(
+      `${path}.reason_codes`,
+      value.reason_codes,
+      MERGE_RECOMMENDATION_REASONS,
+      errors,
+    );
+    return;
+  }
+
   rejectUnexpectedKeys(path, value, ["status", "neighbor_cluster_ids", "reason"], errors);
   requireExactString(
     `${path}.status`,
@@ -553,6 +594,31 @@ function validateMergeTarget(
     errors,
   );
   requireNonEmptyString(`${path}.reason`, value.reason, errors);
+}
+
+function validateSplitDetails(
+  path: string,
+  value: unknown,
+  errors: ClusterRefinementValidationErrorV01[],
+) {
+  if (!isRecord(value)) {
+    pushInvalidObject(path, "Split recommendation details", errors);
+    return;
+  }
+
+  rejectUnexpectedKeys(path, value, SPLIT_DETAILS_FIELDS, errors);
+  requireSortedEnumArray(
+    `${path}.reason_codes`,
+    value.reason_codes,
+    SPLIT_RECOMMENDATION_REASONS,
+    errors,
+  );
+  requireSortedStringArray(
+    `${path}.affected_session_ids`,
+    value.affected_session_ids,
+    errors,
+  );
+  requireSortedStringArray(`${path}.evidence_ids`, value.evidence_ids, errors);
 }
 
 function validateSessionDisagreement(

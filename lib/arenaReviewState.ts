@@ -3,8 +3,15 @@ import type {
   DuelReason,
   EvidenceRating,
   FinalVerdict,
+  MergeRecommendationReason,
+  SplitRecommendationReason,
 } from "@/lib/types";
 import type { EvidenceArenaReview } from "@/lib/exportReview";
+import {
+  DEFAULT_MERGE_RECOMMENDATION_REASON,
+  DEFAULT_SPLIT_RECOMMENDATION_REASON,
+  getCaseFileMergeCandidates,
+} from "@/lib/reviewRefinement";
 
 export const arenaStages = [
   { id: "landscape", label: "Landscape" },
@@ -29,6 +36,19 @@ export type CaseReviewState = {
   impostorSessionId?: string;
   failureModes?: DuelReason[];
   finalVerdict?: FinalVerdict;
+  clusterRefinement?: {
+    splitRecommendation?: {
+      status: "recommended";
+      reason: SplitRecommendationReason;
+      affectedSessionIds?: string[];
+      evidenceIds?: string[];
+    };
+    mergeRecommendation?: {
+      status: "recommended";
+      targetNeighborClusterId: string;
+      reason: MergeRecommendationReason;
+    };
+  };
 };
 
 export type ArenaUiState = {
@@ -64,6 +84,22 @@ export type ArenaAction =
   | { type: "selectImpostorSession"; sessionId: string }
   | { type: "selectVerdict"; verdict: FinalVerdict }
   | { type: "toggleFailureMode"; reason: DuelReason }
+  | {
+      type: "selectSplitRecommendationReason";
+      reason: SplitRecommendationReason;
+    }
+  | { type: "clearSplitRecommendation" }
+  | { type: "toggleSplitRecommendationSession"; sessionId: string }
+  | { type: "toggleSplitRecommendationEvidence"; evidenceId: string }
+  | {
+      type: "selectMergeRecommendationTarget";
+      neighborClusterId: string;
+    }
+  | {
+      type: "selectMergeRecommendationReason";
+      reason: MergeRecommendationReason;
+    }
+  | { type: "clearMergeRecommendation" }
   | { type: "setReviewDrawerOpen"; open: boolean };
 
 export type EvidenceBalance = {
@@ -184,6 +220,10 @@ export function arenaReducer(
           action.verdict === "supported"
             ? []
             : getCurrentReviewState(state).failureModes,
+        clusterRefinement:
+          action.verdict === "supported"
+            ? undefined
+            : getCurrentReviewState(state).clusterRefinement,
       });
     case "toggleFailureMode":
       return updateSelectedReview(state, {
@@ -191,6 +231,84 @@ export function arenaReducer(
           getCurrentReviewState(state).failureModes ?? [],
           action.reason,
         ),
+      });
+    case "selectSplitRecommendationReason":
+      return updateClusterRefinement(state, {
+        splitRecommendation: {
+          ...getSplitRecommendation(getCurrentReviewState(state)),
+          reason: action.reason,
+        },
+      });
+    case "clearSplitRecommendation":
+      return updateClusterRefinement(state, {
+        splitRecommendation: undefined,
+      });
+    case "toggleSplitRecommendationSession": {
+      const currentSplit = getSplitRecommendation(getCurrentReviewState(state));
+
+      return updateClusterRefinement(state, {
+        splitRecommendation: {
+          ...currentSplit,
+          affectedSessionIds: toggleArrayValue(
+            currentSplit.affectedSessionIds ?? [],
+            action.sessionId,
+          ),
+        },
+      });
+    }
+    case "toggleSplitRecommendationEvidence": {
+      const currentSplit = getSplitRecommendation(getCurrentReviewState(state));
+
+      return updateClusterRefinement(state, {
+        splitRecommendation: {
+          ...currentSplit,
+          evidenceIds: toggleArrayValue(
+            currentSplit.evidenceIds ?? [],
+            action.evidenceId,
+          ),
+        },
+      });
+    }
+    case "selectMergeRecommendationTarget": {
+      const selectedCase = getSelectedCase(cases, state);
+      const matchingCandidate = selectedCase
+        ? getCaseFileMergeCandidates(selectedCase).find(
+            (candidate) => candidate.clusterId === action.neighborClusterId,
+          )
+        : undefined;
+
+      if (!matchingCandidate) {
+        return state;
+      }
+
+      return updateClusterRefinement(state, {
+        mergeRecommendation: {
+          status: "recommended",
+          targetNeighborClusterId: matchingCandidate.clusterId,
+          reason:
+            getCurrentReviewState(state).clusterRefinement?.mergeRecommendation
+              ?.reason ?? DEFAULT_MERGE_RECOMMENDATION_REASON,
+        },
+      });
+    }
+    case "selectMergeRecommendationReason": {
+      const currentMerge =
+        getCurrentReviewState(state).clusterRefinement?.mergeRecommendation;
+
+      if (!currentMerge) {
+        return state;
+      }
+
+      return updateClusterRefinement(state, {
+        mergeRecommendation: {
+          ...currentMerge,
+          reason: action.reason,
+        },
+      });
+    }
+    case "clearMergeRecommendation":
+      return updateClusterRefinement(state, {
+        mergeRecommendation: undefined,
       });
     case "setReviewDrawerOpen":
       return { ...state, reviewDrawerOpen: action.open };
@@ -335,6 +453,7 @@ export function buildArenaReview(
         }
       : {}),
     failureModes: getCompatibleFailureModes(reviewState),
+    ...buildClusterRefinementReview(reviewState),
     ...(reviewState.finalVerdict ? { finalVerdict: reviewState.finalVerdict } : {}),
   };
 }
@@ -384,6 +503,87 @@ function updateSelectedReview(
         ...state.reviewsByCase[state.selectedCaseId],
         ...nextReviewState,
       },
+    },
+  };
+}
+
+function updateClusterRefinement(
+  state: ArenaUiState,
+  nextClusterRefinement: NonNullable<CaseReviewState["clusterRefinement"]>,
+): ArenaUiState {
+  const currentReview = getCurrentReviewState(state);
+  const clusterRefinement = {
+    ...(currentReview.clusterRefinement ?? {}),
+    ...nextClusterRefinement,
+  };
+
+  if (
+    !clusterRefinement.splitRecommendation &&
+    !clusterRefinement.mergeRecommendation
+  ) {
+    return updateSelectedReview(state, { clusterRefinement: undefined });
+  }
+
+  return updateSelectedReview(state, { clusterRefinement });
+}
+
+function getSplitRecommendation(
+  reviewState: CaseReviewState,
+): NonNullable<
+  NonNullable<CaseReviewState["clusterRefinement"]>["splitRecommendation"]
+> {
+  return (
+    reviewState.clusterRefinement?.splitRecommendation ?? {
+      status: "recommended",
+      reason: DEFAULT_SPLIT_RECOMMENDATION_REASON,
+    }
+  );
+}
+
+function buildClusterRefinementReview(
+  reviewState: CaseReviewState,
+): Pick<EvidenceArenaReview, "clusterRefinement"> {
+  const splitRecommendation =
+    reviewState.clusterRefinement?.splitRecommendation;
+  const mergeRecommendation =
+    reviewState.clusterRefinement?.mergeRecommendation;
+
+  if (!splitRecommendation && !mergeRecommendation) {
+    return {};
+  }
+
+  return {
+    clusterRefinement: {
+      ...(splitRecommendation
+        ? {
+            split_recommendation: {
+              status: "recommended",
+              reason: splitRecommendation.reason,
+              ...(splitRecommendation.affectedSessionIds &&
+              splitRecommendation.affectedSessionIds.length > 0
+                ? {
+                    affected_session_ids: [
+                      ...splitRecommendation.affectedSessionIds,
+                    ],
+                  }
+                : {}),
+              ...(splitRecommendation.evidenceIds &&
+              splitRecommendation.evidenceIds.length > 0
+                ? { evidence_ids: [...splitRecommendation.evidenceIds] }
+                : {}),
+            },
+          }
+        : {}),
+      ...(mergeRecommendation
+        ? {
+            merge_recommendation: {
+              status: "recommended",
+              target_neighbor_cluster_id:
+                mergeRecommendation.targetNeighborClusterId,
+              reason: mergeRecommendation.reason,
+            },
+          }
+        : {}),
     },
   };
 }

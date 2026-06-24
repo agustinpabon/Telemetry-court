@@ -8,12 +8,23 @@ import {
 import {
   duelReasonLabel,
   finalVerdictLabel,
+  mergeRecommendationReasonLabel,
+  splitRecommendationReasonLabel,
   verdictFailureReasonLabel,
 } from "@/components/arena/arenaMeta";
 import { getCompatibleFailureModes } from "@/lib/arenaReviewState";
+import { getCaseFileMergeCandidates } from "@/lib/reviewRefinement";
 import type { InsufficientContextGuidance } from "@/lib/reviewReadiness";
 import type { CaseReviewState, EvidenceBalance } from "@/lib/arenaReviewState";
-import type { CaseFile, DuelReason, FinalVerdict } from "@/lib/types";
+import {
+  MERGE_RECOMMENDATION_REASONS,
+  SPLIT_RECOMMENDATION_REASONS,
+  type CaseFile,
+  type DuelReason,
+  type FinalVerdict,
+  type MergeRecommendationReason,
+  type SplitRecommendationReason,
+} from "@/lib/types";
 
 const verdictGroups: {
   title: string;
@@ -45,6 +56,13 @@ type VerdictPanelProps = {
   insufficientContextGuidance?: InsufficientContextGuidance;
   onSelectVerdict: (verdict: FinalVerdict) => void;
   onToggleFailureMode: (reason: DuelReason) => void;
+  onSelectSplitRecommendationReason?: (reason: SplitRecommendationReason) => void;
+  onClearSplitRecommendation?: () => void;
+  onToggleSplitRecommendationSession?: (sessionId: string) => void;
+  onToggleSplitRecommendationEvidence?: (evidenceId: string) => void;
+  onSelectMergeRecommendationTarget?: (neighborClusterId: string) => void;
+  onSelectMergeRecommendationReason?: (reason: MergeRecommendationReason) => void;
+  onClearMergeRecommendation?: () => void;
   onBackToImpostor?: () => void;
   onOpenReviewDrawer: () => void;
   onCopyJson: () => void;
@@ -58,6 +76,13 @@ export function VerdictPanel({
   insufficientContextGuidance,
   onSelectVerdict,
   onToggleFailureMode,
+  onSelectSplitRecommendationReason = () => undefined,
+  onClearSplitRecommendation,
+  onToggleSplitRecommendationSession = () => undefined,
+  onToggleSplitRecommendationEvidence = () => undefined,
+  onSelectMergeRecommendationTarget = () => undefined,
+  onSelectMergeRecommendationReason = () => undefined,
+  onClearMergeRecommendation = () => undefined,
   onBackToImpostor,
   onOpenReviewDrawer,
   onCopyJson,
@@ -78,6 +103,7 @@ export function VerdictPanel({
     ? finalVerdictLabel[finalVerdict]
     : undefined;
   const selectedFailureModes = getCompatibleFailureModes(reviewState);
+  const mergeCandidates = getCaseFileMergeCandidates(caseFile);
   const heroTitle = selectedVerdictLabel ?? "Make the final call";
   const heroEyebrow = hasFinalVerdict
     ? "Final Evaluation · Review complete"
@@ -233,7 +259,7 @@ export function VerdictPanel({
             </div>
             <p className="reason-panel-note">
               {selectedFailureModes.length > 0
-                ? `Selected: ${selectedFailureModes
+              ? `Selected: ${selectedFailureModes
                     .map(
                       (reason) =>
                         verdictFailureReasonLabel[reason] ?? duelReasonLabel[reason],
@@ -244,6 +270,19 @@ export function VerdictPanel({
                   : "Choose an evaluation outcome first, then add reasons if they clarify the decision."}
             </p>
           </div>
+
+          <ClusterRefinementControls
+            caseFile={caseFile}
+            reviewState={reviewState}
+            mergeCandidates={mergeCandidates}
+            onSelectSplitRecommendationReason={onSelectSplitRecommendationReason}
+            onClearSplitRecommendation={onClearSplitRecommendation}
+            onToggleSplitRecommendationSession={onToggleSplitRecommendationSession}
+            onToggleSplitRecommendationEvidence={onToggleSplitRecommendationEvidence}
+            onSelectMergeRecommendationTarget={onSelectMergeRecommendationTarget}
+            onSelectMergeRecommendationReason={onSelectMergeRecommendationReason}
+            onClearMergeRecommendation={onClearMergeRecommendation}
+          />
         </article>
 
         <JudgmentReceipt
@@ -290,6 +329,176 @@ export function VerdictPanel({
         }}
       />
     </ArenaWorkflowShell>
+  );
+}
+
+function ClusterRefinementControls({
+  caseFile,
+  reviewState,
+  mergeCandidates,
+  onSelectSplitRecommendationReason,
+  onClearSplitRecommendation,
+  onToggleSplitRecommendationSession,
+  onToggleSplitRecommendationEvidence,
+  onSelectMergeRecommendationTarget,
+  onSelectMergeRecommendationReason,
+  onClearMergeRecommendation,
+}: {
+  caseFile: CaseFile;
+  reviewState: CaseReviewState;
+  mergeCandidates: ReturnType<typeof getCaseFileMergeCandidates>;
+  onSelectSplitRecommendationReason: (reason: SplitRecommendationReason) => void;
+  onClearSplitRecommendation?: () => void;
+  onToggleSplitRecommendationSession: (sessionId: string) => void;
+  onToggleSplitRecommendationEvidence: (evidenceId: string) => void;
+  onSelectMergeRecommendationTarget: (neighborClusterId: string) => void;
+  onSelectMergeRecommendationReason: (reason: MergeRecommendationReason) => void;
+  onClearMergeRecommendation: () => void;
+}) {
+  const splitRecommendation =
+    reviewState.clusterRefinement?.splitRecommendation;
+  const mergeRecommendation =
+    reviewState.clusterRefinement?.mergeRecommendation;
+  const affectedSessionIds = splitRecommendation?.affectedSessionIds ?? [];
+  const splitEvidenceIds = splitRecommendation?.evidenceIds ?? [];
+
+  return (
+    <div className="reason-panel refinement-panel">
+      <SectionHeader
+        title="Split and merge recommendations"
+        description="Record optional upstream refinement guidance as structured review data."
+      />
+
+      <section className="verdict-option-section">
+        <h4>Split recommendation</h4>
+        <div className="chip-row" aria-label="Split recommendation reasons">
+          {SPLIT_RECOMMENDATION_REASONS.map((reason) => {
+            const isSelected = splitRecommendation?.reason === reason;
+
+            return (
+              <button
+                key={reason}
+                type="button"
+                className={`chip-button ${isSelected ? "is-selected" : ""}`}
+                onClick={() => onSelectSplitRecommendationReason(reason)}
+                aria-pressed={isSelected}
+              >
+                {splitRecommendationReasonLabel[reason]}
+              </button>
+            );
+          })}
+          {splitRecommendation && onClearSplitRecommendation ? (
+            <button
+              type="button"
+              className="chip-button"
+              onClick={onClearSplitRecommendation}
+            >
+              Clear split
+            </button>
+          ) : null}
+        </div>
+
+        <div className="chip-row" aria-label="Affected split sessions">
+          {caseFile.representativeSessions.slice(0, 5).map((session) => {
+            const isSelected = affectedSessionIds.includes(session.id);
+
+            return (
+              <button
+                key={`split-session-${session.id}`}
+                type="button"
+                className={`chip-button ${isSelected ? "is-selected" : ""}`}
+                onClick={() => onToggleSplitRecommendationSession(session.id)}
+                aria-pressed={isSelected}
+              >
+                {session.id}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="chip-row" aria-label="Affected split evidence">
+          {caseFile.evidenceItems.slice(0, 5).map((evidence) => {
+            const isSelected = splitEvidenceIds.includes(evidence.id);
+
+            return (
+              <button
+                key={`split-evidence-${evidence.id}`}
+                type="button"
+                className={`chip-button ${isSelected ? "is-selected" : ""}`}
+                onClick={() => onToggleSplitRecommendationEvidence(evidence.id)}
+                aria-pressed={isSelected}
+              >
+                {evidence.id}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="verdict-option-section">
+        <h4>Merge target</h4>
+        {mergeCandidates.length > 0 ? (
+          <>
+            <div className="verdict-grid" aria-label="Merge target candidates">
+              {mergeCandidates.map((candidate) => {
+                const isSelected =
+                  mergeRecommendation?.targetNeighborClusterId === candidate.clusterId;
+
+                return (
+                  <button
+                    key={candidate.clusterId}
+                    type="button"
+                    className={`verdict-button ${isSelected ? "is-selected" : ""}`}
+                    onClick={() =>
+                      onSelectMergeRecommendationTarget(candidate.clusterId)
+                    }
+                    aria-pressed={isSelected}
+                  >
+                    <span className="verdict-button-label">{candidate.label}</span>
+                    <small>{candidate.clusterId}</small>
+                    <span
+                      className="verdict-button-indicator"
+                      aria-hidden="true"
+                    />
+                  </button>
+                );
+              })}
+            </div>
+            <div className="chip-row" aria-label="Merge recommendation reasons">
+              {MERGE_RECOMMENDATION_REASONS.map((reason) => {
+                const isSelected = mergeRecommendation?.reason === reason;
+
+                return (
+                  <button
+                    key={reason}
+                    type="button"
+                    className={`chip-button ${isSelected ? "is-selected" : ""}`}
+                    onClick={() => onSelectMergeRecommendationReason(reason)}
+                    aria-pressed={isSelected}
+                    disabled={!mergeRecommendation}
+                  >
+                    {mergeRecommendationReasonLabel[reason]}
+                  </button>
+                );
+              })}
+              {mergeRecommendation ? (
+                <button
+                  type="button"
+                  className="chip-button"
+                  onClick={onClearMergeRecommendation}
+                >
+                  Clear merge
+                </button>
+              ) : null}
+            </div>
+          </>
+        ) : (
+          <p className="reason-panel-note">
+            No compatible merge candidates supplied by this CasePackage/UI state.
+          </p>
+        )}
+      </section>
+    </div>
   );
 }
 

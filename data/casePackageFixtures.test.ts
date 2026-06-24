@@ -75,9 +75,15 @@ test("package fixtures use canonical CasePackage v0.1 review configuration value
 
 test("CasePackage compatibility adapter preserves the current UI sample case shape", () => {
   assert.deepEqual(
+    sampleCases.map((caseFile) => caseFile.neighborClusters),
+    sampleCaseSeedData.map((seedCase) => [seedCase.nearestNeighbor]),
+  );
+
+  assert.deepEqual(
     sampleCases.map((caseFile) => {
       const compatibleCase = { ...caseFile };
       delete compatibleCase.casePackageReference;
+      delete compatibleCase.neighborClusters;
       return compatibleCase;
     }),
     sampleCaseSeedData,

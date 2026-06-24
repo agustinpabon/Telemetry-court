@@ -1224,6 +1224,30 @@ function renderStage({
           onToggleFailureMode={(reason) =>
             dispatchArena({ type: "toggleFailureMode", reason })
           }
+          onSelectSplitRecommendationReason={(reason) =>
+            dispatchArena({ type: "selectSplitRecommendationReason", reason })
+          }
+          onClearSplitRecommendation={() =>
+            dispatchArena({ type: "clearSplitRecommendation" })
+          }
+          onToggleSplitRecommendationSession={(sessionId) =>
+            dispatchArena({ type: "toggleSplitRecommendationSession", sessionId })
+          }
+          onToggleSplitRecommendationEvidence={(evidenceId) =>
+            dispatchArena({ type: "toggleSplitRecommendationEvidence", evidenceId })
+          }
+          onSelectMergeRecommendationTarget={(neighborClusterId) =>
+            dispatchArena({
+              type: "selectMergeRecommendationTarget",
+              neighborClusterId,
+            })
+          }
+          onSelectMergeRecommendationReason={(reason) =>
+            dispatchArena({ type: "selectMergeRecommendationReason", reason })
+          }
+          onClearMergeRecommendation={() =>
+            dispatchArena({ type: "clearMergeRecommendation" })
+          }
           onBackToImpostor={() => navigateToStage("impostor")}
           onOpenReviewDrawer={openReviewDrawer}
           onCopyJson={handleCopyReviewJson}

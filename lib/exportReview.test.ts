@@ -13,6 +13,7 @@ import {
   REVIEW_RESULT_V01_RECOMMENDED_ACTIONS,
   REVIEW_RESULT_V01_VERDICTS,
 } from "@/lib/reviewResultV01";
+import { validateReviewResultV01 } from "@/lib/reviewResultValidationV01";
 import type { CaseFile, FinalVerdict } from "@/lib/types";
 
 test("review result export emits a versioned decision artifact with package references", () => {
@@ -279,6 +280,106 @@ test("ReviewResult v0.1 can carry optional reviewer confidence and notes", () =>
   assert.deepEqual(reviewWithOptionalContext.decisions.notes, [
     "Synthetic optional reviewer note.",
   ]);
+});
+
+test("review result export carries structured split and merge recommendations when selected", () => {
+  const caseFile = sampleCases[0];
+  const splitSession = caseFile.representativeSessions[3];
+  const splitEvidence = caseFile.evidenceItems[3];
+  const mergeCandidate = caseFile.neighborClusters?.[0];
+
+  assert.ok(splitSession);
+  assert.ok(splitEvidence);
+  assert.ok(mergeCandidate);
+
+  const exportResult = buildReviewResultExport({
+    caseFile,
+    exportTimestamp: "2026-06-12T12:00:00.000Z",
+    arenaReview: completeArenaReview(caseFile, {
+      finalVerdict: "needs_merge",
+      clusterRefinement: {
+        split_recommendation: {
+          status: "recommended",
+          reason: "mixed_behaviors",
+          affected_session_ids: [splitSession.id],
+          evidence_ids: [splitEvidence.id],
+        },
+        merge_recommendation: {
+          status: "recommended",
+          target_neighbor_cluster_id: mergeCandidate.clusterId,
+          reason: "shared_behavior",
+        },
+      },
+    }),
+  });
+
+  assert.deepEqual(exportResult.decisions.cluster_refinement, {
+    split_recommendation: {
+      status: "recommended",
+      reason: "mixed_behaviors",
+      affected_session_ids: [splitSession.id],
+      evidence_ids: [splitEvidence.id],
+    },
+    merge_recommendation: {
+      status: "recommended",
+      target_neighbor_cluster_id: mergeCandidate.clusterId,
+      reason: "shared_behavior",
+    },
+  });
+  assert.deepEqual(validateReviewResultV01(exportResult), {
+    ok: true,
+    reviewResult: exportResult,
+  });
+});
+
+test("review result export rejects merge recommendations without an existing candidate", () => {
+  const caseFile = sampleCases[0];
+
+  assert.throws(
+    () =>
+      buildReviewResultExport({
+        caseFile,
+        exportTimestamp: "2026-06-12T12:00:00.000Z",
+        arenaReview: completeArenaReview(caseFile, {
+          finalVerdict: "needs_merge",
+          clusterRefinement: {
+            merge_recommendation: {
+              status: "recommended",
+              target_neighbor_cluster_id: "cluster-not-in-package",
+              reason: "shared_behavior",
+            },
+          },
+        }),
+      }),
+    /unknown merge candidate cluster ID/,
+  );
+});
+
+test("review result export keeps needs-merge compatible without inventing a target", () => {
+  const caseFile = sampleCases[0];
+  const caseWithoutMergeCandidates: CaseFile = {
+    ...caseFile,
+    nearestNeighbor: {
+      clusterId: "",
+      label: "",
+      distance: 0,
+      note: "",
+    },
+    neighborClusters: [],
+  };
+
+  const exportResult = buildReviewResultExport({
+    caseFile: caseWithoutMergeCandidates,
+    exportTimestamp: "2026-06-12T12:00:00.000Z",
+    arenaReview: completeArenaReview(caseWithoutMergeCandidates, {
+      finalVerdict: "needs_merge",
+    }),
+  });
+
+  assert.equal(exportResult.decisions.final_verdict, "needs_merge");
+  assert.equal(exportResult.decisions.recommended_action, "merge_cluster");
+  assert.equal(exportResult.decisions.cluster_refinement, undefined);
+  assert.equal(JSON.stringify(exportResult).includes("cluster-not-in-package"), false);
 });
 
 test("review result export maps every current final verdict to canonical values", () => {

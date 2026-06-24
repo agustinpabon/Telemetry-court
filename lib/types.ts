@@ -66,6 +66,25 @@ export type FinalVerdict =
   | "needs_merge"
   | "needs_better_evidence";
 
+export const SPLIT_RECOMMENDATION_REASONS = [
+  "mixed_behaviors",
+  "boundary_sessions",
+  "conflicting_evidence",
+  "low_coherence",
+] as const;
+
+export const MERGE_RECOMMENDATION_REASONS = [
+  "shared_behavior",
+  "ambiguous_boundary",
+  "neighbor_evidence_overlap",
+] as const;
+
+export type SplitRecommendationReason =
+  (typeof SPLIT_RECOMMENDATION_REASONS)[number];
+
+export type MergeRecommendationReason =
+  (typeof MERGE_RECOMMENDATION_REASONS)[number];
+
 export type LandscapeStatus =
   | "supported"
   | "overclaimed"
@@ -214,6 +233,7 @@ export type CaseFile = {
   topFeatures: string[];
   riskFlags: string[];
   nearestNeighbor: NearestNeighbor;
+  neighborClusters?: NearestNeighbor[];
   blindInterpretationOptions: BlindInterpretationOption[];
   candidateLabels: CandidateLabel[];
   seededBestLabelId: string;

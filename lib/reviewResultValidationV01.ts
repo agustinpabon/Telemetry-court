@@ -7,7 +7,11 @@ import {
   REVIEW_RESULT_V01_VERDICTS,
   type ReviewResultV01,
 } from "@/lib/reviewResultV01";
-import { CASE_PACKAGE_V01_SCHEMA_VERSION } from "@/lib/types";
+import {
+  CASE_PACKAGE_V01_SCHEMA_VERSION,
+  MERGE_RECOMMENDATION_REASONS,
+  SPLIT_RECOMMENDATION_REASONS,
+} from "@/lib/types";
 
 export type ReviewResultValidationErrorV01 = {
   path: string;
@@ -66,6 +70,7 @@ const decisionFields = [
   "failure_modes",
   "final_verdict",
   "recommended_action",
+  "cluster_refinement",
   "notes",
 ] as const;
 const blindInterpretationFields = ["option_id", "label", "agrees_with_ai"] as const;
@@ -77,6 +82,21 @@ const labelComparisonFields = [
 const evidenceRatingFields = ["evidence_id", "rating"] as const;
 const outlierImpostorFields = ["selected_session_id"] as const;
 const confidenceFields = ["level", "rationale"] as const;
+const clusterRefinementFields = [
+  "split_recommendation",
+  "merge_recommendation",
+] as const;
+const splitRecommendationFields = [
+  "status",
+  "reason",
+  "affected_session_ids",
+  "evidence_ids",
+] as const;
+const mergeRecommendationFields = [
+  "status",
+  "target_neighbor_cluster_id",
+  "reason",
+] as const;
 
 export function validateReviewResultV01(
   input: unknown,
@@ -382,7 +402,104 @@ function validateDecisions(
     `${path}.recommended_action`,
     errors,
   );
+  validateClusterRefinement(
+    decisions.cluster_refinement,
+    `${path}.cluster_refinement`,
+    errors,
+  );
   validateOptionalStringArray(decisions.notes, `${path}.notes`, errors);
+}
+
+function validateClusterRefinement(
+  input: unknown,
+  path: string,
+  errors: ReviewResultValidationErrorV01[],
+) {
+  if (input === undefined) return;
+
+  const clusterRefinement = requireObject(input, path, errors);
+  if (!clusterRefinement) return;
+
+  rejectUnknownFields(clusterRefinement, clusterRefinementFields, path, errors);
+
+  if (clusterRefinement.split_recommendation !== undefined) {
+    validateSplitRecommendation(
+      clusterRefinement.split_recommendation,
+      `${path}.split_recommendation`,
+      errors,
+    );
+  }
+
+  if (clusterRefinement.merge_recommendation !== undefined) {
+    validateMergeRecommendation(
+      clusterRefinement.merge_recommendation,
+      `${path}.merge_recommendation`,
+      errors,
+    );
+  }
+}
+
+function validateSplitRecommendation(
+  input: unknown,
+  path: string,
+  errors: ReviewResultValidationErrorV01[],
+) {
+  const splitRecommendation = requireObject(input, path, errors);
+  if (!splitRecommendation) return;
+
+  rejectUnknownFields(splitRecommendation, splitRecommendationFields, path, errors);
+  requireExactValue(
+    splitRecommendation.status,
+    "recommended",
+    `${path}.status`,
+    "unsupported_value",
+    errors,
+  );
+  requireEnum(
+    splitRecommendation.reason,
+    SPLIT_RECOMMENDATION_REASONS,
+    `${path}.reason`,
+    errors,
+  );
+  validateOptionalNonEmptyStringArray(
+    splitRecommendation.affected_session_ids,
+    `${path}.affected_session_ids`,
+    errors,
+  );
+  validateOptionalNonEmptyStringArray(
+    splitRecommendation.evidence_ids,
+    `${path}.evidence_ids`,
+    errors,
+  );
+}
+
+function validateMergeRecommendation(
+  input: unknown,
+  path: string,
+  errors: ReviewResultValidationErrorV01[],
+) {
+  const mergeRecommendation = requireObject(input, path, errors);
+  if (!mergeRecommendation) return;
+
+  rejectUnknownFields(mergeRecommendation, mergeRecommendationFields, path, errors);
+  requireExactValue(
+    mergeRecommendation.status,
+    "recommended",
+    `${path}.status`,
+    "unsupported_value",
+    errors,
+  );
+  requireNonEmptyString(
+    mergeRecommendation.target_neighbor_cluster_id,
+    `${path}.target_neighbor_cluster_id`,
+    errors,
+  );
+  requireEnum(
+    mergeRecommendation.reason,
+    MERGE_RECOMMENDATION_REASONS,
+    `${path}.reason`,
+    errors,
+  );
 }
 
 function validateEvidenceRatings(
@@ -477,6 +594,34 @@ function validateOptionalStringArray(
     if (typeof value !== "string") {
       addError(errors, `${path}[${index}]`, "invalid_type", "must be a string.");
     }
+  });
+}
+
+function validateOptionalNonEmptyStringArray(
+  input: unknown,
+  path: string,
+  errors: ReviewResultValidationErrorV01[],
+) {
+  if (input === undefined) return;
+  if (!Array.isArray(input)) {
+    addError(errors, path, "invalid_type", "must be an array when provided.");
+    return;
+  }
+
+  const seen = new Set<string>();
+  input.forEach((value, index) => {
+    const itemPath = `${path}[${index}]`;
+
+    if (typeof value !== "string" || value.trim() === "") {
+      addError(errors, itemPath, "required_string", "must be a non-empty string.");
+      return;
+    }
+
+    if (seen.has(value)) {
+      addError(errors, itemPath, "duplicate_value", `duplicates value "${value}".`);
+    }
+
+    seen.add(value);
   });
 }
 

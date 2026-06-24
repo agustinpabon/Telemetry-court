@@ -7,6 +7,10 @@ import type {
   REVIEW_RESULT_V01_SCHEMA_VERSION,
   ReviewResultV01,
 } from "@/lib/reviewResultV01";
+import type {
+  MergeRecommendationReason,
+  SplitRecommendationReason,
+} from "@/lib/types";
 
 export const CLUSTER_REFINEMENT_V01_SCHEMA_VERSION =
   "cluster_refinement.v0.1" as const;
@@ -97,6 +101,11 @@ export type ClusterRefinementSplitRecommendationV01 = {
   reviewer_count: number;
   source_review_ids: string[];
   signals: ClusterRefinementSignalSetV01;
+  details?: {
+    reason_codes: SplitRecommendationReason[];
+    affected_session_ids: string[];
+    evidence_ids: string[];
+  };
   disagreement: RecommendationDisagreementV01;
 };
 
@@ -110,11 +119,17 @@ export type ClusterRefinementMergeRecommendationV01 = {
     final_verdicts: MergeFinalVerdictV01[];
     recommended_actions: MergeRecommendedActionV01[];
   };
-  target: {
-    status: "unavailable";
-    neighbor_cluster_ids: string[];
-    reason: string;
-  };
+  target:
+    | {
+        status: "selected";
+        neighbor_cluster_ids: string[];
+        reason_codes: MergeRecommendationReason[];
+      }
+    | {
+        status: "unavailable";
+        neighbor_cluster_ids: string[];
+        reason: string;
+      };
   disagreement: RecommendationDisagreementV01;
 };
 
