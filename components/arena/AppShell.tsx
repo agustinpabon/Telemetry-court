@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import Link from "next/link";
 
 import { AiRevealPanel } from "@/components/arena/AiRevealPanel";
@@ -12,6 +12,10 @@ import {
 } from "@/components/arena/CasePackageImportControl";
 import { CaseFilePanel } from "@/components/arena/CaseFilePanel";
 import { EvidenceBoard } from "@/components/arena/EvidenceBoard";
+import {
+  HotFolderCasePackageControl,
+  type HotFolderCasePackageControlStatus,
+} from "@/components/arena/HotFolderCasePackageControl";
 import { ImpostorPanel } from "@/components/arena/ImpostorPanel";
 import { LabelDuelPanel } from "@/components/arena/LabelDuelPanel";
 import { ReviewSummaryDrawer } from "@/components/arena/ReviewSummaryDrawer";
@@ -48,6 +52,11 @@ import {
   type CasePackageImportResult,
 } from "@/lib/importCasePackageV01";
 import {
+  HOT_FOLDER_CASE_PACKAGE_API_PATH,
+  type HotFolderCasePackageScanResponse,
+  type HotFolderCasePackageValidCandidate,
+} from "@/lib/hotFolderCasePackageTypes";
+import {
   createReviewResultBundleV01,
   getReviewResultBundleFilename,
   importReviewResultBundleToLocalStoreV01,
@@ -74,6 +83,12 @@ type AppShellProps = {
 };
 
 const arenaSessionStateKey = "telemetry-court-arena-state-v1";
+const hotFolderPollingIntervalMs = 8000;
+
+type CasePackageImportOptions = {
+  source?: "manual" | "hot_folder";
+  sourceLabel?: string;
+};
 
 export function AppShell({
   cases,
@@ -120,6 +135,12 @@ export function AppShell({
   });
   const [reviewBundleStatus, setReviewBundleStatus] =
     useState<ReviewResultBundleControlStatus>({ state: "idle" });
+  const [hotFolderStatus, setHotFolderStatus] =
+    useState<HotFolderCasePackageControlStatus>({ state: "idle" });
+  const [hotFolderPolling, setHotFolderPolling] = useState(false);
+  const seenHotFolderCandidateIdsRef = useRef(new Set<string>());
+  const pendingHotFolderCandidatesRef = useRef<HotFolderCasePackageValidCandidate[]>([]);
+  const hotFolderInitialScanRef = useRef(false);
   const [reviewReadinessByCase, setReviewReadinessByCase] = useState<
     Partial<Record<string, ReviewReadinessChoice>>
   >({});
@@ -209,6 +230,223 @@ export function AppShell({
     pathname,
     selectedCaseIsImported,
   ]);
+
+  const handleImportCasePackageJson = useCallback(
+    (
+      jsonText: string,
+      _fileName?: string,
+      options: CasePackageImportOptions = {},
+    ) => {
+      const importResult = importCasePackageV01Json(jsonText);
+
+      if (!importResult.ok) {
+        setImportStatus({
+          state: "error",
+          failure: toImportFailureDetails(importResult),
+        });
+        return false;
+      }
+
+      const importedCase = importResult.caseFile;
+
+      setImportedCases((currentCases) => [
+        importedCase,
+        ...currentCases.filter((caseFile) => caseFile.id !== importedCase.id),
+      ]);
+      setPreviewCaseId(undefined);
+      setExportMessage(undefined);
+      rawDispatch({
+        type: "startImportedCaseReview",
+        caseId: importedCase.id,
+      });
+      setImportStatus({
+        state: "success",
+        packageId: importResult.package.package_id,
+        caseId: importResult.package.case.case_id,
+        title: importResult.package.case.title,
+        inspectionSummary: importResult.inspectionSummary,
+        source: options.source ?? "manual",
+        sourceLabel: options.sourceLabel,
+      });
+
+      const caseFilePath = getPathForArenaStage("case_file");
+
+      if (caseFilePath !== pathname) {
+        onNavigatePathPreservingState(caseFilePath);
+      }
+
+      return true;
+    },
+    [onNavigatePathPreservingState, pathname],
+  );
+
+  const loadHotFolderCandidate = useCallback(
+    (
+      candidate: HotFolderCasePackageValidCandidate,
+      scan?: HotFolderCasePackageScanResponse,
+    ) => {
+      seenHotFolderCandidateIdsRef.current.add(candidate.candidateId);
+      pendingHotFolderCandidatesRef.current =
+        pendingHotFolderCandidatesRef.current.filter(
+          (pendingCandidate) =>
+            pendingCandidate.importKey !== candidate.importKey,
+        );
+
+      const imported = handleImportCasePackageJson(
+        candidate.jsonText,
+        candidate.filename,
+        {
+          source: "hot_folder",
+          sourceLabel: "configured Hot-Folder",
+        },
+      );
+
+      if (!imported) {
+        setHotFolderStatus({
+          state: "error",
+          message:
+            "Hot-Folder candidate failed import revalidation. Review was not started.",
+        });
+        return;
+      }
+
+      setHotFolderStatus({
+        state: "loaded",
+        message: buildHotFolderLoadedMessage(candidate, scan),
+      });
+    },
+    [handleImportCasePackageJson],
+  );
+
+  const applyHotFolderScan = useCallback(
+    (
+      scan: HotFolderCasePackageScanResponse,
+      options: { autoLoad?: boolean } = {},
+    ) => {
+      if (!scan.enabled) {
+        pendingHotFolderCandidatesRef.current = [];
+        setHotFolderPolling(false);
+        setHotFolderStatus({
+          state: "disabled",
+          message: "Hot-Folder is not configured.",
+        });
+        return;
+      }
+
+      if (scan.directoryError) {
+        pendingHotFolderCandidatesRef.current = [];
+        setHotFolderStatus({
+          state: "error",
+          message: scan.directoryError,
+        });
+        return;
+      }
+
+      const unseenCandidates = getUnseenHotFolderCandidates(
+        scan.validCandidates,
+        seenHotFolderCandidateIdsRef.current,
+      );
+      pendingHotFolderCandidatesRef.current = unseenCandidates;
+
+      if (options.autoLoad && unseenCandidates.length === 1) {
+        loadHotFolderCandidate(unseenCandidates[0], scan);
+        return;
+      }
+
+      setHotFolderStatus({
+        state: "ready",
+        message: buildHotFolderReadyMessage(scan, unseenCandidates.length),
+        unseenCount: unseenCandidates.length,
+        validCount: scan.validCandidates.length,
+        invalidCount: scan.invalidCandidates.length,
+        invalidSummary: getHotFolderInvalidSummary(scan),
+      });
+    },
+    [loadHotFolderCandidate],
+  );
+
+  const checkHotFolder = useCallback(
+    async (options: { autoLoad?: boolean } = {}) => {
+      setHotFolderStatus({ state: "checking" });
+
+      try {
+        const response = await fetch(HOT_FOLDER_CASE_PACKAGE_API_PATH, {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error("Hot-Folder scan request failed.");
+        }
+
+        const scan = (await response.json()) as HotFolderCasePackageScanResponse;
+        applyHotFolderScan(scan, options);
+      } catch {
+        pendingHotFolderCandidatesRef.current = [];
+        setHotFolderStatus({
+          state: "error",
+          message:
+            "Hot-Folder scan failed locally. Confirm the app is running and retry.",
+        });
+      }
+    },
+    [applyHotFolderScan],
+  );
+
+  const handleCheckHotFolder = useCallback(() => {
+    void checkHotFolder();
+  }, [checkHotFolder]);
+
+  const handleToggleHotFolderPolling = useCallback(() => {
+    setHotFolderPolling((currentPolling) => {
+      const nextPolling = !currentPolling;
+
+      if (nextPolling) {
+        void checkHotFolder({ autoLoad: true });
+      }
+
+      return nextPolling;
+    });
+  }, [checkHotFolder]);
+
+  const handleLoadNextHotFolderCandidate = useCallback(() => {
+    const nextCandidate = pendingHotFolderCandidatesRef.current[0];
+
+    if (!nextCandidate) {
+      setHotFolderStatus({
+        state: "ready",
+        message: "No new valid CasePackages found in configured Hot-Folder.",
+        unseenCount: 0,
+        validCount: 0,
+        invalidCount: 0,
+      });
+      return;
+    }
+
+    loadHotFolderCandidate(nextCandidate);
+  }, [loadHotFolderCandidate]);
+
+  useEffect(() => {
+    if (hotFolderInitialScanRef.current) {
+      return;
+    }
+
+    hotFolderInitialScanRef.current = true;
+    void checkHotFolder({ autoLoad: true });
+  }, [checkHotFolder]);
+
+  useEffect(() => {
+    if (!hotFolderPolling) {
+      return;
+    }
+
+    const pollingId = window.setInterval(() => {
+      void checkHotFolder({ autoLoad: true });
+    }, hotFolderPollingIntervalMs);
+
+    return () => {
+      window.clearInterval(pollingId);
+    };
+  }, [checkHotFolder, hotFolderPolling]);
 
   if (!selectedCase) {
     return (
@@ -314,44 +552,6 @@ export function AppShell({
         ],
       },
     });
-  }
-
-  function handleImportCasePackageJson(jsonText: string) {
-    const importResult = importCasePackageV01Json(jsonText);
-
-    if (!importResult.ok) {
-      setImportStatus({
-        state: "error",
-        failure: toImportFailureDetails(importResult),
-      });
-      return;
-    }
-
-    const importedCase = importResult.caseFile;
-
-    setImportedCases((currentCases) => [
-      importedCase,
-      ...currentCases.filter((caseFile) => caseFile.id !== importedCase.id),
-    ]);
-    setPreviewCaseId(undefined);
-    setExportMessage(undefined);
-    rawDispatch({
-      type: "startImportedCaseReview",
-      caseId: importedCase.id,
-    });
-    setImportStatus({
-      state: "success",
-      packageId: importResult.package.package_id,
-      caseId: importResult.package.case.case_id,
-      title: importResult.package.case.title,
-      inspectionSummary: importResult.inspectionSummary,
-    });
-
-    const caseFilePath = getPathForArenaStage("case_file");
-
-    if (caseFilePath !== pathname) {
-      onNavigatePathPreservingState(caseFilePath);
-    }
   }
 
   function handleClearImport() {
@@ -618,6 +818,13 @@ export function AppShell({
               onImportReadError={handleImportReadError}
               onClearImport={handleClearImport}
             />
+            <HotFolderCasePackageControl
+              status={hotFolderStatus}
+              polling={hotFolderPolling}
+              onCheck={handleCheckHotFolder}
+              onTogglePolling={handleToggleHotFolderPolling}
+              onLoadNext={handleLoadNextHotFolderCandidate}
+            />
             <ReviewResultBundleControl
               status={reviewBundleStatus}
               onExport={handleExportReviewResultBundle}
@@ -757,6 +964,73 @@ function toImportFailureDetails(
     message: importResult.message,
     errors: importResult.errors,
   };
+}
+
+function getUnseenHotFolderCandidates(
+  candidates: HotFolderCasePackageValidCandidate[],
+  seenCandidateIds: Set<string>,
+): HotFolderCasePackageValidCandidate[] {
+  const importKeysSeenInScan = new Set<string>();
+  const unseenCandidates: HotFolderCasePackageValidCandidate[] = [];
+
+  for (const candidate of candidates) {
+    if (importKeysSeenInScan.has(candidate.importKey)) {
+      continue;
+    }
+
+    importKeysSeenInScan.add(candidate.importKey);
+
+    if (!seenCandidateIds.has(candidate.candidateId)) {
+      unseenCandidates.push(candidate);
+    }
+  }
+
+  return unseenCandidates;
+}
+
+function buildHotFolderReadyMessage(
+  scan: HotFolderCasePackageScanResponse,
+  unseenCount: number,
+): string {
+  if (unseenCount === 0) {
+    return scan.validCandidates.length > 0
+      ? "No new valid CasePackages found in configured Hot-Folder."
+      : "No valid CasePackages found in configured Hot-Folder.";
+  }
+
+  if (unseenCount === 1) {
+    return "1 new valid CasePackage found in configured Hot-Folder.";
+  }
+
+  return `${unseenCount} new valid CasePackages found in configured Hot-Folder.`;
+}
+
+function buildHotFolderLoadedMessage(
+  candidate: HotFolderCasePackageValidCandidate,
+  scan?: HotFolderCasePackageScanResponse,
+): string {
+  const duplicateNote =
+    candidate.duplicateCount > 1
+      ? ` Newest of ${candidate.duplicateCount} duplicate files was used.`
+      : "";
+  const invalidNote =
+    scan && scan.invalidCandidates.length > 0
+      ? ` ${scan.invalidCandidates.length} invalid candidate${scan.invalidCandidates.length === 1 ? "" : "s"} ignored.`
+      : "";
+
+  return `Loaded ${candidate.packageId} from configured Hot-Folder.${duplicateNote}${invalidNote}`;
+}
+
+function getHotFolderInvalidSummary(
+  scan: HotFolderCasePackageScanResponse,
+): string | undefined {
+  const firstInvalidCandidate = scan.invalidCandidates[0];
+
+  if (!firstInvalidCandidate) {
+    return undefined;
+  }
+
+  return `${firstInvalidCandidate.filename}: ${firstInvalidCandidate.message}`;
 }
 
 function readArenaSessionState(cases: CaseFile[]) {

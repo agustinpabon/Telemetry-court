@@ -240,15 +240,19 @@ test("shared masthead keeps actions and helper text in explicit groups", () => {
   );
   assert.match(
     markup,
+    /class="hot-folder-case-package-control tc-masthead__action-group"/,
+  );
+  assert.match(
+    markup,
     /class="review-result-bundle-control tc-masthead__action-group"/,
   );
   assert.equal(
     markup.match(/class="tc-masthead__action-row/g)?.length,
-    3,
+    4,
   );
   assert.equal(
     markup.match(/tc-masthead__helper/g)?.length,
-    2,
+    3,
   );
 });
 

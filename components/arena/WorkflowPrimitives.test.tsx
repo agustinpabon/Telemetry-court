@@ -5,6 +5,7 @@ import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { CasePackageImportControl } from "@/components/arena/CasePackageImportControl";
+import { HotFolderCasePackageControl } from "@/components/arena/HotFolderCasePackageControl";
 import {
   ArenaActionFooter,
   ArenaHeader,
@@ -163,6 +164,59 @@ test("CasePackage import control renders local import status", () => {
   assert.doesNotMatch(errorMarkup, /Imported package summary/);
   assert.doesNotMatch(errorMarkup, /case-package-import-summary-panel/);
   assert.doesNotMatch(errorMarkup, /case_package\.v9-secret-account-111111111111/);
+});
+
+test("Hot-Folder CasePackage control renders disabled, ready, and loaded states", () => {
+  const disabledMarkup = renderStaticMarkup(
+    React.createElement(HotFolderCasePackageControl, {
+      status: {
+        state: "disabled",
+        message: "Hot-Folder is not configured.",
+      },
+      polling: false,
+      onCheck: () => undefined,
+      onTogglePolling: () => undefined,
+      onLoadNext: () => undefined,
+    }),
+  );
+  const readyMarkup = renderStaticMarkup(
+    React.createElement(HotFolderCasePackageControl, {
+      status: {
+        state: "ready",
+        message: "2 new valid CasePackages found.",
+        unseenCount: 2,
+        validCount: 2,
+        invalidCount: 1,
+      },
+      polling: false,
+      onCheck: () => undefined,
+      onTogglePolling: () => undefined,
+      onLoadNext: () => undefined,
+    }),
+  );
+  const loadedMarkup = renderStaticMarkup(
+    React.createElement(HotFolderCasePackageControl, {
+      status: {
+        state: "loaded",
+        message: "Loaded pkg-hot-folder-001 from configured Hot-Folder.",
+      },
+      polling: true,
+      onCheck: () => undefined,
+      onTogglePolling: () => undefined,
+      onLoadNext: () => undefined,
+    }),
+  );
+
+  assert.match(disabledMarkup, /Hot-Folder/);
+  assert.match(disabledMarkup, /Check Hot-Folder/);
+  assert.match(disabledMarkup, /disabled=""/);
+  assert.match(disabledMarkup, /not configured/);
+  assert.match(readyMarkup, /Load newest/);
+  assert.match(readyMarkup, /2 new valid CasePackages found/);
+  assert.match(readyMarkup, /1 invalid ignored/);
+  assert.match(loadedMarkup, /aria-pressed="true"/);
+  assert.match(loadedMarkup, /Polling on/);
+  assert.match(loadedMarkup, /configured Hot-Folder/);
 });
 
 test("CasePackage import control renders controlled sanitized inspection metadata", () => {

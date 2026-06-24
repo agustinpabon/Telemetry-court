@@ -19,6 +19,39 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-24: Local Hot-Folder CasePackage Scan Path
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement issue #171 for a local Hot-Folder scan/polling path that detects approved `CasePackage` JSON files and routes valid candidates through the existing import behavior.
+- Files changed:
+  - `app/api/hot-folder/casepackages/route.ts`
+  - `app/investigation-workflow.css`
+  - `app/page.test.ts`
+  - `components/arena/AppShell.tsx`
+  - `components/arena/CasePackageImportControl.tsx`
+  - `components/arena/HotFolderCasePackageControl.tsx`
+  - `components/arena/WorkflowPrimitives.test.tsx`
+  - `lib/hotFolderCasePackageScan.ts`
+  - `lib/hotFolderCasePackageScan.test.ts`
+  - `lib/hotFolderCasePackageTypes.ts`
+- Summary:
+  - Added a Node runtime API route and scan helper for `TELEMETRY_COURT_HOT_FOLDER`.
+  - The scanner is disabled when unconfigured, scans only top-level non-hidden `.json` files, applies a size cap before reading, validates with `importCasePackageV01Json`, and returns compact valid/invalid candidate summaries without exposing the absolute folder path.
+  - Added a masthead Hot-Folder control that can check manually, poll locally, auto-load one safe unseen valid package, and require an explicit load when multiple unseen packages are available.
+  - Hot-Folder-loaded packages still pass through the existing manual import handler and show as imported from the configured Hot-Folder.
+- Decisions made:
+  - Implemented a local scan/polling watcher path rather than a long-running daemon.
+  - Kept the configured folder path server-side and sourced only from `TELEMETRY_COURT_HOT_FOLDER`; the browser cannot submit arbitrary filesystem paths.
+  - Used deterministic newest-modified ordering with duplicate import-key metadata so repeated packages replace through the existing imported case ID behavior.
+- Checks run:
+  - `npm test -- lib/hotFolderCasePackageScan.test.ts` passed.
+  - `npm test -- components/arena/WorkflowPrimitives.test.tsx app/page.test.ts` passed.
+  - `npx tsc --noEmit` passed.
+- Assumptions: The Hot-Folder is a local trusted handoff directory containing approved/sanitized CasePackage JSON, not raw telemetry dumps.
+- Risks/follow-ups: Browser polling is intentionally local and lightweight; a future notebook companion can write into this folder, but no Python client was added here.
+- Next recommended step: Verify the configured Hot-Folder flow manually with an approved sanitized CasePackage in a private local environment.
+- Suggested commit message: `feat: add local hot-folder casepackage scan`
+
 ## 2026-06-23: CasePackage Summary Reopen Trigger and Suggested Fix Contrast
 
 - Agent/model: Antigravity (Gemini 3.5 Flash)
