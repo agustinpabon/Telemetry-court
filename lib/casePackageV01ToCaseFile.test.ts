@@ -67,6 +67,39 @@ test("maps package representative-session content instead of copying the compati
   );
 });
 
+test("maps optional evidence field highlights into the UI evidence shape", () => {
+  const packageWithHighlights = structuredClone(casePackageFixtures[0]);
+  packageWithHighlights.evidence_items[0].highlights = [
+    {
+      field: "features[0]",
+      label: "Observed event",
+      value: "CreateRole",
+      reason: "supports",
+      claim_ids: [packageWithHighlights.claims[0].claim_id],
+    },
+  ];
+
+  const result = casePackageV01ToCaseFile(
+    packageWithHighlights,
+    sampleCaseSeedData[0],
+  );
+
+  assert.equal(result.ok, true);
+  if (!result.ok) {
+    return;
+  }
+
+  assert.deepEqual(result.caseFile.evidenceItems[0].highlights, [
+    {
+      field: "features[0]",
+      label: "Observed event",
+      value: "CreateRole",
+      reason: "supports",
+      claimIds: [packageWithHighlights.claims[0].claim_id],
+    },
+  ]);
+});
+
 test("rejects invalid CasePackage input with runtime validation errors", () => {
   const invalidPackage = structuredClone(casePackageFixtures[0]) as Record<
     string,

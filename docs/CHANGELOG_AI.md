@@ -19,6 +19,52 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-24: Sanitized Evidence Field Highlights
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement issue #173 by rendering optional sanitized evidence
+  field highlights in the Evidence Board.
+- Files changed:
+  - `lib/types.ts`
+  - `lib/casePackageValidation.ts`
+  - `lib/casePackageValidation.test.ts`
+  - `lib/casePackageV01ToCaseFile.ts`
+  - `lib/casePackageV01ToCaseFile.test.ts`
+  - `components/arena/EvidenceBoard.tsx`
+  - `app/investigation-workflow.css`
+  - `app/page.test.ts`
+  - `docs/CASE_PACKAGE_CONTRACT.md`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Added optional sanitized evidence highlight rendering to help reviewers
+    connect evidence fields to claims.
+  - Preserved missing-highlight behavior by rendering no highlight UI when the
+    optional metadata is absent.
+  - Kept evidence classification controls and ReviewResult export semantics
+    unchanged.
+- Decisions made:
+  - Kept highlight metadata optional and backward-compatible on
+    `CasePackageV01` evidence items.
+  - Limited highlight values to scalar text/number/boolean fields and canonical
+    reason values instead of free-form AI explanations.
+  - Filtered claim-scoped highlights through existing evidence-to-claim
+    relations when related claim context is available.
+- Checks run:
+  - `npm test -- lib/casePackageValidation.test.ts lib/casePackageV01ToCaseFile.test.ts app/page.test.ts` passed.
+  - `npm test` passed.
+  - `npx tsc --noEmit` passed.
+  - `npm run lint` passed.
+  - `npm run build` passed.
+  - `git diff --check` passed.
+- Assumptions: Highlight metadata is already sanitized and approved by the
+  package producer; Telemetry Court displays it as field-level review context
+  only.
+- Risks/follow-ups: The current Evidence Board still uses its established UI
+  rating controls and maps them to canonical ReviewResult ratings on export.
+- Next recommended step: Use optional highlights in an approved sanitized
+  package to verify reviewer comprehension during the adapter loop.
+- Suggested commit message: `feat: add evidence field highlights`
+
 ## 2026-06-24: Ignore Local Python/Jupyter Environment and Hot-Folder Artifacts
 
 - Agent/model: Antigravity (Gemini 3.5 Flash)

@@ -41,6 +41,7 @@ import {
   getEvidenceRatings,
 } from "@/lib/arenaReviewState";
 import { reviewReadinessOptions } from "@/lib/reviewReadiness";
+import type { EvidenceHighlight } from "@/lib/types";
 
 function renderHomePageText(): string {
   const html = renderToStaticMarkup(
@@ -1100,6 +1101,95 @@ test("evidence verification explains how to interpret every rating concept", () 
     markup,
     /Needs more context<\/dt><dd>Cannot judge without more baseline, provenance, or detail\./,
   );
+});
+
+test("evidence verification renders optional sanitized field highlights", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const targetEvidence = selectedCase.evidenceItems[0];
+  assert.ok(targetEvidence);
+  const linkedClaimId =
+    getRelationsForEvidence(selectedCase, targetEvidence.id)[0]?.claimId ??
+    selectedCase.claims[0]?.id;
+  assert.ok(linkedClaimId);
+  const highlights = [
+    {
+      field: "features[0]",
+      label: "Observed event",
+      value: "CreateRole",
+      reason: "supports",
+      claimIds: [linkedClaimId],
+    },
+    {
+      field: "rollout_window",
+      label: "Rollout context",
+      value: "daytime maintenance window",
+      reason: "context",
+    },
+    {
+      field: "unrelated_sanitized_field",
+      label: "Unrelated claim field",
+      value: "not shown for this claim",
+      reason: "context",
+      claimIds: ["claim-not-linked-to-this-evidence"],
+    },
+  ] satisfies EvidenceHighlight[];
+
+  const highlightedCase = {
+    ...selectedCase,
+    evidenceItems: selectedCase.evidenceItems.map((evidence) =>
+      evidence.id === targetEvidence.id
+        ? {
+            ...evidence,
+            highlights,
+          }
+        : evidence,
+    ),
+  };
+  const evidenceRatings = getEvidenceRatings(highlightedCase, {});
+  const markup = renderStaticMarkup(
+    React.createElement(EvidenceBoard, {
+      caseFile: highlightedCase,
+      evidenceRatings,
+      balance: getEvidenceBalance(highlightedCase, evidenceRatings),
+      onRateEvidence: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /Sanitized fields/);
+  assert.match(markup, /aria-label="[^"]+ sanitized field highlights"/);
+  assert.match(markup, /Observed event/);
+  assert.match(markup, /features\[0\]/);
+  assert.match(markup, /CreateRole/);
+  assert.match(markup, /Supports/);
+  assert.match(markup, /Rollout context/);
+  assert.match(markup, /daytime maintenance window/);
+  assert.match(markup, /Context/);
+  assert.match(markup, /aria-label="Weak support, preselected suggestion"/);
+  assert.match(markup, /Mark irrelevant \/ noise/);
+  assert.doesNotMatch(markup, /Unrelated claim field/);
+  assert.doesNotMatch(markup, /not shown for this claim/);
+});
+
+test("evidence verification omits highlight UI when metadata is absent", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const evidenceRatings = getEvidenceRatings(selectedCase, {});
+  const markup = renderStaticMarkup(
+    React.createElement(EvidenceBoard, {
+      caseFile: selectedCase,
+      evidenceRatings,
+      balance: getEvidenceBalance(selectedCase, evidenceRatings),
+      onRateEvidence: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /How to rate evidence/);
+  assert.match(markup, /Mark irrelevant \/ noise/);
+  assert.doesNotMatch(markup, /Sanitized fields/);
+  assert.doesNotMatch(markup, /sanitized field highlights/);
 });
 
 test("final evaluation prompts a complete verdict and action check", () => {

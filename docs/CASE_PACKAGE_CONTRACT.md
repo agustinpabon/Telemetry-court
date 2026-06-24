@@ -231,10 +231,19 @@ Every generated claim should either link to evidence or explicitly declare missi
 - optional linked session IDs
 - optional linked claim IDs
 - optional weight or salience
+- optional sanitized field `highlights`
 
 Supported evidence types include salient features, representative sessions, event summaries, sequence summaries, metric cards, neighbor comparisons, outlier or impostor evidence, analyst notes, safe drill-down references, derived tables, and aggregate statistics.
 
 Evidence content should be safe, summarized, or derived. Safe drill-down references may point back to approved source artifacts when allowed, but they must not copy raw restricted telemetry into the app.
+
+Evidence highlights are optional field-level display hints. Each highlight names
+a safe field, may include a short label and scalar value, may declare a
+canonical reason such as `supports`, `weak_support`, `contradicts`, `context`,
+or `needs_more_context`, and may link to `claim_ids`. Highlights help reviewers
+connect approved evidence attributes to claims; they are not reviewer ratings,
+generated free-form explanations, raw telemetry, or a replacement for
+`evidence_to_claim_mappings`.
 
 ### Evidence-To-Claim Mappings
 

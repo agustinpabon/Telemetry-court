@@ -2,8 +2,10 @@ import type {
   CandidateLabelSource,
   CaseFile,
   CasePackageCandidateLabelSourceV01,
+  CasePackageEvidenceHighlightV01,
   CasePackageEvidenceRelationshipV01,
   CasePackageEvidenceTypeV01,
+  EvidenceHighlight,
   CasePackageMetricV01,
   CasePackageV01,
   ClusterSource,
@@ -187,6 +189,7 @@ export function createCaseFileCompatibilitySeedFromCasePackageV01(
       rawReference:
         evidence.source_reference.safe_reference?.uri ??
         evidence.source_reference.safe_reference?.artifact_id,
+      ...readEvidenceHighlights(evidence.highlights),
     })),
     evidenceRelations: packageFixture.evidence_to_claim_mappings.map(
       (mapping) => ({
@@ -632,6 +635,7 @@ function mapValidatedCasePackageV01ToCaseFile(
         rawReference:
           evidence.source_reference.safe_reference?.uri ??
           seedEvidence?.rawReference,
+        ...readEvidenceHighlights(evidence.highlights),
       };
     }),
     evidenceRelations: packageFixture.evidence_to_claim_mappings.map(
@@ -750,6 +754,26 @@ function readDefaultEvidenceRating(
   }
 
   return "needs_context";
+}
+
+function readEvidenceHighlights(
+  highlights: CasePackageEvidenceHighlightV01[] | undefined,
+): { highlights?: EvidenceHighlight[] } {
+  if (!highlights || highlights.length === 0) {
+    return {};
+  }
+
+  return {
+    highlights: highlights.map((highlight) => ({
+      field: highlight.field,
+      ...(highlight.label ? { label: highlight.label } : {}),
+      ...(highlight.value !== undefined ? { value: highlight.value } : {}),
+      ...(highlight.reason ? { reason: highlight.reason } : {}),
+      ...(highlight.claim_ids && highlight.claim_ids.length > 0
+        ? { claimIds: [...highlight.claim_ids] }
+        : {}),
+    })),
+  };
 }
 
 function readReviewStatus(packageFixture: CasePackageV01): CaseFile["reviewStatus"] {
