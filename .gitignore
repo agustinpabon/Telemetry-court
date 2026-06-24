@@ -46,3 +46,6 @@ logs
 # local test logs
 test-results.txt
 
+# python
+__pycache__/
+*.py[cod]

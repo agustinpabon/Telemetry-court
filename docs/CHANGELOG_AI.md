@@ -19,6 +19,52 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-24: Hot-Folder Python Companion
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement issue #172 by adding a lightweight Python companion
+  for local Hot-Folder CasePackage writes and `cluster_refinement.v0.1` reads.
+- Files changed:
+  - `.gitignore`
+  - `python/telemetry_court_client.py`
+  - `python/tests/telemetry_court_client_test.py`
+  - `docs/HOT_FOLDER_PYTHON_CLIENT.md`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Added a standard-library-only `TelemetryCourtHotFolder` helper that writes
+    already-approved `case_package.v0.1`-shaped JSON into a caller-provided
+    Hot-Folder using safe deterministic filenames, dry-run planning, filename
+    traversal checks, UTF-8 stable JSON, and atomic temp-file replacement.
+  - Added refinement helpers that scan only top-level visible `.json` files,
+    filter by package/case/cluster IDs, order newest-first deterministically,
+    and read only `cluster_refinement.v0.1` JSON artifacts.
+  - Added Python unittest coverage with temporary folders and synthetic
+    in-memory dictionaries only.
+- Decisions made:
+  - Kept the companion as a file-contract helper rather than a Python SDK.
+  - Reused the app's `TELEMETRY_COURT_HOT_FOLDER` environment variable name
+    and left full CasePackage validation to the existing TypeScript import
+    boundary.
+  - Added no notebooks, generated public artifacts, raw telemetry examples,
+    Toponymy/UMAP/HDBSCAN/ACME4 execution, or private data.
+- Checks run:
+  - `python3 -m unittest discover -s python/tests -p "*test.py"` passed.
+  - `npm test` passed.
+  - `npx tsc --noEmit` passed.
+  - `npm run lint` passed.
+  - `npm run build` passed.
+  - `git diff --check` passed.
+- Assumptions: Callers provide approved and sanitized CasePackage-shaped
+  objects; this helper does not certify data safety or validate the full
+  contract.
+- Risks/follow-ups: The helper intentionally performs lightweight shape checks
+  only, so invalid packages are still expected to fail loudly in the app's
+  Hot-Folder scan/import path.
+- Next recommended step: Use the helper in an approved private notebook or
+  script loop and keep generated artifacts out of the public repository unless
+  explicitly approved.
+- Suggested commit message: `feat: add hot-folder python companion`
+
 ## 2026-06-24: Local Hot-Folder CasePackage Scan Path
 
 - Agent/model: Codex (GPT-5)
