@@ -94,6 +94,10 @@ test("results view makes missing package coordinates a loud unavailable map stat
 
   assert.match(markup, /Results map unavailable/);
   assert.match(markup, /does not include cluster embedding_map coordinates/);
+  assert.match(markup, /Import or reload the matching CasePackage/);
+  assert.match(markup, new RegExp(packageWithoutCoordinates.package_id));
+  assert.match(markup, new RegExp(packageWithoutCoordinates.case.case_id));
+  assert.match(markup, new RegExp(packageWithoutCoordinates.cluster.cluster_id));
   assert.doesNotMatch(markup, /evidence-galaxy-atlas/);
 });
 
@@ -112,6 +116,12 @@ test("results view makes missing or incompatible package references unavailable"
     missingPackageMarkup,
     /No local or imported CasePackage metadata is available/,
   );
+  assert.match(
+    missingPackageMarkup,
+    /Import or reload the matching CasePackage/,
+  );
+  assert.match(missingPackageMarkup, new RegExp(mapPackage.case.case_id));
+  assert.match(missingPackageMarkup, new RegExp(mapPackage.cluster.cluster_id));
   assert.match(incompatiblePackageMarkup, /Results map unavailable/);
   assert.match(
     incompatiblePackageMarkup,
@@ -165,6 +175,19 @@ test("results view makes rejected imported results and exclusions explicit", () 
 
   assert.match(markup, /rejected and excluded from aggregation/);
   assert.match(markup, /CasePackage reference is incompatible/);
+  assert.match(markup, /2 results/);
+});
+
+test("results view presents an already imported ReviewResult as a harmless no-op", () => {
+  const markup = renderResults(populatedSnapshot, {
+    state: "success",
+    message:
+      "This ReviewResult already exists locally. No action is needed; the local summary is unchanged.",
+  });
+
+  assert.match(markup, /already exists locally/);
+  assert.match(markup, /No action is needed/);
+  assert.match(markup, /local summary is unchanged/);
   assert.match(markup, /2 results/);
 });
 

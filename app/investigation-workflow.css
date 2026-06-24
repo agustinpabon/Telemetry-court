@@ -8358,10 +8358,29 @@
   padding: 10px 11px;
 }
 
-.results-topology-unavailable li span {
+.results-topology-unavailable li dl {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  margin: 0;
+}
+
+.results-topology-unavailable li dl div {
+  min-width: 0;
+}
+
+.results-topology-unavailable li dt {
+  color: var(--workflow-muted);
+  font-size: 10px;
+  font-weight: 780;
+  text-transform: uppercase;
+}
+
+.results-topology-unavailable li dd {
   color: var(--workflow-ink);
   font-size: 13px;
   font-weight: 780;
+  margin: 2px 0 0;
   overflow-wrap: anywhere;
 }
 
@@ -8370,6 +8389,11 @@
   font-size: 12px;
   font-style: normal;
   line-height: 1.35;
+}
+
+.results-topology-unavailable li > p {
+  font-size: 12px;
+  margin-top: 2px;
 }
 
 .local-results-provenance {

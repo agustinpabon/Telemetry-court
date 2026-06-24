@@ -6,6 +6,7 @@ import {
   buildResultsGalaxyMapV01,
   resultsGalaxyStatusOrder,
   resultsGalaxyStatusPresentation,
+  type ResultsCasePackageMetadataV01,
   type ResultsGalaxyMapNodeV01,
   type ResultsGalaxyUnavailableV01,
 } from "@/lib/resultsGalaxyMapV01";
@@ -13,7 +14,9 @@ import type { CasePackageV01 } from "@/lib/types";
 
 type ResultsGalaxyMapProps = {
   packageGroups: LocalEvaluationReportGroupV01[];
-  availableCasePackages: CasePackageV01[];
+  availableCasePackages: Array<
+    CasePackageV01 | ResultsCasePackageMetadataV01
+  >;
 };
 
 export function ResultsGalaxyMap({
@@ -152,8 +155,25 @@ function ResultsMapUnavailableState({
         <ol>
           {unavailable.map((entry) => (
             <li key={`${entry.casePackageId}-${entry.reason}`}>
-              <span>{entry.casePackageId}</span>
+              <dl>
+                <div>
+                  <dt>package_id</dt>
+                  <dd>{entry.casePackageId}</dd>
+                </div>
+                <div>
+                  <dt>case_id</dt>
+                  <dd>{entry.caseId}</dd>
+                </div>
+                <div>
+                  <dt>cluster_id</dt>
+                  <dd>{entry.clusterId}</dd>
+                </div>
+              </dl>
               <em>{entry.message}</em>
+              <p>
+                Import or reload the matching CasePackage for this
+                package_id / case_id / cluster_id reference.
+              </p>
             </li>
           ))}
         </ol>

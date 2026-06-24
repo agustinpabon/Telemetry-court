@@ -19,6 +19,65 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-24: Results Recovery For Compact ReviewResult References
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Start issue #175 by clarifying duplicate ReviewResult imports
+  and the `/results` state when matching CasePackage map metadata is absent.
+- Files changed:
+  - `lib/casePackageSessionStorageV01.ts`
+  - `lib/reviewResultBundleV01.ts`
+  - `lib/localEvaluationResultsV01.ts`
+  - `lib/resultsGalaxyMapV01.ts`
+  - `components/arena/AppShell.tsx`
+  - `components/arena/CasePackageImportControl.tsx`
+  - `components/evaluation/LocalEvaluationResults.tsx`
+  - `components/evaluation/ResultsGalaxyMap.tsx`
+  - `app/investigation-workflow.css`
+  - focused tests
+  - `docs/EVALUATION_INFRASTRUCTURE.md`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Duplicate-only ReviewResult imports are now reported as already imported
+    harmless no-ops with no action needed, while mixed duplicate/new bundles
+    remain atomic rejections.
+  - Results groups keep compact package references visible when the map cannot
+    render and now show the exact package, case, and cluster IDs plus the action
+    to import or reload the matching CasePackage.
+  - Validated CasePackages produce a minimal browser-session results-map
+    metadata projection so compatible coordinates can be reused after
+    review-to-results navigation and `/results` reload.
+- Decisions made:
+  - Kept `ReviewResultV01` and its import/export compatibility unchanged.
+  - Did not embed CasePackage data or coordinates in ReviewResult.
+  - Used a separate versioned browser-session cache with exact-reference
+    replacement, strict validation, and no claims, evidence, sessions, safe
+    references, provenance, sanitization, or approval metadata.
+  - Added no backend persistence, auth, database, server storage, raw telemetry
+    processing, clustering, or invented map metadata.
+- Checks run:
+  - Focused issue #175 tests passed.
+  - `npm test` passed with 287 tests.
+  - `npx tsc --noEmit` passed.
+  - `npm run lint` passed.
+  - `npm run build` passed and kept `/results` statically prerendered.
+  - `git diff --check` passed.
+  - Production-browser verification passed for missing metadata recovery,
+    exact duplicate no-op messaging, cached metadata reuse after reload,
+    desktop/mobile overflow, and browser errors.
+  - `npm audit` reported two existing moderate PostCSS advisories through the
+    pinned Next.js dependency; the suggested force fix is a breaking downgrade
+    and was not applied.
+- Assumptions: Browser `sessionStorage` is the appropriate existing local
+  boundary for preserving validated package metadata across same-tab
+  navigation and reload without creating durable server or account state.
+- Risks/follow-ups: The session cache is intentionally tab-scoped; closing the
+  tab requires importing or reloading the matching CasePackage again.
+- Next recommended step: Verify duplicate import copy and map recovery with one
+  approved sanitized CasePackage/ReviewResult pair.
+- Suggested commit message:
+  `fix(results): clarify missing package metadata recovery`
+
 ## 2026-06-24: Split And Merge Review Recommendations
 
 - Agent/model: Codex (GPT-5)

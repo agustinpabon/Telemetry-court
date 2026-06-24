@@ -78,6 +78,25 @@ export type ReviewResultBundleLocalImportSummaryV01 = {
   casePackageIds: string[];
 };
 
+export function areReviewResultBundleResultsAlreadyLocalV01(
+  storage: ReviewResultStorageLike,
+  bundle: ReviewResultBundleV01,
+): boolean {
+  const currentReviews = Object.values(
+    readReviewResultLocalStoreV01(storage)
+      .review_results_by_case_package_id,
+  ).flat();
+
+  return bundle.review_results.every((reviewResult) =>
+    currentReviews.some(
+      (storedReview) =>
+        storedReview.review_id === reviewResult.review_id &&
+        serializeCanonicalJson(storedReview) ===
+          serializeCanonicalJson(reviewResult),
+    ),
+  );
+}
+
 export function createReviewResultBundleV01({
   reviewResults,
   bundleId,
@@ -408,6 +427,26 @@ export function importReviewResultBundleToLocalStoreV01(
 function requireMetadataString(value: string, label: string): string {
   if (typeof value !== "string" || value.trim() === "") {
     throw new Error(`Cannot export ReviewResult bundle v0.1 without ${label}.`);
+  }
+
+  return value;
+}
+
+function serializeCanonicalJson(value: unknown): string {
+  return JSON.stringify(sortJsonValue(value));
+}
+
+function sortJsonValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(sortJsonValue);
+  }
+
+  if (isObjectRecord(value)) {
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey))
+        .map(([key, nestedValue]) => [key, sortJsonValue(nestedValue)]),
+    );
   }
 
   return value;

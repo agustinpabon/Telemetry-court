@@ -247,10 +247,25 @@ disagreement indicators, comparison rollups, and per-report JSON/CSV export.
 Locally completed reviews and validated imported bundle results enter the same
 versioned local store. The route accepts local ReviewResult bundle JSON through
 the existing strict bundle and store-import boundaries. Invalid, incompatible,
-and duplicate imports are rejected atomically, remain excluded from the report,
-and leave the current aggregate unchanged. Results for different CasePackage
-IDs are displayed as separate report groups; exact-reference compatibility is
-still required within each group.
+and mixed duplicate/new imports are rejected atomically, remain excluded from
+the report, and leave the current aggregate unchanged. Re-importing a bundle
+whose ReviewResults all already exist locally is a harmless no-op and is
+reported as already imported with no action needed. Results for different
+CasePackage IDs are displayed as separate report groups; exact-reference
+compatibility is still required within each group.
+
+Validated CasePackages imported through the review shell or the results map
+control produce a minimal results-map metadata projection in browser
+`sessionStorage`. The projection contains the exact compact package reference,
+case title/summary, dataset display classification, cluster display metadata,
+and coordinates only; it excludes claims, evidence, representative sessions,
+safe references, provenance, sanitization records, and approval metadata.
+`/results` combines that session cache with bundled fixture projections after
+navigation or reload and still requires an exact compact CasePackage reference
+before using metadata or coordinates. The map-unavailable state keeps the
+ReviewResult group visible, shows `package_id`, `case_id`, and `cluster_id`, and
+asks the user to import or reload the matching CasePackage. This cache does not
+change or expand the ReviewResult contract.
 
 The view distinguishes reviewer output from upstream CasePackage evidence and
 shows unavailable aggregate data as unavailable rather than as zero-confidence
@@ -356,6 +371,13 @@ creating duplicate local submissions.
 This is a portable validation-slice capability. It is not a backend API,
 database, auth/account system, admin workflow, generic CRUD surface, or durable
 multi-user study store.
+
+The separate browser-session metadata cache used for results-map recovery is
+not part of this ReviewResult store. It derives a minimal projection only from
+validated `CasePackageV01` objects, replaces only the same exact compact package
+reference, and is scoped to the current browser tab/session so compatible map
+metadata can survive route navigation and reload without being embedded in
+ReviewResult.
 
 ## Current State And Next Proof
 

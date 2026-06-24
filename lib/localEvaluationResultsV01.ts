@@ -2,7 +2,10 @@ import {
   aggregateReviewResultsV01,
   type EvaluationReportV01,
 } from "@/lib/evaluationReportV01";
-import { importReviewResultBundleToLocalStoreV01 } from "@/lib/reviewResultBundleV01";
+import {
+  areReviewResultBundleResultsAlreadyLocalV01,
+  importReviewResultBundleToLocalStoreV01,
+} from "@/lib/reviewResultBundleV01";
 import { importReviewResultArtifactV01Json } from "@/lib/reviewResultImportV01";
 import type { ReviewResultImportInspectionSummaryV01 } from "@/lib/reviewResultInspectionV01";
 import type { ReviewResultV01 } from "@/lib/reviewResultV01";
@@ -26,6 +29,8 @@ export type LocalEvaluationResultsSnapshotV01 = {
 export type LocalEvaluationResultsBundleImportV01 =
   | {
       ok: true;
+      outcome: "imported" | "already_imported";
+      message: string;
       importedReviewResultCount: number;
       inspectionSummary: ReviewResultImportInspectionSummaryV01;
       snapshot: LocalEvaluationResultsSnapshotV01;
@@ -89,6 +94,20 @@ export function importLocalEvaluationResultsBundleV01(
     };
   }
 
+  if (
+    areReviewResultBundleResultsAlreadyLocalV01(storage, validation.bundle)
+  ) {
+    return {
+      ok: true,
+      outcome: "already_imported",
+      message:
+        "This ReviewResult already exists locally. No action is needed; the local summary is unchanged.",
+      importedReviewResultCount: 0,
+      inspectionSummary: validation.inspectionSummary,
+      snapshot: loadLocalEvaluationResultsV01(storage),
+    };
+  }
+
   try {
     const summary = importReviewResultBundleToLocalStoreV01(
       storage,
@@ -97,6 +116,8 @@ export function importLocalEvaluationResultsBundleV01(
 
     return {
       ok: true,
+      outcome: "imported",
+      message: "ReviewResult import completed.",
       importedReviewResultCount: summary.importedReviewCount,
       inspectionSummary: validation.inspectionSummary,
       snapshot: loadLocalEvaluationResultsV01(storage),
