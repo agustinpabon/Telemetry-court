@@ -376,6 +376,16 @@
   font-size: 12px;
 }
 
+.case-package-import-failure-panel .case-package-import-suggested-fix {
+  color: var(--workflow-ink, var(--color-ink, #32302f));
+}
+
+.case-package-import-suggested-fix span {
+  color: var(--workflow-ink, var(--color-ink, #32302f));
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .case-package-import-errors {
   display: grid;
   gap: 8px;
@@ -8857,4 +8867,35 @@
   .arena-shell.arena-shell-investigate .evidence-rating-legend dl {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+.case-package-import-close-button {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--workflow-muted, #888);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  transition: background 0.15s, color 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+
+.case-package-import-close-button:hover {
+  background: rgba(50, 48, 47, 0.08);
+  color: var(--workflow-ink);
+}
+
+.case-package-import-close-button:focus-visible {
+  outline: 2px solid var(--workflow-ink);
+  outline-offset: 2px;
 }

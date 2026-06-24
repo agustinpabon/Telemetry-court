@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useId, useRef, useState, type ChangeEvent } from "react";
 
 import type { CasePackageInspectionSummary } from "@/lib/casePackageInspection";
 import type { CasePackageImportResult } from "@/lib/importCasePackageV01";
@@ -32,6 +32,7 @@ type CasePackageImportControlProps = {
   onImportText: (jsonText: string, fileName: string) => void;
   onImportReadError: (message: string) => void;
   onClearImport: () => void;
+  initialDismissedForTesting?: boolean;
 };
 
 const maxImportErrorsShown = 6;
@@ -43,6 +44,7 @@ export function CasePackageImportControl({
   onImportText,
   onImportReadError,
   onClearImport,
+  initialDismissedForTesting,
 }: CasePackageImportControlProps) {
   const inputId = useId();
   const statusId = useId();
@@ -50,6 +52,20 @@ export function CasePackageImportControl({
   const failurePanelTitleId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [copyMessage, setCopyMessage] = useState<string>();
+
+  const statusKey = status.state === "success"
+    ? `success-${status.packageId}`
+    : status.state === "error"
+    ? `error-${status.failure.reason}-${status.failure.errors.length}`
+    : status.state;
+
+  const [lastStatusKey, setLastStatusKey] = useState(statusKey);
+  const [isDismissed, setIsDismissed] = useState(initialDismissedForTesting ?? false);
+
+  if (statusKey !== lastStatusKey) {
+    setLastStatusKey(statusKey);
+    setIsDismissed(initialDismissedForTesting ?? false);
+  }
 
   async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     const input = event.currentTarget;
@@ -112,15 +128,25 @@ export function CasePackageImportControl({
         >
           {status.state === "error" ? "Choose Another File" : "Import CasePackage"}
         </button>
+        {status.state === "success" && isDismissed ? (
+          <button
+            type="button"
+            className="case-package-import-details-button"
+            onClick={() => setIsDismissed(false)}
+            aria-label="View imported package details"
+          >
+            Package details
+          </button>
+        ) : null}
       </div>
-      <p
+      <div
         id={statusId}
         className={`case-package-import-status tc-masthead__helper tc-masthead__action-helper is-${status.state}`}
         role="status"
       >
-        {getStatusCopy(status)}
-      </p>
-      {status.state === "error" ? (
+        <span>{getStatusCopy(status)}</span>
+      </div>
+      {status.state === "error" && !isDismissed ? (
         <ImportFailurePanel
           failure={status.failure}
           titleId={failurePanelTitleId}
@@ -128,12 +154,14 @@ export function CasePackageImportControl({
           onChooseAnotherFile={() => fileInputRef.current?.click()}
           onClearImport={onClearImport}
           onCopyDiagnostics={handleCopyDiagnostics}
+          onClose={() => setIsDismissed(true)}
         />
       ) : null}
-      {status.state === "success" ? (
+      {status.state === "success" && !isDismissed ? (
         <ImportInspectionSummaryPanel
           summary={status.inspectionSummary}
           titleId={inspectionPanelTitleId}
+          onClose={() => setIsDismissed(true)}
         />
       ) : null}
     </div>
@@ -145,7 +173,7 @@ function getStatusCopy(status: CasePackageImportStatus): string {
     case "reading":
       return "Validating CasePackage JSON.";
     case "success":
-      return `Imported CasePackage ${status.packageId} - ${status.caseId} - ${status.title}`;
+      return "Imported package";
     case "error":
       return status.failure.message;
     case "idle":
@@ -161,6 +189,7 @@ function ImportFailurePanel({
   onChooseAnotherFile,
   onClearImport,
   onCopyDiagnostics,
+  onClose,
 }: {
   failure: CasePackageImportFailureDetails;
   titleId: string;
@@ -168,9 +197,22 @@ function ImportFailurePanel({
   onChooseAnotherFile: () => void;
   onClearImport: () => void;
   onCopyDiagnostics: () => void;
+  onClose: () => void;
 }) {
   const visibleErrors = failure.errors.slice(0, maxImportErrorsShown);
   const hiddenErrorCount = Math.max(0, failure.errors.length - visibleErrors.length);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
 
   return (
     <section
@@ -178,6 +220,14 @@ function ImportFailurePanel({
       aria-labelledby={titleId}
       role="alert"
     >
+      <button
+        type="button"
+        className="case-package-import-close-button"
+        onClick={onClose}
+        aria-label="Close error diagnostics"
+      >
+        ×
+      </button>
       <div className="case-package-import-failure-header">
         <p className="case-package-import-failure-kicker">
           {getFailureCategoryLabel(failure.reason)}
@@ -258,17 +308,39 @@ function ImportFailurePanel({
 function ImportInspectionSummaryPanel({
   summary,
   titleId,
+  onClose,
 }: {
   summary: CasePackageInspectionSummary;
   titleId: string;
+  onClose: () => void;
 }) {
   const facts = getInspectionSummaryFacts(summary);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
 
   return (
     <section
       className="case-package-import-summary-panel"
       aria-labelledby={titleId}
     >
+      <button
+        type="button"
+        className="case-package-import-close-button"
+        onClick={onClose}
+        aria-label="Close summary"
+      >
+        ×
+      </button>
       <div className="case-package-import-summary-header">
         <p className="case-package-import-summary-kicker">
           {summary.packagePosture}

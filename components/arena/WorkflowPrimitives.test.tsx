@@ -130,8 +130,9 @@ test("CasePackage import control renders local import status", () => {
 
   assert.match(successMarkup, /Import CasePackage/);
   assert.match(successMarkup, /accept="application\/json,.json"/);
-  assert.match(successMarkup, /Imported CasePackage pkg-imported-001/);
-  assert.match(successMarkup, /case-imported-001/);
+  assert.match(successMarkup, /Imported package/);
+  assert.match(successMarkup, /pkg-synthetic-cloudtrail-iam-001/);
+  assert.match(successMarkup, /case-synthetic-iam-001/);
   assert.match(successMarkup, /Imported package summary/);
   assert.match(successMarkup, /Package posture/);
   assert.match(successMarkup, /synthetic demo/);
@@ -210,4 +211,105 @@ test("CasePackage import control renders controlled sanitized inspection metadat
   assert.match(markup, /sanitized-case-package-adapter 0\.1\.0/);
   assert.doesNotMatch(markup, /ReviewResult/);
   assert.doesNotMatch(markup, /EvaluationReport/);
+});
+
+test("CasePackage import control renders a close button for success summary", () => {
+  const syntheticSummary = inspectCasePackageV01(minimalSyntheticCasePackageV01);
+  const markup = renderStaticMarkup(
+    React.createElement(CasePackageImportControl, {
+      status: {
+        state: "success",
+        packageId: "pkg-imported-001",
+        caseId: "case-imported-001",
+        title: "Imported validation package",
+        inspectionSummary: syntheticSummary,
+      },
+      onImportStart: () => undefined,
+      onImportText: () => undefined,
+      onImportReadError: () => undefined,
+      onClearImport: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /class="case-package-import-close-button"/);
+  assert.match(markup, /aria-label="Close summary"/);
+});
+
+test("CasePackage import control renders a close button for error panel", () => {
+  const markup = renderStaticMarkup(
+    React.createElement(CasePackageImportControl, {
+      status: {
+        state: "error",
+        failure: {
+          reason: "schema_version",
+          title: "Missing or unsupported schema version",
+          summary: "Package validation failed.",
+          suggestedFix: "Set schema_version to version v0.1.",
+          message: "Failed.",
+          errors: [],
+        },
+      },
+      onImportStart: () => undefined,
+      onImportText: () => undefined,
+      onImportReadError: () => undefined,
+      onClearImport: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /class="case-package-import-close-button"/);
+  assert.match(markup, /aria-label="Close error diagnostics"/);
+});
+
+test("CasePackage import control renders a reopen button when success summary is dismissed", () => {
+  const syntheticSummary = inspectCasePackageV01(minimalSyntheticCasePackageV01);
+  const markup = renderStaticMarkup(
+    React.createElement(CasePackageImportControl, {
+      status: {
+        state: "success",
+        packageId: "pkg-imported-001",
+        caseId: "case-imported-001",
+        title: "Imported validation package",
+        inspectionSummary: syntheticSummary,
+      },
+      onImportStart: () => undefined,
+      onImportText: () => undefined,
+      onImportReadError: () => undefined,
+      onClearImport: () => undefined,
+      initialDismissedForTesting: true,
+    }),
+  );
+
+  assert.match(markup, /class="case-package-import-details-button"/);
+  assert.match(markup, /aria-label="View imported package details"/);
+  assert.match(markup, /Package details/);
+  // Reopening panel implies summary details are hidden when dismissed
+  assert.doesNotMatch(markup, /Imported package summary/);
+});
+
+test("CasePackage import control renders a suggested fix block and does not suppress it when active", () => {
+  const markup = renderStaticMarkup(
+    React.createElement(CasePackageImportControl, {
+      status: {
+        state: "error",
+        failure: {
+          reason: "schema_version",
+          title: "Missing or unsupported schema version",
+          summary: "Package validation failed.",
+          suggestedFix: "Set schema_version to version v0.1.",
+          message: "Failed.",
+          errors: [],
+        },
+      },
+      onImportStart: () => undefined,
+      onImportText: () => undefined,
+      onImportReadError: () => undefined,
+      onClearImport: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /class="case-package-import-suggested-fix"/);
+  assert.match(markup, /Suggested fix/);
+  assert.match(markup, /Set schema_version to version v0\.1\./);
+  // Ensure choose another file button remains visible/actionable
+  assert.match(markup, /Choose Another File/);
 });
