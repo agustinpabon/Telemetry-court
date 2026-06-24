@@ -29,11 +29,12 @@ Use this file to record AI-assisted changes that affect product context, archite
   - [components/arena/WorkflowPrimitives.test.tsx](file:///Users/agus/Documents/Telemetry%20court/components/arena/WorkflowPrimitives.test.tsx)
   - [docs/CHANGELOG_AI.md](file:///Users/agus/Documents/Telemetry%20court/docs/CHANGELOG_AI.md)
 - Summary:
-  - Added a keyboard-focusable, accessible text button (`View package details`) next to the success status in the masthead to allow reopening the dismissed summary popup.
-  - Converted the status element from `<p>` to `<div>` to semantically support the inline `<button>`.
-  - Explicitly styled `.case-package-import-suggested-fix` and its `span` children with `--workflow-ink` to ensure high-contrast dark text against the light background.
-  - Added unit tests verifying the reopen trigger when success import is dismissed, and checking that error/suggested-fix details remain visible.
+  - Added a keyboard-focusable, accessible button (`Package details`) aligned directly next to the `Import CasePackage` action button inside the masthead header to reopen the dismissed summary popup.
+  - Converted the status element from `<p>` to `<div>` to keep HTML validation clean.
+  - Explicitly styled `.case-package-import-suggested-fix` and its `span` children with `--workflow-ink` to ensure high-contrast dark text against the light blue-gray background in failure panels.
+  - Added unit tests verifying the reopen trigger renders on dismiss, and that the suggested-fix block behaves correctly.
 - Decisions made:
+  - Placed the `Package details` button adjacent to other action buttons in the masthead button row to keep layout balanced and avoid extra height or misaligned rows.
   - Used `--workflow-ink` token for suggested-fix text to ensure optimal contrast ratio.
   - Allowed custom test property `initialDismissedForTesting` to test the dismissed component state in Node static test environment.
 - Checks run:
@@ -44,8 +45,8 @@ Use this file to record AI-assisted changes that affect product context, archite
   - `git diff --check` (passed)
 - Assumptions: Reopening the summary should not alter review state or re-import the package.
 - Risks/follow-ups: None.
-- Next recommended step: Review and merge.
-- Suggested commit message: `ux: add imported package details reopen button and improve suggested fix text contrast`
+- Next recommended step: Review and merge PR #170.
+- Suggested commit message: `ux: polish imported package details button layout and suggested fix contrast`
 
 ## 2026-06-24: CasePackage Import Summary Dismissal UX
 

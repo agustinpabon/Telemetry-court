@@ -128,6 +128,16 @@ export function CasePackageImportControl({
         >
           {status.state === "error" ? "Choose Another File" : "Import CasePackage"}
         </button>
+        {status.state === "success" && isDismissed ? (
+          <button
+            type="button"
+            className="case-package-import-details-button"
+            onClick={() => setIsDismissed(false)}
+            aria-label="View imported package details"
+          >
+            Package details
+          </button>
+        ) : null}
       </div>
       <div
         id={statusId}
@@ -135,19 +145,6 @@ export function CasePackageImportControl({
         role="status"
       >
         <span>{getStatusCopy(status)}</span>
-        {status.state === "success" && isDismissed ? (
-          <>
-            {" "}
-            <button
-              type="button"
-              className="case-package-import-reopen-button"
-              onClick={() => setIsDismissed(false)}
-              aria-label="View imported package details"
-            >
-              View package details
-            </button>
-          </>
-        ) : null}
       </div>
       {status.state === "error" && !isDismissed ? (
         <ImportFailurePanel

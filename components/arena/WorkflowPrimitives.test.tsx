@@ -278,9 +278,9 @@ test("CasePackage import control renders a reopen button when success summary is
     }),
   );
 
-  assert.match(markup, /class="case-package-import-reopen-button"/);
+  assert.match(markup, /class="case-package-import-details-button"/);
   assert.match(markup, /aria-label="View imported package details"/);
-  assert.match(markup, /View package details/);
+  assert.match(markup, /Package details/);
   // Reopening panel implies summary details are hidden when dismissed
   assert.doesNotMatch(markup, /Imported package summary/);
 });

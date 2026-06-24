@@ -8899,28 +8899,3 @@
   outline: 2px solid var(--workflow-ink);
   outline-offset: 2px;
 }
-
-.case-package-import-reopen-button {
-  background: none;
-  border: none;
-  color: var(--workflow-context, #516784);
-  cursor: pointer;
-  display: inline;
-  font-family: inherit;
-  font-size: 11px;
-  font-weight: 700;
-  margin: 0;
-  padding: 0 4px;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.case-package-import-reopen-button:hover {
-  color: var(--workflow-ink, #32302f);
-}
-
-.case-package-import-reopen-button:focus-visible {
-  outline: 2px solid var(--workflow-focus, #5f6f52);
-  outline-offset: 1px;
-  border-radius: 2px;
-}
