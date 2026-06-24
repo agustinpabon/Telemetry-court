@@ -160,6 +160,141 @@ test("arena reducer drives the staged structured-choice happy path", () => {
   assert.match(exportJson, /"partially_supported"/);
 });
 
+test("cannot-judge checkpoint records insufficient context and exports existing v0.1 values", () => {
+  const targetCase = sampleCases[0];
+  assert.ok(targetCase);
+
+  let arenaState = createInitialArenaState(sampleCases);
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "chooseReviewReadiness", choice: "need_context" },
+    sampleCases,
+  );
+
+  let reviewState = getCurrentReviewState(arenaState);
+  assert.equal(reviewState.reviewReadiness, "need_context");
+  assert.equal(reviewState.blindChoiceId, "not-enough-evidence");
+  assert.deepEqual(
+    reviewState.evidenceRatings,
+    Object.fromEntries(
+      targetCase.evidenceItems.map((evidence) => [
+        evidence.id,
+        "needs_context",
+      ]),
+    ),
+  );
+
+  arenaState = arenaReducer(arenaState, { type: "revealAiLabel" }, sampleCases);
+  assert.equal(arenaState.activeStage, "ai_reveal");
+
+  const uncertainLabel = targetCase.candidateLabels.find(
+    (candidate) => candidate.source === "uncertain_label",
+  );
+  const impostor = targetCase.representativeSessions[0];
+  assert.ok(uncertainLabel);
+  assert.ok(impostor);
+
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "selectLabelDuelWinner", candidateId: uncertainLabel.id },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "toggleDuelReason", reason: "preserves_uncertainty" },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "selectImpostorSession", sessionId: impostor.id },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "selectVerdict", verdict: "needs_better_evidence" },
+    sampleCases,
+  );
+
+  reviewState = getCurrentReviewState(arenaState);
+  const arenaReview = buildArenaReview(
+    targetCase,
+    reviewState,
+    getEvidenceRatings(targetCase, reviewState),
+  );
+  const exportResult = buildReviewResultExport({
+    caseFile: targetCase,
+    exportTimestamp: "2026-06-24T12:00:00.000Z",
+    arenaReview,
+  });
+
+  assert.equal(
+    exportResult.decisions.blind_interpretation.option_id,
+    "not-enough-evidence",
+  );
+  assert.deepEqual(
+    exportResult.decisions.evidence_ratings.map((rating) => rating.rating),
+    targetCase.evidenceItems.map(() => "needs_more_context"),
+  );
+  assert.equal(exportResult.decisions.final_verdict, "needs_better_evidence");
+  assert.equal(
+    exportResult.decisions.recommended_action,
+    "collect_more_evidence",
+  );
+  assert.equal("review_readiness" in exportResult.decisions, false);
+});
+
+test("ready checkpoint preserves the normal blind-review path", () => {
+  const targetCase = sampleCases[0];
+  const normalChoice = targetCase.blindInterpretationOptions[0];
+  assert.ok(targetCase);
+  assert.ok(normalChoice);
+
+  let arenaState = createInitialArenaState(sampleCases);
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "chooseReviewReadiness", choice: "ready" },
+    sampleCases,
+  );
+
+  let reviewState = getCurrentReviewState(arenaState);
+  assert.equal(reviewState.reviewReadiness, "ready");
+  assert.equal(reviewState.blindChoiceId, undefined);
+  assert.equal(reviewState.evidenceRatings, undefined);
+
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "chooseBlindInterpretation", optionId: normalChoice.id },
+    sampleCases,
+  );
+  reviewState = getCurrentReviewState(arenaState);
+
+  assert.equal(reviewState.reviewReadiness, "ready");
+  assert.equal(reviewState.blindChoiceId, normalChoice.id);
+});
+
+test("switching from cannot judge to ready clears auto-filled context decisions", () => {
+  const targetCase = sampleCases[0];
+  assert.ok(targetCase);
+
+  let arenaState = createInitialArenaState(sampleCases);
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "chooseReviewReadiness", choice: "domain_terms" },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "chooseReviewReadiness", choice: "ready" },
+    sampleCases,
+  );
+
+  const reviewState = getCurrentReviewState(arenaState);
+  assert.equal(reviewState.reviewReadiness, "ready");
+  assert.equal(reviewState.blindChoiceId, undefined);
+  assert.equal(reviewState.evidenceRatings, undefined);
+  assert.equal(reviewState.aiLabelRevealed, false);
+});
+
 test("arena reducer captures optional split and merge recommendations without changing completion", () => {
   const targetCase = sampleCases[0];
   assert.ok(targetCase);

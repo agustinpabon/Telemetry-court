@@ -485,9 +485,9 @@ test("blind read protects the AI judgment until the reviewer chooses", () => {
   assert.match(pageText, /Can you judge this case\?/);
   assert.match(
     pageText,
-    /I have enough context to review this case\./,
+    /Yes — I can judge from this evidence/,
   );
-  assert.match(pageText, /I need more context before judging\./);
+  assert.match(pageText, /No — I cannot judge from this evidence/);
   assert.match(
     pageText,
     /I do not understand enough domain terms to review this case\./,
@@ -509,7 +509,7 @@ test("blind read protects the AI judgment until the reviewer chooses", () => {
     /Choose the strongest conclusion the visible evidence supports\./,
   );
   assert.match(pageText, /AI claim hidden/);
-  assert.match(pageText, /Choose context checkpoint to continue/);
+  assert.match(pageText, /Choose whether you can judge/);
   assert.match(
     pageText,
     /Answer the checkpoint, then choose an interpretation before reveal\./,
@@ -544,9 +544,16 @@ test("checkpoint options render as obvious selectable radio cards", () => {
     }),
   );
 
-  assert.match(markup, /<fieldset class="review-readiness-options">/);
+  assert.match(
+    markup,
+    /<section class="review-readiness-checkpoint is-required"/,
+  );
+  assert.match(
+    markup,
+    /<legend class="review-readiness-legend">Choose one path to continue<\/legend>/,
+  );
   assert.equal(
-    markup.match(/<label class="readiness-option(?: is-selected)?">/g)?.length,
+    markup.match(/<label class="readiness-option[^"]*">/g)?.length,
     reviewReadinessOptions.length,
   );
 
@@ -555,6 +562,14 @@ test("checkpoint options render as obvious selectable radio cards", () => {
   }
 
   assert.match(markup, /class="readiness-option-mark" aria-hidden="true"/);
+  assert.match(markup, /Yes — I can judge from this evidence/);
+  assert.match(markup, /Choose the best-supported interpretation below\./);
+  assert.match(markup, /No — I cannot judge from this evidence/);
+  assert.match(
+    markup,
+    /Record insufficient context and continue without guessing\./,
+  );
+  assert.match(markup, /class="readiness-option is-cannot-judge"/);
 });
 
 test("selected checkpoint state is exposed by the native checked radio", () => {
@@ -563,8 +578,16 @@ test("selected checkpoint state is exposed by the native checked radio", () => {
   const markup = renderStaticMarkup(
     React.createElement(BlindReadPanel, {
       caseFile: selectedCase,
-      reviewState: {},
-      reviewReadinessChoice: "need_context",
+      reviewState: {
+        reviewReadiness: "need_context",
+        blindChoiceId: "not-enough-evidence",
+        evidenceRatings: Object.fromEntries(
+          selectedCase.evidenceItems.map((evidence) => [
+            evidence.id,
+            "needs_context" as const,
+          ]),
+        ),
+      },
       onChooseReviewReadiness: () => undefined,
       onChooseBlindInterpretation: () => undefined,
       onRevealAiLabel: () => undefined,
@@ -573,11 +596,21 @@ test("selected checkpoint state is exposed by the native checked radio", () => {
 
   assert.match(
     markup,
-    /<label class="readiness-option is-selected">[\s\S]*?<input(?=[^>]*checked="")(?=[^>]*name="review-readiness")(?=[^>]*type="radio")(?=[^>]*value="need_context")[^>]*\/>/,
+    /<label class="readiness-option is-cannot-judge is-selected">[\s\S]*?<input(?=[^>]*checked="")(?=[^>]*name="review-readiness")(?=[^>]*type="radio")(?=[^>]*value="need_context")[^>]*\/>/,
   );
   assert.match(
     markup,
-    /<span class="readiness-option-state"[^>]*>Selected<\/span>/,
+    /<span class="readiness-option-state"[^>]*>Insufficient context recorded<\/span>/,
+  );
+  assert.match(markup, /Cannot judge recorded/);
+  assert.match(
+    markup,
+    /Not enough evidence is saved as your blind assessment\./,
+  );
+  assert.match(markup, /Reveal AI claim with insufficient context recorded/);
+  assert.doesNotMatch(
+    markup,
+    /disabled="">Reveal AI claim with insufficient context recorded/,
   );
 });
 
@@ -634,8 +667,10 @@ test("normal and low-context checkpoint paths still allow progression after an i
   const normalMarkup = renderStaticMarkup(
     React.createElement(BlindReadPanel, {
       caseFile: selectedCase,
-      reviewState: { blindChoiceId: normalChoice.id },
-      reviewReadinessChoice: "ready",
+      reviewState: {
+        reviewReadiness: "ready",
+        blindChoiceId: normalChoice.id,
+      },
       onChooseReviewReadiness: () => undefined,
       onChooseBlindInterpretation: () => undefined,
       onRevealAiLabel: () => undefined,
@@ -644,8 +679,10 @@ test("normal and low-context checkpoint paths still allow progression after an i
   const lowContextMarkup = renderStaticMarkup(
     React.createElement(BlindReadPanel, {
       caseFile: selectedCase,
-      reviewState: { blindChoiceId: lowContextChoice.id },
-      reviewReadinessChoice: "domain_terms",
+      reviewState: {
+        reviewReadiness: "domain_terms",
+        blindChoiceId: lowContextChoice.id,
+      },
       onChooseReviewReadiness: () => undefined,
       onChooseBlindInterpretation: () => undefined,
       onRevealAiLabel: () => undefined,
@@ -654,10 +691,16 @@ test("normal and low-context checkpoint paths still allow progression after an i
 
   assert.match(normalMarkup, /Reveal AI claim/);
   assert.doesNotMatch(normalMarkup, /disabled="">Reveal AI claim/);
-  assert.match(lowContextMarkup, /Context-limited review/);
+  assert.match(lowContextMarkup, /Cannot judge recorded/);
   assert.match(lowContextMarkup, /Context-safe choice/);
-  assert.match(lowContextMarkup, /Reveal AI claim/);
-  assert.doesNotMatch(lowContextMarkup, /disabled="">Reveal AI claim/);
+  assert.match(
+    lowContextMarkup,
+    /Reveal AI claim with insufficient context recorded/,
+  );
+  assert.doesNotMatch(
+    lowContextMarkup,
+    /disabled="">Reveal AI claim with insufficient context recorded/,
+  );
 });
 
 test("low-context checkpoint stays blind and points to insufficient-context choices", () => {
@@ -667,8 +710,10 @@ test("low-context checkpoint stays blind and points to insufficient-context choi
   const markup = renderStaticMarkup(
     React.createElement(BlindReadPanel, {
       caseFile: selectedCase,
-      reviewState: {},
-      reviewReadinessChoice: "domain_terms",
+      reviewState: {
+        reviewReadiness: "domain_terms",
+        blindChoiceId: "not-enough-evidence",
+      },
       onChooseReviewReadiness: () => undefined,
       onChooseBlindInterpretation: () => undefined,
       onRevealAiLabel: () => undefined,
@@ -676,10 +721,17 @@ test("low-context checkpoint stays blind and points to insufficient-context choi
   );
 
   assert.match(markup, /I do not understand enough domain terms to review this case\./);
-  assert.match(markup, /Use Not enough evidence when missing context blocks judgment\./);
+  assert.match(
+    markup,
+    /Not enough evidence is saved as your blind assessment\./,
+  );
   assert.match(markup, /Context-safe choice/);
   assert.match(markup, /Not enough evidence/);
-  assert.match(markup, /Choose an interpretation to continue/);
+  assert.match(markup, /Cannot judge recorded/);
+  assert.match(
+    markup,
+    /Reveal AI claim with insufficient context recorded/,
+  );
   assert.doesNotMatch(markup, /Suspicious IAM privilege escalation/);
   assert.doesNotMatch(markup, /The baseline model labels this region/);
 });
@@ -768,7 +820,7 @@ test("later review routes stay sealed until a blind interpretation exists", () =
   );
 
   assert.match(pageText, /Start with what you can judge\./);
-  assert.match(pageText, /Choose context checkpoint to continue/);
+  assert.match(pageText, /Choose whether you can judge/);
   assert.match(pageText, /Selected behaviour region/);
   assert.doesNotMatch(pageText, /Suspicious IAM privilege escalation/);
   assert.doesNotMatch(pageText, /IAM role provisioning region/);
@@ -930,8 +982,7 @@ test("each review stage states the decision the reviewer must make", () => {
       null,
       React.createElement(BlindReadPanel, {
         caseFile: selectedCase,
-        reviewState: {},
-        reviewReadinessChoice: "ready",
+        reviewState: { reviewReadiness: "ready" },
         onChooseReviewReadiness: () => undefined,
         onChooseBlindInterpretation: () => undefined,
         onRevealAiLabel: () => undefined,
@@ -1879,8 +1930,10 @@ test("blind interpretation choices render as accessible radio cards", () => {
   const markup = renderStaticMarkup(
     React.createElement(BlindReadPanel, {
       caseFile: selectedCase,
-      reviewState: { blindChoiceId: "routine-iam-provisioning" },
-      reviewReadinessChoice: "ready",
+      reviewState: {
+        reviewReadiness: "ready",
+        blindChoiceId: "routine-iam-provisioning",
+      },
       onChooseReviewReadiness: () => undefined,
       onChooseBlindInterpretation: () => undefined,
       onRevealAiLabel: () => undefined,
@@ -1896,7 +1949,7 @@ test("blind interpretation choices render as accessible radio cards", () => {
   assert.doesNotMatch(markup, /disabled=""/);
 });
 
-test("blind read offers a clear path to AI Reveal once the label is already revealed", () => {
+test("persisted blind choices from older sessions derive the checkpoint state", () => {
   const selectedCase = sampleCases[0];
   assert.ok(selectedCase);
 
@@ -1905,9 +1958,33 @@ test("blind read offers a clear path to AI Reveal once the label is already reve
       caseFile: selectedCase,
       reviewState: {
         blindChoiceId: "routine-iam-provisioning",
+      },
+      onChooseReviewReadiness: () => undefined,
+      onChooseBlindInterpretation: () => undefined,
+      onRevealAiLabel: () => undefined,
+    }),
+  );
+
+  assert.match(
+    markup,
+    /<input(?=[^>]*checked="")(?=[^>]*name="review-readiness")(?=[^>]*value="ready")[^>]*\/>/,
+  );
+  assert.match(markup, /Reveal AI claim/);
+  assert.doesNotMatch(markup, /disabled="">Reveal AI claim/);
+});
+
+test("blind read offers a clear path to AI Reveal once the label is already revealed", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const markup = renderStaticMarkup(
+    React.createElement(BlindReadPanel, {
+      caseFile: selectedCase,
+      reviewState: {
+        reviewReadiness: "ready",
+        blindChoiceId: "routine-iam-provisioning",
         aiLabelRevealed: true,
       },
-      reviewReadinessChoice: "ready",
       onChooseReviewReadiness: () => undefined,
       onChooseBlindInterpretation: () => undefined,
       onRevealAiLabel: () => undefined,

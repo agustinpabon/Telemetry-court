@@ -19,6 +19,63 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-24: Cannot-Judge Initial Assessment Flow
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Start issue #182 by making the “Can you judge this case?”
+  checkpoint unmistakable and adding a structured cannot-judge path.
+- Files changed:
+  - `components/arena/BlindReadPanel.tsx`
+  - `components/arena/AppShell.tsx`
+  - `lib/reviewReadiness.ts`
+  - `lib/arenaReviewState.ts`
+  - `app/investigation-workflow.css`
+  - focused review-flow tests
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Enlarged and strengthened the required pre-reveal checkpoint, with visible
+    fieldset guidance, larger selectable cards, explicit yes/no wording, and
+    responsive mobile stacking.
+  - Added an explicit “No — I cannot judge from this evidence” path that
+    stores the readiness choice, selects the existing insufficient-evidence
+    blind interpretation, and records `needs_context` evidence ratings without
+    requiring free text or a guessed normal interpretation.
+  - Preserved the AI-label seal until the structured blind choice is stored,
+    then allowed the reviewer to reveal and continue with existing
+    uncertainty/evidence-quality guidance.
+- Decisions made:
+  - Kept `CasePackage v0.1`, `ReviewResult v0.1`, and the review protocol
+    version unchanged.
+  - Mapped the cannot-judge path to existing structured values:
+    `not-enough-evidence`, `needs_context` / `needs_more_context`,
+    `needs_better_evidence`, and `collect_more_evidence`.
+  - Stored the checkpoint in local per-case review state and continued to omit
+    that UI-only field from ReviewResult export.
+  - Cleared downstream decisions when the checkpoint or blind interpretation
+    changes so stale support or verdict state cannot survive the change.
+- Checks run:
+  - Focused review-flow tests passed with 68 tests.
+  - `npm test` passed with 291 tests.
+  - `npx tsc --noEmit` passed.
+  - `npm run lint` passed.
+  - `npm run build` passed.
+  - `git diff --check` passed.
+  - Browser verification passed for desktop/mobile layout, persisted
+    insufficient-context state, keyboard focus, AI-label sealing before
+    reveal, and navigation to AI Claim Check after reveal.
+  - `npm audit` reported two existing moderate PostCSS advisories through the
+    pinned Next.js dependency; the suggested force fix is a breaking
+    downgrade and was not applied.
+- Assumptions: Applying `needs_context` to every evidence item is the safest
+  existing structured representation when the reviewer explicitly says the
+  visible packet is insufficient to judge.
+- Risks/follow-ups: The domain-terms branch remains a structured cannot-judge
+  reason only; broader glossary and text-density work remains issue #183.
+- Next recommended step: Run a short reviewer check focused on whether the
+  required checkpoint and cannot-judge action are found without prompting.
+- Suggested commit message:
+  `feat(review): add cannot judge checkpoint flow`
+
 ## 2026-06-24: Results Recovery For Compact ReviewResult References
 
 - Agent/model: Codex (GPT-5)

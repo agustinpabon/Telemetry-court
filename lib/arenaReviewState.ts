@@ -6,6 +6,10 @@ import type {
   MergeRecommendationReason,
   SplitRecommendationReason,
 } from "@/lib/types";
+import {
+  getContextLimitedBlindOptionId,
+  type ReviewReadinessChoice,
+} from "@/lib/reviewReadiness";
 import type { EvidenceArenaReview } from "@/lib/exportReview";
 import {
   DEFAULT_MERGE_RECOMMENDATION_REASON,
@@ -27,6 +31,7 @@ export const arenaStages = [
 export type ArenaStage = (typeof arenaStages)[number]["id"];
 
 export type CaseReviewState = {
+  reviewReadiness?: ReviewReadinessChoice;
   blindChoiceId?: string;
   aiLabelRevealed?: boolean;
   evidenceRatings?: Record<string, EvidenceRating>;
@@ -71,6 +76,7 @@ export type ArenaAction =
   | { type: "goToStage"; stage: ArenaStage }
   | { type: "goToNextStage" }
   | { type: "goToPreviousStage" }
+  | { type: "chooseReviewReadiness"; choice: ReviewReadinessChoice }
   | { type: "chooseBlindInterpretation"; optionId: string }
   | { type: "revealAiLabel" }
   | {
@@ -177,11 +183,10 @@ export function arenaReducer(
       return { ...state, activeStage: getAdjacentStage(state.activeStage, 1) };
     case "goToPreviousStage":
       return { ...state, activeStage: getAdjacentStage(state.activeStage, -1) };
+    case "chooseReviewReadiness":
+      return updateReviewReadiness(state, action.choice, cases);
     case "chooseBlindInterpretation":
-      return updateSelectedReview(state, {
-        blindChoiceId: action.optionId,
-        aiLabelRevealed: false,
-      });
+      return updateBlindInterpretation(state, action.optionId, cases);
     case "revealAiLabel":
       return updateSelectedReview(
         { ...state, activeStage: "ai_reveal" },
@@ -504,6 +509,94 @@ function updateSelectedReview(
         ...nextReviewState,
       },
     },
+  };
+}
+
+function updateReviewReadiness(
+  state: ArenaUiState,
+  choice: ReviewReadinessChoice,
+  cases: CaseFile[],
+): ArenaUiState {
+  const caseFile = getSelectedCase(cases, state);
+  const currentReview = getCurrentReviewState(state);
+  const contextLimitedOptionId = caseFile
+    ? getContextLimitedBlindOptionId(caseFile)
+    : undefined;
+
+  if (choice === "ready") {
+    if (
+      currentReview.reviewReadiness !== "need_context" &&
+      currentReview.reviewReadiness !== "domain_terms" &&
+      currentReview.blindChoiceId !== contextLimitedOptionId
+    ) {
+      return updateSelectedReview(state, { reviewReadiness: choice });
+    }
+
+    return updateSelectedReview(state, {
+      ...clearPostCheckpointDecisions(),
+      reviewReadiness: choice,
+    });
+  }
+
+  return updateSelectedReview(state, {
+    ...clearPostCheckpointDecisions(),
+    reviewReadiness: choice,
+    blindChoiceId: contextLimitedOptionId,
+    evidenceRatings: caseFile
+      ? Object.fromEntries(
+          caseFile.evidenceItems.map((evidence) => [
+            evidence.id,
+            "needs_context" as const,
+          ]),
+        )
+      : undefined,
+  });
+}
+
+function updateBlindInterpretation(
+  state: ArenaUiState,
+  optionId: string,
+  cases: CaseFile[],
+): ArenaUiState {
+  const caseFile = getSelectedCase(cases, state);
+  const currentReview = getCurrentReviewState(state);
+  const contextLimitedOptionId = caseFile
+    ? getContextLimitedBlindOptionId(caseFile)
+    : undefined;
+  const isContextLimitedChoice = optionId === contextLimitedOptionId;
+
+  return updateSelectedReview(state, {
+    ...clearPostCheckpointDecisions(),
+    reviewReadiness: isContextLimitedChoice
+      ? currentReview.reviewReadiness === "domain_terms"
+        ? "domain_terms"
+        : "need_context"
+      : "ready",
+    blindChoiceId: optionId,
+    evidenceRatings:
+      isContextLimitedChoice && caseFile
+        ? Object.fromEntries(
+            caseFile.evidenceItems.map((evidence) => [
+              evidence.id,
+              "needs_context" as const,
+            ]),
+          )
+        : undefined,
+  });
+}
+
+function clearPostCheckpointDecisions(): Partial<CaseReviewState> {
+  return {
+    blindChoiceId: undefined,
+    aiLabelRevealed: false,
+    evidenceRatings: undefined,
+    labelDuelWinnerId: undefined,
+    duelReasons: undefined,
+    duelNote: undefined,
+    impostorSessionId: undefined,
+    failureModes: undefined,
+    finalVerdict: undefined,
+    clusterRefinement: undefined,
   };
 }
 

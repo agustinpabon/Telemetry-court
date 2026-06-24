@@ -2268,42 +2268,58 @@
 }
 
 .arena-shell-investigate .review-readiness-checkpoint {
-  background: rgba(251, 250, 247, 0.78);
-  border: 1px solid rgba(95, 111, 82, 0.18);
-  border-radius: 18px;
-  box-shadow: inset 0 0 0 1px rgba(251, 250, 247, 0.7);
+  background: #f4f5f0;
+  border: 2px solid rgba(95, 111, 82, 0.32);
+  border-radius: 16px;
   color: var(--workflow-ink);
   display: grid;
-  gap: 13px;
-  padding: 16px;
+  gap: 20px;
+  padding: clamp(20px, 2.4vw, 30px);
 }
 
 .arena-shell-investigate .review-readiness-copy {
   display: grid;
-  gap: 6px;
+  gap: 9px;
+  max-width: 74ch;
 }
 
-.arena-shell-investigate .review-readiness-copy>span {
+.arena-shell-investigate .review-readiness-heading {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.arena-shell-investigate .review-readiness-heading>span,
+.arena-shell-investigate .review-readiness-heading>strong {
   color: var(--workflow-focus);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 820;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
+}
+
+.arena-shell-investigate .review-readiness-heading>strong {
+  background: var(--workflow-surface);
+  border: 1px solid rgba(95, 111, 82, 0.22);
+  border-radius: 999px;
+  padding: 6px 9px;
 }
 
 .arena-shell-investigate .review-readiness-copy h3 {
   color: var(--workflow-ink);
-  font-size: clamp(18px, 1.5vw, 22px);
+  font-size: clamp(26px, 3vw, 36px);
   font-weight: 820;
-  line-height: 1.15;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
   margin: 0;
+  text-wrap: balance;
 }
 
 .arena-shell-investigate .review-readiness-copy p {
   color: var(--workflow-muted);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 14px;
+  line-height: 1.55;
   margin: 0;
+  text-wrap: pretty;
 }
 
 .arena-shell-investigate .review-readiness-copy .domain-context-signal {
@@ -2314,30 +2330,52 @@
 .arena-shell-investigate .review-readiness-options {
   border: 0;
   display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   margin: 0;
   min-width: 0;
   padding: 0;
 }
 
+.arena-shell-investigate .review-readiness-legend {
+  color: var(--workflow-ink);
+  float: none;
+  font-size: 15px;
+  font-weight: 800;
+  grid-column: 1 / -1;
+  margin-bottom: 2px;
+  padding: 0;
+  width: 100%;
+}
+
 .arena-shell-investigate .readiness-option {
   align-items: start;
   background: var(--workflow-surface);
-  border: 1.5px solid rgba(50, 48, 47, 0.14);
-  border-radius: 16px;
+  border: 2px solid rgba(50, 48, 47, 0.16);
+  border-radius: 14px;
   cursor: pointer;
   display: grid;
-  gap: 10px;
+  gap: 12px;
   grid-template-columns: auto minmax(0, 1fr);
-  min-height: 70px;
-  padding: 14px 14px 38px 14px;
+  min-height: 116px;
+  padding: 18px 18px 42px;
   position: relative;
   transition:
     background 160ms ease,
     border-color 160ms ease,
     box-shadow 160ms ease,
     transform 160ms ease;
+}
+
+.arena-shell-investigate .readiness-option.is-cannot-judge {
+  background: rgba(107, 111, 122, 0.08);
+  border-color: rgba(107, 111, 122, 0.28);
+}
+
+.arena-shell-investigate .readiness-option.is-domain-context {
+  background: rgba(247, 245, 239, 0.72);
+  grid-column: 1 / -1;
+  min-height: 88px;
 }
 
 .arena-shell-investigate .readiness-option:hover {
@@ -2352,10 +2390,8 @@
 
 .arena-shell-investigate .readiness-option.is-selected {
   background: #eef1ec;
-  border-color: rgba(95, 111, 82, 0.52);
-  box-shadow:
-    inset 0 0 0 1px rgba(95, 111, 82, 0.16),
-    0 8px 18px rgba(50, 48, 47, 0.06);
+  border-color: rgba(95, 111, 82, 0.64);
+  box-shadow: inset 0 0 0 1px rgba(95, 111, 82, 0.16);
 }
 
 .arena-shell-investigate .readiness-option input {
@@ -2409,10 +2445,19 @@
 .arena-shell-investigate .readiness-option-copy strong {
   color: var(--workflow-ink);
   display: block;
-  font-size: 13.5px;
+  font-size: 16px;
   font-weight: 800;
-  line-height: 1.28;
+  line-height: 1.32;
   margin: 0;
+}
+
+.arena-shell-investigate .readiness-option-copy small {
+  color: var(--workflow-muted);
+  display: block;
+  font-size: 13px;
+  font-weight: 620;
+  line-height: 1.45;
+  margin-top: 7px;
 }
 
 .arena-shell-investigate .readiness-option-state {
@@ -2426,8 +2471,8 @@
   line-height: 1;
   padding: 6px 8px;
   position: absolute;
+  bottom: 10px;
   right: 14px;
-  bottom: 8px;
   white-space: nowrap;
   width: auto;
 }
@@ -2564,6 +2609,29 @@
   padding: 0;
 }
 
+.arena-shell-investigate .insufficient-context-guidance {
+  background: rgba(107, 111, 122, 0.09);
+  border: 1px solid rgba(107, 111, 122, 0.2);
+  border-radius: 14px;
+  display: grid;
+  gap: 5px;
+  margin-bottom: 12px;
+  padding: 14px;
+}
+
+.arena-shell-investigate .insufficient-context-guidance strong {
+  color: var(--workflow-ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.arena-shell-investigate .insufficient-context-guidance p {
+  color: var(--workflow-muted);
+  font-size: 13px;
+  line-height: 1.48;
+  margin: 0;
+}
+
 .arena-shell-investigate .blind-choice-legend {
   clip: rect(0 0 0 0);
   clip-path: inset(50%);
@@ -2691,6 +2759,12 @@
   font-size: 13px;
   line-height: 1.48;
   margin: 0;
+}
+
+.arena-shell-investigate .choice-copy small,
+.arena-shell-investigate .duel-card small,
+.arena-shell-investigate .verdict-button small {
+  color: var(--workflow-muted);
 }
 
 .arena-shell-investigate .choice-card em {
@@ -3514,6 +3588,10 @@
   .arena-shell-investigate .review-readiness-options,
   .arena-shell-investigate .blind-choice-grid {
     grid-template-columns: 1fr;
+  }
+
+  .arena-shell-investigate .readiness-option.is-domain-context {
+    grid-column: auto;
   }
 
   .arena-shell-investigate .session-orbit {
