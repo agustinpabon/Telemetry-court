@@ -211,3 +211,50 @@ test("CasePackage import control renders controlled sanitized inspection metadat
   assert.doesNotMatch(markup, /ReviewResult/);
   assert.doesNotMatch(markup, /EvaluationReport/);
 });
+
+test("CasePackage import control renders a close button for success summary", () => {
+  const syntheticSummary = inspectCasePackageV01(minimalSyntheticCasePackageV01);
+  const markup = renderStaticMarkup(
+    React.createElement(CasePackageImportControl, {
+      status: {
+        state: "success",
+        packageId: "pkg-imported-001",
+        caseId: "case-imported-001",
+        title: "Imported validation package",
+        inspectionSummary: syntheticSummary,
+      },
+      onImportStart: () => undefined,
+      onImportText: () => undefined,
+      onImportReadError: () => undefined,
+      onClearImport: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /class="case-package-import-close-button"/);
+  assert.match(markup, /aria-label="Close summary"/);
+});
+
+test("CasePackage import control renders a close button for error panel", () => {
+  const markup = renderStaticMarkup(
+    React.createElement(CasePackageImportControl, {
+      status: {
+        state: "error",
+        failure: {
+          reason: "schema_version",
+          title: "Missing or unsupported schema version",
+          summary: "Package validation failed.",
+          suggestedFix: "Set schema_version to version v0.1.",
+          message: "Failed.",
+          errors: [],
+        },
+      },
+      onImportStart: () => undefined,
+      onImportText: () => undefined,
+      onImportReadError: () => undefined,
+      onClearImport: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /class="case-package-import-close-button"/);
+  assert.match(markup, /aria-label="Close error diagnostics"/);
+});
