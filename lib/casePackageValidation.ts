@@ -102,6 +102,14 @@ const EVIDENCE_RELATIONSHIPS = [
   "missing_evidence",
 ] as const;
 
+const EVIDENCE_HIGHLIGHT_REASONS = [
+  "supports",
+  "weak_support",
+  "contradicts",
+  "context",
+  "needs_more_context",
+] as const;
+
 const SESSION_FLAGS = [
   "representative",
   "borderline",
@@ -586,6 +594,7 @@ function validateEvidenceItems(
     );
     validateOptionalMetric(evidence, "weight", path, errors);
     validateOptionalMetric(evidence, "salience", path, errors);
+    validateEvidenceHighlights(evidence, claimIds, path, errors);
 
     if (
       evidenceType === "safe_drilldown_reference" &&
@@ -629,6 +638,64 @@ function validateEvidenceContent(
     const metrics = requireObject(content, "metrics", path, errors);
     validateMetricsObject(metrics, fieldPath(path, "metrics"), errors);
   }
+}
+
+function validateEvidenceHighlights(
+  evidence: ObjectRecord,
+  claimIds: Set<string>,
+  path: string,
+  errors: CasePackageValidationError[],
+) {
+  const highlights = evidence.highlights;
+  const highlightsPath = fieldPath(path, "highlights");
+
+  if (highlights === undefined) {
+    return;
+  }
+
+  if (!Array.isArray(highlights)) {
+    addError(
+      errors,
+      highlightsPath,
+      "invalid_type",
+      `${highlightsPath} must be an array.`,
+    );
+    return;
+  }
+
+  highlights.forEach((highlight, index) => {
+    const highlightPath = `${highlightsPath}[${index}]`;
+
+    if (!isObjectRecord(highlight)) {
+      addError(
+        errors,
+        highlightPath,
+        "invalid_type",
+        `${highlightPath} must be an object.`,
+      );
+      return;
+    }
+
+    requireString(highlight, "field", highlightPath, errors);
+    validateOptionalString(highlight, "label", highlightPath, errors);
+    validateOptionalHighlightValue(highlight, "value", highlightPath, errors);
+    validateOptionalEnumField(
+      highlight,
+      "reason",
+      highlightPath,
+      EVIDENCE_HIGHLIGHT_REASONS,
+      errors,
+    );
+    validateOptionalReferenceArray(
+      highlight,
+      "claim_ids",
+      highlightPath,
+      claimIds,
+      "unknown_claim_reference",
+      "Evidence highlight references missing claim ID",
+      errors,
+    );
+  });
 }
 
 function validateSourceReference(
@@ -1544,6 +1611,61 @@ function validateOptionalStringArray(
   }
 
   validateStringArrayValues(value, path, errors);
+}
+
+function validateOptionalString(
+  record: ObjectRecord,
+  key: string,
+  parentPath: string,
+  errors: CasePackageValidationError[],
+) {
+  const value = record[key];
+  const path = fieldPath(parentPath, key);
+
+  if (value === undefined) {
+    return;
+  }
+
+  if (typeof value !== "string" || value.trim() === "") {
+    addError(errors, path, "invalid_type", `${path} must be a non-empty string.`);
+  }
+}
+
+function validateOptionalHighlightValue(
+  record: ObjectRecord,
+  key: string,
+  parentPath: string,
+  errors: CasePackageValidationError[],
+) {
+  const value = record[key];
+  const path = fieldPath(parentPath, key);
+
+  if (value === undefined) {
+    return;
+  }
+
+  if (typeof value === "string") {
+    if (value.trim() === "") {
+      addError(errors, path, "invalid_type", `${path} must not be empty.`);
+    }
+    return;
+  }
+
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) {
+      addError(errors, path, "invalid_type", `${path} must be a finite number.`);
+    }
+    return;
+  }
+
+  if (typeof value !== "boolean") {
+    addError(
+      errors,
+      path,
+      "invalid_type",
+      `${path} must be a string, number, or boolean.`,
+    );
+  }
 }
 
 function validateStringArrayValues(

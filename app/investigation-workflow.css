@@ -6270,6 +6270,110 @@
   margin: 0;
 }
 
+.arena-shell.arena-shell-investigate .evidence-highlight-panel {
+  background: rgba(247, 245, 239, 0.46);
+  border: 1px solid rgba(50, 48, 47, 0.055);
+  border-radius: 12px;
+  display: grid;
+  gap: 8px;
+  padding: 9px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-highlight-panel > strong {
+  color: var(--workflow-ink);
+  font-size: 11.5px;
+  font-weight: 780;
+  line-height: 1.2;
+}
+
+.arena-shell.arena-shell-investigate .evidence-highlight-list {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  margin: 0;
+}
+
+.arena-shell.arena-shell-investigate .evidence-highlight-chip {
+  background: rgba(251, 250, 247, 0.76);
+  border: 1px solid rgba(50, 48, 47, 0.06);
+  border-left: 3px solid rgba(111, 98, 92, 0.36);
+  border-radius: 10px;
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 8px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-highlight-supports {
+  border-left-color: rgba(63, 125, 85, 0.54);
+}
+
+.arena-shell.arena-shell-investigate .evidence-highlight-weak_support {
+  border-left-color: rgba(154, 106, 47, 0.54);
+}
+
+.arena-shell.arena-shell-investigate .evidence-highlight-contradicts {
+  border-left-color: rgba(155, 61, 53, 0.54);
+}
+
+.arena-shell.arena-shell-investigate .evidence-highlight-context,
+.arena-shell.arena-shell-investigate .evidence-highlight-needs_more_context {
+  border-left-color: rgba(107, 111, 122, 0.48);
+}
+
+.arena-shell.arena-shell-investigate .evidence-highlight-chip dt {
+  align-items: flex-start;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.arena-shell.arena-shell-investigate .evidence-highlight-chip dt span {
+  color: var(--workflow-ink);
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1.25;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.arena-shell.arena-shell-investigate .evidence-highlight-chip dt em {
+  background: rgba(247, 245, 239, 0.78);
+  border: 1px solid rgba(50, 48, 47, 0.06);
+  border-radius: 999px;
+  color: var(--workflow-muted);
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 780;
+  line-height: 1;
+  padding: 5px 6px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-highlight-chip dd {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+
+.arena-shell.arena-shell-investigate .evidence-highlight-chip code {
+  color: var(--workflow-muted);
+  font-family:
+    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 10.5px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.arena-shell.arena-shell-investigate .evidence-highlight-chip dd span {
+  color: rgba(50, 48, 47, 0.84);
+  font-size: 12px;
+  font-weight: 620;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
 .arena-shell.arena-shell-investigate .evidence-signal-row {
   border-top: 0;
   gap: 7px;

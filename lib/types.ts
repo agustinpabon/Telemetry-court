@@ -150,6 +150,21 @@ export type Claim = {
   rationale: string;
 };
 
+export type EvidenceHighlightReason =
+  | "supports"
+  | "weak_support"
+  | "contradicts"
+  | "context"
+  | "needs_more_context";
+
+export type EvidenceHighlight = {
+  field: string;
+  label?: string;
+  value?: string | number | boolean;
+  reason?: EvidenceHighlightReason;
+  claimIds?: string[];
+};
+
 export type EvidenceItem = {
   id: string;
   clusterId: string;
@@ -157,6 +172,7 @@ export type EvidenceItem = {
   summary: string;
   sourceType: EvidenceSourceType;
   rawReference?: string;
+  highlights?: EvidenceHighlight[];
 };
 
 export type EvidenceRelation = {
@@ -375,6 +391,8 @@ export type CasePackageEvidenceRelationshipV01 =
   | "insufficient"
   | "missing_evidence";
 
+export type CasePackageEvidenceHighlightReasonV01 = EvidenceHighlightReason;
+
 export type CasePackageSessionFlagV01 =
   | "representative"
   | "borderline"
@@ -591,6 +609,14 @@ export type CasePackageSourceReferenceV01 = {
   notes?: string;
 };
 
+export type CasePackageEvidenceHighlightV01 = {
+  field: string;
+  label?: string;
+  value?: string | number | boolean;
+  reason?: CasePackageEvidenceHighlightReasonV01;
+  claim_ids?: CasePackageClaimId[];
+};
+
 export type CasePackageEvidenceItemV01 = {
   evidence_id: CasePackageEvidenceId;
   title: string;
@@ -604,6 +630,7 @@ export type CasePackageEvidenceItemV01 = {
   linked_claim_ids?: CasePackageClaimId[];
   weight?: CasePackageMetricV01;
   salience?: CasePackageMetricV01;
+  highlights?: CasePackageEvidenceHighlightV01[];
 };
 
 export type CasePackageEvidenceToClaimMappingV01 = {

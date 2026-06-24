@@ -13,6 +13,7 @@ import type {
 import type { InsufficientContextGuidance } from "@/lib/reviewReadiness";
 import type {
   CaseFile,
+  EvidenceHighlight,
   EvidenceItem,
   EvidenceRating,
   EvidenceRelation,
@@ -45,6 +46,17 @@ const evidenceRatingLegend = [
     description: "Cannot judge without more baseline, provenance, or detail.",
   },
 ] as const;
+
+const evidenceHighlightReasonLabel: Record<
+  NonNullable<EvidenceHighlight["reason"]>,
+  string
+> = {
+  supports: "Supports",
+  weak_support: "Weak support",
+  contradicts: "Contradicts",
+  context: "Context",
+  needs_more_context: "Needs context",
+};
 
 type EvidenceBoardProps = {
   caseFile: CaseFile;
@@ -217,6 +229,10 @@ export function EvidenceBoard({
                 relations,
                 rating,
               );
+              const visibleHighlights = getVisibleEvidenceHighlights(
+                evidence,
+                relations,
+              );
 
               return (
                 <article
@@ -245,6 +261,12 @@ export function EvidenceBoard({
                     <summary>Show details →</summary>
                     <div className="evidence-details-body">
                       <p>{reviewCopy.whyItMatters}</p>
+                      {visibleHighlights.length > 0 ? (
+                        <EvidenceHighlightList
+                          evidenceTitle={evidence.title}
+                          highlights={visibleHighlights}
+                        />
+                      ) : null}
                       <div
                         className="evidence-signal-row"
                         aria-label={`${evidence.title} key signals`}
@@ -335,6 +357,93 @@ export function EvidenceBoard({
       ) : null}
     </ArenaWorkflowShell>
   );
+}
+
+function EvidenceHighlightList({
+  evidenceTitle,
+  highlights,
+}: {
+  evidenceTitle: string;
+  highlights: EvidenceHighlight[];
+}) {
+  return (
+    <section
+      className="evidence-highlight-panel"
+      aria-label={`${evidenceTitle} sanitized field highlights`}
+    >
+      <strong>Sanitized fields</strong>
+      <dl className="evidence-highlight-list">
+        {highlights.map((highlight, index) => {
+          const reasonLabel = highlight.reason
+            ? evidenceHighlightReasonLabel[highlight.reason]
+            : "Field";
+          const value = formatEvidenceHighlightValue(highlight.value);
+
+          return (
+            <div
+              className={`evidence-highlight-chip evidence-highlight-${
+                highlight.reason ?? "context"
+              }`}
+              key={`${highlight.field}-${index}`}
+            >
+              <dt>
+                <span>{clipEvidenceHighlightText(highlight.label ?? highlight.field)}</span>
+                <em>{reasonLabel}</em>
+              </dt>
+              <dd>
+                <code>{clipEvidenceHighlightText(highlight.field)}</code>
+                {value ? <span>{value}</span> : null}
+              </dd>
+            </div>
+          );
+        })}
+      </dl>
+    </section>
+  );
+}
+
+function getVisibleEvidenceHighlights(
+  evidence: EvidenceItem,
+  relations: EvidenceRelation[],
+): EvidenceHighlight[] {
+  const highlights = evidence.highlights ?? [];
+
+  if (highlights.length === 0) {
+    return [];
+  }
+
+  const relatedClaimIds = new Set(relations.map((relation) => relation.claimId));
+
+  if (relatedClaimIds.size === 0) {
+    return highlights;
+  }
+
+  const evidenceLevelHighlights = highlights.filter(
+    (highlight) => !highlight.claimIds || highlight.claimIds.length === 0,
+  );
+  const matchingClaimHighlights = highlights.filter((highlight) =>
+    highlight.claimIds?.some((claimId) => relatedClaimIds.has(claimId)),
+  );
+
+  if (matchingClaimHighlights.length === 0) {
+    return evidenceLevelHighlights;
+  }
+
+  return [...matchingClaimHighlights, ...evidenceLevelHighlights];
+}
+
+function formatEvidenceHighlightValue(
+  value: EvidenceHighlight["value"],
+): string | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  return clipEvidenceHighlightText(String(value));
+}
+
+function clipEvidenceHighlightText(value: string): string {
+  return value.length > 96 ? `${value.slice(0, 93)}...` : value;
 }
 
 function getEvidenceBalanceSummary(caseFile: CaseFile) {

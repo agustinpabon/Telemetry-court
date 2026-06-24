@@ -358,6 +358,47 @@ test("review configuration only accepts canonical evidence ratings", () => {
   });
 });
 
+test("optional evidence highlights validate field metadata and claim references", () => {
+  const validInput = clonePackage();
+  arrayField(validInput, "evidence_items")[0].highlights = [
+    {
+      field: "features[0]",
+      label: "Observed event",
+      value: "CreateRole",
+      reason: "supports",
+      claim_ids: ["claim-role-changes"],
+    },
+  ];
+
+  assertValid(validateCasePackageV01(validInput));
+
+  const invalidReasonInput = clonePackage();
+  arrayField(invalidReasonInput, "evidence_items")[0].highlights = [
+    {
+      field: "features[0]",
+      reason: "freeform explanation",
+    },
+  ];
+
+  assertInvalid(validateCasePackageV01(invalidReasonInput), {
+    code: "invalid_enum_value",
+    pathIncludes: "evidence_items[0].highlights[0].reason",
+  });
+
+  const invalidClaimInput = clonePackage();
+  arrayField(invalidClaimInput, "evidence_items")[0].highlights = [
+    {
+      field: "features[0]",
+      claim_ids: ["claim-does-not-exist"],
+    },
+  ];
+
+  assertInvalid(validateCasePackageV01(invalidClaimInput), {
+    code: "unknown_claim_reference",
+    pathIncludes: "evidence_items[0].highlights[0].claim_ids[0]",
+  });
+});
+
 test("runtime validation does not mutate the input object", () => {
   const input = clonePackage();
   const beforeValidation = JSON.stringify(input);
