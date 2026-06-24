@@ -1,4 +1,5 @@
 import { SemanticMiniMap } from "@/components/arena/SemanticMiniMap";
+import { ReviewTerminologyHelp } from "@/components/arena/ReviewTerminologyHelp";
 import {
   ArenaActionFooter,
   ArenaStatusBadge,
@@ -10,7 +11,7 @@ import type { CaseReviewState } from "@/lib/arenaReviewState";
 import {
   getContextLimitedBlindOptionId,
   getInsufficientContextGuidance,
-  getVisibleDomainContextTerms,
+  getVisibleDomainContextDefinitions,
   reviewReadinessOptions,
   resolveReviewReadinessChoice,
   type ReviewReadinessChoice,
@@ -33,7 +34,8 @@ export function BlindReadPanel({
   onRevealAiLabel,
 }: BlindReadPanelProps) {
   const evidenceSummary = buildEvidenceSummary(caseFile);
-  const domainContextTerms = getVisibleDomainContextTerms(caseFile);
+  const domainContextDefinitions =
+    getVisibleDomainContextDefinitions(caseFile);
   const reviewReadinessChoice = resolveReviewReadinessChoice(
     caseFile,
     reviewState,
@@ -67,6 +69,10 @@ export function BlindReadPanel({
         title="Start with what you can judge."
         summary="Use only the visible evidence. The AI label stays hidden."
       />
+      <ReviewTerminologyHelp
+        terms={["blind_assessment", "ai_label", "cluster", "evidence"]}
+        additionalDefinitions={domainContextDefinitions}
+      />
 
       <div className="blind-decision-layout">
         <section
@@ -81,19 +87,10 @@ export function BlindReadPanel({
             </div>
             <h3 id="review-readiness-title">Can you judge this case?</h3>
             <p id="review-readiness-description">
-              You are not deciding whether the cluster is dangerous; you are
-              deciding whether the AI label is supported by the evidence.
+              Judge whether the visible evidence supports an interpretation—not
+              whether the cluster is dangerous. The AI label stays hidden until
+              you choose.
             </p>
-            <p>
-              The blind pass captures your first evidence-based judgment before
-              the AI label can anchor you. Label, claim, and candidate label
-              details stay sealed until you choose.
-            </p>
-            {domainContextTerms.length > 0 ? (
-              <p className="domain-context-signal">
-                Domain context may be needed: {domainContextTerms.join(" / ")}.
-              </p>
-            ) : null}
           </div>
           <fieldset className="review-readiness-options">
             <legend className="review-readiness-legend">
@@ -149,7 +146,7 @@ export function BlindReadPanel({
         <article className="blind-evidence-panel">
           <SectionHeader
             title="Evidence summary"
-            description="Visible packet only. The AI claim is still hidden."
+            description="Visible evidence only."
           />
           <div className="blind-evidence-content">
             <div className="evidence-summary-grid">
@@ -173,9 +170,6 @@ export function BlindReadPanel({
                 neutral
                 showEvidenceMetric={false}
               />
-              <p>
-                Selected region and nearby sessions.
-              </p>
             </aside>
           </div>
 
@@ -200,17 +194,16 @@ export function BlindReadPanel({
             title="Your interpretation"
             description={
               insufficientContextGuidance
-                ? "Insufficient context is a valid structured result. Continue without choosing a normal interpretation."
-                : "Choose the strongest conclusion the visible evidence supports."
+                ? "Insufficient context is valid. Continue without guessing."
+                : "Choose the strongest supported conclusion."
             }
           />
           {insufficientContextGuidance ? (
             <aside className="insufficient-context-guidance">
               <strong>Cannot judge recorded</strong>
               <p>
-                Not enough evidence is saved as your blind assessment. You can
-                reveal the AI claim without pretending the evidence supports a
-                normal interpretation.
+                Not enough evidence is saved as your blind assessment. Reveal
+                the AI claim without guessing.
               </p>
             </aside>
           ) : null}
@@ -261,10 +254,10 @@ export function BlindReadPanel({
               reviewState.aiLabelRevealed
                 ? "Your initial assessment is already saved."
                 : insufficientContextGuidance
-                  ? "Insufficient context and Needs context ratings are saved before the AI label is shown."
+                  ? "Insufficient context is saved before the AI label is shown."
                   : hasReadinessChoice
-                    ? "Your choice will be saved before the AI label is shown."
-                    : "Answer the checkpoint, then choose an interpretation before reveal."
+                    ? "Your choice is saved before the AI label is shown."
+                    : "Answer the checkpoint and choose an interpretation."
             }
             primaryAction={{
               label: actionLabel,

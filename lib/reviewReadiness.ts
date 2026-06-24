@@ -28,6 +28,11 @@ export type InsufficientContextGuidance = Exclude<
   "ready"
 >;
 
+export type VisibleDomainContextDefinition = {
+  label: string;
+  definition: string;
+};
+
 export function getInsufficientContextGuidance(
   choice?: ReviewReadinessChoice,
 ): InsufficientContextGuidance | undefined {
@@ -75,6 +80,14 @@ export function getContextLimitedBlindOptionId(
 }
 
 export function getVisibleDomainContextTerms(caseFile: CaseFile): string[] {
+  return getVisibleDomainContextDefinitions(caseFile).map(
+    (definition) => definition.label,
+  );
+}
+
+export function getVisibleDomainContextDefinitions(
+  caseFile: CaseFile,
+): VisibleDomainContextDefinition[] {
   const visibleText = [
     caseFile.dataset,
     caseFile.cluster.name,
@@ -85,18 +98,53 @@ export function getVisibleDomainContextTerms(caseFile: CaseFile): string[] {
     .filter(Boolean)
     .join(" ");
   const candidates = [
-    [/\biam\b|iam:/i, "IAM"],
-    [/cloudtrail/i, "CloudTrail"],
-    [/role provisioning/i, "role provisioning"],
-    [/powershell/i, "PowerShell"],
-    [/\bs3\b/i, "S3"],
-    [/credential/i, "credential access"],
-    [/encoded command/i, "encoded command"],
-    [/service/i, "service activity"],
+    [
+      /\biam\b|iam:/i,
+      "IAM",
+      "Identity and access management activity involving roles, policies, or permissions.",
+    ],
+    [
+      /cloudtrail/i,
+      "CloudTrail",
+      "AWS event records that show actions taken in an account.",
+    ],
+    [
+      /role provisioning/i,
+      "Role provisioning",
+      "Creating and configuring roles for a planned service or workflow.",
+    ],
+    [
+      /powershell/i,
+      "PowerShell",
+      "A Windows command-line and scripting environment.",
+    ],
+    [/\bs3\b/i, "S3", "AWS object storage used for files and data."],
+    [
+      /credential/i,
+      "Credential access",
+      "Attempts to obtain or use authentication secrets.",
+    ],
+    [
+      /encoded command/i,
+      "Encoded command",
+      "A command stored in encoded text that must be decoded to inspect.",
+    ],
+    [
+      /service/i,
+      "Service activity",
+      "Actions performed by an application or automated service.",
+    ],
   ] as const;
-  const terms = candidates
+  const definitions = candidates
     .filter(([pattern]) => pattern.test(visibleText))
-    .map(([, term]) => term);
+    .map(([, label, definition]) => ({ label, definition }));
 
-  return [...new Set(terms)].slice(0, 3);
+  return definitions
+    .filter(
+      (definition, index) =>
+        definitions.findIndex(
+          (candidate) => candidate.label === definition.label,
+        ) === index,
+    )
+    .slice(0, 3);
 }

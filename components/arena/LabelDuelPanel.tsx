@@ -8,6 +8,7 @@ import {
   ArenaStepHero,
   ArenaWorkflowShell,
 } from "@/components/arena/WorkflowPrimitives";
+import { ReviewTerminologyHelp } from "@/components/arena/ReviewTerminologyHelp";
 import {
   getEvidenceBalance,
   getEvidenceRatings,
@@ -74,9 +75,10 @@ export function LabelDuelPanel({
             Label Selection · {caseFile.candidateLabels.length} candidate labels
           </ArenaStatusBadge>
         }
-        title="Which interpretation is most strictly supported by the observed evidence?"
-        summary="Choose the label best supported by the evidence, not the most impressive wording."
+        title="Which label is best supported?"
+        summary="Choose the most defensible label—not the strongest wording."
       />
+      <ReviewTerminologyHelp terms={["ai_label", "claim", "evidence"]} />
 
       <section className="duel-evidence-summary" aria-label="Evidence summary">
         <div>
@@ -105,7 +107,6 @@ export function LabelDuelPanel({
       <section className="duel-candidate-section" aria-labelledby="duel-candidates-title">
         <div className="duel-section-heading">
           <h3 id="duel-candidates-title">Candidate labels</h3>
-          <p>Select the label that is best supported by the evidence.</p>
         </div>
 
         {recommendedCandidate ? (
@@ -197,7 +198,7 @@ function DuelReasonPanel({
     <section className="reason-panel" aria-labelledby="duel-reason-title">
       <div className="duel-section-heading">
         <h3 id="duel-reason-title">Why this label?</h3>
-        <p>Select one or more reasons, or add a short note.</p>
+        <p>Select reasons or add an optional note.</p>
       </div>
       <div className="chip-row">
         {labelDuelReasonOptions.map((reason) => {
@@ -273,7 +274,9 @@ function CandidateLabelCard({
       <strong>{candidate.label}</strong>
       <p>{decisionMeta.description}</p>
       {isContextGuided ? <small>Context-safe option</small> : null}
-      {decisionMeta.evidenceNote ? <small>{decisionMeta.evidenceNote}</small> : null}
+      {isSelected && decisionMeta.evidenceNote ? (
+        <small>{decisionMeta.evidenceNote}</small>
+      ) : null}
     </button>
   );
 }

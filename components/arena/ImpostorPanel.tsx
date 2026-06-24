@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 
+import { ReviewTerminologyHelp } from "@/components/arena/ReviewTerminologyHelp";
 import {
   ArenaActionFooter,
   ArenaStatusBadge,
@@ -92,7 +93,10 @@ export function ImpostorPanel({
           </ArenaStatusBadge>
         }
         title="Find the weakest-fit session"
-        summary="Check whether any member, outlier, or neighbor makes the cluster look mixed."
+        summary="Choose the session least consistent with the selected label."
+      />
+      <ReviewTerminologyHelp
+        terms={["cluster", "representative_session", "outlier_impostor"]}
       />
 
       <section className="impostor-evidence-summary" aria-label="Decision context">
@@ -164,7 +168,7 @@ export function ImpostorPanel({
                         <span className="mono-value">{session.id}</span>
                         {isStrongestCandidate ? (
                           <span className="strongest-candidate-badge">
-                            Strongest signal
+                            Weakest-fit signal
                           </span>
                         ) : null}
                         <span className="session-selection-state" aria-hidden="true">
@@ -247,23 +251,15 @@ function ImpostorDetailPanel({
       <aside className="impostor-detail impostor-detail-guide" aria-live="polite">
         <span className="impostor-detail-label">Fit check</span>
         <h3>What to look for</h3>
-        <ul className="impostor-criteria-list">
-          <li>
-            <strong>High outlier risk</strong>
-            <span>The behavior is unusual within this group.</span>
-          </li>
-          <li>
-            <strong>Low cluster pattern match</strong>
-            <span>The session shares fewer features with the cluster.</span>
-          </li>
-          <li>
-            <strong>Behavior that does not match the other sessions</strong>
-            <span>Look for a different action, actor, or timing pattern.</span>
-          </li>
-        </ul>
+        <p>
+          High outlier risk plus low pattern match signals the weakest fit.
+        </p>
         {strongestCandidate ? (
-          <section className="impostor-current-candidate" aria-label="Current strongest candidate">
-            <span>Current strongest candidate</span>
+          <section
+            className="impostor-current-candidate"
+            aria-label="Current weakest-fit candidate"
+          >
+            <span>Current weakest-fit candidate</span>
             <div>
               <span className="mono-value">{strongestCandidate.id}</span>
               <strong>{strongestCandidate.title}</strong>
@@ -278,7 +274,7 @@ function ImpostorDetailPanel({
                 <dd>{formatSupportScore(strongestCandidate.featureOverlap)}</dd>
               </div>
             </dl>
-            <p>{strongestCandidate.id} currently has the strongest outlier signal.</p>
+            <p>{strongestCandidate.id} currently has the clearest mismatch.</p>
           </section>
         ) : null}
         <p className="impostor-detail-helper">
@@ -360,7 +356,7 @@ function formatImpostorFooterMicrocopy(
     return selectedCopy;
   }
 
-  return `${selectedCopy}. Strongest signal: ${strongestCandidate.id} · ${formatSupportScore(
+  return `${selectedCopy}. Weakest-fit signal: ${strongestCandidate.id} · ${formatSupportScore(
     strongestCandidate.outlierScore,
   )}.`;
 }

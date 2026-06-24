@@ -796,8 +796,7 @@ export function AppShell({
   }
 
   const isExploreMode = activeStage === "landscape";
-  const showReviewOrientation =
-    activeStage === "case_file" || activeStage === "blind_read";
+  const showReviewOrientation = activeStage === "case_file";
   const stageTransitionKey = isExploreMode
     ? activeStage
     : `${selectedCase.id}-${activeStage}`;

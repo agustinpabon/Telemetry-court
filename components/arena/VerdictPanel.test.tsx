@@ -46,7 +46,11 @@ test("verdict panel shows merge controls only for existing neighbor candidates",
     }),
   );
 
-  assert.match(markup, /Split and merge recommendations/);
+  assert.match(
+    markup,
+    /<details class="reason-panel refinement-panel" open="">/,
+  );
+  assert.match(markup, /Optional split \/ merge guidance/);
   assert.match(markup, /Merge target/);
   assert.match(markup, new RegExp(mergeCandidate.clusterId));
   assert.match(markup, new RegExp(mergeCandidate.label));

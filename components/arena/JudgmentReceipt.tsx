@@ -4,6 +4,7 @@ import {
   mergeRecommendationReasonLabel,
   splitRecommendationReasonLabel,
 } from "@/components/arena/arenaMeta";
+import { ReviewTerminologyHelp } from "@/components/arena/ReviewTerminologyHelp";
 import { getCompatibleFailureModes } from "@/lib/arenaReviewState";
 import type { CaseReviewState, EvidenceBalance } from "@/lib/arenaReviewState";
 import type {
@@ -103,30 +104,19 @@ export function JudgmentReceipt({
         />
       </dl>
 
+      <ReviewTerminologyHelp
+        terms={["review_result", "case_package"]}
+        summary="Export terms"
+      />
+
       <div className="receipt-purpose" aria-label="ReviewResult purpose">
         <p>
-          This export is one ReviewResult: one reviewer&apos;s structured judgment
-          for one CasePackage.
+          A ReviewResult is one reviewer&apos;s structured judgment for one
+          CasePackage. It preserves the verdict, evidence ratings, failure modes,
+          and recommended action.
         </p>
         <p>
-          It preserves the human verdict, evidence ratings, failure modes, and
-          recommended action.
-        </p>
-        <p>
-          It is local, exportable review data; it is not uploaded or
-          automatically saved to a server.
-        </p>
-        <p>
-          Multiple compatible ReviewResults means multiple reviewers reviewed
-          the same CasePackage with the same protocol.
-        </p>
-        <p>
-          Combine those compatible ReviewResults to produce an
-          EvaluationReport.
-        </p>
-        <p>
-          Use that EvaluationReport to evaluate and improve upstream labels,
-          prompts, embeddings, evidence extraction, or clustering.
+          The JSON stays local until you copy or download it.
         </p>
       </div>
 
