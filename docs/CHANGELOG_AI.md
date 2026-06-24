@@ -19,6 +19,60 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-24: ReviewResult To EvaluationReport Progression
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Start issue #184 by clarifying the local
+  `ReviewResult` -> `EvaluationReport` progression without changing review
+  contracts, import/export compatibility, or local-only storage boundaries.
+- Files changed:
+  - `components/arena/JudgmentReceipt.tsx`
+  - `components/arena/JudgmentReceipt.test.tsx`
+  - `components/evaluation/ReviewResultProgression.tsx`
+  - `components/evaluation/LocalEvaluationResults.tsx`
+  - `components/evaluation/LocalEvaluationResults.test.ts`
+  - `app/page.test.ts`
+  - `app/investigation-workflow.css`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Added a compact receipt disclosure that states a `ReviewResult` is one
+    reviewer's judgment, not the final aggregate report.
+  - Added a local-loop section on `/results` showing export, import, compatible
+    package/case/cluster grouping, and existing `EvaluationReport` metrics.
+  - Kept the workflow explicitly local-file based with no backend, auth,
+    database, server-side persistence, or cloud sync.
+- Decisions made:
+  - Reused one small UI component for receipt and results progression copy.
+  - Kept `CasePackage v0.1`, `ReviewResult v0.1`, `EvaluationReport v0.1`, and
+    `cluster_refinement.v0.1` schema versions unchanged.
+  - Did not change ReviewResult serialization, import, duplicate handling, or
+    missing CasePackage metadata recovery behavior.
+- Checks run:
+  - Focused receipt/results tests passed with 12 tests.
+  - `node --test --import tsx components/arena/ReviewTerminologyHelp.test.tsx`
+    passed with 3 tests.
+  - `node --test --import tsx components/arena/VerdictPanel.test.tsx` passed
+    with 2 tests.
+  - `npm test` passed with 293 tests.
+  - `npx tsc --noEmit` passed.
+  - `npm run lint` passed.
+  - `npm run build` passed.
+  - Local Playwright verification passed for `/results` and `/verdict` at
+    1440px and 390px with no horizontal overflow.
+  - `git diff --check` passed.
+  - `npm audit` reported two existing moderate PostCSS advisories through the
+    pinned Next.js dependency; the suggested force fix is a breaking downgrade
+    and was not applied.
+- Assumptions: Compact first-time-reviewer guidance is enough for this issue;
+  detailed pilot coordinator instructions remain in docs and validation
+  protocol materials.
+- Risks/follow-ups: Pilot #2 comprehension should be checked again with an
+  exported ReviewResult and imported bundle in hand.
+- Next recommended step: Use the new receipt and `/results` guidance during the
+  next reviewer walkthrough before expanding any visible copy.
+- Suggested commit message:
+  `feat(results): clarify review result aggregation loop`
+
 ## 2026-06-24: Compact Review Copy And In-App Terminology
 
 - Agent/model: Codex (GPT-5)

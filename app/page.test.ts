@@ -129,6 +129,24 @@ function assertNoMixedVerdictState(markup: string): void {
   }
 }
 
+function assertReviewResultProgressionCopy(markup: string): void {
+  assert.match(
+    markup,
+    /After export: import on \/results for aggregate metrics/,
+  );
+  assert.match(
+    markup,
+    /A ReviewResult is one reviewer&#x27;s structured judgment, not the final aggregate report\./,
+  );
+  assert.match(markup, /Import on \/results/);
+  assert.match(markup, /Group compatible reviews/);
+  assert.match(markup, /Generate EvaluationReport metrics/);
+  assert.match(
+    markup,
+    /Local-file workflow only: no backend, auth, database, server-side persistence, or cloud sync\./,
+  );
+}
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -1154,7 +1172,7 @@ test("review stages define domain terms with compact in-context disclosures", ()
   assert.match(markup, /ReviewResult<\/dt><dd>The versioned export of one reviewer/);
 });
 
-test("copy reductions preserve blind review and avoid issue 184 progression UI", () => {
+test("copy reductions preserve blind review and keep progression UI compact", () => {
   const blindMarkup = renderBlindReadPageText();
   const verdictMarkup = renderVerdictPageText();
 
@@ -1171,10 +1189,7 @@ test("copy reductions preserve blind review and avoid issue 184 progression UI",
     blindMarkup,
     /Label, claim, and candidate label details stay sealed until you choose/,
   );
-  assert.match(
-    verdictMarkup,
-    /A ReviewResult is one reviewer&#x27;s structured judgment for one CasePackage\./,
-  );
+  assertReviewResultProgressionCopy(verdictMarkup);
   assert.doesNotMatch(verdictMarkup, /Combine those compatible ReviewResults/);
   assert.doesNotMatch(verdictMarkup, /Use that EvaluationReport to evaluate/);
 });
@@ -1455,16 +1470,7 @@ test("verdict page reads as a final judgment and preserves export actions", () =
     markup,
     /Rename the label or request stronger evidence before accepting the AI claim\./,
   );
-  assert.match(
-    markup,
-    /A ReviewResult is one reviewer&#x27;s structured judgment for one CasePackage\./,
-  );
-  assert.match(
-    markup,
-    /It preserves the verdict, evidence ratings, failure modes, and recommended action\./,
-  );
-  assert.match(markup, /The JSON stays local until you copy or download it\./);
-  assert.doesNotMatch(markup, /EvaluationReport/);
+  assertReviewResultProgressionCopy(markup);
   assert.match(markup, /Review complete\. Export the structured result/);
   assert.match(markup, /View JSON/);
   assert.match(markup, /Copy JSON/);
@@ -1693,12 +1699,7 @@ test("verdict route opens the demo case as a completed structured judgment", () 
     pageText,
     /class="verdict-button is-selected"[^>]*aria-pressed="true"[^>]*><span class="verdict-button-label">Unsupported \/ overclaimed/,
   );
-  assert.match(
-    pageText,
-    /A ReviewResult is one reviewer&#x27;s structured judgment for one CasePackage\./,
-  );
-  assert.match(pageText, /The JSON stays local until you copy or download it\./);
-  assert.doesNotMatch(pageText, /EvaluationReport/);
+  assertReviewResultProgressionCopy(pageText);
   assert.match(pageText, /Conclusion: Claim is not sufficiently supported\./);
   assert.match(
     pageText,
@@ -1756,12 +1757,7 @@ test("review summary drawer keeps export and aggregation boundaries explicit", (
   );
 
   assert.match(markup, /Structured ReviewResult JSON/);
-  assert.match(
-    markup,
-    /A ReviewResult is one reviewer&#x27;s structured judgment for one CasePackage\./,
-  );
-  assert.match(markup, /The JSON stays local until you copy or download it\./);
-  assert.doesNotMatch(markup, /EvaluationReport/);
+  assertReviewResultProgressionCopy(markup);
   assert.match(markup, /review_result\.v0\.1/);
 });
 
