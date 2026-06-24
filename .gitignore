@@ -49,3 +49,7 @@ test-results.txt
 # python
 __pycache__/
 *.py[cod]
+
+# local python environment and scratch artifacts
+.venv/
+hot-folder/

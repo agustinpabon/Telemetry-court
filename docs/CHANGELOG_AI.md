@@ -19,6 +19,27 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-24: Ignore Local Python/Jupyter Environment and Hot-Folder Artifacts
+
+- Agent/model: Antigravity (Gemini 3.5 Flash)
+- Prompt scope: Prevent ESLint and git from tracking or linting local Python/Jupyter environments and hot-folder scratch outputs in the repository root.
+- Files changed:
+  - `.gitignore`
+  - `eslint.config.mjs`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Added `.venv/` and `hot-folder/` to `.gitignore`.
+  - Added `.venv/**` and `hot-folder/**` to ESLint's global ignores in `eslint.config.mjs`.
+- Decisions made:
+  - Excluded local development environment artifacts from project hygiene/validation pipelines to ensure `npm run lint` passes when a local environment is configured.
+- Checks run:
+  - `npm run lint`
+  - `npm test`
+  - `npx tsc --noEmit`
+  - `npm run build`
+  - `git diff --check`
+- Suggested commit message: `chore: ignore local python environment and hot-folder outputs`
+
 ## 2026-06-24: Hot-Folder Python Companion
 
 - Agent/model: Codex (GPT-5)
