@@ -176,7 +176,7 @@ test("Milestone 3 smoke connects validated import, aggregation, results map, and
   assert.equal(resultsMap.nodes.length, 1);
   const node = resultsMap.nodes[0];
   assert.ok(node);
-  assert.equal(node.casePackage.package_id, PACKAGE_ID);
+  assert.equal(node.casePackage.case_package.package_id, PACKAGE_ID);
   assert.deepEqual(node.caseFile.mapPosition, { x: 34, y: 62 });
   assert.equal(node.status.verdict, "cluster_impure");
   assert.equal(node.verdictDisputed, true);

@@ -123,7 +123,7 @@ test("incompatible imported results are excluded without contaminating aggregati
   assert.equal(result.snapshot.packageGroups[0]?.report.reviewer_count, 1);
 });
 
-test("duplicate imported ReviewResults are rejected instead of double counted", () => {
+test("duplicate imported ReviewResults are harmless no-ops instead of double counted", () => {
   const storage = createMemoryStorage();
   const reviewResult = createReviewResult();
   saveReviewResultToLocalStoreV01(storage, reviewResult);
@@ -138,11 +138,103 @@ test("duplicate imported ReviewResults are rejected instead of double counted", 
     serializeReviewResultBundleV01(bundle),
   );
 
+  assert.equal(result.ok, true);
+  if (!result.ok) {
+    return;
+  }
+  assert.equal(result.outcome, "already_imported");
+  assert.equal(result.importedReviewResultCount, 0);
+  assert.match(result.message, /already exists locally.*No action is needed/i);
+  assert.equal(result.snapshot.totalReviewResultCount, 1);
+  assert.equal(result.snapshot.packageGroups[0]?.report.reviewer_count, 1);
+});
+
+test("conflicting ReviewResult identity collisions remain rejected", () => {
+  const storage = createMemoryStorage();
+  const existingReview = createReviewResult();
+  saveReviewResultToLocalStoreV01(storage, existingReview);
+  const conflictingReview: ReviewResultV01 = {
+    ...existingReview,
+    decisions: {
+      ...existingReview.decisions,
+      final_verdict: "uncertain",
+      recommended_action: "mark_uncertain",
+    },
+  };
+  const bundle = createReviewResultBundleV01({
+    reviewResults: [conflictingReview],
+    bundleId: "bundle-results-conflicting-identity",
+    createdAt: "2026-06-21T13:00:00.000Z",
+  });
+
+  const result = importLocalEvaluationResultsBundleV01(
+    storage,
+    serializeReviewResultBundleV01(bundle),
+  );
+
   assert.equal(result.ok, false);
   if (result.ok) {
     return;
   }
-  assert.equal(result.excludedReviewResultCount, 1);
+  assert.match(result.message, /already exists locally.*No results were imported/);
+  assert.equal(result.snapshot.packageGroups[0]?.report.verdict_distribution.supported, 1);
+  assert.equal(result.snapshot.packageGroups[0]?.report.verdict_distribution.uncertain, 0);
+});
+
+test("same reviewer session with a new ReviewResult ID remains rejected", () => {
+  const storage = createMemoryStorage();
+  const existingReview = createReviewResult();
+  saveReviewResultToLocalStoreV01(storage, existingReview);
+  const conflictingReview: ReviewResultV01 = {
+    ...existingReview,
+    review_id: existingReview.review_id.replace(
+      existingReview.created_at,
+      "2026-06-21T12:30:00.000Z",
+    ),
+    created_at: "2026-06-21T12:30:00.000Z",
+  };
+  const bundle = createReviewResultBundleV01({
+    reviewResults: [conflictingReview],
+    bundleId: "bundle-results-conflicting-session",
+    createdAt: "2026-06-21T13:00:00.000Z",
+  });
+
+  const result = importLocalEvaluationResultsBundleV01(
+    storage,
+    serializeReviewResultBundleV01(bundle),
+  );
+
+  assert.equal(result.ok, false);
+  if (result.ok) {
+    return;
+  }
+  assert.match(result.message, /reviewer\/session.*already has a local result/);
+  assert.equal(result.snapshot.totalReviewResultCount, 1);
+});
+
+test("a bundle mixing duplicate and new ReviewResults remains an atomic rejection", () => {
+  const storage = createMemoryStorage();
+  const existingReview = createReviewResult();
+  saveReviewResultToLocalStoreV01(storage, existingReview);
+  const bundle = createReviewResultBundleV01({
+    reviewResults: [
+      existingReview,
+      createReviewResult({ reviewerId: "reviewer-new" }),
+    ],
+    bundleId: "bundle-results-mixed-duplicate",
+    createdAt: "2026-06-21T13:00:00.000Z",
+  });
+
+  const result = importLocalEvaluationResultsBundleV01(
+    storage,
+    serializeReviewResultBundleV01(bundle),
+  );
+
+  assert.equal(result.ok, false);
+  if (result.ok) {
+    return;
+  }
+  assert.equal(result.excludedReviewResultCount, 2);
   assert.match(result.message, /already exists locally.*No results were imported/);
   assert.equal(result.snapshot.totalReviewResultCount, 1);
   assert.equal(result.snapshot.packageGroups[0]?.report.reviewer_count, 1);

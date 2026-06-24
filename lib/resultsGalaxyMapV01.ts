@@ -1,6 +1,7 @@
 import {
   CASE_PACKAGE_V01_VERDICTS,
   type CaseFile,
+  type CasePackageDataClassificationV01,
   type CasePackageReferenceV01,
   type CasePackageVerdictV01,
   type CasePackageV01,
@@ -9,11 +10,13 @@ import {
 } from "@/lib/types";
 import type { EvaluationReportV01 } from "@/lib/evaluationReportV01";
 import { validateCasePackageV01 } from "@/lib/casePackageValidation";
+import type { ReviewResultV01 } from "@/lib/reviewResultV01";
 
 export type ResultsGalaxyPackageGroupV01 = {
   casePackageId: string;
   reviewResultCount: number;
   report: EvaluationReportV01;
+  sourceReviewResults?: readonly ReviewResultV01[];
 };
 
 export type ResultsGalaxyStatusPresentationV01 = {
@@ -26,10 +29,35 @@ export type ResultsGalaxyStatusPresentationV01 = {
 
 export type ResultsGalaxyMapNodeV01 = {
   caseFile: CaseFile;
-  casePackage: CasePackageV01;
+  casePackage: ResultsCasePackageMetadataV01;
   report: EvaluationReportV01;
   status: ResultsGalaxyStatusPresentationV01;
   verdictDisputed: boolean;
+};
+
+export const RESULTS_CASE_PACKAGE_METADATA_V01_SCHEMA_VERSION =
+  "results_case_package_metadata.v0.1" as const;
+
+export type ResultsCasePackageMetadataV01 = {
+  schema_version: typeof RESULTS_CASE_PACKAGE_METADATA_V01_SCHEMA_VERSION;
+  case_package: CasePackageReferenceV01;
+  case: {
+    title: string;
+    summary: string;
+  };
+  dataset: {
+    dataset_name: string;
+    data_classification: CasePackageDataClassificationV01;
+  };
+  cluster: {
+    cluster_name?: string;
+    upstream_cluster_label?: string;
+    cluster_size: number;
+    coordinates?: {
+      x: number;
+      y: number;
+    };
+  };
 };
 
 export type ResultsGalaxyUnavailableReasonV01 =
@@ -40,6 +68,8 @@ export type ResultsGalaxyUnavailableReasonV01 =
 
 export type ResultsGalaxyUnavailableV01 = {
   casePackageId: string;
+  caseId: string;
+  clusterId: string;
   reason: ResultsGalaxyUnavailableReasonV01;
   message: string;
 };
@@ -125,9 +155,14 @@ export function buildResultsGalaxyMapV01({
   casePackages,
 }: {
   packageGroups: readonly ResultsGalaxyPackageGroupV01[];
-  casePackages: readonly CasePackageV01[];
+  casePackages: readonly (
+    | CasePackageV01
+    | ResultsCasePackageMetadataV01
+  )[];
 }): ResultsGalaxyMapV01 {
-  const casePackagesById = groupCasePackagesById(casePackages);
+  const casePackagesById = groupCasePackagesById(
+    casePackages.map(toResultsCasePackageMetadataV01),
+  );
   const nodes: ResultsGalaxyMapNodeV01[] = [];
   const unavailable: ResultsGalaxyUnavailableV01[] = [];
 
@@ -137,6 +172,8 @@ export function buildResultsGalaxyMapV01({
     if (packageCandidates.length === 0) {
       unavailable.push({
         casePackageId: group.casePackageId,
+        caseId: group.report.case_package.case_id,
+        clusterId: group.report.case_package.cluster_id,
         reason: "missing_case_package",
         message:
           "No local or imported CasePackage metadata is available for this result group.",
@@ -145,15 +182,19 @@ export function buildResultsGalaxyMapV01({
     }
 
     const compatiblePackage = packageCandidates.find((casePackage) =>
-      hasMatchingCasePackageReference(
-        group.report.case_package,
-        buildReviewedCasePackageReferenceV01(casePackage),
-      ),
+      hasMatchingCasePackageReference({
+        reviewReference: group.report.case_package,
+        reviewBlindReviewEnabled:
+          group.sourceReviewResults?.[0]?.protocol.blind_review_enabled,
+        packageReference: casePackage.case_package,
+      }),
     );
 
     if (!compatiblePackage) {
       unavailable.push({
         casePackageId: group.casePackageId,
+        caseId: group.report.case_package.case_id,
+        clusterId: group.report.case_package.cluster_id,
         reason: "incompatible_case_package_reference",
         message:
           "A CasePackage with this package ID is available, but its compact package or pipeline reference does not match the ReviewResults.",
@@ -161,11 +202,13 @@ export function buildResultsGalaxyMapV01({
       continue;
     }
 
-    const coordinates = compatiblePackage.cluster.embedding_map?.coordinates;
+    const coordinates = compatiblePackage.cluster.coordinates;
 
     if (!coordinates) {
       unavailable.push({
         casePackageId: group.casePackageId,
+        caseId: group.report.case_package.case_id,
+        clusterId: group.report.case_package.cluster_id,
         reason: "missing_coordinates",
         message:
           "The compatible CasePackage does not include cluster embedding_map coordinates.",
@@ -178,6 +221,8 @@ export function buildResultsGalaxyMapV01({
     if (!mapPosition) {
       unavailable.push({
         casePackageId: group.casePackageId,
+        caseId: group.report.case_package.case_id,
+        clusterId: group.report.case_package.cluster_id,
         reason: "unsupported_coordinate_range",
         message:
           "The compatible CasePackage coordinates are outside the supported normalized 0-1 map range.",
@@ -237,12 +282,57 @@ export function importResultsMapCasePackageV01Json(
   };
 }
 
-function groupCasePackagesById(casePackages: readonly CasePackageV01[]) {
-  const casePackagesById = new Map<string, CasePackageV01[]>();
+export function toResultsCasePackageMetadataV01(
+  casePackage: CasePackageV01 | ResultsCasePackageMetadataV01,
+): ResultsCasePackageMetadataV01 {
+  if (
+    casePackage.schema_version ===
+    RESULTS_CASE_PACKAGE_METADATA_V01_SCHEMA_VERSION
+  ) {
+    return casePackage;
+  }
+
+  return {
+    schema_version: RESULTS_CASE_PACKAGE_METADATA_V01_SCHEMA_VERSION,
+    case_package: {
+      ...buildReviewedCasePackageReferenceV01(casePackage),
+      blind_review_enabled:
+        casePackage.review_configuration.blind_review_enabled,
+    },
+    case: {
+      title: casePackage.case.title,
+      summary: casePackage.case.summary,
+    },
+    dataset: {
+      dataset_name: casePackage.dataset.dataset_name,
+      data_classification: casePackage.dataset.data_classification,
+    },
+    cluster: {
+      cluster_name: casePackage.cluster.cluster_name,
+      upstream_cluster_label: casePackage.cluster.upstream_cluster_label,
+      cluster_size: casePackage.cluster.cluster_size,
+      coordinates: casePackage.cluster.embedding_map?.coordinates
+        ? {
+            x: casePackage.cluster.embedding_map.coordinates.x,
+            y: casePackage.cluster.embedding_map.coordinates.y,
+          }
+        : undefined,
+    },
+  };
+}
+
+function groupCasePackagesById(
+  casePackages: readonly ResultsCasePackageMetadataV01[],
+) {
+  const casePackagesById = new Map<
+    string,
+    ResultsCasePackageMetadataV01[]
+  >();
 
   for (const casePackage of casePackages) {
-    casePackagesById.set(casePackage.package_id, [
-      ...(casePackagesById.get(casePackage.package_id) ?? []),
+    const packageId = casePackage.case_package.package_id;
+    casePackagesById.set(packageId, [
+      ...(casePackagesById.get(packageId) ?? []),
       casePackage,
     ]);
   }
@@ -256,26 +346,20 @@ function buildResultsCaseFile({
   mapPosition,
   status,
 }: {
-  casePackage: CasePackageV01;
+  casePackage: ResultsCasePackageMetadataV01;
   report: EvaluationReportV01;
   mapPosition: CaseFile["mapPosition"];
   status: ResultsGalaxyStatusPresentationV01;
 }): CaseFile {
-  const firstCandidateLabel = casePackage.candidate_labels[0];
   const selectedLabelId =
     report.label_winner_distribution[0]?.label_id ??
-    firstCandidateLabel?.label_id ??
     "label-unavailable";
 
   return {
     id: getResultsCaseFileId(casePackage),
-    casePackageReference: {
-      ...buildReviewedCasePackageReferenceV01(casePackage),
-      blind_review_enabled:
-        casePackage.review_configuration.blind_review_enabled,
-    },
+    casePackageReference: casePackage.case_package,
     cluster: {
-      id: casePackage.cluster.cluster_id,
+      id: casePackage.case_package.cluster_id,
       name:
         casePackage.cluster.cluster_name ??
         casePackage.cluster.upstream_cluster_label ??
@@ -294,75 +378,35 @@ function buildResultsCaseFile({
     evidenceStrength: getEvidenceSupportWeight(report),
     uncertainty: getReviewerUncertaintyWeight(report, status.verdict),
     mapPosition,
-    topFeatures: getTopFeatures(casePackage),
+    topFeatures: [],
     riskFlags: getRiskFlags(report),
     nearestNeighbor: {
-      clusterId:
-        casePackage.neighbor_clusters[0]?.neighbor_cluster_id ??
-        casePackage.cluster.cluster_id,
-      label:
-        casePackage.neighbor_clusters[0]?.label ??
-        casePackage.neighbor_clusters[0]?.name ??
-        "No compatible neighbor supplied",
-      distance: readMetricValue(casePackage.neighbor_clusters[0]?.distance, 1),
-      note:
-        casePackage.neighbor_clusters[0]?.reason_this_neighbor_matters ??
-        "No compatible neighbor metadata supplied for this results map node.",
+      clusterId: casePackage.case_package.cluster_id,
+      label: "No compatible neighbor supplied",
+      distance: 1,
+      note: "Results map metadata does not persist neighbor package content.",
     },
     blindInterpretationOptions: [],
-    candidateLabels: casePackage.candidate_labels.map((label) => ({
-      id: label.label_id,
-      label: label.label,
-      source: "baseline_ai",
-      rationale:
-        label.rationale ??
-        "Candidate label metadata came from the compatible CasePackage.",
-      supportEstimate: readMetricValue(label.confidence, 0),
-    })),
+    candidateLabels: [],
     seededBestLabelId: selectedLabelId,
-    seededImpostorSessionId:
-      casePackage.representative_sessions[0]?.session_id ?? "session-unavailable",
-    representativeSessions: casePackage.representative_sessions.map((session) => ({
-      id: session.session_id,
-      title: session.title,
-      principal: session.safe_reference?.label ?? casePackage.dataset.dataset_name,
-      timestamp: casePackage.cluster.time_range?.start_at ?? casePackage.created_at,
-      featureOverlap: readMetricValue(
-        session.cluster_membership.membership_score,
-        0,
-      ),
-      outlierScore: readMetricValue(
-        session.cluster_membership.distance_to_centroid,
-        0,
-      ),
-      summary: session.summary,
-    })),
+    seededImpostorSessionId: "session-unavailable",
+    representativeSessions: [],
     failureModes: report.failure_mode_counts.map(
       (failureMode) => failureMode.failure_mode,
     ),
     defaultEvidenceRatings: {},
     topicLabel: {
       id: selectedLabelId,
-      clusterId: casePackage.cluster.cluster_id,
-      name: firstCandidateLabel?.label ?? casePackage.case.title,
-      explanation: firstCandidateLabel?.rationale ?? casePackage.case.summary,
+      clusterId: casePackage.case_package.cluster_id,
+      name: casePackage.cluster.upstream_cluster_label ?? casePackage.case.title,
+      explanation: casePackage.case.summary,
       generatedBy:
-        firstCandidateLabel?.model_reference ??
-        casePackage.pipeline.naming_model ??
-        casePackage.pipeline.upstream_tool,
-      generatedAt: casePackage.pipeline.generated_at,
+        casePackage.case_package.pipeline.naming_model ??
+        casePackage.case_package.pipeline.upstream_tool,
+      generatedAt: casePackage.case_package.pipeline.generated_at,
     },
     claims: [],
-    evidenceItems: casePackage.evidence_items.map((evidence) => ({
-      id: evidence.evidence_id,
-      clusterId: casePackage.cluster.cluster_id,
-      title: evidence.title,
-      summary: evidence.summary,
-      sourceType: "metadata",
-      rawReference:
-        evidence.source_reference.safe_reference?.uri ??
-        evidence.source_reference.safe_reference?.artifact_id,
-    })),
+    evidenceItems: [],
     evidenceRelations: [],
     supportScores: [],
     analystVerdict: undefined,
@@ -396,10 +440,15 @@ function buildReviewedCasePackageReferenceV01(
   };
 }
 
-function hasMatchingCasePackageReference(
-  left: Omit<CasePackageReferenceV01, "blind_review_enabled">,
-  right: Omit<CasePackageReferenceV01, "blind_review_enabled">,
-): boolean {
+function hasMatchingCasePackageReference({
+  reviewReference: left,
+  reviewBlindReviewEnabled,
+  packageReference: right,
+}: {
+  reviewReference: Omit<CasePackageReferenceV01, "blind_review_enabled">;
+  reviewBlindReviewEnabled?: boolean;
+  packageReference: CasePackageReferenceV01;
+}): boolean {
   return (
     left.schema_version === right.schema_version &&
     left.package_id === right.package_id &&
@@ -418,7 +467,9 @@ function hasMatchingCasePackageReference(
     left.pipeline.prompt_id === right.pipeline.prompt_id &&
     left.pipeline.prompt_version === right.pipeline.prompt_version &&
     left.pipeline.prompt_digest === right.pipeline.prompt_digest &&
-    left.pipeline.generated_at === right.pipeline.generated_at
+    left.pipeline.generated_at === right.pipeline.generated_at &&
+    (reviewBlindReviewEnabled === undefined ||
+      reviewBlindReviewEnabled === right.blind_review_enabled)
   );
 }
 
@@ -534,34 +585,19 @@ function getReviewerUncertaintyWeight(
   return 0.32;
 }
 
-function getTopFeatures(casePackage: CasePackageV01): string[] {
-  const sessionFeatures = casePackage.representative_sessions.flatMap(
-    (session) => session.feature_highlights,
-  );
-
-  return sessionFeatures.length > 0
-    ? [...new Set(sessionFeatures)].slice(0, 4)
-    : casePackage.claims.map((claim) => claim.claim_id).slice(0, 4);
-}
-
 function getRiskFlags(report: EvaluationReportV01): string[] {
   return report.failure_mode_counts.length > 0
     ? report.failure_mode_counts.map((failureMode) => failureMode.failure_mode)
     : ["No failure mode selected"];
 }
 
-function readMetricValue(
-  metric: { status: "available"; value: number } | { status: "unavailable" } | undefined,
-  fallback: number,
-): number {
-  return metric?.status === "available" ? metric.value : fallback;
-}
-
-function getResultsCaseFileId(casePackage: CasePackageV01): string {
+function getResultsCaseFileId(
+  casePackage: ResultsCasePackageMetadataV01,
+): string {
   return [
     "results",
-    casePackage.package_id,
-    casePackage.package_revision ?? "unrevisioned",
-    casePackage.case.case_id,
+    casePackage.case_package.package_id,
+    casePackage.case_package.package_revision ?? "unrevisioned",
+    casePackage.case_package.case_id,
   ].join(":");
 }

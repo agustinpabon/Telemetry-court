@@ -25,6 +25,7 @@ export type CasePackageImportStatus =
       inspectionSummary: CasePackageInspectionSummary;
       source?: "manual" | "hot_folder";
       sourceLabel?: string;
+      resultsCacheAvailable?: boolean;
     }
   | { state: "error"; failure: CasePackageImportFailureDetails };
 
@@ -176,10 +177,14 @@ function getStatusCopy(status: CasePackageImportStatus): string {
       return "Validating CasePackage JSON.";
     case "success":
       if (status.source === "hot_folder") {
-        return `Imported from ${status.sourceLabel ?? "Hot-Folder"}`;
+        return status.resultsCacheAvailable === false
+          ? `Imported from ${status.sourceLabel ?? "Hot-Folder"}. Matching CasePackage metadata must be reloaded for Results.`
+          : `Imported from ${status.sourceLabel ?? "Hot-Folder"}`;
       }
 
-      return "Imported package";
+      return status.resultsCacheAvailable === false
+        ? "Imported package. Matching CasePackage metadata must be reloaded for Results."
+        : "Imported package";
     case "error":
       return status.failure.message;
     case "idle":

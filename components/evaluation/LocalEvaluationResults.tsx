@@ -8,6 +8,11 @@ import { EvaluationReportResults } from "@/components/evaluation/EvaluationRepor
 import { ResultsGalaxyMap } from "@/components/evaluation/ResultsGalaxyMap";
 import { casePackageFixtures } from "@/data/casePackageFixtures";
 import {
+  getCasePackageSessionReferenceKeyV01,
+  loadCasePackagesFromSessionStoreV01,
+  saveCasePackageToSessionStoreV01,
+} from "@/lib/casePackageSessionStorageV01";
+import {
   importLocalEvaluationResultsBundleV01,
   loadLocalEvaluationResultsV01,
   type LocalEvaluationResultsSnapshotV01,
@@ -15,6 +20,8 @@ import {
 import type { ReviewResultImportInspectionSummaryV01 } from "@/lib/reviewResultInspectionV01";
 import {
   importResultsMapCasePackageV01Json,
+  toResultsCasePackageMetadataV01,
+  type ResultsCasePackageMetadataV01,
   type ResultsMapCasePackageImportV01,
 } from "@/lib/resultsGalaxyMapV01";
 import type { CasePackageV01 } from "@/lib/types";
@@ -49,7 +56,9 @@ export function LocalEvaluationResults() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mapPackageInputRef = useRef<HTMLInputElement>(null);
   const [availableCasePackages, setAvailableCasePackages] =
-    useState<CasePackageV01[]>(casePackageFixtures);
+    useState<ResultsCasePackageMetadataV01[]>(
+      casePackageFixtures.map(toResultsCasePackageMetadataV01),
+    );
   const [mapPackageImportStatus, setMapPackageImportStatus] =
     useState<ResultsMapPackageImportStatus>({
       state: "idle",
@@ -70,6 +79,23 @@ export function LocalEvaluationResults() {
             ? error.message
             : "Local ReviewResults could not be validated.",
         );
+      }
+
+      try {
+        setAvailableCasePackages(
+          mergeCasePackages(
+            casePackageFixtures.map(toResultsCasePackageMetadataV01),
+            loadCasePackagesFromSessionStoreV01(window.sessionStorage),
+          ),
+        );
+      } catch (error) {
+        setMapPackageImportStatus({
+          state: "error",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Cached CasePackage metadata could not be loaded.",
+        });
       }
     }, 0);
 
@@ -97,8 +123,14 @@ export function LocalEvaluationResults() {
       if (result.ok) {
         setImportStatus({
           state: "success",
-          message: `Imported ${formatCount(result.importedReviewResultCount, "ReviewResult", "ReviewResults")}. The local summary now includes ${formatCount(result.snapshot.totalReviewResultCount, "result", "results")}.`,
-          inspectionSummary: result.inspectionSummary,
+          message:
+            result.outcome === "already_imported"
+              ? result.message
+              : `Imported ${formatCount(result.importedReviewResultCount, "ReviewResult", "ReviewResults")}. The local summary now includes ${formatCount(result.snapshot.totalReviewResultCount, "result", "results")}.`,
+          inspectionSummary:
+            result.outcome === "imported"
+              ? result.inspectionSummary
+              : undefined,
         });
       } else {
         setImportStatus({
@@ -140,8 +172,15 @@ export function LocalEvaluationResults() {
         return;
       }
 
+      saveCasePackageToSessionStoreV01(
+        window.sessionStorage,
+        result.package,
+      );
       setAvailableCasePackages((currentPackages) =>
-        replaceCasePackage(currentPackages, result.package),
+        replaceCasePackage(
+          currentPackages,
+          toResultsCasePackageMetadataV01(result.package),
+        ),
       );
       setMapPackageImportStatus({
         state: "success",
@@ -192,7 +231,9 @@ export function LocalEvaluationResultsView({
   loadError?: string;
   importStatus?: ResultsImportStatus;
   mapPackageImportStatus?: ResultsMapPackageImportStatus;
-  availableCasePackages?: CasePackageV01[];
+  availableCasePackages?: Array<
+    CasePackageV01 | ResultsCasePackageMetadataV01
+  >;
   fileInputRef?: React.RefObject<HTMLInputElement | null>;
   mapPackageInputRef?: React.RefObject<HTMLInputElement | null>;
   onChooseFile?: () => void;
@@ -306,7 +347,7 @@ export function LocalEvaluationResultsView({
             <MetricCard
               label="Compatibility"
               value="Strict"
-              detail="Rejected and duplicate imports are excluded atomically."
+              detail="Incompatible imports are rejected atomically; duplicate re-imports are harmless no-ops."
             />
           </section>
 
@@ -432,9 +473,9 @@ function formatCount(count: number, singular: string, plural: string) {
 }
 
 function replaceCasePackage(
-  currentPackages: CasePackageV01[],
-  nextPackage: CasePackageV01,
-): CasePackageV01[] {
+  currentPackages: ResultsCasePackageMetadataV01[],
+  nextPackage: ResultsCasePackageMetadataV01,
+): ResultsCasePackageMetadataV01[] {
   const nextPackageKey = getCasePackageListKey(nextPackage);
 
   return [
@@ -445,12 +486,21 @@ function replaceCasePackage(
   ];
 }
 
-function getCasePackageListKey(casePackage: CasePackageV01): string {
-  return [
-    casePackage.package_id,
-    casePackage.package_revision ?? "unrevisioned",
-    casePackage.pipeline.run_id,
-  ].join(":");
+function getCasePackageListKey(
+  casePackage: ResultsCasePackageMetadataV01,
+): string {
+  return getCasePackageSessionReferenceKeyV01(casePackage);
+}
+
+function mergeCasePackages(
+  basePackages: readonly ResultsCasePackageMetadataV01[],
+  cachedPackages: readonly ResultsCasePackageMetadataV01[],
+): ResultsCasePackageMetadataV01[] {
+  return cachedPackages.reduce(
+    (currentPackages, casePackage) =>
+      replaceCasePackage(currentPackages, casePackage),
+    [...basePackages],
+  );
 }
 
 function formatMapPackageImportSuccess(

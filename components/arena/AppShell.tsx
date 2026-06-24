@@ -47,6 +47,7 @@ import {
   getReviewResultExportFilename,
   serializeReviewResultExport,
 } from "@/lib/exportReview";
+import { saveCasePackageToSessionStoreV01 } from "@/lib/casePackageSessionStorageV01";
 import {
   importCasePackageV01Json,
   type CasePackageImportResult,
@@ -57,6 +58,7 @@ import {
   type HotFolderCasePackageValidCandidate,
 } from "@/lib/hotFolderCasePackageTypes";
 import {
+  areReviewResultBundleResultsAlreadyLocalV01,
   createReviewResultBundleV01,
   getReviewResultBundleFilename,
   importReviewResultBundleToLocalStoreV01,
@@ -71,7 +73,11 @@ import {
   getInsufficientContextGuidance,
   type ReviewReadinessChoice,
 } from "@/lib/reviewReadiness";
-import type { CaseFile, LandscapeContextNode } from "@/lib/types";
+import type {
+  CaseFile,
+  CasePackageV01,
+  LandscapeContextNode,
+} from "@/lib/types";
 
 type AppShellProps = {
   cases: CaseFile[];
@@ -248,6 +254,9 @@ export function AppShell({
       }
 
       const importedCase = importResult.caseFile;
+      const resultsCacheAvailable = cacheCasePackageForResults(
+        importResult.package,
+      );
 
       setImportedCases((currentCases) => [
         importedCase,
@@ -267,6 +276,7 @@ export function AppShell({
         inspectionSummary: importResult.inspectionSummary,
         source: options.source ?? "manual",
         sourceLabel: options.sourceLabel,
+        resultsCacheAvailable,
       });
 
       const caseFilePath = getPathForArenaStage("case_file");
@@ -660,6 +670,20 @@ export function AppShell({
     }
 
     try {
+      if (
+        areReviewResultBundleResultsAlreadyLocalV01(
+          window.localStorage,
+          parseResult.bundle,
+        )
+      ) {
+        setReviewBundleStatus({
+          state: "success",
+          message:
+            "This ReviewResult already exists locally. No action is needed; the local results are unchanged.",
+        });
+        return;
+      }
+
       const summary = importReviewResultBundleToLocalStoreV01(
         window.localStorage,
         parseResult.bundle,
@@ -932,6 +956,25 @@ function downloadJsonFile(json: string, filename: string) {
   downloadLink.click();
   downloadLink.remove();
   URL.revokeObjectURL(exportUrl);
+}
+
+function cacheCasePackageForResults(casePackage: CasePackageV01): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  try {
+    const storage = window.sessionStorage;
+
+    if (!storage) {
+      return false;
+    }
+
+    saveCasePackageToSessionStoreV01(storage, casePackage);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function navigatePath({
