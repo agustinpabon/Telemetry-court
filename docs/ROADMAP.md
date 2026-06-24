@@ -33,7 +33,7 @@ package import, result exchange, and aggregation are usable.
 | Milestone 1 - Product Realignment And Documentation | Complete | Repository language, planning, architecture, and agent guidance align around the validation-bench direction. |
 | Milestone 2 - Case Package Contract And Validation Infrastructure | Complete/current foundation | Versioned `CasePackage`, `ReviewResult`, and `EvaluationReport` contracts, package validation, package-shaped fixtures, and local export/aggregation foundations. |
 | Milestone 3 - Local Utility Gate | Complete | Local CasePackage import, useful invalid-package failure UI, ReviewResult persistence/export/import, results from local/imported ReviewResults, and an end-to-end imported-package smoke test. |
-| Milestone 4 - Toponymy / ACME4 Adapter Prototype | Active/In progress | One approved adapter converts a real or realistic cluster output into a case package without raw restricted telemetry ingestion. See [MILESTONE_4_ADAPTER_BOUNDARY.md](./MILESTONE_4_ADAPTER_BOUNDARY.md) and [MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md](./MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md). |
+| Milestone 4 - Toponymy / ACME4 Adapter Prototype & Hot-Loop Connection | Active/In progress | Build the local hot-reload daemon API, Python companion client, and visual claim-to-log highlighting to connect Toponymy with Telemetry Court. See [MILESTONE_4_ADAPTER_BOUNDARY.md](./MILESTONE_4_ADAPTER_BOUNDARY.md) and [MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md](./MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md). |
 | Milestone 5 - Evidence-Constrained AI Assistance | Later/deferred | Predefined evidence-citing questions with explicit missing-evidence behavior after import/results/aggregation are usable. |
 | Milestone 6 - Research Validation Study | Target proof | Multiple reviewers demonstrate useful evaluation signals on real or realistic cases. |
 
@@ -87,18 +87,18 @@ loud and useful validation failures for invalid input, complete a structured
 review, export a ReviewResult, import compatible ReviewResults from local
 artifacts, and produce an auditable EvaluationReport without a backend service.
 
-## Milestone 4 - Toponymy / ACME4 Adapter Prototype
+## Milestone 4 - Toponymy / ACME4 Adapter Prototype & Hot-Loop Connection
 
 - Define the adapter boundary and loop refinement spec. See [MILESTONE_4_ADAPTER_BOUNDARY.md](./MILESTONE_4_ADAPTER_BOUNDARY.md).
 - Complete the docs-first sanitized adapter prototype plan before adding any
   executable adapter workflow. See
   [MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md](./MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md).
-- Build one script or notebook-level adapter for an approved real or realistic precomputed cluster output.
-- Emit minimal, auditable `CasePackage` JSON.
-- Preserve provenance and sanitization metadata.
-- Keep raw restricted telemetry outside the public or portable app.
+- Build the directory-watcher daemon (Hot-Folder watcher) and Python companion module (`telemetry_court_client.py`) to automate case import from notebooks.
+- Implement visual log highlighting in the Evidence Board to pinpoint exactly which telemetry fields support or contradict AI claims.
+- Add visual split and merge buttons next to UMAP neighborhood boundaries in the UI to let reviewers easily record split/merge recommendations.
+- Keep raw restricted telemetry outside the public or portable app via local preflight validation.
 
-Definition of done: the adapter boundary is documented; one adapter-generated package validates and completes the review-to-report path; and the refinement feedback loop is defined without inventing Toponymy APIs or ACME4 access.
+Definition of done: a reviewer can launch a case automatically from a Python notebook, inspect visual claim-to-evidence highlighted logs, record split/merge recommendations, and sync refinement outputs back to the notebook without manual file drag-and-drop.
 
 ## Milestone 5 - Evidence-Constrained AI Assistance
 

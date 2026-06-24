@@ -119,7 +119,7 @@ Do not add Splunk, Elastic, remediation, or operational action generation as a c
 
 This is not a full product reset. Preserve the CasePackage -> ReviewResult -> EvaluationReport direction. The priority correction is to move the real utility loop ahead of further cosmetic polish or evidence-constrained AI assistance.
 
-Milestone 4 is active: Toponymy / DataMapPlot / ACME4 Adapter Prototype.
+Milestone 4 is active: Toponymy / DataMapPlot / ACME4 Adapter Prototype & Hot-Loop Connection.
 
 Completed local Milestone 4 producer pieces:
 
@@ -133,15 +133,11 @@ Completed local Milestone 4 producer pieces:
 
 Prioritize next:
 
-1. Build and verify one approved notebook or script adapter prototype using
-   real or realistic precomputed cluster output outside Telemetry Court.
-2. Consume `cluster_refinement.v0.1` in the upstream notebook or pipeline
-   outside Telemetry Court.
-3. Produce the next approved sanitized draft and mapped `CasePackageV01`
-   iteration through the existing adapter path.
-4. Run a small approved pilot with 3-5 real or realistic packages and 2-3
-   reviewers only after artifact handling is approved for the intended
-   environment.
+1. Build a local file system watcher daemon API in Next.js that loads packages from a Hot-Folder and reloads the browser dynamically.
+2. Create `telemetry_court_client.py`, a simple Python helper module, to automate sending clusters from Jupyter notebooks and picking up results.
+3. Implement visual log highlighting in the Evidence Board to show exactly which telemetry fields support/contradict LLM-generated claims.
+4. Add visual split and merge controls in the UI next to UMAP neighborhood boundaries.
+5. Consume `cluster_refinement.v0.1` and run a small approved pilot with 3-5 real or realistic packages to verify the closed-loop developer workflow.
 
 Evidence-constrained AI assistance remains a later milestone. It should cite evidence IDs, admit missing evidence, and avoid generic chatbot behavior.
 

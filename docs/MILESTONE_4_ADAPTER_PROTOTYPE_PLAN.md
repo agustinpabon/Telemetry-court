@@ -33,49 +33,32 @@ Completed local producer pieces:
 
 Remaining prototype work:
 
-- build and verify one approved notebook or script adapter using real or
-  realistic precomputed cluster output outside Telemetry Court;
-- consume `cluster_refinement.v0.1` in the upstream notebook or pipeline using
-  the refinement handoff;
-- produce the next approved sanitized draft and mapped `CasePackageV01`
-  iteration through the existing adapter path;
-- run a small approved pilot only after the package and artifact handling are
-  approved for the intended environment.
+- Build and verify the local file system watcher daemon API in Next.js (Hot-Folder daemon) to load packages from a local directory;
+- Create the Python companion client (`telemetry_court_client.py`) to automate case submission and refinement retrieval from Jupyter notebooks;
+- Implement visual log highlighting on the Evidence Board to show exactly which telemetry fields support/contradict LLM-generated claims;
+- Integrate visual split and merge controls in the UI next to UMAP neighborhood boundaries;
+- Run a small approved pilot with 3-5 real or realistic packages to verify the closed-loop developer workflow.
 
 ## 1. Sanitized Prototype Flow
 
 ```text
-1. Upstream notebook or pipeline output
-   -> 2. Sanitization and provenance gate
-   -> 3. CasePackageV01 mapping
-   -> 4. Telemetry Court import and review
-   -> 5. ReviewResult, EvaluationReport, and cluster_refinement.v0.1 export
-   -> 6. Upstream notebook consumes refinement externally
-   -> 7. Next approved CasePackage iteration
+1. Upstream notebook or pipeline runs Toponymy & UMAP
+   -> 2. Python client maps & sanitizes CasePackage
+   -> 3. Package is written to the watched Hot-Folder
+   -> 4. Telemetry Court API detects and auto-loads package in UI
+   -> 5. Blind review, log field check, split/merge recommendations
+   -> 6. Refinement recipe written back to the Hot-Folder
+   -> 7. Jupyter notebook reads refinement and refines cluster
 ```
 
 1. The upstream environment runs the clustering, projection, naming, and
-   evidence summarization workflow. It may use Toponymy-style naming,
-   DataMapPlot-style maps, UMAP, HDBSCAN, ACME4-derived experiments, or another
-   approved local pipeline, but those tools stay outside Telemetry Court.
-2. A sanitization and provenance gate verifies that only approved summaries,
-   derived features, aggregate metrics, opaque IDs, safe references, and scoped
-   approval metadata can leave the upstream environment.
-3. The producer maps the approved output into `case_package.v0.1` JSON with
-   stable IDs, explicit claim-to-evidence links, provenance, sanitization, and
-   review configuration.
-4. Telemetry Court imports and validates the package, runs the blind structured
-   review, records human evidence ratings, compares candidate labels, captures
-   outlier or impostor selections, and produces `ReviewResultV01` artifacts.
-5. Compatible review results can be aggregated into `EvaluationReportV01`, and
-   Telemetry Court can export a `cluster_refinement.v0.1` recipe from compatible
-   human review signals.
-6. The upstream notebook reads the refinement JSON, applies any approved
-   pruning only inside the upstream environment, and treats split or merge
-   recommendations as upstream rerun hints.
-7. The upstream team reruns embedding, clustering, naming, and evidence
-   extraction externally, then produces a new approved and sanitized
-   `CasePackageV01` iteration if the revised cluster should be reviewed.
+   evidence summarization workflow using Toponymy and UMAP outside Telemetry Court.
+2. The python client maps the approved output into `case_package.v0.1` JSON with stable IDs, explicit claim-to-evidence links, and proper sanitization metadata.
+3. The python client writes the package JSON directly to a watched Hot-Folder on the local disk.
+4. Telemetry Court's directory-watcher daemon detects the file and automatically makes it available in the UI case switcher.
+5. The reviewer completes the blind review, evaluates highlighted log fields, marks outlier sessions, selects split/merge recommendations, and saves the verdict.
+6. Telemetry Court writes the `cluster_refinement.v0.1` JSON recipe directly back to the Hot-Folder.
+7. The upstream notebook detects the refinement file, filters the session DataFrame, and reruns UMAP/Toponymy to produce the next optimized cluster iteration.
 
 ## 2. Producer Checklist
 

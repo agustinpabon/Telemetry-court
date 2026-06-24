@@ -35,16 +35,17 @@ Historical Evidence Arena and static MVP milestones may remain closed for record
 
 ## Immediate Planning Priority
 
-Milestone 4 - Toponymy / ACME4 Adapter Prototype is the active implementation milestone. Its
-issue batch should stay small and dependency ordered:
+Milestone 4 - Toponymy / ACME4 Adapter Prototype & Hot-Loop Connection is the active implementation milestone. Its issue batch is small and dependency ordered:
 
 1. Define the adapter boundary and loop refinement spec (completed).
 2. Complete the docs-first sanitized adapter prototype plan (completed).
 3. Implement the pure sanitized CasePackage adapter mapper helper (completed).
 4. Create the CLI wrapper for the sanitized CasePackage adapter mapper (completed).
-5. Build and verify one Jupyter/Python adapter prototype using real or realistic precomputed cluster output.
-6. Connect the cluster refinement recipe JSON export to an upstream Jupyter notebook split/merge consumer.
-7. Run a small pilot with 3-5 real or realistic packages and 2-3 reviewers.
+5. Build a local file system watcher daemon API in Next.js (Hot-Folder watcher) to dynamically detect and load CasePackages from disk.
+6. Create the companion python client module (`telemetry_court_client.py`) to easily submit cases from Jupyter and load the refinement outputs.
+7. Implement visual log highlighting on the Evidence Board to show which fields support or contradict claims.
+8. Add visual split/merge buttons next to UMAP neighborhood boundaries in the UI.
+9. Run a small approved pilot with 3-5 real or realistic packages to verify the closed-loop developer workflow.
 
 Do not create issues yet for auth, production databases, admin UX, broad
 analytics dashboards, enterprise features, raw telemetry ingestion, SIEM
