@@ -23,6 +23,8 @@ export type CasePackageImportStatus =
       caseId: string;
       title: string;
       inspectionSummary: CasePackageInspectionSummary;
+      source?: "manual" | "hot_folder";
+      sourceLabel?: string;
     }
   | { state: "error"; failure: CasePackageImportFailureDetails };
 
@@ -173,6 +175,10 @@ function getStatusCopy(status: CasePackageImportStatus): string {
     case "reading":
       return "Validating CasePackage JSON.";
     case "success":
+      if (status.source === "hot_folder") {
+        return `Imported from ${status.sourceLabel ?? "Hot-Folder"}`;
+      }
+
       return "Imported package";
     case "error":
       return status.failure.message;

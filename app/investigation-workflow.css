@@ -4788,7 +4788,7 @@
   align-items: start;
   column-gap: 18px;
   display: grid;
-  grid-template-columns: max-content max-content max-content;
+  grid-template-columns: max-content max-content max-content max-content;
   grid-template-rows: 15px 40px minmax(16px, auto);
   min-width: 0;
   row-gap: 4px;
@@ -4879,6 +4879,13 @@
   outline-offset: 3px;
 }
 
+.arena-shell .tc-masthead__button-row button:disabled,
+.arena-shell .tc-masthead__action-row button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+}
+
 .arena-shell .tc-masthead__action-helper,
 .arena-shell .tc-masthead__helper {
   color: var(--workflow-muted);
@@ -4901,7 +4908,9 @@
 }
 
 .arena-shell .case-package-import-status.tc-masthead__action-helper,
-.arena-shell .case-package-import-status.tc-masthead__helper {
+.arena-shell .case-package-import-status.tc-masthead__helper,
+.arena-shell .hot-folder-case-package-status.tc-masthead__action-helper,
+.arena-shell .hot-folder-case-package-status.tc-masthead__helper {
   max-width: 200px;
 }
 
