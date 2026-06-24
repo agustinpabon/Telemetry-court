@@ -62,7 +62,11 @@ import {
   REVIEW_RESULT_V01_SCHEMA_VERSION,
   type ReviewResultV01,
 } from "@/lib/reviewResultV01";
-import { CASE_PACKAGE_V01_SCHEMA_VERSION } from "@/lib/types";
+import {
+  CASE_PACKAGE_V01_SCHEMA_VERSION,
+  type MergeRecommendationReason,
+  type SplitRecommendationReason,
+} from "@/lib/types";
 
 export function buildClusterRefinementV01({
   report,
@@ -288,7 +292,7 @@ function buildSessionExclusionRecommendations(
     recommendation.selectedCount += 1;
     recommendation.sourceReviewIds.add(review.review_id);
 
-    if (hasAnySplitSignal(signals)) {
+    if (hasSplitRecommendationSignal(review)) {
       recommendation.qualifyingReviewIds.add(review.review_id);
       addSetValues(recommendation.finalVerdicts, signals.final_verdicts);
       addSetValues(
@@ -348,11 +352,12 @@ function buildSplitRecommendations(
   const finalVerdicts = new Set<SplitFinalVerdictV01>();
   const recommendedActions = new Set<SplitRecommendedActionV01>();
   const failureModes = new Set<SplitFailureModeV01>();
+  const details = buildSplitRecommendationDetails(reviews);
 
   for (const review of reviews) {
     const signals = getSplitSignals(review);
 
-    if (!hasAnySplitSignal(signals)) {
+    if (!hasSplitRecommendationSignal(review)) {
       continue;
     }
 
@@ -378,6 +383,7 @@ function buildSplitRecommendations(
         recommended_actions: [...recommendedActions].sort(compareStrings),
         failure_modes: [...failureModes].sort(compareStrings),
       },
+      ...(details ? { details } : {}),
       disagreement: buildRecommendationDisagreement({
         reviewerCount: reviews.length,
         supportingReviewCount: sourceReviewIds.size,
@@ -397,14 +403,12 @@ function buildMergeRecommendations(
   const sourceReviewIds = new Set<string>();
   const finalVerdicts = new Set<MergeFinalVerdictV01>();
   const recommendedActions = new Set<MergeRecommendedActionV01>();
+  const target = buildMergeRecommendationTarget(reviews);
 
   for (const review of reviews) {
     const signals = getMergeSignals(review);
-    const hasMergeSignal =
-      signals.final_verdicts.length > 0 ||
-      signals.recommended_actions.length > 0;
 
-    if (!hasMergeSignal) {
+    if (!hasMergeRecommendationSignal(review)) {
       continue;
     }
 
@@ -429,10 +433,7 @@ function buildMergeRecommendations(
         recommended_actions: [...recommendedActions].sort(compareStrings),
       },
       target: {
-        status: "unavailable",
-        neighbor_cluster_ids: [],
-        reason:
-          "ReviewResult v0.1 does not capture a reviewer-selected neighbor merge target.",
+        ...target,
       },
       disagreement: buildRecommendationDisagreement({
         reviewerCount: reviews.length,
@@ -527,16 +528,9 @@ function buildDisagreement(
       ),
     ).size > 1;
   const splitSignals = reviews.map((review) =>
-    hasAnySplitSignal(getSplitSignals(review)),
+    hasSplitRecommendationSignal(review),
   );
-  const mergeSignals = reviews.map((review) => {
-    const signals = getMergeSignals(review);
-
-    return (
-      signals.final_verdicts.length > 0 ||
-      signals.recommended_actions.length > 0
-    );
-  });
+  const mergeSignals = reviews.map((review) => hasMergeRecommendationSignal(review));
   const splitRecommendation = hasMixedBooleanValues(splitSignals);
   const mergeRecommendation = hasMixedBooleanValues(mergeSignals);
 
@@ -602,6 +596,88 @@ function hasAnySplitSignal(signals: ClusterRefinementSignalSetV01): boolean {
     signals.recommended_actions.length > 0 ||
     signals.failure_modes.length > 0
   );
+}
+
+function hasSplitRecommendationSignal(review: ReviewResultV01): boolean {
+  return (
+    hasAnySplitSignal(getSplitSignals(review)) ||
+    Boolean(review.decisions.cluster_refinement?.split_recommendation)
+  );
+}
+
+function hasMergeRecommendationSignal(review: ReviewResultV01): boolean {
+  const signals = getMergeSignals(review);
+
+  return (
+    signals.final_verdicts.length > 0 ||
+    signals.recommended_actions.length > 0 ||
+    Boolean(review.decisions.cluster_refinement?.merge_recommendation)
+  );
+}
+
+function buildSplitRecommendationDetails(
+  reviews: readonly ReviewResultV01[],
+): ClusterRefinementSplitRecommendationV01["details"] | undefined {
+  const reasonCodes = new Set<SplitRecommendationReason>();
+  const affectedSessionIds = new Set<string>();
+  const evidenceIds = new Set<string>();
+
+  for (const review of reviews) {
+    const splitRecommendation =
+      review.decisions.cluster_refinement?.split_recommendation;
+
+    if (!splitRecommendation) {
+      continue;
+    }
+
+    reasonCodes.add(splitRecommendation.reason);
+    addSetValues(affectedSessionIds, splitRecommendation.affected_session_ids ?? []);
+    addSetValues(evidenceIds, splitRecommendation.evidence_ids ?? []);
+  }
+
+  if (reasonCodes.size === 0) {
+    return undefined;
+  }
+
+  return {
+    reason_codes: [...reasonCodes].sort(compareStrings),
+    affected_session_ids: [...affectedSessionIds].sort(compareStrings),
+    evidence_ids: [...evidenceIds].sort(compareStrings),
+  };
+}
+
+function buildMergeRecommendationTarget(
+  reviews: readonly ReviewResultV01[],
+): ClusterRefinementMergeRecommendationV01["target"] {
+  const neighborClusterIds = new Set<string>();
+  const reasonCodes = new Set<MergeRecommendationReason>();
+
+  for (const review of reviews) {
+    const mergeRecommendation =
+      review.decisions.cluster_refinement?.merge_recommendation;
+
+    if (!mergeRecommendation) {
+      continue;
+    }
+
+    neighborClusterIds.add(mergeRecommendation.target_neighbor_cluster_id);
+    reasonCodes.add(mergeRecommendation.reason);
+  }
+
+  if (neighborClusterIds.size > 0) {
+    return {
+      status: "selected",
+      neighbor_cluster_ids: [...neighborClusterIds].sort(compareStrings),
+      reason_codes: [...reasonCodes].sort(compareStrings),
+    };
+  }
+
+  return {
+    status: "unavailable",
+    neighbor_cluster_ids: [],
+    reason:
+      "ReviewResult v0.1 does not capture a reviewer-selected neighbor merge target.",
+  };
 }
 
 function buildSessionSelectionDisagreement({

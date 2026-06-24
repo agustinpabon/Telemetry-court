@@ -1,6 +1,8 @@
 import {
   finalVerdictLabel,
   formatVerdictReasonList,
+  mergeRecommendationReasonLabel,
+  splitRecommendationReasonLabel,
 } from "@/components/arena/arenaMeta";
 import { getCompatibleFailureModes } from "@/lib/arenaReviewState";
 import type { CaseReviewState, EvidenceBalance } from "@/lib/arenaReviewState";
@@ -44,6 +46,7 @@ export function JudgmentReceipt({
   );
   const evidenceBalanceSummary = `${balance.supporting} support · ${balance.weak} weak · ${balance.contradictory} contradict · ${balance.contextGaps} context`;
   const recommendedAction = getRecommendedAction(reviewState.finalVerdict, balance);
+  const refinementSummary = getRefinementSummary(reviewState);
 
   return (
     <article className={`judgment-receipt ${verdictLabel ? "is-visible" : ""}`}>
@@ -93,6 +96,11 @@ export function JudgmentReceipt({
           value={recommendedAction}
           emphasis
         />
+        <ReceiptLine
+          label="Split / merge guidance"
+          value={refinementSummary}
+          fallback="No split or merge recommendation recorded."
+        />
       </dl>
 
       <div className="receipt-purpose" aria-label="ReviewResult purpose">
@@ -137,6 +145,28 @@ export function JudgmentReceipt({
       </div>
     </article>
   );
+}
+
+function getRefinementSummary(reviewState: CaseReviewState): string | undefined {
+  const splitRecommendation =
+    reviewState.clusterRefinement?.splitRecommendation;
+  const mergeRecommendation =
+    reviewState.clusterRefinement?.mergeRecommendation;
+  const summaries: string[] = [];
+
+  if (splitRecommendation) {
+    summaries.push(
+      `Split: ${splitRecommendationReasonLabel[splitRecommendation.reason]}`,
+    );
+  }
+
+  if (mergeRecommendation) {
+    summaries.push(
+      `Merge with ${mergeRecommendation.targetNeighborClusterId}: ${mergeRecommendationReasonLabel[mergeRecommendation.reason]}`,
+    );
+  }
+
+  return summaries.length > 0 ? summaries.join(" · ") : undefined;
 }
 
 function ReceiptLine({

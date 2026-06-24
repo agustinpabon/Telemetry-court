@@ -19,6 +19,61 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-24: Split And Merge Review Recommendations
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Start issue #174 by adding structured split and merge
+  recommendation controls to the review flow and preserving ReviewResult /
+  `cluster_refinement.v0.1` compatibility.
+- Files changed:
+  - `lib/types.ts`
+  - `lib/reviewRefinement.ts`
+  - `lib/arenaReviewState.ts`
+  - `lib/exportReview.ts`
+  - `lib/reviewResultV01.ts`
+  - `lib/reviewResultValidationV01.ts`
+  - `lib/casePackageV01ToCaseFile.ts`
+  - `lib/clusterRefinementTypesV01.ts`
+  - `lib/clusterRefinementV01.ts`
+  - `lib/clusterRefinementValidationV01.ts`
+  - `components/arena/VerdictPanel.tsx`
+  - `components/arena/JudgmentReceipt.tsx`
+  - `components/arena/arenaMeta.ts`
+  - related focused tests
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Added optional structured split and merge recommendations to review state
+    and ReviewResult export.
+  - Added final-evaluation controls for split reason codes, optional affected
+    session/evidence references, and merge targets from existing neighbor
+    metadata only.
+  - Extended `cluster_refinement.v0.1` export to include structured split
+    details and selected merge target IDs when present, while retaining the
+    unavailable-target fallback.
+- Decisions made:
+  - Kept split/merge recommendations optional and backward-compatible for old
+    ReviewResults.
+  - Did not invent merge candidates when CasePackage/UI state does not include
+    neighbor metadata.
+  - Kept the feature as upstream refinement guidance, not in-app clustering or
+    topology computation.
+- Checks run:
+  - `npm test -- lib/exportReview.test.ts lib/arenaReviewState.test.ts lib/clusterRefinementV01.test.ts components/arena/VerdictPanel.test.tsx lib/casePackageV01ToCaseFile.test.ts` passed.
+  - `npm test` passed.
+  - `npx tsc --noEmit` passed.
+  - `npm run lint` passed.
+  - `npm run build` passed.
+  - `git diff --check` passed.
+  - Browser verification passed on desktop and mobile verdict screens with no
+    page errors or horizontal overflow.
+- Assumptions: Neighbor cluster metadata supplied by the validated CasePackage
+  is the only compatible merge-target source.
+- Risks/follow-ups: Verify the exported refinement artifact with an approved
+  imported package that includes richer neighbor context.
+- Next recommended step: Review the draft PR for issue #174 and verify the
+  exported refinement artifact with a package that includes neighbor context.
+- Suggested commit message: `feat: add split merge review controls`
+
 ## 2026-06-24: Sanitized Evidence Field Highlights
 
 - Agent/model: Codex (GPT-5)

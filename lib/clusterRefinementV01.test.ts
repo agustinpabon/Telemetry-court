@@ -372,6 +372,47 @@ test("merge recommendations preserve unavailable target state when no target is 
   ]);
 });
 
+test("cluster refinement export includes structured split details and selected merge targets", () => {
+  const review = createReviewResult({
+    reviewId: "review-structured-refinement",
+    reviewerId: "reviewer-structured-refinement",
+    finalVerdict: "needs_merge",
+    recommendedAction: "merge_cluster",
+    failureModes: ["cluster_seems_mixed"],
+    clusterRefinement: {
+      split_recommendation: {
+        status: "recommended",
+        reason: "boundary_sessions",
+        affected_session_ids: ["session-alpha"],
+        evidence_ids: ["evidence-2"],
+      },
+      merge_recommendation: {
+        status: "recommended",
+        target_neighbor_cluster_id: "cluster-neighbor-a",
+        reason: "shared_behavior",
+      },
+    },
+  });
+
+  const artifact = buildClusterRefinementV01({
+    report: aggregateReviewResultsV01([review]),
+    sourceReviewResults: [review],
+    generatedAt: "2026-06-23T12:00:00.000Z",
+    refinementId: "refinement-structured",
+  });
+
+  assert.deepEqual(artifact.split_recommendations[0]?.details, {
+    reason_codes: ["boundary_sessions"],
+    affected_session_ids: ["session-alpha"],
+    evidence_ids: ["evidence-2"],
+  });
+  assert.deepEqual(artifact.merge_recommendations[0]?.target, {
+    status: "selected",
+    neighbor_cluster_ids: ["cluster-neighbor-a"],
+    reason_codes: ["shared_behavior"],
+  });
+});
+
 test("uncertainty and single-review disagreement state are explicit", () => {
   const review = createReviewResult({
     finalVerdict: "uncertain",
@@ -496,6 +537,7 @@ function createReviewResult({
   recommendedAction = "accept_label",
   confidenceLevel,
   notes,
+  clusterRefinement,
 }: {
   reviewId?: string;
   reviewerId?: string;
@@ -509,6 +551,7 @@ function createReviewResult({
     ReviewResultV01["decisions"]["confidence"]
   >["level"];
   notes?: string[];
+  clusterRefinement?: ReviewResultV01["decisions"]["cluster_refinement"];
 } = {}): ReviewResultV01 {
   return {
     schema_version: "review_result.v0.1",
@@ -574,6 +617,7 @@ function createReviewResult({
       failure_modes: failureModes,
       final_verdict: finalVerdict,
       recommended_action: recommendedAction,
+      ...(clusterRefinement ? { cluster_refinement: clusterRefinement } : {}),
       ...(notes ? { notes } : {}),
     },
   };

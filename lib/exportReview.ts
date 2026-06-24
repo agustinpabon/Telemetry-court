@@ -13,6 +13,7 @@ import type {
   EvidenceRating,
   FinalVerdict,
 } from "@/lib/types";
+import { getCaseFileMergeCandidates } from "@/lib/reviewRefinement";
 
 export type EvidenceArenaReview = {
   blindChoiceId?: string;
@@ -30,6 +31,7 @@ export type EvidenceArenaReview = {
   impostorExplanation?: string;
   failureModes: DuelReason[];
   finalVerdict?: FinalVerdict;
+  clusterRefinement?: ReviewResultV01["decisions"]["cluster_refinement"];
 };
 
 export type ReviewResultExport = ReviewResultV01;
@@ -131,6 +133,10 @@ export function buildReviewResultExport({
     );
   }
   const evidenceRatings = buildEvidenceRatings(caseFile, arenaReview);
+  const clusterRefinement = buildClusterRefinementDecisions(
+    caseFile,
+    arenaReview.clusterRefinement,
+  );
   const reviewResultReviewer =
     reviewer ??
     createLocalDemoReviewer(packageReference.package_id, packageReference.case_id);
@@ -173,6 +179,7 @@ export function buildReviewResultExport({
       failure_modes: arenaReview.failureModes,
       final_verdict: finalVerdict,
       recommended_action: recommendedActionMap[finalVerdict],
+      ...(clusterRefinement ? { cluster_refinement: clusterRefinement } : {}),
     },
   };
 }
@@ -305,6 +312,127 @@ function buildEvidenceRatings(
       rating: canonicalRating,
     };
   });
+}
+
+function buildClusterRefinementDecisions(
+  caseFile: CaseFile,
+  clusterRefinement: EvidenceArenaReview["clusterRefinement"],
+): ReviewResultV01["decisions"]["cluster_refinement"] | undefined {
+  if (!clusterRefinement) {
+    return undefined;
+  }
+
+  const splitRecommendation = clusterRefinement.split_recommendation
+    ? buildSplitRecommendation(caseFile, clusterRefinement.split_recommendation)
+    : undefined;
+  const mergeRecommendation = clusterRefinement.merge_recommendation
+    ? buildMergeRecommendation(caseFile, clusterRefinement.merge_recommendation)
+    : undefined;
+
+  if (!splitRecommendation && !mergeRecommendation) {
+    return undefined;
+  }
+
+  return {
+    ...(splitRecommendation
+      ? { split_recommendation: splitRecommendation }
+      : {}),
+    ...(mergeRecommendation
+      ? { merge_recommendation: mergeRecommendation }
+      : {}),
+  };
+}
+
+function buildSplitRecommendation(
+  caseFile: CaseFile,
+  splitRecommendation: NonNullable<
+    EvidenceArenaReview["clusterRefinement"]
+  >["split_recommendation"],
+): NonNullable<
+  ReviewResultV01["decisions"]["cluster_refinement"]
+>["split_recommendation"] {
+  if (!splitRecommendation || splitRecommendation.status !== "recommended") {
+    throw new Error(
+      "Cannot export ReviewResult v0.1 with unsupported split recommendation status.",
+    );
+  }
+
+  return {
+    status: "recommended",
+    reason: splitRecommendation.reason,
+    ...buildOptionalReferenceArray({
+      label: "split affected session",
+      sourceIds: splitRecommendation.affected_session_ids,
+      knownIds: caseFile.representativeSessions.map((session) => session.id),
+      outputKey: "affected_session_ids",
+    }),
+    ...buildOptionalReferenceArray({
+      label: "split evidence",
+      sourceIds: splitRecommendation.evidence_ids,
+      knownIds: caseFile.evidenceItems.map((evidence) => evidence.id),
+      outputKey: "evidence_ids",
+    }),
+  };
+}
+
+function buildMergeRecommendation(
+  caseFile: CaseFile,
+  mergeRecommendation: NonNullable<
+    EvidenceArenaReview["clusterRefinement"]
+  >["merge_recommendation"],
+): NonNullable<
+  ReviewResultV01["decisions"]["cluster_refinement"]
+>["merge_recommendation"] {
+  if (!mergeRecommendation || mergeRecommendation.status !== "recommended") {
+    throw new Error(
+      "Cannot export ReviewResult v0.1 with unsupported merge recommendation status.",
+    );
+  }
+
+  const knownMergeCandidateIds = new Set(
+    getCaseFileMergeCandidates(caseFile).map((candidate) => candidate.clusterId),
+  );
+
+  if (!knownMergeCandidateIds.has(mergeRecommendation.target_neighbor_cluster_id)) {
+    throw new Error(
+      `Cannot export ReviewResult v0.1 with unknown merge candidate cluster ID "${mergeRecommendation.target_neighbor_cluster_id}".`,
+    );
+  }
+
+  return {
+    status: "recommended",
+    target_neighbor_cluster_id: mergeRecommendation.target_neighbor_cluster_id,
+    reason: mergeRecommendation.reason,
+  };
+}
+
+function buildOptionalReferenceArray<Key extends "affected_session_ids" | "evidence_ids">({
+  label,
+  sourceIds,
+  knownIds,
+  outputKey,
+}: {
+  label: string;
+  sourceIds: readonly string[] | undefined;
+  knownIds: readonly string[];
+  outputKey: Key;
+}): Partial<Record<Key, string[]>> {
+  if (!sourceIds || sourceIds.length === 0) {
+    return {};
+  }
+
+  const knownIdSet = new Set(knownIds);
+  const uniqueIds = [...new Set(sourceIds)].sort();
+
+  for (const sourceId of uniqueIds) {
+    if (!knownIdSet.has(sourceId)) {
+      throw new Error(
+        `Cannot export ReviewResult v0.1 with unknown ${label} ID "${sourceId}".`,
+      );
+    }
+  }
+
+  return { [outputKey]: uniqueIds } as Partial<Record<Key, string[]>>;
 }
 
 function createLocalDemoReviewer(

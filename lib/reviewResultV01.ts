@@ -7,6 +7,8 @@ import {
   type CasePackageReferenceV01,
   type CasePackageVerdictV01,
   type DuelReason,
+  type MergeRecommendationReason,
+  type SplitRecommendationReason,
 } from "@/lib/types";
 
 export const REVIEW_RESULT_V01_SCHEMA_VERSION = "review_result.v0.1" as const;
@@ -28,6 +30,24 @@ export const REVIEW_RESULT_V01_DUEL_REASONS = [
   "preserves_uncertainty",
   "cluster_seems_mixed",
 ] as const satisfies readonly DuelReason[];
+
+export type ReviewResultSplitRecommendationV01 = {
+  status: "recommended";
+  reason: SplitRecommendationReason;
+  affected_session_ids?: string[];
+  evidence_ids?: string[];
+};
+
+export type ReviewResultMergeRecommendationV01 = {
+  status: "recommended";
+  target_neighbor_cluster_id: string;
+  reason: MergeRecommendationReason;
+};
+
+export type ReviewResultClusterRefinementV01 = {
+  split_recommendation?: ReviewResultSplitRecommendationV01;
+  merge_recommendation?: ReviewResultMergeRecommendationV01;
+};
 
 export type ReviewResultV01 = {
   schema_version: typeof REVIEW_RESULT_V01_SCHEMA_VERSION;
@@ -69,6 +89,7 @@ export type ReviewResultV01 = {
     failure_modes: DuelReason[];
     final_verdict: CasePackageVerdictV01;
     recommended_action: CasePackageRecommendedActionV01;
+    cluster_refinement?: ReviewResultClusterRefinementV01;
     notes?: string[];
   };
 };

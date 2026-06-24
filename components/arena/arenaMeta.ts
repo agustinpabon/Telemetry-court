@@ -4,7 +4,9 @@ import type {
   EvidenceRating,
   FinalVerdict,
   LandscapeStatus,
+  MergeRecommendationReason,
   ReviewStatus,
+  SplitRecommendationReason,
 } from "@/lib/types";
 
 export const landscapeStatusMeta: Record<
@@ -199,6 +201,25 @@ export const finalVerdicts: FinalVerdict[] = [
   "needs_merge",
   "needs_better_evidence",
 ];
+
+export const splitRecommendationReasonLabel: Record<
+  SplitRecommendationReason,
+  string
+> = {
+  mixed_behaviors: "Mixed behaviours",
+  boundary_sessions: "Boundary sessions",
+  conflicting_evidence: "Conflicting evidence",
+  low_coherence: "Low coherence",
+};
+
+export const mergeRecommendationReasonLabel: Record<
+  MergeRecommendationReason,
+  string
+> = {
+  shared_behavior: "Shared behaviour",
+  ambiguous_boundary: "Ambiguous boundary",
+  neighbor_evidence_overlap: "Overlapping evidence",
+};
 
 export function formatReasonList(reasons?: DuelReason[]): string | undefined {
   if (!reasons || reasons.length === 0) {

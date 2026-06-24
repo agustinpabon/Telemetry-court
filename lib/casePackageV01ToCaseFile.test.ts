@@ -17,9 +17,17 @@ test("adapts a complete CasePackage v0.1 into the existing UI case shape", () =>
     return;
   }
 
-  const { casePackageReference, ...caseFile } = result.caseFile;
+  const { casePackageReference, neighborClusters, ...caseFile } = result.caseFile;
 
   assert.deepEqual(caseFile, sampleCaseSeedData[0]);
+  assert.deepEqual(neighborClusters, [
+    {
+      clusterId: "cluster-iam-041",
+      label: "Standard platform role lifecycle",
+      distance: 0.18,
+      note: "Nearest synthetic neighbour shares role creation and tagging, but has clearer ticket metadata.",
+    },
+  ]);
   assert.deepEqual(casePackageReference, {
     schema_version: "case_package.v0.1",
     package_id: "pkg-synthetic-arena-001",

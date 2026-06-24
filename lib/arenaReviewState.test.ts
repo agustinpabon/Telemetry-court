@@ -160,6 +160,90 @@ test("arena reducer drives the staged structured-choice happy path", () => {
   assert.match(exportJson, /"partially_supported"/);
 });
 
+test("arena reducer captures optional split and merge recommendations without changing completion", () => {
+  const targetCase = sampleCases[0];
+  assert.ok(targetCase);
+  const affectedSession = targetCase.representativeSessions[3];
+  const affectedEvidence = targetCase.evidenceItems[3];
+  const mergeCandidate = targetCase.neighborClusters?.[0];
+  assert.ok(affectedSession);
+  assert.ok(affectedEvidence);
+  assert.ok(mergeCandidate);
+
+  let arenaState = createInitialArenaState(sampleCases, "verdict");
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "selectVerdict", verdict: "needs_split" },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "selectSplitRecommendationReason", reason: "mixed_behaviors" },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    {
+      type: "toggleSplitRecommendationSession",
+      sessionId: affectedSession.id,
+    },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    {
+      type: "toggleSplitRecommendationEvidence",
+      evidenceId: affectedEvidence.id,
+    },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    {
+      type: "selectMergeRecommendationTarget",
+      neighborClusterId: mergeCandidate.clusterId,
+    },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "selectMergeRecommendationReason", reason: "shared_behavior" },
+    sampleCases,
+  );
+
+  const reviewState = getCurrentReviewState(arenaState);
+  const evidenceRatings = getEvidenceRatings(targetCase, reviewState);
+  const arenaReview = buildArenaReview(targetCase, reviewState, evidenceRatings);
+
+  assert.deepEqual(reviewState.clusterRefinement, {
+    splitRecommendation: {
+      status: "recommended",
+      reason: "mixed_behaviors",
+      affectedSessionIds: [affectedSession.id],
+      evidenceIds: [affectedEvidence.id],
+    },
+    mergeRecommendation: {
+      status: "recommended",
+      targetNeighborClusterId: mergeCandidate.clusterId,
+      reason: "shared_behavior",
+    },
+  });
+  assert.equal(getReviewCompletion(reviewState, evidenceRatings, targetCase), 6);
+  assert.deepEqual(arenaReview.clusterRefinement, {
+    split_recommendation: {
+      status: "recommended",
+      reason: "mixed_behaviors",
+      affected_session_ids: [affectedSession.id],
+      evidence_ids: [affectedEvidence.id],
+    },
+    merge_recommendation: {
+      status: "recommended",
+      target_neighbor_cluster_id: mergeCandidate.clusterId,
+      reason: "shared_behavior",
+    },
+  });
+});
+
 test("selecting supported clears negative failure modes from state and export", () => {
   const targetCase = sampleCases[0];
   assert.ok(targetCase);

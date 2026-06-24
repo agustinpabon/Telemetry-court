@@ -12,6 +12,7 @@ import type {
   EvidencePolarity,
   EvidenceSourceType,
   EvidenceStrength,
+  NearestNeighbor,
   SupportStatus,
 } from "@/lib/types";
 import {
@@ -545,6 +546,7 @@ function mapValidatedCasePackageV01ToCaseFile(
       distance: readAvailableMetric(firstNeighbor?.distance, 0),
       note: firstNeighbor?.reason_this_neighbor_matters ?? "",
     },
+    neighborClusters: mapNeighborClusters(packageFixture),
     cluster: {
       id: packageFixture.cluster.cluster_id,
       name: packageFixture.cluster.cluster_name ?? packageFixture.case.title,
@@ -677,6 +679,15 @@ function mapValidatedCasePackageV01ToCaseFile(
         }
       : undefined,
   };
+}
+
+function mapNeighborClusters(packageFixture: CasePackageV01): NearestNeighbor[] {
+  return packageFixture.neighbor_clusters.map((neighbor) => ({
+    clusterId: neighbor.neighbor_cluster_id,
+    label: neighbor.label ?? neighbor.name ?? neighbor.neighbor_cluster_id,
+    distance: readAvailableMetric(neighbor.distance, 0),
+    note: neighbor.reason_this_neighbor_matters,
+  }));
 }
 
 function getBestSupportedLabelId(packageFixture: CasePackageV01): string {
