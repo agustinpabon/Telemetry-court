@@ -258,3 +258,57 @@ test("CasePackage import control renders a close button for error panel", () => 
   assert.match(markup, /class="case-package-import-close-button"/);
   assert.match(markup, /aria-label="Close error diagnostics"/);
 });
+
+test("CasePackage import control renders a reopen button when success summary is dismissed", () => {
+  const syntheticSummary = inspectCasePackageV01(minimalSyntheticCasePackageV01);
+  const markup = renderStaticMarkup(
+    React.createElement(CasePackageImportControl, {
+      status: {
+        state: "success",
+        packageId: "pkg-imported-001",
+        caseId: "case-imported-001",
+        title: "Imported validation package",
+        inspectionSummary: syntheticSummary,
+      },
+      onImportStart: () => undefined,
+      onImportText: () => undefined,
+      onImportReadError: () => undefined,
+      onClearImport: () => undefined,
+      initialDismissedForTesting: true,
+    }),
+  );
+
+  assert.match(markup, /class="case-package-import-reopen-button"/);
+  assert.match(markup, /aria-label="View imported package details"/);
+  assert.match(markup, /View package details/);
+  // Reopening panel implies summary details are hidden when dismissed
+  assert.doesNotMatch(markup, /Imported package summary/);
+});
+
+test("CasePackage import control renders a suggested fix block and does not suppress it when active", () => {
+  const markup = renderStaticMarkup(
+    React.createElement(CasePackageImportControl, {
+      status: {
+        state: "error",
+        failure: {
+          reason: "schema_version",
+          title: "Missing or unsupported schema version",
+          summary: "Package validation failed.",
+          suggestedFix: "Set schema_version to version v0.1.",
+          message: "Failed.",
+          errors: [],
+        },
+      },
+      onImportStart: () => undefined,
+      onImportText: () => undefined,
+      onImportReadError: () => undefined,
+      onClearImport: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /class="case-package-import-suggested-fix"/);
+  assert.match(markup, /Suggested fix/);
+  assert.match(markup, /Set schema_version to version v0\.1\./);
+  // Ensure choose another file button remains visible/actionable
+  assert.match(markup, /Choose Another File/);
+});

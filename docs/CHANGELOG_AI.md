@@ -19,6 +19,34 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-23: CasePackage Summary Reopen Trigger and Suggested Fix Contrast
+
+- Agent/model: Antigravity (Gemini 3.5 Flash)
+- Prompt scope: Add a control to reopen the package details after dismissal and fix the low contrast of the suggested-fix text.
+- Files changed:
+  - [components/arena/CasePackageImportControl.tsx](file:///Users/agus/Documents/Telemetry%20court/components/arena/CasePackageImportControl.tsx)
+  - [app/investigation-workflow.css](file:///Users/agus/Documents/Telemetry%20court/app/investigation-workflow.css)
+  - [components/arena/WorkflowPrimitives.test.tsx](file:///Users/agus/Documents/Telemetry%20court/components/arena/WorkflowPrimitives.test.tsx)
+  - [docs/CHANGELOG_AI.md](file:///Users/agus/Documents/Telemetry%20court/docs/CHANGELOG_AI.md)
+- Summary:
+  - Added a keyboard-focusable, accessible text button (`View package details`) next to the success status in the masthead to allow reopening the dismissed summary popup.
+  - Converted the status element from `<p>` to `<div>` to semantically support the inline `<button>`.
+  - Explicitly styled `.case-package-import-suggested-fix` and its `span` children with `--workflow-ink` to ensure high-contrast dark text against the light background.
+  - Added unit tests verifying the reopen trigger when success import is dismissed, and checking that error/suggested-fix details remain visible.
+- Decisions made:
+  - Used `--workflow-ink` token for suggested-fix text to ensure optimal contrast ratio.
+  - Allowed custom test property `initialDismissedForTesting` to test the dismissed component state in Node static test environment.
+- Checks run:
+  - `npm test` and focused test run (all 8 primitive tests passed)
+  - `npx tsc --noEmit` (passed)
+  - `npm run lint` (passed)
+  - `npm run build` (passed)
+  - `git diff --check` (passed)
+- Assumptions: Reopening the summary should not alter review state or re-import the package.
+- Risks/follow-ups: None.
+- Next recommended step: Review and merge.
+- Suggested commit message: `ux: add imported package details reopen button and improve suggested fix text contrast`
+
 ## 2026-06-24: CasePackage Import Summary Dismissal UX
 
 - Agent/model: Codex (Gemini 3.5 Flash)

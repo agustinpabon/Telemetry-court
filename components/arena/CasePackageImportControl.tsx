@@ -32,6 +32,7 @@ type CasePackageImportControlProps = {
   onImportText: (jsonText: string, fileName: string) => void;
   onImportReadError: (message: string) => void;
   onClearImport: () => void;
+  initialDismissedForTesting?: boolean;
 };
 
 const maxImportErrorsShown = 6;
@@ -43,6 +44,7 @@ export function CasePackageImportControl({
   onImportText,
   onImportReadError,
   onClearImport,
+  initialDismissedForTesting,
 }: CasePackageImportControlProps) {
   const inputId = useId();
   const statusId = useId();
@@ -58,11 +60,11 @@ export function CasePackageImportControl({
     : status.state;
 
   const [lastStatusKey, setLastStatusKey] = useState(statusKey);
-  const [isDismissed, setIsDismissed] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(initialDismissedForTesting ?? false);
 
   if (statusKey !== lastStatusKey) {
     setLastStatusKey(statusKey);
-    setIsDismissed(false);
+    setIsDismissed(initialDismissedForTesting ?? false);
   }
 
   async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -127,13 +129,26 @@ export function CasePackageImportControl({
           {status.state === "error" ? "Choose Another File" : "Import CasePackage"}
         </button>
       </div>
-      <p
+      <div
         id={statusId}
         className={`case-package-import-status tc-masthead__helper tc-masthead__action-helper is-${status.state}`}
         role="status"
       >
-        {getStatusCopy(status)}
-      </p>
+        <span>{getStatusCopy(status)}</span>
+        {status.state === "success" && isDismissed ? (
+          <>
+            {" "}
+            <button
+              type="button"
+              className="case-package-import-reopen-button"
+              onClick={() => setIsDismissed(false)}
+              aria-label="View imported package details"
+            >
+              View package details
+            </button>
+          </>
+        ) : null}
+      </div>
       {status.state === "error" && !isDismissed ? (
         <ImportFailurePanel
           failure={status.failure}
