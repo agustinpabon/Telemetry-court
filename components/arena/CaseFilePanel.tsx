@@ -13,6 +13,7 @@ import {
   ArenaWorkflowShell,
   SectionHeader,
 } from "@/components/arena/WorkflowPrimitives";
+import { ReviewTerminologyHelp } from "@/components/arena/ReviewTerminologyHelp";
 import { formatSupportScore, getAverageSupportScore } from "@/lib/caseMetrics";
 import type {
   CaseFile,
@@ -128,13 +129,16 @@ export function CaseFilePanel({
         summary={heroDescriptionCopy[caseFile.landscapeStatus]}
         context="AI claim remains hidden until your first read."
       />
+      <ReviewTerminologyHelp
+        terms={["cluster", "evidence", "blind_assessment"]}
+      />
 
       <div className="case-file-intake-grid">
         <div className="case-file-main-grid">
           <article className="case-file-card case-file-brief-card">
             <SectionHeader
               title="Case brief"
-              description="The minimum context needed before the initial assessment."
+              description="Core context for the initial assessment."
             />
             <dl className="case-file-fact-list">
               <div>
@@ -163,7 +167,7 @@ export function CaseFilePanel({
           <article className="case-file-card case-file-signals-card">
             <SectionHeader
               title="Signals at a glance"
-              description="Directional signals only, not a verdict."
+              description="Directional signals, not a verdict."
             />
             <div className="case-file-signal-grid">
               <SignalTile
@@ -192,7 +196,7 @@ export function CaseFilePanel({
           <article className="case-file-card case-file-feature-card">
             <SectionHeader
               title="Observed feature stack"
-              description="Known signals before the blind interpretation."
+              description="Visible signals before the AI reveal."
             />
             <div className="chip-row">
               {caseFile.topFeatures.map((feature) => (
@@ -216,7 +220,7 @@ export function CaseFilePanel({
           <article className="case-file-card case-file-questions-card">
             <SectionHeader
               title="Review questions"
-              description="Use these as the decision frame for the initial assessment."
+              description="Questions to keep in mind."
             />
             <div className="case-file-question-list">
               {reviewQuestions.map((question) => (
@@ -231,7 +235,7 @@ export function CaseFilePanel({
           >
             <SectionHeader
               title="Evidence packet preview"
-              description="Four compact signals that will be classified later."
+              description="Signals you will classify later."
             />
             <div className="case-file-evidence-list">
               {evidencePreviewRows.map((evidence) => (
@@ -260,7 +264,7 @@ export function CaseFilePanel({
             <article className="case-file-readiness-card">
               <SectionHeader
                 title="Review readiness"
-                description="What is safe to know before the initial assessment."
+                description="What is visible before the AI reveal."
               />
               <dl className="case-file-readiness-list">
                 <div>

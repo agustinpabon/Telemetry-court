@@ -1,4 +1,5 @@
 import { JudgmentReceipt } from "@/components/arena/JudgmentReceipt";
+import { ReviewTerminologyHelp } from "@/components/arena/ReviewTerminologyHelp";
 import {
   ArenaActionFooter,
   ArenaStatusBadge,
@@ -127,20 +128,10 @@ export function VerdictPanel({
           </div>
           <h2 id="verdict-hero-title">{heroTitle}</h2>
           <p className="verdict-decision-prompt">
-            Choose the verdict and recommended action based on evidence support,
-            uncertainty, and cluster fit.
+            Choose the outcome that best fits the evidence and cluster.
           </p>
           <p>{heroLead}</p>
-          <p>{heroExplanation}</p>
-          <p className="verdict-hero-balance">
-            Evidence balance: {formatHeroBalance(balance)}
-          </p>
-          <p className="verdict-hero-status">
-            Status:{" "}
-            {hasFinalVerdict
-              ? "Review complete · Ready to export"
-              : "Choose an evaluation outcome to finish the review."}
-          </p>
+          {hasFinalVerdict ? <p>{heroExplanation}</p> : null}
         </div>
 
         <aside className="verdict-balance-card" aria-label="Evidence balance">
@@ -157,12 +148,13 @@ export function VerdictPanel({
           <p>Conclusion: {getEvidenceBalanceConclusion(balance)}</p>
         </aside>
       </section>
+      <ReviewTerminologyHelp terms={["verdict", "split", "merge"]} />
 
       <div className="verdict-layout">
         <article className="verdict-choice-panel">
           <SectionHeader
             title="Final evaluation"
-            description="Choose the structured outcome that best matches the evidence and cluster quality."
+            description="Choose the outcome that best fits the evidence."
           />
           {insufficientContextGuidance ? (
             <aside className="insufficient-context-guidance">
@@ -363,11 +355,18 @@ function ClusterRefinementControls({
   const splitEvidenceIds = splitRecommendation?.evidenceIds ?? [];
 
   return (
-    <div className="reason-panel refinement-panel">
-      <SectionHeader
-        title="Split and merge recommendations"
-        description="Record optional upstream refinement guidance as structured review data."
-      />
+    <details
+      className="reason-panel refinement-panel"
+      open={
+        reviewState.finalVerdict === "cluster_impure" ||
+        reviewState.finalVerdict === "needs_split" ||
+        reviewState.finalVerdict === "needs_merge"
+      }
+    >
+      <summary>Optional split / merge guidance</summary>
+      <p className="reason-panel-note">
+        Record structured guidance only when the cluster needs refinement.
+      </p>
 
       <section className="verdict-option-section">
         <h4>Split recommendation</h4>
@@ -498,7 +497,7 @@ function ClusterRefinementControls({
           </p>
         )}
       </section>
-    </div>
+    </details>
   );
 }
 
@@ -509,10 +508,6 @@ function BalanceLine({ label, value }: { label: string; value: number }) {
       <dd>{value}</dd>
     </div>
   );
-}
-
-function formatHeroBalance(balance: EvidenceBalance) {
-  return `${balance.supporting} support · ${balance.weak} weak · ${balance.contradictory} contradict · ${balance.contextGaps} context`;
 }
 
 function sentenceCase(label: string) {

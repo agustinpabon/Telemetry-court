@@ -458,12 +458,9 @@ test("blind read protects the AI judgment until the reviewer chooses", () => {
   );
   assert.match(
     pageText,
-    /The blind pass captures your first evidence-based judgment before the AI label can anchor you\./,
+    /Judge whether the visible evidence supports an interpretation—not whether the cluster is dangerous\./,
   );
-  assert.match(
-    pageText,
-    /Label, claim, and candidate label details stay sealed until you choose\./,
-  );
+  assert.match(pageText, /The AI label stays hidden until you choose\./);
   assert.match(pageText, /Landscape/);
   assert.match(pageText, /Case File/);
   assert.match(pageText, /Initial Assessment/);
@@ -473,15 +470,8 @@ test("blind read protects the AI judgment until the reviewer chooses", () => {
   assert.match(pageText, /Cluster Fit Check/);
   assert.match(pageText, /Final Evaluation/);
   assert.match(pageText, /AI claim hidden/);
-  assert.match(pageText, /What you are reviewing/);
-  assert.match(
-    pageText,
-    /You are testing whether evidence supports an AI label, not whether the cluster is dangerous\./,
-  );
-  assert.match(
-    pageText,
-    /You are not deciding whether the cluster is dangerous; you are deciding whether the AI label is supported by the evidence\./,
-  );
+  assert.match(pageText, /Terms in this step/);
+  assert.match(pageText, /Blind assessment/);
   assert.match(pageText, /Can you judge this case\?/);
   assert.match(
     pageText,
@@ -494,10 +484,13 @@ test("blind read protects the AI judgment until the reviewer chooses", () => {
   );
   assert.match(
     pageText,
-    /Domain context may be needed: IAM \/ CloudTrail \/ role provisioning\./,
+    /IAM<\/dt><dd>Identity and access management activity involving roles, policies, or permissions\./,
+  );
+  assert.match(
+    pageText,
+    /CloudTrail<\/dt><dd>AWS event records that show actions taken in an account\./,
   );
   assert.match(pageText, /Selected behaviour region/);
-  assert.match(pageText, /Selected region and nearby sessions\./);
   assert.match(pageText, /Evidence summary/);
   assert.match(pageText, /Observed/);
   assert.match(pageText, /Context/);
@@ -506,13 +499,13 @@ test("blind read protects the AI judgment until the reviewer chooses", () => {
   assert.match(pageText, /Your interpretation/);
   assert.match(
     pageText,
-    /Choose the strongest conclusion the visible evidence supports\./,
+    /Choose the strongest supported conclusion\./,
   );
   assert.match(pageText, /AI claim hidden/);
   assert.match(pageText, /Choose whether you can judge/);
   assert.match(
     pageText,
-    /Answer the checkpoint, then choose an interpretation before reveal\./,
+    /Answer the checkpoint and choose an interpretation\./,
   );
   assert.match(pageText, /Possible privilege escalation/);
   assert.match(pageText, /disabled=""/);
@@ -647,9 +640,16 @@ test("case 002 checkpoint remains blind while showing visible domain terms", () 
   assert.match(markup, /Can you judge this case\?/);
   assert.match(
     markup,
-    /first evidence-based judgment before the AI label can anchor you/,
+    /The AI label stays hidden until you choose/,
   );
-  assert.match(markup, /Domain context may be needed: PowerShell \/ encoded command\./);
+  assert.match(
+    markup,
+    /PowerShell<\/dt><dd>A Windows command-line and scripting environment\./,
+  );
+  assert.match(
+    markup,
+    /Encoded command<\/dt><dd>A command stored in encoded text that must be decoded to inspect\./,
+  );
   assert.doesNotMatch(markup, new RegExp(escapeRegExp(aiLabel.label)));
   assert.doesNotMatch(markup, new RegExp(escapeRegExp(aiRationale)));
   assert.doesNotMatch(markup, new RegExp(escapeRegExp(aiClaim.text)));
@@ -759,7 +759,8 @@ test("imported Initial Assessment excludes the upstream AI label", () => {
     }),
   );
 
-  assert.match(markup, /What you are reviewing/);
+  assert.match(markup, /Terms in this step/);
+  assert.match(markup, /Blind assessment/);
   assert.match(markup, /AI claim hidden/);
   assert.doesNotMatch(markup, new RegExp(aiLabel.label));
 });
@@ -845,10 +846,7 @@ test("AI Reveal presents divergence as an evidence review moment", () => {
   );
 
   assert.match(markup, /Your read and the AI label diverge\./);
-  assert.match(
-    markup,
-    /You selected Cloud resource discovery\. The model suggested Suspicious IAM privilege escalation\./,
-  );
+  assert.match(markup, /Compare both interpretations\. This is not your verdict\./);
   assert.match(markup, /Likely overclaim/);
   assert.match(markup, /Your initial assessment/);
   assert.match(markup, /Discovery-like activity is present/);
@@ -952,10 +950,10 @@ test("later workflow panels use compact chrome and descriptive actions", () => {
     markup,
     /IAM activity is present, but downstream abuse, sensitive access, and malicious intent are missing\./,
   );
-  assert.match(markup, /Suggested classifications are preselected/);
+  assert.match(markup, /Suggested ratings are preselected and editable/);
   assert.match(markup, /4 of 4 classified/);
   assert.match(markup, /Claim checklist/);
-  assert.match(markup, /Show details/);
+  assert.match(markup, /Details/);
   assert.match(markup, /Mark irrelevant \/ noise/);
   assert.match(markup, /Proceed to label selection/);
   assert.doesNotMatch(markup, /disabled="">Proceed to label selection/);
@@ -1042,7 +1040,7 @@ test("each review stage states the decision the reviewer must make", () => {
   );
   assert.match(
     markup,
-    /Compare your blind assessment with the AI-generated label and claims\./,
+    /Compare your blind assessment with the AI label\./,
   );
   assert.match(
     markup,
@@ -1050,16 +1048,135 @@ test("each review stage states the decision the reviewer must make", () => {
   );
   assert.match(
     markup,
-    /Choose the label best supported by the evidence, not the most impressive wording\./,
+    /Choose the most defensible label—not the strongest wording\./,
   );
   assert.match(
     markup,
-    /Check whether any member, outlier, or neighbor makes the cluster look mixed\./,
+    /Choose the session least consistent with the selected label\./,
   );
   assert.match(
     markup,
-    /Choose the verdict and recommended action based on evidence support, uncertainty, and cluster fit\./,
+    /Choose the outcome that best fits the evidence and cluster\./,
   );
+});
+
+test("review stages define domain terms with compact in-context disclosures", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+
+  const evidenceRatings = getEvidenceRatings(selectedCase, {});
+  const balance = getEvidenceBalance(selectedCase, evidenceRatings);
+  const markup = renderStaticMarkup(
+    React.createElement(
+      React.Fragment,
+      null,
+      React.createElement(CaseFilePanel, {
+        caseFile: selectedCase,
+        cases: sampleCases,
+        landscapeContextNodes: sampleLandscapeContextNodes,
+        onStartInvestigation: () => undefined,
+      }),
+      React.createElement(BlindReadPanel, {
+        caseFile: selectedCase,
+        reviewState: {},
+        onChooseReviewReadiness: () => undefined,
+        onChooseBlindInterpretation: () => undefined,
+        onRevealAiLabel: () => undefined,
+      }),
+      React.createElement(AiRevealPanel, {
+        caseFile: selectedCase,
+        reviewState: {
+          blindChoiceId: "cloud-resource-discovery",
+          aiLabelRevealed: true,
+        },
+        onRevealAiLabel: () => undefined,
+        onContinue: () => undefined,
+        onBackToBlindRead: () => undefined,
+      }),
+      React.createElement(EvidenceBoard, {
+        caseFile: selectedCase,
+        reviewState: {
+          blindChoiceId: "cloud-resource-discovery",
+          aiLabelRevealed: true,
+        },
+        evidenceRatings,
+        balance,
+        onRateEvidence: () => undefined,
+      }),
+      React.createElement(LabelDuelPanel, {
+        caseFile: selectedCase,
+        reviewState: {},
+        onSelectWinner: () => undefined,
+        onToggleReason: () => undefined,
+        onSetDuelNote: () => undefined,
+        onContinue: () => undefined,
+      }),
+      React.createElement(ImpostorPanel, {
+        caseFile: selectedCase,
+        reviewState: {
+          labelDuelWinnerId: selectedCase.candidateLabels[0]?.id,
+        },
+        onSelectSession: () => undefined,
+        onContinue: () => undefined,
+      }),
+      React.createElement(VerdictPanel, {
+        caseFile: selectedCase,
+        reviewState: {
+          blindChoiceId: "cloud-resource-discovery",
+          labelDuelWinnerId: "label-iam-baseline",
+          impostorSessionId: "iam-s-01",
+          finalVerdict: "unsupported_overclaimed",
+        },
+        balance,
+        onSelectVerdict: () => undefined,
+        onToggleFailureMode: () => undefined,
+        onOpenReviewDrawer: () => undefined,
+        onCopyJson: () => undefined,
+        onDownloadJson: () => undefined,
+      }),
+    ),
+  );
+
+  assert.ok(
+    (markup.match(/class="review-terminology-help"/g)?.length ?? 0) >= 7,
+  );
+  assert.match(markup, /CasePackage<\/dt><dd>The versioned cluster/);
+  assert.match(markup, /Cluster<\/dt><dd>A group of similar telemetry sessions/);
+  assert.match(markup, /Claim<\/dt><dd>A specific statement made by the AI label/);
+  assert.match(markup, /Evidence<\/dt><dd>A reviewable item used to support/);
+  assert.match(markup, /AI label<\/dt><dd>The generated name or interpretation/);
+  assert.match(markup, /Blind assessment<\/dt><dd>Your evidence-based interpretation/);
+  assert.match(markup, /Representative session<\/dt><dd>A selected session/);
+  assert.match(markup, /Outlier \/ impostor<\/dt><dd>A session that may not fit/);
+  assert.match(markup, /Verdict<\/dt><dd>The final structured judgment/);
+  assert.match(markup, /Split<\/dt><dd>Separate a mixed cluster/);
+  assert.match(markup, /Merge<\/dt><dd>Combine this cluster/);
+  assert.match(markup, /ReviewResult<\/dt><dd>The versioned export of one reviewer/);
+});
+
+test("copy reductions preserve blind review and avoid issue 184 progression UI", () => {
+  const blindMarkup = renderBlindReadPageText();
+  const verdictMarkup = renderVerdictPageText();
+
+  assert.match(
+    blindMarkup,
+    /Judge whether the visible evidence supports an interpretation—not whether the cluster is dangerous\./,
+  );
+  assert.match(blindMarkup, /The AI label stays hidden until you choose\./);
+  assert.doesNotMatch(
+    blindMarkup,
+    /The blind pass captures your first evidence-based judgment/,
+  );
+  assert.doesNotMatch(
+    blindMarkup,
+    /Label, claim, and candidate label details stay sealed until you choose/,
+  );
+  assert.match(
+    verdictMarkup,
+    /A ReviewResult is one reviewer&#x27;s structured judgment for one CasePackage\./,
+  );
+  assert.doesNotMatch(verdictMarkup, /Combine those compatible ReviewResults/);
+  assert.doesNotMatch(verdictMarkup, /Use that EvaluationReport to evaluate/);
 });
 
 test("insufficient-context guidance uses existing review choices", () => {
@@ -1307,11 +1424,7 @@ test("verdict page reads as a final judgment and preserves export actions", () =
     markup,
     /The reviewed evidence points to cloud resource discovery, but does not establish suspicious IAM privilege escalation\./,
   );
-  assert.match(
-    markup,
-    /Evidence balance: 0 support · 1 weak · 2 contradict · 1 context/,
-  );
-  assert.match(markup, /Status: Review complete · Ready to export/);
+  assert.match(markup, /Ready to export/);
   assert.match(markup, /Strong support<\/dt><dd>0/);
   assert.match(markup, /Weak support<\/dt><dd>1/);
   assert.match(markup, /Contradict<\/dt><dd>2/);
@@ -1344,28 +1457,14 @@ test("verdict page reads as a final judgment and preserves export actions", () =
   );
   assert.match(
     markup,
-    /This export is one ReviewResult: one reviewer&#x27;s structured judgment for one CasePackage\./,
+    /A ReviewResult is one reviewer&#x27;s structured judgment for one CasePackage\./,
   );
   assert.match(
     markup,
-    /It preserves the human verdict, evidence ratings, failure modes, and recommended action\./,
+    /It preserves the verdict, evidence ratings, failure modes, and recommended action\./,
   );
-  assert.match(
-    markup,
-    /It is local, exportable review data; it is not uploaded or automatically saved to a server\./,
-  );
-  assert.match(
-    markup,
-    /Multiple compatible ReviewResults means multiple reviewers reviewed the same CasePackage with the same protocol\./,
-  );
-  assert.match(
-    markup,
-    /Combine those compatible ReviewResults to produce an EvaluationReport\./,
-  );
-  assert.match(
-    markup,
-    /Use that EvaluationReport to evaluate and improve upstream labels, prompts, embeddings, evidence extraction, or clustering\./,
-  );
+  assert.match(markup, /The JSON stays local until you copy or download it\./);
+  assert.doesNotMatch(markup, /EvaluationReport/);
   assert.match(markup, /Review complete\. Export the structured result/);
   assert.match(markup, /View JSON/);
   assert.match(markup, /Copy JSON/);
@@ -1411,7 +1510,7 @@ test("verdict selection updates the displayed outcome through review state", () 
   assert.match(markup, /Final Evaluation · Review complete/);
   assert.match(markup, /<h2 id="verdict-hero-title">Supported<\/h2>/);
   assert.match(markup, /Evaluation outcome<\/dt><dd>Supported/);
-  assert.match(markup, /Status: Review complete · Ready to export/);
+  assert.match(markup, /Ready to export/);
   assert.match(markup, /Conclusion: Claim is not sufficiently supported\./);
   assert.match(markup, /Reasons selected<\/dt><dd>No failure reason selected\./);
   assert.match(
@@ -1588,7 +1687,7 @@ test("verdict route opens the demo case as a completed structured judgment", () 
   assert.match(pageText, /<h2 id="verdict-hero-title">Unsupported \/ overclaimed<\/h2>/);
   assert.match(pageText, /Overclaimed intent/);
   assert.match(pageText, /Missing evidence/);
-  assert.match(pageText, /Status: Review complete · Ready to export/);
+  assert.match(pageText, /Ready to export/);
   assert.match(pageText, /Evaluation outcome<\/dt><dd>Unsupported \/ overclaimed/);
   assert.match(
     pageText,
@@ -1596,24 +1695,10 @@ test("verdict route opens the demo case as a completed structured judgment", () 
   );
   assert.match(
     pageText,
-    /This export is one ReviewResult: one reviewer&#x27;s structured judgment for one CasePackage\./,
+    /A ReviewResult is one reviewer&#x27;s structured judgment for one CasePackage\./,
   );
-  assert.match(
-    pageText,
-    /It is local, exportable review data; it is not uploaded or automatically saved to a server\./,
-  );
-  assert.match(
-    pageText,
-    /Multiple compatible ReviewResults means multiple reviewers reviewed the same CasePackage with the same protocol\./,
-  );
-  assert.match(
-    pageText,
-    /Combine those compatible ReviewResults to produce an EvaluationReport\./,
-  );
-  assert.match(
-    pageText,
-    /Use that EvaluationReport to evaluate and improve upstream labels, prompts, embeddings, evidence extraction, or clustering\./,
-  );
+  assert.match(pageText, /The JSON stays local until you copy or download it\./);
+  assert.doesNotMatch(pageText, /EvaluationReport/);
   assert.match(pageText, /Conclusion: Claim is not sufficiently supported\./);
   assert.match(
     pageText,
@@ -1673,20 +1758,10 @@ test("review summary drawer keeps export and aggregation boundaries explicit", (
   assert.match(markup, /Structured ReviewResult JSON/);
   assert.match(
     markup,
-    /This export is one ReviewResult: one reviewer&#x27;s structured judgment for one CasePackage\./,
+    /A ReviewResult is one reviewer&#x27;s structured judgment for one CasePackage\./,
   );
-  assert.match(
-    markup,
-    /It is local, exportable review data; it is not uploaded or automatically saved to a server\./,
-  );
-  assert.match(
-    markup,
-    /Multiple compatible ReviewResults means multiple reviewers reviewed the same CasePackage with the same protocol\./,
-  );
-  assert.match(
-    markup,
-    /Combine those compatible ReviewResults to produce an EvaluationReport\./,
-  );
+  assert.match(markup, /The JSON stays local until you copy or download it\./);
+  assert.doesNotMatch(markup, /EvaluationReport/);
   assert.match(markup, /review_result\.v0\.1/);
 });
 
@@ -1712,7 +1787,7 @@ test("label duel turns evidence balance into a defensible label decision", () =>
   assert.match(emptyMarkup, /Select one label to continue\./);
   assert.match(
     emptyMarkup,
-    /Choose the label best supported by the evidence, not the most impressive wording\./,
+    /Choose the most defensible label—not the strongest wording\./,
   );
   assert.match(emptyMarkup, /Original AI claim/);
   assert.match(emptyMarkup, /Suspicious IAM privilege escalation/);
@@ -1721,7 +1796,10 @@ test("label duel turns evidence balance into a defensible label decision", () =>
   assert.match(emptyMarkup, /Current signal/);
   assert.match(emptyMarkup, /Likely overclaim/);
   assert.match(emptyMarkup, /Candidate labels/);
-  assert.match(emptyMarkup, /Select the label that is best supported by the evidence/);
+  assert.doesNotMatch(
+    emptyMarkup,
+    /Select the label that is best supported by the evidence/,
+  );
   assert.match(emptyMarkup, /Best supported/);
   assert.match(
     emptyMarkup,
@@ -1765,7 +1843,7 @@ test("label duel turns evidence balance into a defensible label decision", () =>
   assert.match(selectedMarkup, /Selected/);
   assert.match(
     selectedMarkup,
-    /Select one or more reasons, or add a short note/,
+    /Select reasons or add an optional note/,
   );
   assert.match(selectedMarkup, /Less overclaimed/);
   assert.match(selectedMarkup, /Missing malicious intent/);
@@ -1807,7 +1885,7 @@ test("impostor review teaches the comparison before a session is selected", () =
   assert.match(markup, /Find the weakest-fit session/);
   assert.match(
     markup,
-    /Check whether any member, outlier, or neighbor makes the cluster look mixed\./,
+    /Choose the session least consistent with the selected label\./,
   );
   assert.match(markup, /Selected label/);
   assert.match(markup, /IAM administration with unknown intent/);
@@ -1819,12 +1897,15 @@ test("impostor review teaches the comparison before a session is selected", () =
     markup,
     /Weakest fit = high outlier risk \+ low cluster pattern match/,
   );
-  assert.match(markup, /Strongest signal/);
+  assert.match(markup, /Weakest-fit signal/);
   assert.match(markup, /What to look for/);
   assert.match(markup, /High outlier risk/);
   assert.match(markup, /Low cluster pattern match/);
-  assert.match(markup, /Behavior that does not match the other sessions/);
-  assert.match(markup, /iam-s-04 currently has the strongest outlier signal\./);
+  assert.match(
+    markup,
+    /High outlier risk plus low pattern match signals the weakest fit\./,
+  );
+  assert.match(markup, /iam-s-04 currently has the clearest mismatch\./);
   assert.match(markup, /Select a session to see how it affects the final evaluation\./);
   assert.match(markup, /82% outlier risk/);
   assert.match(markup, /Cluster pattern match/);
@@ -1915,7 +1996,7 @@ test("impostor review explains the strength of the selected session", () => {
   );
   assert.match(
     alternateMarkup,
-    /Selected: Role validation checks · 28% outlier risk\. Strongest signal: iam-s-04 · 82%\./,
+    /Selected: Role validation checks · 28% outlier risk\. Weakest-fit signal: iam-s-04 · 82%\./,
   );
   assert.doesNotMatch(
     alternateMarkup,

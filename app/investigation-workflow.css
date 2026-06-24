@@ -8986,6 +8986,83 @@
   text-wrap: pretty;
 }
 
+.arena-shell.arena-shell-investigate .review-terminology-help {
+  border-bottom: 1px solid rgba(50, 48, 47, 0.06);
+  border-top: 1px solid rgba(50, 48, 47, 0.06);
+  padding: 8px 2px;
+}
+
+.arena-shell.arena-shell-investigate .review-terminology-help summary,
+.arena-shell.arena-shell-investigate .refinement-panel > summary {
+  border-radius: 8px;
+  color: var(--workflow-muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 760;
+  list-style: none;
+  padding: 4px 6px;
+  width: fit-content;
+}
+
+.arena-shell.arena-shell-investigate .review-terminology-help summary::-webkit-details-marker,
+.arena-shell.arena-shell-investigate .refinement-panel > summary::-webkit-details-marker {
+  display: none;
+}
+
+.arena-shell.arena-shell-investigate .review-terminology-help summary::after,
+.arena-shell.arena-shell-investigate .refinement-panel > summary::after {
+  content: " +";
+}
+
+.arena-shell.arena-shell-investigate .review-terminology-help[open] summary::after,
+.arena-shell.arena-shell-investigate .refinement-panel[open] > summary::after {
+  content: " −";
+}
+
+.arena-shell.arena-shell-investigate .review-terminology-help summary:hover,
+.arena-shell.arena-shell-investigate .refinement-panel > summary:hover {
+  background: rgba(50, 48, 47, 0.045);
+  color: var(--workflow-ink);
+}
+
+.arena-shell.arena-shell-investigate .review-terminology-help summary:focus-visible,
+.arena-shell.arena-shell-investigate .refinement-panel > summary:focus-visible {
+  outline: 3px solid rgba(95, 111, 82, 0.24);
+  outline-offset: 2px;
+}
+
+.arena-shell.arena-shell-investigate .review-terminology-help dl {
+  display: grid;
+  gap: 9px 18px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  margin: 10px 6px 2px;
+}
+
+.arena-shell.arena-shell-investigate .review-terminology-help dl div {
+  min-width: 0;
+}
+
+.arena-shell.arena-shell-investigate .review-terminology-help dt {
+  color: var(--workflow-ink);
+  font-size: 12px;
+  font-weight: 780;
+  line-height: 1.3;
+}
+
+.arena-shell.arena-shell-investigate .review-terminology-help dd {
+  color: var(--workflow-muted);
+  font-size: 12px;
+  line-height: 1.42;
+  margin: 2px 0 0;
+  text-wrap: pretty;
+}
+
+.arena-shell.arena-shell-investigate .refinement-panel > .reason-panel-note {
+  border-top: 0;
+  margin: 8px 0 14px;
+  padding-top: 0;
+}
+
 .arena-shell-investigate.arena-stage-blind_read .arena-reviewer-goal {
   grid-template-columns: minmax(140px, 0.22fr) minmax(0, 1fr);
   position: static;
@@ -9079,6 +9156,10 @@
 }
 
 @media (max-width: 620px) {
+  .arena-shell.arena-shell-investigate .review-terminology-help dl {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .arena-shell.arena-shell-investigate .evidence-rating-legend dl {
     grid-template-columns: minmax(0, 1fr);
   }

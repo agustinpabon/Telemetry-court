@@ -19,6 +19,62 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-24: Compact Review Copy And In-App Terminology
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Start issue #183 by reducing review-flow text density and
+  defining domain terminology without changing review contracts or issue #184.
+- Files changed:
+  - review-flow panels under `components/arena/`
+  - `components/arena/ReviewTerminologyHelp.tsx`
+  - `lib/reviewReadiness.ts`
+  - `app/investigation-workflow.css`
+  - focused review-flow tests
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Shortened repeated instructions across Case File, Initial Assessment, AI
+    Claim Check, Evidence Verification, Label Selection, Cluster Fit Check,
+    and Final Evaluation.
+  - Added a native, keyboard-accessible terminology disclosure with short
+    definitions for review contracts and decisions plus visible telemetry
+    terms such as IAM, CloudTrail, PowerShell, and encoded commands.
+  - Moved evidence detail, rating guidance, split/merge guidance, and export
+    terminology behind compact progressive disclosures.
+  - Reduced the ReviewResult receipt explanation to the local export boundary
+    and removed the existing multi-reviewer EvaluationReport progression copy.
+- Decisions made:
+  - Kept blind assessment before AI-label reveal and defined only terminology
+    derived from the visible pre-reveal case context.
+  - Kept `CasePackage v0.1`, `ReviewResult v0.1`, `EvaluationReport v0.1`, and
+    `cluster_refinement.v0.1` schemas unchanged.
+  - Kept split/merge controls intact but collapsed by default unless the
+    selected verdict indicates cluster refinement.
+  - Did not add issue #184 progression UI, backend persistence, auth, raw
+    telemetry ingestion, or required free text.
+- Checks run:
+  - Focused review/export compatibility suite passed with 66 tests.
+  - `npm test` passed with 293 tests.
+  - `npx tsc --noEmit` passed.
+  - `npm run lint` passed.
+  - `npm run build` passed.
+  - `git diff --check` passed.
+  - Browser verification passed at 1440px and 390px for keyboard/click
+    disclosures, blind-label sealing, collapsed refinement/export guidance,
+    and horizontal overflow.
+  - `npm audit` reported two existing moderate PostCSS advisories through the
+    pinned Next.js dependency; the suggested force fix is a breaking downgrade
+    and was not applied.
+- Assumptions: Short first-use definitions and native disclosures are enough
+  for this iteration; a large glossary or documentation system would add
+  density and is outside this issue.
+- Risks/follow-ups: Pilot-specific comprehension still needs validation with
+  first-time reviewers; unknown imported telemetry vocabulary remains eligible
+  for the existing cannot-judge domain-context path.
+- Next recommended step: Run a short first-reviewer pass and record which terms
+  still cause hesitation before expanding the visible-term definition map.
+- Suggested commit message:
+  `feat(review): reduce copy density and define terms`
+
 ## 2026-06-24: Cannot-Judge Initial Assessment Flow
 
 - Agent/model: Codex (GPT-5)

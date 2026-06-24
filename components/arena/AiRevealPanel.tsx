@@ -9,6 +9,7 @@ import {
   ArenaStepHero,
   ArenaWorkflowShell,
 } from "@/components/arena/WorkflowPrimitives";
+import { ReviewTerminologyHelp } from "@/components/arena/ReviewTerminologyHelp";
 import type { CaseFile } from "@/lib/types";
 
 type AiRevealPanelProps = {
@@ -73,12 +74,15 @@ export function AiRevealPanel({
               : "Your read and the AI label diverge."
             : "Reveal the AI claim."
         }
-        summary="Compare your blind assessment with the AI-generated label and claims."
+        summary="Compare your blind assessment with the AI label."
         context={
           revealed
-            ? `You selected ${blindChoice?.label ?? "an initial assessment"}. The model suggested ${caseFile.topicLabel.name}. This comparison is not a verdict.`
-            : "Your initial assessment is saved. Reveal the model claim before proceeding to verification."
+            ? "Compare both interpretations. This is not your verdict."
+            : "Your blind assessment is saved."
         }
+      />
+      <ReviewTerminologyHelp
+        terms={["blind_assessment", "ai_label", "claim"]}
       />
 
       <div
@@ -102,7 +106,7 @@ export function AiRevealPanel({
           ) : (
             <>
               <strong className="redacted-claim">Hidden claim</strong>
-              <p>The claim remains unavailable until the initial assessment is recorded.</p>
+              <p>Available after the blind assessment.</p>
             </>
           )}
         </article>
@@ -145,7 +149,7 @@ export function AiRevealPanel({
         <ArenaActionFooter
           className="reveal-actions"
           ariaLabel="AI Claim Check actions"
-          microcopy="Inspect the signals before deciding whether the AI label is supported."
+          microcopy="Check observed, missing, and ambiguous signals."
           secondaryAction={{
             label: "Return to initial assessment",
             onClick: onBackToBlindRead,
@@ -214,7 +218,7 @@ function getComparisonCopy(caseFile: CaseFile, blindChoiceLabel?: string) {
     caseFile.id === "case-arena-001" &&
     blindChoiceLabel === "Cloud resource discovery"
       ? "Discovery-like activity is present, but it is not the dominant evidence in this case."
-      : "This is the interpretation selected before the model label was shown.";
+      : "Chosen before the AI label was shown.";
 
   const ai =
     caseFile.id === "case-arena-001"

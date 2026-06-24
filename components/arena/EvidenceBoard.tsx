@@ -1,4 +1,5 @@
 import { evidenceRatingMeta, evidenceRatingOptions } from "@/components/arena/arenaMeta";
+import { ReviewTerminologyHelp } from "@/components/arena/ReviewTerminologyHelp";
 import {
   ArenaActionFooter,
   ArenaStatusBadge,
@@ -115,6 +116,7 @@ export function EvidenceBoard({
         title="Does the evidence support the AI claim?"
         summary="Rate each item against the claim."
       />
+      <ReviewTerminologyHelp terms={["claim", "evidence"]} />
 
       <section className="evidence-review-context" aria-label="Review context">
         <div>
@@ -191,8 +193,7 @@ export function EvidenceBoard({
             <div>
               <span>{caseFile.evidenceItems.length} evidence items</span>
               <p>
-                Suggested classifications are preselected. You can change them
-                before continuing.
+                Suggested ratings are preselected and editable.
               </p>
             </div>
             <strong>
@@ -249,16 +250,11 @@ export function EvidenceBoard({
                   </div>
 
                   <p className="evidence-card-summary">
-                    <span className="evidence-summary-desktop">
-                      {reviewCopy.summary} {reviewCopy.claimMeaning}
-                    </span>
-                    <span className="evidence-summary-mobile">
-                      {reviewCopy.mobileSummary}
-                    </span>
+                    {reviewCopy.mobileSummary}
                   </p>
 
                   <details className="evidence-details">
-                    <summary>Show details →</summary>
+                    <summary>Details</summary>
                     <div className="evidence-details-body">
                       <p>{reviewCopy.whyItMatters}</p>
                       {visibleHighlights.length > 0 ? (
@@ -656,7 +652,7 @@ function getFallbackEvidenceReviewCopy(
     summary: evidence.summary,
     whyItMatters: relationExplanation,
     claimMeaning: claimMeaningByRating[rating],
-    mobileSummary: `${evidence.summary} ${claimMeaningByRating[rating]}`,
+    mobileSummary: evidence.summary,
     signals: [
       evidence.sourceType.replaceAll("_", " "),
       primaryRelation?.strength ? `${primaryRelation.strength} relation` : "evidence item",
