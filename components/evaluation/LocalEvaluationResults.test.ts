@@ -9,6 +9,7 @@ import { casePackageFixtures } from "@/data/casePackageFixtures";
 import { sampleEvaluationReportV01 } from "@/data/evaluationReportFixtures";
 import { aggregateReviewResultsV01 } from "@/lib/evaluationReportV01";
 import type { LocalEvaluationResultsSnapshotV01 } from "@/lib/localEvaluationResultsV01";
+import { summarizeQuickDispositionsV01 } from "@/lib/quickDispositionInspectionV01";
 import type { QuickDispositionV01 } from "@/lib/quickDispositionV01";
 import type { ReviewResultImportInspectionSummaryV01 } from "@/lib/reviewResultInspectionV01";
 import type { ReviewResultV01 } from "@/lib/reviewResultV01";
@@ -58,6 +59,7 @@ test("results view renders locally stored ReviewResults by compatible package", 
     markup,
     /compatible CasePackage reference and ReviewResult protocol/,
   );
+  assert.doesNotMatch(markup, /0 artifacts/);
   assert.match(
     markup,
     /Multiple compatible ReviewResults means multiple reviewers reviewed the same compatible CasePackage\/protocol\./,
@@ -210,17 +212,36 @@ test("results view presents an already imported ReviewResult as a harmless no-op
   assert.match(markup, /2 results/);
 });
 
-test("results view renders quick dispositions separately from EvaluationReports", () => {
-  const quickDisposition = createQuickDisposition();
+test("results view renders a quick-only package group with no full evidence verdicts", () => {
+  const quickDispositions = [
+    createQuickDisposition(),
+    createQuickDisposition({
+      reviewerId: "reviewer-later",
+      sourceStage: "case_file",
+      disposition: "save_for_later",
+      reasonCodes: ["needs_later_review"],
+      createdAt: "2026-06-24T12:10:00.000Z",
+    }),
+    createQuickDisposition({
+      reviewerId: "reviewer-escalated",
+      sourceStage: "evidence_board",
+      disposition: "escalate_to_full_review",
+      reasonCodes: ["full_review_requested"],
+      createdAt: "2026-06-24T12:20:00.000Z",
+    }),
+  ];
+  const quickDisposition = quickDispositions[0];
+  assert.ok(quickDisposition);
   const snapshot: LocalEvaluationResultsSnapshotV01 = {
     totalReviewResultCount: 0,
-    totalQuickDispositionCount: 1,
+    totalQuickDispositionCount: quickDispositions.length,
     packageGroups: [],
     quickDispositionGroups: [
       {
         casePackageId: quickDisposition.case_package.package_id,
-        dispositionCount: 1,
-        quickDispositions: [quickDisposition],
+        dispositionCount: quickDispositions.length,
+        summary: summarizeQuickDispositionsV01(quickDispositions),
+        quickDispositions,
       },
     ],
   };
@@ -228,24 +249,95 @@ test("results view renders quick dispositions separately from EvaluationReports"
   const markup = renderResults(snapshot, {
     state: "success",
     message:
-      "Imported 1 quick disposition. It is stored separately from completed ReviewResults.",
+      "Imported 1 quick disposition artifact. It remains separate from full evidence ReviewResults.",
+    inspectionSummary: {
+      artifactType: "QuickDisposition",
+      artifactSchemaVersion: "quick_disposition.v0.1",
+      resultCount: 1,
+      uniqueReviewerSessionCount: 1,
+      reviewerSessions: [
+        { reviewerId: "reviewer-quick", reviewSessionId: "session-quick" },
+      ],
+      referencedPackageIds: ["pkg-quick-results-001"],
+      referencedCaseIds: ["case-quick-results-001"],
+      casePackageSchemaVersions: ["case_package.v0.1"],
+      sourceStages: ["blind_review"],
+      dispositionDistribution: [
+        { value: "cannot_judge_from_package", count: 1 },
+      ],
+      reasonCodeCounts: [
+        { value: "insufficient_package_context", count: 1 },
+      ],
+      compatibilitySummary: {
+        status: "compatible",
+        message:
+          "Strict validation confirmed one quick disposition artifact. It is stored separately and excluded from full evidence ReviewResult aggregation.",
+      },
+      warnings: [],
+    },
   });
 
   assert.match(markup, /Quick dispositions/);
-  assert.match(markup, /1 disposition/);
-  assert.match(markup, /quick disposition is an early structured outcome/i);
+  assert.match(markup, /3 quick disposition artifacts/);
+  assert.match(markup, /Quick disposition artifact/);
+  assert.match(markup, /No full evidence verdicts yet/);
+  assert.match(markup, /Disposition counts/);
+  assert.match(markup, /Cannot judge from this package.*1/);
+  assert.match(markup, /Saved for later.*1/);
+  assert.match(markup, /Continue full evidence review.*1/);
+  assert.match(markup, /Source stage counts/);
+  assert.match(markup, /blind review.*1/);
+  assert.match(markup, /case file.*1/);
+  assert.match(markup, /evidence board.*1/);
+  assert.match(markup, /Reason code counts/);
+  assert.match(markup, /insufficient package context.*1/);
+  assert.match(markup, /needs later review.*1/);
+  assert.match(markup, /full review requested.*1/);
+  assert.match(markup, /Reviewer sessions/);
+  assert.match(markup, /reviewer-escalated.*session-reviewer-escalated/);
+  assert.match(markup, /Escalation rate/);
+  assert.match(markup, /1 of 3 \(33\.3%\)/);
   assert.match(markup, /Cannot judge from this package/);
   assert.match(markup, /blind review/);
   assert.match(markup, /insufficient package context/);
   assert.match(markup, /pkg-quick-results-001/);
   assert.match(markup, /case-quick-results-001/);
   assert.match(markup, /cluster-quick-results-001/);
-  assert.match(
-    markup,
-    /No completed ReviewResults available/,
-  );
   assert.doesNotMatch(markup, /Aggregated reviewer results/);
   assert.doesNotMatch(markup, /Verdict distribution/);
+});
+
+test("results view keeps mixed quick dispositions and full evidence verdicts in separate package sections", () => {
+  const quickDisposition = createQuickDisposition({
+    packageId: sampleEvaluationReportV01.case_package.package_id,
+    caseId: sampleEvaluationReportV01.case_package.case_id,
+    clusterId: sampleEvaluationReportV01.case_package.cluster_id,
+    pipelineRunId: sampleEvaluationReportV01.case_package.pipeline.run_id,
+    disposition: "dismiss_not_interesting",
+    reasonCodes: ["low_validation_value"],
+  });
+  const snapshot: LocalEvaluationResultsSnapshotV01 = {
+    ...populatedSnapshot,
+    totalQuickDispositionCount: 1,
+    quickDispositionGroups: [
+      {
+        casePackageId: quickDisposition.case_package.package_id,
+        dispositionCount: 1,
+        summary: summarizeQuickDispositionsV01([quickDisposition]),
+        quickDispositions: [quickDisposition],
+      },
+    ],
+  };
+
+  const markup = renderResults(snapshot);
+
+  assert.match(markup, /Full evidence verdicts/);
+  assert.match(markup, /Quick dispositions/);
+  assert.match(markup, /Not interesting \/ skipped/);
+  assert.match(markup, /Verdict distribution/);
+  assert.match(markup, /Supported.*1 reviewer selection/);
+  assert.match(markup, /Unsupported or overclaimed.*1 reviewer selection/);
+  assert.doesNotMatch(markup, /No full evidence verdicts yet/);
 });
 
 function renderResults(
@@ -361,31 +453,62 @@ function createReviewResultFromPackage(
   };
 }
 
-function createQuickDisposition(): QuickDispositionV01 {
+function createQuickDisposition({
+  packageId = "pkg-quick-results-001",
+  caseId = "case-quick-results-001",
+  clusterId = "cluster-quick-results-001",
+  pipelineRunId = "run-quick-results-001",
+  reviewerId = "reviewer-quick",
+  reviewSessionId,
+  sourceStage = "blind_review",
+  disposition = "cannot_judge_from_package",
+  reasonCodes = ["insufficient_package_context"],
+  createdAt = "2026-06-24T12:00:00.000Z",
+}: {
+  packageId?: string;
+  caseId?: string;
+  clusterId?: string;
+  pipelineRunId?: string;
+  reviewerId?: string;
+  reviewSessionId?: string;
+  sourceStage?: QuickDispositionV01["source_stage"];
+  disposition?: QuickDispositionV01["disposition"];
+  reasonCodes?: QuickDispositionV01["reason_codes"];
+  createdAt?: string;
+} = {}): QuickDispositionV01 {
+  const resolvedReviewSessionId =
+    reviewSessionId ?? `session-${reviewerId}`;
+
   return {
     schema_version: "quick_disposition.v0.1",
-    disposition_id:
-      "quick-disposition:pkg-quick-results-001:reviewer-quick:session-quick:blind_review:2026-06-24T12:00:00.000Z",
-    created_at: "2026-06-24T12:00:00.000Z",
+    disposition_id: [
+      "quick-disposition",
+      packageId,
+      reviewerId,
+      resolvedReviewSessionId,
+      sourceStage,
+      createdAt,
+    ].join(":"),
+    created_at: createdAt,
     case_package: {
       schema_version: "case_package.v0.1",
-      package_id: "pkg-quick-results-001",
-      case_id: "case-quick-results-001",
-      cluster_id: "cluster-quick-results-001",
+      package_id: packageId,
+      case_id: caseId,
+      cluster_id: clusterId,
       pipeline: {
-        run_id: "run-quick-results-001",
+        run_id: pipelineRunId,
         upstream_tool: "quick-results-test",
         generated_at: "2026-06-24T11:55:00.000Z",
       },
     },
     reviewer: {
-      reviewer_id: "reviewer-quick",
-      review_session_id: "session-quick",
+      reviewer_id: reviewerId,
+      review_session_id: resolvedReviewSessionId,
       context: "local_review",
     },
-    source_stage: "blind_review",
-    disposition: "cannot_judge_from_package",
-    reason_codes: ["insufficient_package_context"],
+    source_stage: sourceStage,
+    disposition,
+    reason_codes: reasonCodes,
   };
 }
 

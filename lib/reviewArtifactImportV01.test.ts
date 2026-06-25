@@ -24,6 +24,10 @@ test("review artifact import accepts quick disposition artifacts explicitly", ()
   assert.equal(result.artifactType, "QuickDisposition");
   assert.deepEqual(result.quickDisposition, quickDisposition);
   assert.equal(result.inspectionSummary.artifactType, "QuickDisposition");
+  assert.match(
+    result.inspectionSummary.compatibilitySummary.message,
+    /quick disposition artifact.*excluded from full evidence ReviewResult aggregation/i,
+  );
   assert.equal(result.inspectionSummary.resultCount, 1);
   assert.deepEqual(result.inspectionSummary.referencedPackageIds, [
     "pkg-synthetic-arena-001",
@@ -46,6 +50,10 @@ test("review artifact import keeps full ReviewResult imports as ReviewResult art
   assert.equal(result.bundle.review_results.length, 1);
   assert.deepEqual(result.bundle.review_results, [review]);
   assert.equal(result.inspectionSummary.artifactType, "ReviewResult");
+  assert.match(
+    result.inspectionSummary.compatibilitySummary.message,
+    /full evidence ReviewResult artifact/i,
+  );
 });
 
 test("review artifact import rejects invalid quick disposition artifacts loudly", () => {

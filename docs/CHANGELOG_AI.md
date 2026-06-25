@@ -19,6 +19,56 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-25: Separate Quick Dispositions From Full Verdicts
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #189 only, starting from
+  `665070dc68eac83a8f4e205dd494ce7d155b252c`, without implementing issues
+  #190-#192 or reopening #74.
+- Files changed:
+  - `components/evaluation/LocalEvaluationResults.tsx`
+  - `components/arena/ReviewResultImportSummaryPanel.tsx`
+  - `lib/localEvaluationResultsV01.ts`
+  - `lib/quickDispositionInspectionV01.ts`
+  - `lib/reviewResultInspectionV01.ts`
+  - focused results, import, storage, and page tests
+  - `app/investigation-workflow.css`
+  - `docs/EVALUATION_INFRASTRUCTURE.md`
+  - `docs/REVIEW_RESULT_CONTRACT.md`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Separated quick disposition artifacts from full evidence verdicts within
+    each `/results` CasePackage group.
+  - Added quick-disposition counts by disposition, source stage, and reason
+    code, plus reviewer/session summaries and escalation rate when present.
+  - Added an explicit “No full evidence verdicts yet” state for quick-only
+    package groups and artifact-depth labels for imports and local results.
+- Decisions made:
+  - Kept `quick_disposition.v0.1`, `ReviewResult v0.1`, and
+    `EvaluationReportV01` contracts unchanged.
+  - Continued to build EvaluationReports and refinement exports exclusively
+    from full evidence ReviewResults.
+  - Used quick disposition, full evidence review, saved for later, cannot judge
+    from this package, and not interesting / skipped language.
+  - Added no SOC, alert-triage, remediation, auth, database, raw telemetry, or
+    reviewer-pilot scope.
+- Checks run:
+  - Focused results/import/storage tests passed with 32 tests.
+  - `npm test` passed with 307 tests.
+  - `npx tsc --noEmit` passed.
+  - `npm run lint` passed.
+  - `npm run build` passed.
+  - `git diff --check` passed.
+  - In-app browser verification was unavailable in this session; no
+    screenshots were changed.
+- Assumptions: Package-level presentation continues to use the existing local
+  CasePackage ID grouping; no artifact or storage schema migration is required.
+- Risks/follow-ups: None identified within issue #189 scope.
+- Next recommended step: Review and merge issue #189 independently of
+  #190-#192.
+- Suggested commit message:
+  `Separate quick dispositions from full verdicts`
+
 ## 2026-06-25: Variable-Resolution Quick Dispositions
 
 - Agent/model: Codex (GPT-5)

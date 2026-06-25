@@ -54,6 +54,7 @@ function getReviewResultImportSummaryFacts(
 ): Array<{ label: string; value: string }> {
   return [
     { label: "Import artifact", value: summary.artifactType },
+    { label: "Artifact depth", value: "Full evidence ReviewResult" },
     { label: "Artifact schema", value: summary.artifactSchemaVersion },
     summary.bundleId ? { label: "Bundle ID", value: summary.bundleId } : null,
     { label: "Result count", value: String(summary.resultCount) },

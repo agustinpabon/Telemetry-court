@@ -202,6 +202,12 @@ They preserve package, reviewer/session, source-stage, disposition, reason-code,
 and timestamp metadata, but intentionally omit evidence ratings, label winners,
 outlier/impostor selections, final verdicts, and recommended actions. They may
 be listed on `/results`, but they are not aggregated into `EvaluationReportV01`.
+The results view groups them beside matching package coverage while keeping a
+separate quick-disposition section with disposition, source-stage, reason-code,
+reviewer/session, and optional escalation summaries. A package with only quick
+dispositions has no full evidence verdict, EvaluationReport, or refinement
+output. Adding quick dispositions to a package with full ReviewResults does not
+change the full-review aggregation.
 
 ## Portable ReviewResult Bundle v0.1
 

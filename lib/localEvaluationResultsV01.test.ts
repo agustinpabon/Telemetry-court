@@ -5,7 +5,16 @@ import {
   importLocalEvaluationResultsBundleV01,
   loadLocalEvaluationResultsV01,
 } from "@/lib/localEvaluationResultsV01";
-import { loadQuickDispositionsForCasePackageV01 } from "@/lib/quickDispositionStorageV01";
+import {
+  loadQuickDispositionsForCasePackageV01,
+  saveQuickDispositionToLocalStoreV01,
+} from "@/lib/quickDispositionStorageV01";
+import type {
+  QuickDispositionReasonCodeV01,
+  QuickDispositionSourceStageV01,
+  QuickDispositionV01,
+  QuickDispositionValueV01,
+} from "@/lib/quickDispositionV01";
 import {
   createReviewResultBundleV01,
   serializeReviewResultBundleV01,
@@ -124,9 +133,112 @@ test("quick disposition JSON imports without being aggregated as a ReviewResult"
     {
       casePackageId: quickDisposition.case_package.package_id,
       dispositionCount: 1,
+      summary: {
+        dispositionCounts: [
+          { value: "dismiss_not_interesting", count: 1 },
+        ],
+        sourceStageCounts: [{ value: "case_file", count: 1 }],
+        reasonCodeCounts: [{ value: "low_validation_value", count: 1 }],
+        uniqueReviewerSessionCount: 1,
+        reviewerSessions: [
+          {
+            reviewerId: "reviewer-quick",
+            reviewSessionId: "session-reviewer-quick",
+          },
+        ],
+        escalationCount: 0,
+        escalationRate: 0,
+      },
       quickDispositions: [quickDisposition],
     },
   ]);
+});
+
+test("quick dispositions do not change full EvaluationReport aggregation", () => {
+  const storage = createMemoryStorage();
+  const reviewResult = createReviewResult();
+  saveReviewResultToLocalStoreV01(storage, reviewResult);
+  const fullReviewOnly = loadLocalEvaluationResultsV01(storage);
+
+  saveQuickDispositionToLocalStoreV01(storage, createQuickDisposition());
+  const mixedDepth = loadLocalEvaluationResultsV01(storage);
+
+  assert.equal(mixedDepth.totalReviewResultCount, 1);
+  assert.equal(mixedDepth.totalQuickDispositionCount, 1);
+  assert.deepEqual(mixedDepth.packageGroups, fullReviewOnly.packageGroups);
+  assert.deepEqual(
+    mixedDepth.packageGroups[0]?.report.verdict_distribution,
+    fullReviewOnly.packageGroups[0]?.report.verdict_distribution,
+  );
+  assert.deepEqual(
+    mixedDepth.packageGroups[0]?.report.evidence_rating_distribution,
+    fullReviewOnly.packageGroups[0]?.report.evidence_rating_distribution,
+  );
+  assert.deepEqual(
+    mixedDepth.packageGroups[0]?.report.label_winner_distribution,
+    fullReviewOnly.packageGroups[0]?.report.label_winner_distribution,
+  );
+});
+
+test("quick disposition groups summarize disposition, stage, reason, reviewer sessions, and escalation rate", () => {
+  const storage = createMemoryStorage();
+  const quickDispositions = [
+    createQuickDisposition(),
+    createQuickDisposition({
+      reviewerId: "reviewer-later",
+      sourceStage: "blind_review",
+      disposition: "save_for_later",
+      reasonCodes: ["needs_later_review"],
+      createdAt: "2026-06-24T12:10:00.000Z",
+    }),
+    createQuickDisposition({
+      reviewerId: "reviewer-escalated",
+      sourceStage: "evidence_board",
+      disposition: "escalate_to_full_review",
+      reasonCodes: ["full_review_requested"],
+      createdAt: "2026-06-24T12:20:00.000Z",
+    }),
+    createQuickDisposition({
+      reviewerId: "reviewer-context",
+      sourceStage: "blind_review",
+      disposition: "cannot_judge_from_package",
+      reasonCodes: [
+        "insufficient_package_context",
+        "needs_later_review",
+      ],
+      createdAt: "2026-06-24T12:30:00.000Z",
+    }),
+  ];
+
+  for (const quickDisposition of quickDispositions) {
+    saveQuickDispositionToLocalStoreV01(storage, quickDisposition);
+  }
+
+  const snapshot = loadLocalEvaluationResultsV01(storage);
+  const group = snapshot.quickDispositionGroups[0];
+
+  assert.ok(group);
+  assert.deepEqual(group.summary.dispositionCounts, [
+    { value: "cannot_judge_from_package", count: 1 },
+    { value: "dismiss_not_interesting", count: 1 },
+    { value: "escalate_to_full_review", count: 1 },
+    { value: "save_for_later", count: 1 },
+  ]);
+  assert.deepEqual(group.summary.sourceStageCounts, [
+    { value: "blind_review", count: 2 },
+    { value: "case_file", count: 1 },
+    { value: "evidence_board", count: 1 },
+  ]);
+  assert.deepEqual(group.summary.reasonCodeCounts, [
+    { value: "needs_later_review", count: 2 },
+    { value: "full_review_requested", count: 1 },
+    { value: "insufficient_package_context", count: 1 },
+    { value: "low_validation_value", count: 1 },
+  ]);
+  assert.equal(group.summary.uniqueReviewerSessionCount, 4);
+  assert.equal(group.summary.reviewerSessions.length, 4);
+  assert.equal(group.summary.escalationCount, 1);
+  assert.equal(group.summary.escalationRate, 0.25);
 });
 
 test("incompatible imported results are excluded without contaminating aggregation", () => {
@@ -377,12 +489,32 @@ function createReviewResult({
   };
 }
 
-function createQuickDisposition() {
+function createQuickDisposition({
+  reviewerId = "reviewer-quick",
+  sourceStage = "case_file",
+  disposition = "dismiss_not_interesting",
+  reasonCodes = ["low_validation_value"],
+  createdAt = "2026-06-24T12:00:00.000Z",
+}: {
+  reviewerId?: string;
+  sourceStage?: QuickDispositionSourceStageV01;
+  disposition?: QuickDispositionValueV01;
+  reasonCodes?: QuickDispositionReasonCodeV01[];
+  createdAt?: string;
+} = {}): QuickDispositionV01 {
+  const reviewSessionId = `session-${reviewerId}`;
+
   return {
     schema_version: "quick_disposition.v0.1",
-    disposition_id:
-      "quick-disposition:pkg-results-001:reviewer-quick:session-reviewer-quick:case_file:2026-06-24T12:00:00.000Z",
-    created_at: "2026-06-24T12:00:00.000Z",
+    disposition_id: [
+      "quick-disposition",
+      "pkg-results-001",
+      reviewerId,
+      reviewSessionId,
+      sourceStage,
+      createdAt,
+    ].join(":"),
+    created_at: createdAt,
     case_package: {
       schema_version: "case_package.v0.1",
       package_id: "pkg-results-001",
@@ -397,14 +529,14 @@ function createQuickDisposition() {
       },
     },
     reviewer: {
-      reviewer_id: "reviewer-quick",
-      review_session_id: "session-reviewer-quick",
+      reviewer_id: reviewerId,
+      review_session_id: reviewSessionId,
       context: "local_review",
     },
-    source_stage: "case_file",
-    disposition: "dismiss_not_interesting",
-    reason_codes: ["low_validation_value"],
-  } as const;
+    source_stage: sourceStage,
+    disposition,
+    reason_codes: reasonCodes,
+  };
 }
 
 function createMemoryStorage() {
