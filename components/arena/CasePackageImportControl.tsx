@@ -1,4 +1,12 @@
-import { useEffect, useId, useRef, useState, type ChangeEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type ReactNode,
+} from "react";
 
 import type { CasePackageInspectionSummary } from "@/lib/casePackageInspection";
 import type { CasePackageImportResult } from "@/lib/importCasePackageV01";
@@ -31,6 +39,8 @@ export type CasePackageImportStatus =
 
 type CasePackageImportControlProps = {
   status: CasePackageImportStatus;
+  leadingAction?: ReactNode;
+  groupLabel?: string;
   onImportStart: () => void;
   onImportText: (jsonText: string, fileName: string) => void;
   onImportReadError: (message: string) => void;
@@ -43,6 +53,8 @@ const maxImportErrorsCopied = 20;
 
 export function CasePackageImportControl({
   status,
+  leadingAction,
+  groupLabel = "Review",
   onImportStart,
   onImportText,
   onImportReadError,
@@ -51,9 +63,11 @@ export function CasePackageImportControl({
 }: CasePackageImportControlProps) {
   const inputId = useId();
   const statusId = useId();
+  const inspectionPanelId = useId();
   const inspectionPanelTitleId = useId();
   const failurePanelTitleId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const detailsButtonRef = useRef<HTMLButtonElement>(null);
   const [copyMessage, setCopyMessage] = useState<string>();
 
   const statusKey = status.state === "success"
@@ -111,7 +125,7 @@ export function CasePackageImportControl({
   }
 
   return (
-    <div className="case-package-import-control tc-masthead__action-group">
+    <div className="case-package-import-control tc-masthead__action-group tc-masthead__action-group--review">
       <input
         ref={fileInputRef}
         id={inputId}
@@ -121,8 +135,11 @@ export function CasePackageImportControl({
         onChange={handleFileChange}
         aria-describedby={statusId}
       />
-      <span className="tc-masthead__group-label tc-masthead__action-label tc-masthead__action-label--empty" aria-hidden="true" />
+      <span className="tc-masthead__group-label tc-masthead__action-label">
+        {groupLabel}
+      </span>
       <div className="tc-masthead__action-row tc-masthead__button-row">
+        {leadingAction}
         <button
           type="button"
           className="case-package-import-button"
@@ -131,12 +148,24 @@ export function CasePackageImportControl({
         >
           {status.state === "error" ? "Choose Another File" : "Import CasePackage"}
         </button>
-        {status.state === "success" && isDismissed ? (
+        {status.state === "success" ? (
           <button
+            ref={detailsButtonRef}
             type="button"
-            className="case-package-import-details-button"
-            onClick={() => setIsDismissed(false)}
-            aria-label="View imported package details"
+            className={[
+              "case-package-import-details-button",
+              isDismissed ? "" : "is-open",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            onClick={() => setIsDismissed((current) => !current)}
+            aria-controls={inspectionPanelId}
+            aria-expanded={!isDismissed}
+            aria-label={
+              isDismissed
+                ? "View imported package details"
+                : "Close imported package details"
+            }
           >
             Package details
           </button>
@@ -163,8 +192,10 @@ export function CasePackageImportControl({
       {status.state === "success" && !isDismissed ? (
         <ImportInspectionSummaryPanel
           summary={status.inspectionSummary}
+          panelId={inspectionPanelId}
           titleId={inspectionPanelTitleId}
           onClose={() => setIsDismissed(true)}
+          onAfterClose={() => detailsButtonRef.current?.focus()}
         />
       ) : null}
     </div>
@@ -318,56 +349,77 @@ function ImportFailurePanel({
 
 function ImportInspectionSummaryPanel({
   summary,
+  panelId,
   titleId,
   onClose,
+  onAfterClose,
 }: {
   summary: CasePackageInspectionSummary;
+  panelId: string;
   titleId: string;
   onClose: () => void;
+  onAfterClose?: () => void;
 }) {
   const facts = getInspectionSummaryFacts(summary);
+  const panelRef = useRef<HTMLElement>(null);
+  const closeAndRestoreFocus = useCallback(() => {
+    onClose();
+    onAfterClose?.();
+  }, [onAfterClose, onClose]);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        onClose();
+        closeAndRestoreFocus();
       }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [onClose]);
+  }, [closeAndRestoreFocus]);
+
+  useEffect(() => {
+    panelRef.current?.focus();
+  }, []);
 
   return (
-    <section
-      className="case-package-import-summary-panel"
-      aria-labelledby={titleId}
-    >
-      <button
-        type="button"
-        className="case-package-import-close-button"
-        onClick={onClose}
-        aria-label="Close summary"
+    <div className="case-package-import-summary-scrim" onClick={closeAndRestoreFocus}>
+      <section
+        ref={panelRef}
+        id={panelId}
+        className="case-package-import-summary-panel"
+        aria-labelledby={titleId}
+        aria-modal="true"
+        role="dialog"
+        tabIndex={-1}
+        onClick={(event) => event.stopPropagation()}
       >
-        ×
-      </button>
-      <div className="case-package-import-summary-header">
-        <p className="case-package-import-summary-kicker">
-          {summary.packagePosture}
-        </p>
-        <h2 id={titleId}>Imported package summary</h2>
-      </div>
+        <button
+          type="button"
+          className="case-package-import-close-button"
+          onClick={closeAndRestoreFocus}
+          aria-label="Close summary"
+        >
+          ×
+        </button>
+        <div className="case-package-import-summary-header">
+          <p className="case-package-import-summary-kicker">
+            {summary.packagePosture}
+          </p>
+          <h2 id={titleId}>Imported package summary</h2>
+        </div>
 
-      <dl className="case-package-import-summary-facts">
-        {facts.map((fact) => (
-          <div key={fact.label}>
-            <dt>{fact.label}</dt>
-            <dd>{fact.value}</dd>
-          </div>
-        ))}
-      </dl>
-    </section>
+        <dl className="case-package-import-summary-facts">
+          {facts.map((fact) => (
+            <div key={fact.label}>
+              <dt>{fact.label}</dt>
+              <dd>{fact.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+    </div>
   );
 }
 

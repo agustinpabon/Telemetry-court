@@ -86,6 +86,11 @@ test("CasePackage import control renders local import status", () => {
   const syntheticSummary = inspectCasePackageV01(minimalSyntheticCasePackageV01);
   const successMarkup = renderStaticMarkup(
     React.createElement(CasePackageImportControl, {
+      leadingAction: React.createElement(
+        "a",
+        { className: "arena-header-link", href: "/results" },
+        "Results",
+      ),
       status: {
         state: "success",
         packageId: "pkg-imported-001",
@@ -130,6 +135,11 @@ test("CasePackage import control renders local import status", () => {
   );
 
   assert.match(successMarkup, /Import CasePackage/);
+  assert.match(successMarkup, /Results/);
+  assert.match(successMarkup, /Package details/);
+  assert.match(successMarkup, /aria-expanded="true"/);
+  assert.match(successMarkup, /role="dialog"/);
+  assert.match(successMarkup, /aria-modal="true"/);
   assert.match(successMarkup, /accept="application\/json,.json"/);
   assert.match(successMarkup, /Imported package/);
   assert.match(successMarkup, /pkg-synthetic-cloudtrail-iam-001/);
@@ -209,13 +219,19 @@ test("Hot-Folder CasePackage control renders disabled, ready, and loaded states"
 
   assert.match(disabledMarkup, /Hot-Folder/);
   assert.match(disabledMarkup, /Check Hot-Folder/);
+  assert.match(disabledMarkup, /Polling/);
+  assert.match(disabledMarkup, /role="switch"/);
+  assert.match(disabledMarkup, /aria-checked="false"/);
   assert.match(disabledMarkup, /disabled=""/);
   assert.match(disabledMarkup, /not configured/);
   assert.match(readyMarkup, /Load newest/);
   assert.match(readyMarkup, /2 new valid CasePackages found/);
   assert.match(readyMarkup, /1 invalid ignored/);
-  assert.match(loadedMarkup, /aria-pressed="true"/);
-  assert.match(loadedMarkup, /Polling on/);
+  assert.match(loadedMarkup, /role="switch"/);
+  assert.match(loadedMarkup, /aria-checked="true"/);
+  assert.match(loadedMarkup, /tc-switch__knob/);
+  assert.doesNotMatch(loadedMarkup, /Polling on/);
+  assert.doesNotMatch(disabledMarkup, /Polling off/);
   assert.match(loadedMarkup, /configured Hot-Folder/);
 });
 
@@ -287,6 +303,11 @@ test("CasePackage import control renders a close button for success summary", ()
 
   assert.match(markup, /class="case-package-import-close-button"/);
   assert.match(markup, /aria-label="Close summary"/);
+  assert.match(markup, /class="case-package-import-details-button is-open"/);
+  assert.match(markup, /Package details/);
+  assert.match(markup, /aria-label="Close imported package details"/);
+  assert.match(markup, /role="dialog"/);
+  assert.match(markup, /aria-modal="true"/);
 });
 
 test("CasePackage import control renders a close button for error panel", () => {
@@ -335,6 +356,7 @@ test("CasePackage import control renders a reopen button when success summary is
 
   assert.match(markup, /class="case-package-import-details-button"/);
   assert.match(markup, /aria-label="View imported package details"/);
+  assert.match(markup, /aria-expanded="false"/);
   assert.match(markup, /Package details/);
   // Reopening panel implies summary details are hidden when dismissed
   assert.doesNotMatch(markup, /Imported package summary/);

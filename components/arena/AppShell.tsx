@@ -889,17 +889,13 @@ export function AppShell({
         onSelectStage={navigateToStage}
         actions={
           <div className="arena-local-file-actions tc-masthead__actions-grid">
-            <div className="tc-masthead__action-group tc-masthead__action-group--results">
-              <span className="tc-masthead__group-label tc-masthead__action-label tc-masthead__action-label--empty" aria-hidden="true" />
-              <div className="tc-masthead__action-row tc-masthead__button-row">
+            <CasePackageImportControl
+              status={importStatus}
+              leadingAction={
                 <Link className="arena-header-link" href="/results">
                   Results
                 </Link>
-              </div>
-              <p className="tc-masthead__action-helper tc-masthead__action-helper--empty" aria-hidden="true" />
-            </div>
-            <CasePackageImportControl
-              status={importStatus}
+              }
               onImportStart={handleImportStart}
               onImportText={handleImportCasePackageJson}
               onImportReadError={handleImportReadError}
