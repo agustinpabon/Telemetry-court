@@ -16,13 +16,17 @@ import {
 import {
   importLocalEvaluationResultsBundleV01,
   loadLocalEvaluationResultsV01,
+  type LocalEvaluationReportGroupV01,
   type LocalEvaluationResultsSnapshotV01,
+  type LocalQuickDispositionGroupV01,
 } from "@/lib/localEvaluationResultsV01";
-import type { QuickDispositionImportInspectionSummaryV01 } from "@/lib/quickDispositionInspectionV01";
+import type {
+  QuickDispositionImportInspectionSummaryV01,
+  QuickDispositionInspectionCount,
+} from "@/lib/quickDispositionInspectionV01";
 import type {
   QuickDispositionReasonCodeV01,
   QuickDispositionSourceStageV01,
-  QuickDispositionV01,
   QuickDispositionValueV01,
 } from "@/lib/quickDispositionV01";
 import type { ReviewResultImportInspectionSummaryV01 } from "@/lib/reviewResultInspectionV01";
@@ -139,8 +143,8 @@ export function LocalEvaluationResults() {
             result.outcome === "already_imported"
               ? result.message
               : result.importedQuickDispositionCount > 0
-                ? `Imported ${formatCount(result.importedQuickDispositionCount, "quick disposition", "quick dispositions")}. It is stored separately from completed ReviewResults.`
-                : `Imported ${formatCount(result.importedReviewResultCount, "ReviewResult", "ReviewResults")}. The local summary now includes ${formatCount(result.snapshot.totalReviewResultCount, "result", "results")}.`,
+                ? `Imported ${formatCount(result.importedQuickDispositionCount, "quick disposition artifact", "quick disposition artifacts")}. It remains separate from full evidence ReviewResults.`
+                : `Imported ${formatCount(result.importedReviewResultCount, "full evidence ReviewResult", "full evidence ReviewResults")}. The local summary now includes ${formatCount(result.snapshot.totalReviewResultCount, "full evidence result", "full evidence results")}.`,
           inspectionSummary:
             result.outcome === "imported"
               ? result.inspectionSummary
@@ -156,7 +160,7 @@ export function LocalEvaluationResults() {
       setImportStatus({
         state: "error",
         message:
-          "The selected ReviewResult bundle could not be read. No results were imported or included in aggregation.",
+          "The selected review artifact JSON could not be read. No full evidence ReviewResults or quick disposition artifacts were imported.",
       });
     } finally {
       input.value = "";
@@ -258,11 +262,18 @@ export function LocalEvaluationResultsView({
   const hasResults = snapshot.totalReviewResultCount > 0;
   const hasQuickDispositions = snapshot.totalQuickDispositionCount > 0;
   const importSummaryTitleId = useId();
+  const quickDispositionImportSummaryTitleId = useId();
   const reviewResultInspectionSummary =
     importStatus.state === "success" &&
     importStatus.inspectionSummary?.artifactType !== "QuickDisposition"
       ? importStatus.inspectionSummary
       : undefined;
+  const quickDispositionInspectionSummary =
+    importStatus.state === "success" &&
+    importStatus.inspectionSummary?.artifactType === "QuickDisposition"
+      ? importStatus.inspectionSummary
+      : undefined;
+  const packageResultGroups = mergePackageResultGroups(snapshot);
 
   return (
     <div className="local-evaluation-results">
@@ -275,7 +286,7 @@ export function LocalEvaluationResultsView({
             CasePackage. Browser-local and imported ReviewResults become one
             EvaluationReport only when they share a compatible CasePackage
             reference and ReviewResult protocol. Quick dispositions are early
-            structured outcomes stored separately from completed reviews.
+            structured outcomes stored separately from full evidence reviews.
           </p>
         </div>
         <div className="local-results-import">
@@ -294,7 +305,7 @@ export function LocalEvaluationResultsView({
             onChange={onMapPackageFileChange}
           />
           <button type="button" onClick={onChooseFile}>
-            Import ReviewResult JSON
+            Import review artifact JSON
           </button>
           <button type="button" onClick={onChooseMapPackageFile}>
             Import CasePackage map JSON
@@ -324,6 +335,13 @@ export function LocalEvaluationResultsView({
         />
       ) : null}
 
+      {quickDispositionInspectionSummary ? (
+        <QuickDispositionImportSummaryPanel
+          summary={quickDispositionInspectionSummary}
+          titleId={quickDispositionImportSummaryTitleId}
+        />
+      ) : null}
+
       {loadError ? (
         <section className="local-results-error" role="alert">
           <strong>Local ReviewResults were not aggregated</strong>
@@ -335,54 +353,44 @@ export function LocalEvaluationResultsView({
         </section>
       ) : null}
 
-      {!loadError && hasQuickDispositions ? (
-        <QuickDispositionResults
-          quickDispositions={snapshot.quickDispositionGroups.flatMap(
-            (group) => group.quickDispositions,
-          )}
-          totalQuickDispositionCount={snapshot.totalQuickDispositionCount}
-        />
-      ) : null}
-
-      {!loadError && !hasResults ? (
+      {!loadError && !hasResults && !hasQuickDispositions ? (
         <section className="local-results-empty">
           <strong>No completed ReviewResults available</strong>
           <p>
             Complete and export a review to save it locally, or import a
-            compatible ReviewResult JSON file. Quick dispositions are listed
-            separately and no report is calculated from an empty completed
-            review set.
+            compatible full evidence ReviewResult or quick disposition artifact.
+            No EvaluationReport is calculated from quick dispositions.
           </p>
         </section>
       ) : null}
 
-      {!loadError && hasResults ? (
+      {!loadError && (hasResults || hasQuickDispositions) ? (
         <>
           <section className="evaluation-report-metrics local-results-metrics">
             <MetricCard
-              label="ReviewResults"
+              label="Full evidence ReviewResults"
               value={formatCount(
                 snapshot.totalReviewResultCount,
                 "result",
                 "results",
               )}
-              detail="Validated artifacts available for local aggregation."
+              detail="Validated full evidence artifacts available for EvaluationReport aggregation."
             />
             {hasQuickDispositions ? (
               <MetricCard
                 label="Quick dispositions"
                 value={formatCount(
                   snapshot.totalQuickDispositionCount,
-                  "disposition",
-                  "dispositions",
+                  "artifact",
+                  "artifacts",
                 )}
-                detail="Early outcomes stored separately from ReviewResults."
+                detail="Early outcomes excluded from full verdict and EvaluationReport metrics."
               />
             ) : null}
             <MetricCard
               label="Package coverage"
               value={formatCount(
-                snapshot.packageGroups.length,
+                packageResultGroups.length,
                 "CasePackage",
                 "CasePackages",
               )}
@@ -395,24 +403,34 @@ export function LocalEvaluationResultsView({
             />
           </section>
 
-          <section className="evaluation-report-boundary local-results-boundary">
-            <strong>Compatible package groups only</strong>
-            <p>
-              Multiple compatible ReviewResults means multiple reviewers
-              reviewed the same compatible CasePackage/protocol. Results from
-              different CasePackages or incompatible protocols are never
-              combined.
-            </p>
-          </section>
+          {hasResults ? (
+            <>
+              <section className="evaluation-report-boundary local-results-boundary">
+                <strong>Compatible package groups only</strong>
+                <p>
+                  Multiple compatible ReviewResults means multiple reviewers
+                  reviewed the same compatible CasePackage/protocol. These are
+                  full evidence ReviewResults; quick dispositions remain
+                  separate and never enter the EvaluationReport.
+                </p>
+              </section>
 
-          <ResultsGalaxyMap
-            packageGroups={snapshot.packageGroups}
-            availableCasePackages={availableCasePackages}
-          />
+              <ResultsGalaxyMap
+                packageGroups={snapshot.packageGroups}
+                availableCasePackages={availableCasePackages}
+              />
+            </>
+          ) : null}
 
           <div className="local-results-groups">
-            {snapshot.packageGroups.map((group) => {
-              const { case_package: casePackage } = group.report;
+            {packageResultGroups.map((group) => {
+              const casePackage =
+                group.fullEvidenceGroup?.report.case_package ??
+                group.quickDispositionGroup?.quickDispositions[0]?.case_package;
+
+              if (!casePackage) {
+                return null;
+              }
 
               return (
                 <article
@@ -426,11 +444,7 @@ export function LocalEvaluationResultsView({
                       </span>
                       <h3>{group.casePackageId}</h3>
                       <p>
-                        {formatCount(
-                          group.reviewResultCount,
-                          "compatible ReviewResult",
-                          "compatible ReviewResults",
-                        )}
+                        {formatPackageArtifactCoverage(group)}
                       </p>
                     </div>
                     <dl>
@@ -456,10 +470,39 @@ export function LocalEvaluationResultsView({
                       </div>
                     </dl>
                   </header>
-                  <EvaluationReportResults
-                    report={group.report}
-                    sourceReviewResults={group.sourceReviewResults}
-                  />
+                  {group.fullEvidenceGroup ? (
+                    <section className="local-results-full-evidence">
+                      <div className="local-results-depth-heading">
+                        <p className="eyebrow">Full evidence review</p>
+                        <h3>Full evidence verdicts</h3>
+                        <p>
+                          Only completed full evidence ReviewResults contribute
+                          to verdict, evidence-rating, label-winner,
+                          EvaluationReport, and refinement outputs.
+                        </p>
+                      </div>
+                      <EvaluationReportResults
+                        report={group.fullEvidenceGroup.report}
+                        sourceReviewResults={
+                          group.fullEvidenceGroup.sourceReviewResults
+                        }
+                      />
+                    </section>
+                  ) : (
+                    <section className="local-results-no-full">
+                      <strong>No full evidence verdicts yet</strong>
+                      <p>
+                        This package has quick disposition artifacts only. They
+                        remain visible below but do not produce an
+                        EvaluationReport or refinement output.
+                      </p>
+                    </section>
+                  )}
+                  {group.quickDispositionGroup ? (
+                    <QuickDispositionResults
+                      group={group.quickDispositionGroup}
+                    />
+                  ) : null}
                 </article>
               );
             })}
@@ -471,12 +514,12 @@ export function LocalEvaluationResultsView({
 }
 
 function QuickDispositionResults({
-  quickDispositions,
-  totalQuickDispositionCount,
+  group,
 }: {
-  quickDispositions: QuickDispositionV01[];
-  totalQuickDispositionCount: number;
+  group: LocalQuickDispositionGroupV01;
 }) {
+  const { quickDispositions, summary } = group;
+
   return (
     <section
       className="local-results-quick-dispositions"
@@ -485,13 +528,70 @@ function QuickDispositionResults({
       <div className="local-results-quick-header">
         <div>
           <p className="eyebrow">Quick dispositions</p>
-          <h3>{formatCount(totalQuickDispositionCount, "disposition", "dispositions")}</h3>
+          <h3>
+            {formatCount(
+              group.dispositionCount,
+              "quick disposition artifact",
+              "quick disposition artifacts",
+            )}
+          </h3>
           <p>
-            A quick disposition is an early structured outcome. It preserves
-            package and reviewer references without evidence ratings, label
-            winners, outlier selections, final verdicts, or recommended actions.
+            A quick disposition artifact is an early structured outcome. It
+            preserves package and reviewer references without evidence ratings,
+            label winners, outlier selections, final verdicts, or recommended
+            actions.
           </p>
         </div>
+      </div>
+      <div className="local-results-quick-summary">
+        <QuickDispositionCountList
+          title="Disposition counts"
+          counts={summary.dispositionCounts}
+          formatValue={formatDisposition}
+        />
+        <QuickDispositionCountList
+          title="Source stage counts"
+          counts={summary.sourceStageCounts}
+          formatValue={formatSourceStage}
+        />
+        <QuickDispositionCountList
+          title="Reason code counts"
+          counts={summary.reasonCodeCounts}
+          formatValue={formatReasonCode}
+        />
+        <section>
+          <h4>Reviewer sessions</h4>
+          <strong>
+            {formatCount(
+              summary.uniqueReviewerSessionCount,
+              "reviewer/session",
+              "reviewer/sessions",
+            )}
+          </strong>
+          <ul>
+            {summary.reviewerSessions.map((reviewerSession) => (
+              <li
+                key={`${reviewerSession.reviewerId}:${reviewerSession.reviewSessionId}`}
+              >
+                <span>{reviewerSession.reviewerId}</span>
+                <span>{reviewerSession.reviewSessionId}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+        {summary.escalationCount > 0 ? (
+          <section>
+            <h4>Escalation rate</h4>
+            <strong>
+              {summary.escalationCount} of {group.dispositionCount} (
+              {formatPercentage(summary.escalationRate)})
+            </strong>
+            <p>
+              Quick dispositions that requested continuation into a full
+              evidence review.
+            </p>
+          </section>
+        ) : null}
       </div>
       <ol className="local-results-quick-list">
         {quickDispositions.map((quickDisposition) => (
@@ -503,16 +603,16 @@ function QuickDispositionResults({
             </div>
             <dl>
               <div>
-                <dt>CasePackage</dt>
-                <dd>{quickDisposition.case_package.package_id}</dd>
+                <dt>Reviewer</dt>
+                <dd>{quickDisposition.reviewer.reviewer_id}</dd>
               </div>
               <div>
-                <dt>Case</dt>
-                <dd>{quickDisposition.case_package.case_id}</dd>
+                <dt>Session</dt>
+                <dd>{quickDisposition.reviewer.review_session_id}</dd>
               </div>
               <div>
-                <dt>Cluster</dt>
-                <dd>{quickDisposition.case_package.cluster_id}</dd>
+                <dt>Artifact depth</dt>
+                <dd>Quick disposition</dd>
               </div>
               <div>
                 <dt>Created</dt>
@@ -526,10 +626,105 @@ function QuickDispositionResults({
   );
 }
 
+function QuickDispositionCountList<T extends string>({
+  title,
+  counts,
+  formatValue,
+}: {
+  title: string;
+  counts: QuickDispositionInspectionCount[];
+  formatValue: (value: T) => string;
+}) {
+  return (
+    <section>
+      <h4>{title}</h4>
+      <ul>
+        {counts.map(({ value, count }) => (
+          <li key={value}>
+            <span>{formatValue(value as T)}</span>
+            <strong>{count}</strong>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function QuickDispositionImportSummaryPanel({
+  summary,
+  titleId,
+}: {
+  summary: QuickDispositionImportInspectionSummaryV01;
+  titleId: string;
+}) {
+  return (
+    <section
+      className="review-result-import-summary-panel is-inline"
+      aria-labelledby={titleId}
+    >
+      <div className="review-result-import-summary-header">
+        <p className="review-result-import-summary-kicker">
+          {summary.compatibilitySummary.status}
+        </p>
+        <h2 id={titleId}>Imported quick disposition artifact</h2>
+        <p>{summary.compatibilitySummary.message}</p>
+      </div>
+      <dl className="review-result-import-summary-facts">
+        <div>
+          <dt>Artifact depth</dt>
+          <dd>Quick disposition artifact</dd>
+        </div>
+        <div>
+          <dt>Artifact schema</dt>
+          <dd>{summary.artifactSchemaVersion}</dd>
+        </div>
+        <div>
+          <dt>Reviewer sessions</dt>
+          <dd>{summary.uniqueReviewerSessionCount}</dd>
+        </div>
+        <div>
+          <dt>CasePackage IDs</dt>
+          <dd>{summary.referencedPackageIds.join(", ")}</dd>
+        </div>
+        <div>
+          <dt>Source stage</dt>
+          <dd>
+            {summary.sourceStages
+              .map((sourceStage) =>
+                formatSourceStage(
+                  sourceStage as QuickDispositionSourceStageV01,
+                ),
+              )
+              .join(", ")}
+          </dd>
+        </div>
+        <div>
+          <dt>Disposition</dt>
+          <dd>
+            {formatInspectionCounts(
+              summary.dispositionDistribution,
+              formatDisposition,
+            )}
+          </dd>
+        </div>
+        <div>
+          <dt>Reason codes</dt>
+          <dd>
+            {formatInspectionCounts(
+              summary.reasonCodeCounts,
+              formatReasonCode,
+            )}
+          </dd>
+        </div>
+      </dl>
+    </section>
+  );
+}
+
 function getImportStatusCopy(status: ResultsImportStatus): string {
   switch (status.state) {
     case "reading":
-      return "Validating ReviewResult or quick disposition JSON.";
+      return "Validating a full evidence ReviewResult or quick disposition artifact.";
     case "success":
     case "error":
       return status.message;
@@ -573,11 +768,11 @@ function formatRejectedImportMessage(
 function formatDisposition(disposition: QuickDispositionValueV01): string {
   switch (disposition) {
     case "dismiss_not_interesting":
-      return "Not interesting / skip";
+      return "Not interesting / skipped";
     case "save_for_later":
-      return "Save for later";
+      return "Saved for later";
     case "escalate_to_full_review":
-      return "Continue full review";
+      return "Continue full evidence review";
     case "cannot_judge_from_package":
       return "Cannot judge from this package";
   }
@@ -611,6 +806,77 @@ function formatReasonCode(reasonCode: QuickDispositionReasonCodeV01): string {
 
 function formatCount(count: number, singular: string, plural: string) {
   return `${count} ${count === 1 ? singular : plural}`;
+}
+
+type LocalResultsPackageGroup = {
+  casePackageId: string;
+  fullEvidenceGroup?: LocalEvaluationReportGroupV01;
+  quickDispositionGroup?: LocalQuickDispositionGroupV01;
+};
+
+function mergePackageResultGroups(
+  snapshot: LocalEvaluationResultsSnapshotV01,
+): LocalResultsPackageGroup[] {
+  const groups = new Map<string, LocalResultsPackageGroup>();
+
+  for (const fullEvidenceGroup of snapshot.packageGroups) {
+    groups.set(fullEvidenceGroup.casePackageId, {
+      casePackageId: fullEvidenceGroup.casePackageId,
+      fullEvidenceGroup,
+    });
+  }
+
+  for (const quickDispositionGroup of snapshot.quickDispositionGroups) {
+    const currentGroup = groups.get(quickDispositionGroup.casePackageId);
+    groups.set(quickDispositionGroup.casePackageId, {
+      ...currentGroup,
+      casePackageId: quickDispositionGroup.casePackageId,
+      quickDispositionGroup,
+    });
+  }
+
+  return [...groups.values()].sort((left, right) =>
+    left.casePackageId.localeCompare(right.casePackageId),
+  );
+}
+
+function formatPackageArtifactCoverage(group: LocalResultsPackageGroup) {
+  const counts = [];
+
+  if (group.fullEvidenceGroup) {
+    counts.push(
+      formatCount(
+        group.fullEvidenceGroup.reviewResultCount,
+        "full evidence ReviewResult",
+        "full evidence ReviewResults",
+      ),
+    );
+  }
+
+  if (group.quickDispositionGroup) {
+    counts.push(
+      formatCount(
+        group.quickDispositionGroup.dispositionCount,
+        "quick disposition artifact",
+        "quick disposition artifacts",
+      ),
+    );
+  }
+
+  return counts.join(" · ");
+}
+
+function formatInspectionCounts<T extends string>(
+  counts: QuickDispositionInspectionCount[],
+  formatValue: (value: T) => string,
+) {
+  return counts
+    .map(({ value, count }) => `${formatValue(value as T)}: ${count}`)
+    .join(", ");
+}
+
+function formatPercentage(value: number) {
+  return `${Number((value * 100).toFixed(1))}%`;
 }
 
 function replaceCasePackage(

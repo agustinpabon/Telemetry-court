@@ -244,8 +244,19 @@ package/pipeline provenance, verdict and label-winner distributions,
 evidence-rating sufficiency signals, reviewer agreement, disputed evidence,
 disagreement indicators, comparison rollups, and per-report JSON/CSV export.
 It also lists validated `quick_disposition.v0.1` artifacts from their separate
-local store as early structured outcomes, but those records are not treated as
-ReviewResults and are not aggregated into `EvaluationReportV01`.
+local store as early structured outcomes. Each CasePackage group displays full
+evidence ReviewResults and quick disposition artifacts in separate sections.
+Quick-only groups explicitly report that no full evidence verdicts exist yet.
+Quick disposition summaries count dispositions, source stages, reason codes,
+unique reviewer/session pairs, and escalation rate when a disposition requests
+full evidence review.
+
+Quick dispositions are not treated as ReviewResults and are never passed to
+`aggregateReviewResultsV01`. They therefore do not affect final-verdict,
+evidence-rating, label-winner, reviewer-agreement, comparison-rollup,
+EvaluationReport export, or cluster-refinement output. Mixed package groups
+retain the same full ReviewResult aggregation they would have without the
+quick disposition artifacts.
 
 Locally completed reviews and validated imported bundle results enter the same
 versioned local store. The route accepts local ReviewResult bundle JSON through
@@ -271,11 +282,13 @@ asks the user to import or reload the matching CasePackage. This cache does not
 change or expand the ReviewResult contract.
 
 The view distinguishes reviewer output from upstream CasePackage evidence and
-shows unavailable aggregate data as unavailable rather than as zero-confidence
-truth. It does not expose claims, evidence content, raw telemetry, scoring,
-adjudication, consensus behavior, a generic dashboard, backend API, durable
-multi-user report workflow, account system, admin surface, or adapter
-implementation.
+also makes artifact depth explicit during import and local display: a full
+evidence `ReviewResult` can enter EvaluationReport aggregation, while a quick
+disposition artifact cannot. Unavailable aggregate data remains unavailable
+rather than zero-confidence truth. The view does not expose claims, evidence
+content, raw telemetry, scoring, adjudication, consensus behavior, a generic
+dashboard, backend API, durable multi-user report workflow, account system,
+admin surface, or adapter implementation.
 
 ## EvaluationReport Export v0.1
 

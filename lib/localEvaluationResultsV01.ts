@@ -13,7 +13,11 @@ import {
   importReviewResultBundleToLocalStoreV01,
 } from "@/lib/reviewResultBundleV01";
 import { importReviewArtifactV01Json } from "@/lib/reviewArtifactImportV01";
-import type { QuickDispositionImportInspectionSummaryV01 } from "@/lib/quickDispositionInspectionV01";
+import {
+  summarizeQuickDispositionsV01,
+  type QuickDispositionImportInspectionSummaryV01,
+  type QuickDispositionSummaryV01,
+} from "@/lib/quickDispositionInspectionV01";
 import type { ReviewResultImportInspectionSummaryV01 } from "@/lib/reviewResultInspectionV01";
 import type { ReviewResultV01 } from "@/lib/reviewResultV01";
 import {
@@ -31,6 +35,7 @@ export type LocalEvaluationReportGroupV01 = {
 export type LocalQuickDispositionGroupV01 = {
   casePackageId: string;
   dispositionCount: number;
+  summary: QuickDispositionSummaryV01;
   quickDispositions: QuickDispositionV01[];
 };
 
@@ -109,6 +114,7 @@ export function loadLocalEvaluationResultsV01(
       return {
         casePackageId,
         dispositionCount: sortedQuickDispositions.length,
+        summary: summarizeQuickDispositionsV01(sortedQuickDispositions),
         quickDispositions: sortedQuickDispositions,
       };
     });

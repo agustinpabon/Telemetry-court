@@ -55,7 +55,7 @@ export function inspectReviewResultV01(
     artifactSchemaVersion: reviewResult.schema_version,
     reviewResults: [reviewResult],
     compatibilityMessage:
-      "Strict validation confirmed one single validated ReviewResult. It can be stored locally and aggregated as a single-review report until compatible peer results are added.",
+      "Strict validation confirmed one single validated ReviewResult: a full evidence ReviewResult artifact. It can be stored locally and aggregated as a single-review report until compatible peer results are added.",
   });
 }
 
@@ -68,7 +68,7 @@ export function inspectReviewResultBundleV01(
     bundleId: bundle.metadata.bundle_id,
     reviewResults: bundle.review_results,
     compatibilityMessage:
-      "Strict validation confirmed one compatible CasePackage/protocol/evidence set for local aggregation.",
+      "Strict validation confirmed full evidence ReviewResult artifacts with one compatible CasePackage/protocol/evidence set for local aggregation.",
   });
 }
 
