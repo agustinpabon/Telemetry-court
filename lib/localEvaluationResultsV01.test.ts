@@ -5,6 +5,7 @@ import {
   importLocalEvaluationResultsBundleV01,
   loadLocalEvaluationResultsV01,
 } from "@/lib/localEvaluationResultsV01";
+import { loadQuickDispositionsForCasePackageV01 } from "@/lib/quickDispositionStorageV01";
 import {
   createReviewResultBundleV01,
   serializeReviewResultBundleV01,
@@ -17,7 +18,9 @@ test("local evaluation results are empty when no ReviewResults exist", () => {
 
   assert.deepEqual(snapshot, {
     totalReviewResultCount: 0,
+    totalQuickDispositionCount: 0,
     packageGroups: [],
+    quickDispositionGroups: [],
   });
 });
 
@@ -89,6 +92,41 @@ test("single imported ReviewResult JSON is included through the same local resul
   ]);
   assert.equal(result.snapshot.totalReviewResultCount, 1);
   assert.equal(result.snapshot.packageGroups[0]?.report.reviewer_count, 1);
+});
+
+test("quick disposition JSON imports without being aggregated as a ReviewResult", () => {
+  const storage = createMemoryStorage();
+  const quickDisposition = createQuickDisposition();
+
+  const result = importLocalEvaluationResultsBundleV01(
+    storage,
+    JSON.stringify(quickDisposition),
+  );
+  const snapshot = loadLocalEvaluationResultsV01(storage);
+  const storedQuickDispositions = loadQuickDispositionsForCasePackageV01(
+    storage,
+    quickDisposition.case_package.package_id,
+  );
+
+  assert.equal(result.ok, true);
+  if (!result.ok) {
+    return;
+  }
+  assert.equal(result.outcome, "imported");
+  assert.equal(result.importedReviewResultCount, 0);
+  assert.equal(result.importedQuickDispositionCount, 1);
+  assert.equal(result.inspectionSummary.artifactType, "QuickDisposition");
+  assert.equal(snapshot.totalReviewResultCount, 0);
+  assert.equal(snapshot.totalQuickDispositionCount, 1);
+  assert.deepEqual(storedQuickDispositions, [quickDisposition]);
+  assert.deepEqual(snapshot.packageGroups, []);
+  assert.deepEqual(snapshot.quickDispositionGroups, [
+    {
+      casePackageId: quickDisposition.case_package.package_id,
+      dispositionCount: 1,
+      quickDispositions: [quickDisposition],
+    },
+  ]);
 });
 
 test("incompatible imported results are excluded without contaminating aggregation", () => {
@@ -337,6 +375,36 @@ function createReviewResult({
       recommended_action: "accept_label",
     },
   };
+}
+
+function createQuickDisposition() {
+  return {
+    schema_version: "quick_disposition.v0.1",
+    disposition_id:
+      "quick-disposition:pkg-results-001:reviewer-quick:session-reviewer-quick:case_file:2026-06-24T12:00:00.000Z",
+    created_at: "2026-06-24T12:00:00.000Z",
+    case_package: {
+      schema_version: "case_package.v0.1",
+      package_id: "pkg-results-001",
+      package_revision: "r1",
+      case_id: "case-results-001",
+      cluster_id: "cluster-results-001",
+      pipeline: {
+        pipeline_id: "pipeline-results",
+        run_id: "run-results-001",
+        upstream_tool: "synthetic-results-fixture",
+        generated_at: "2026-06-21T11:00:00.000Z",
+      },
+    },
+    reviewer: {
+      reviewer_id: "reviewer-quick",
+      review_session_id: "session-reviewer-quick",
+      context: "local_review",
+    },
+    source_stage: "case_file",
+    disposition: "dismiss_not_interesting",
+    reason_codes: ["low_validation_value"],
+  } as const;
 }
 
 function createMemoryStorage() {

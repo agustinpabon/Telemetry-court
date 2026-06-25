@@ -18,6 +18,13 @@ import {
   loadLocalEvaluationResultsV01,
   type LocalEvaluationResultsSnapshotV01,
 } from "@/lib/localEvaluationResultsV01";
+import type { QuickDispositionImportInspectionSummaryV01 } from "@/lib/quickDispositionInspectionV01";
+import type {
+  QuickDispositionReasonCodeV01,
+  QuickDispositionSourceStageV01,
+  QuickDispositionV01,
+  QuickDispositionValueV01,
+} from "@/lib/quickDispositionV01";
 import type { ReviewResultImportInspectionSummaryV01 } from "@/lib/reviewResultInspectionV01";
 import {
   importResultsMapCasePackageV01Json,
@@ -33,7 +40,9 @@ type ResultsImportStatus =
   | {
       state: "success";
       message: string;
-      inspectionSummary?: ReviewResultImportInspectionSummaryV01;
+      inspectionSummary?:
+        | ReviewResultImportInspectionSummaryV01
+        | QuickDispositionImportInspectionSummaryV01;
     }
   | { state: "error"; message: string };
 
@@ -45,7 +54,9 @@ type ResultsMapPackageImportStatus =
 
 const emptySnapshot: LocalEvaluationResultsSnapshotV01 = {
   totalReviewResultCount: 0,
+  totalQuickDispositionCount: 0,
   packageGroups: [],
+  quickDispositionGroups: [],
 };
 
 export function LocalEvaluationResults() {
@@ -127,7 +138,9 @@ export function LocalEvaluationResults() {
           message:
             result.outcome === "already_imported"
               ? result.message
-              : `Imported ${formatCount(result.importedReviewResultCount, "ReviewResult", "ReviewResults")}. The local summary now includes ${formatCount(result.snapshot.totalReviewResultCount, "result", "results")}.`,
+              : result.importedQuickDispositionCount > 0
+                ? `Imported ${formatCount(result.importedQuickDispositionCount, "quick disposition", "quick dispositions")}. It is stored separately from completed ReviewResults.`
+                : `Imported ${formatCount(result.importedReviewResultCount, "ReviewResult", "ReviewResults")}. The local summary now includes ${formatCount(result.snapshot.totalReviewResultCount, "result", "results")}.`,
           inspectionSummary:
             result.outcome === "imported"
               ? result.inspectionSummary
@@ -243,7 +256,13 @@ export function LocalEvaluationResultsView({
   onMapPackageFileChange?: (event: ChangeEvent<HTMLInputElement>) => void;
 }) {
   const hasResults = snapshot.totalReviewResultCount > 0;
+  const hasQuickDispositions = snapshot.totalQuickDispositionCount > 0;
   const importSummaryTitleId = useId();
+  const reviewResultInspectionSummary =
+    importStatus.state === "success" &&
+    importStatus.inspectionSummary?.artifactType !== "QuickDisposition"
+      ? importStatus.inspectionSummary
+      : undefined;
 
   return (
     <div className="local-evaluation-results">
@@ -255,7 +274,8 @@ export function LocalEvaluationResultsView({
             A ReviewResult is one reviewer&apos;s structured judgment for one
             CasePackage. Browser-local and imported ReviewResults become one
             EvaluationReport only when they share a compatible CasePackage
-            reference and ReviewResult protocol.
+            reference and ReviewResult protocol. Quick dispositions are early
+            structured outcomes stored separately from completed reviews.
           </p>
         </div>
         <div className="local-results-import">
@@ -296,9 +316,9 @@ export function LocalEvaluationResultsView({
 
       <ReviewResultProgression variant="results" />
 
-      {importStatus.state === "success" && importStatus.inspectionSummary ? (
+      {reviewResultInspectionSummary ? (
         <ReviewResultImportSummaryPanel
-          summary={importStatus.inspectionSummary}
+          summary={reviewResultInspectionSummary}
           titleId={importSummaryTitleId}
           variant="inline"
         />
@@ -315,13 +335,23 @@ export function LocalEvaluationResultsView({
         </section>
       ) : null}
 
+      {!loadError && hasQuickDispositions ? (
+        <QuickDispositionResults
+          quickDispositions={snapshot.quickDispositionGroups.flatMap(
+            (group) => group.quickDispositions,
+          )}
+          totalQuickDispositionCount={snapshot.totalQuickDispositionCount}
+        />
+      ) : null}
+
       {!loadError && !hasResults ? (
         <section className="local-results-empty">
-          <strong>No ReviewResults available</strong>
+          <strong>No completed ReviewResults available</strong>
           <p>
             Complete and export a review to save it locally, or import a
-            compatible ReviewResult JSON file. No report is calculated from an
-            empty result set.
+            compatible ReviewResult JSON file. Quick dispositions are listed
+            separately and no report is calculated from an empty completed
+            review set.
           </p>
         </section>
       ) : null}
@@ -338,6 +368,17 @@ export function LocalEvaluationResultsView({
               )}
               detail="Validated artifacts available for local aggregation."
             />
+            {hasQuickDispositions ? (
+              <MetricCard
+                label="Quick dispositions"
+                value={formatCount(
+                  snapshot.totalQuickDispositionCount,
+                  "disposition",
+                  "dispositions",
+                )}
+                detail="Early outcomes stored separately from ReviewResults."
+              />
+            ) : null}
             <MetricCard
               label="Package coverage"
               value={formatCount(
@@ -429,10 +470,66 @@ export function LocalEvaluationResultsView({
   );
 }
 
+function QuickDispositionResults({
+  quickDispositions,
+  totalQuickDispositionCount,
+}: {
+  quickDispositions: QuickDispositionV01[];
+  totalQuickDispositionCount: number;
+}) {
+  return (
+    <section
+      className="local-results-quick-dispositions"
+      aria-label="Quick dispositions"
+    >
+      <div className="local-results-quick-header">
+        <div>
+          <p className="eyebrow">Quick dispositions</p>
+          <h3>{formatCount(totalQuickDispositionCount, "disposition", "dispositions")}</h3>
+          <p>
+            A quick disposition is an early structured outcome. It preserves
+            package and reviewer references without evidence ratings, label
+            winners, outlier selections, final verdicts, or recommended actions.
+          </p>
+        </div>
+      </div>
+      <ol className="local-results-quick-list">
+        {quickDispositions.map((quickDisposition) => (
+          <li key={quickDisposition.disposition_id}>
+            <div>
+              <span>{formatSourceStage(quickDisposition.source_stage)}</span>
+              <strong>{formatDisposition(quickDisposition.disposition)}</strong>
+              <p>{quickDisposition.reason_codes.map(formatReasonCode).join(", ")}</p>
+            </div>
+            <dl>
+              <div>
+                <dt>CasePackage</dt>
+                <dd>{quickDisposition.case_package.package_id}</dd>
+              </div>
+              <div>
+                <dt>Case</dt>
+                <dd>{quickDisposition.case_package.case_id}</dd>
+              </div>
+              <div>
+                <dt>Cluster</dt>
+                <dd>{quickDisposition.case_package.cluster_id}</dd>
+              </div>
+              <div>
+                <dt>Created</dt>
+                <dd>{quickDisposition.created_at}</dd>
+              </div>
+            </dl>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
 function getImportStatusCopy(status: ResultsImportStatus): string {
   switch (status.state) {
     case "reading":
-      return "Validating ReviewResult JSON and compatibility.";
+      return "Validating ReviewResult or quick disposition JSON.";
     case "success":
     case "error":
       return status.message;
@@ -466,9 +563,50 @@ function formatRejectedImportMessage(
   const exclusion =
     result.excludedReviewResultCount > 0
       ? `${formatCount(result.excludedReviewResultCount, "ReviewResult", "ReviewResults")} rejected and excluded from aggregation.`
+      : result.excludedQuickDispositionCount > 0
+        ? `${formatCount(result.excludedQuickDispositionCount, "quick disposition", "quick dispositions")} rejected and excluded from local quick dispositions.`
       : "Bundle rejected. No results were imported or included in aggregation.";
 
   return `${exclusion} ${result.message}`;
+}
+
+function formatDisposition(disposition: QuickDispositionValueV01): string {
+  switch (disposition) {
+    case "dismiss_not_interesting":
+      return "Not interesting / skip";
+    case "save_for_later":
+      return "Save for later";
+    case "escalate_to_full_review":
+      return "Continue full review";
+    case "cannot_judge_from_package":
+      return "Cannot judge from this package";
+  }
+}
+
+function formatSourceStage(sourceStage: QuickDispositionSourceStageV01): string {
+  switch (sourceStage) {
+    case "landscape":
+      return "landscape";
+    case "case_file":
+      return "case file";
+    case "blind_review":
+      return "blind review";
+    case "evidence_board":
+      return "evidence board";
+  }
+}
+
+function formatReasonCode(reasonCode: QuickDispositionReasonCodeV01): string {
+  switch (reasonCode) {
+    case "low_validation_value":
+      return "low validation value";
+    case "needs_later_review":
+      return "needs later review";
+    case "full_review_requested":
+      return "full review requested";
+    case "insufficient_package_context":
+      return "insufficient package context";
+  }
 }
 
 function formatCount(count: number, singular: string, plural: string) {

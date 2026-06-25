@@ -7,8 +7,16 @@ import {
   validateReviewResultV01,
 } from "@/lib/reviewResultValidationV01";
 import {
+  type QuickDispositionValidationErrorV01,
+  validateQuickDispositionV01,
+} from "@/lib/quickDispositionV01";
+import {
   importReviewResultBundleV01Json,
 } from "@/lib/reviewResultBundleV01";
+import {
+  inspectQuickDispositionV01,
+  type QuickDispositionImportInspectionSummaryV01,
+} from "@/lib/quickDispositionInspectionV01";
 import {
   inspectReviewResultBundleV01,
   inspectReviewResultV01,
@@ -95,11 +103,28 @@ export async function runValidateReviewResultsCli(
     const summary = inspectReviewResultBundleV01(importResult.bundle);
     writeStdout(formatValidationSuccess(filePath, summary));
     return 0;
+  } else if (schemaVersion === "quick_disposition.v0.1") {
+    const validationResult = validateQuickDispositionV01(parsedValue);
+    if (!validationResult.ok) {
+      writeStderr(
+        formatQuickDispositionValidationFailure(
+          filePath,
+          validationResult.errors,
+        ),
+      );
+      return 1;
+    }
+
+    const summary = inspectQuickDispositionV01(
+      validationResult.quickDisposition,
+    );
+    writeStdout(formatQuickDispositionValidationSuccess(filePath, summary));
+    return 0;
   } else {
     writeStderr(
       formatInvalidFormatFailure(
         filePath,
-        `Unsupported or missing schema_version "${schemaVersion}". Expected "review_result.v0.1" or "review_result_bundle.v0.1".`,
+        `Unsupported or missing schema_version "${schemaVersion}". Expected "review_result.v0.1", "review_result_bundle.v0.1", or "quick_disposition.v0.1".`,
       ),
     );
     return 1;
@@ -153,9 +178,9 @@ function formatUsageError(argumentCount: number): string {
     "Reason: CLI usage error",
     `Received ${argumentCount} path argument${
       argumentCount === 1 ? "" : "s"
-    }; expected exactly one ReviewResult/Bundle JSON path.`,
+    }; expected exactly one ReviewResult, ReviewResultBundle, or QuickDisposition JSON path.`,
     "Usage: npm run validate-review-results -- path/to/review-results.json",
-    "This utility validates ReviewResult JSON or ReviewResultBundle JSON only. It does not create reports or read raw telemetry.",
+    "This utility validates ReviewResult JSON, ReviewResultBundle JSON, or QuickDisposition JSON only. It does not create reports or read raw telemetry.",
     "",
   ].join("\n");
 }
@@ -196,6 +221,19 @@ function formatInvalidFormatFailure(filePath: string, message: string): string {
 }
 
 function formatValidationFailure(filePath: string, errors: ReviewResultValidationErrorV01[]): string {
+  return [
+    "Validation: FAIL",
+    `Path: ${filePath}`,
+    `Errors: ${errors.length}`,
+    ...errors.map((error) => `- ${error.path} [${error.code}] ${error.message}`),
+    "",
+  ].join("\n");
+}
+
+function formatQuickDispositionValidationFailure(
+  filePath: string,
+  errors: QuickDispositionValidationErrorV01[],
+): string {
   return [
     "Validation: FAIL",
     `Path: ${filePath}`,
@@ -248,6 +286,29 @@ function formatValidationSuccess(
   return lines.join("\n");
 }
 
+function formatQuickDispositionValidationSuccess(
+  filePath: string,
+  summary: QuickDispositionImportInspectionSummaryV01,
+): string {
+  return [
+    "Validation: PASS",
+    `Path: ${filePath}`,
+    `Artifact type: ${summary.artifactType}`,
+    `Schema version: ${summary.artifactSchemaVersion}`,
+    "Review result count: 0",
+    `Quick disposition count: ${summary.resultCount}`,
+    `Reviewers: ${formatReviewers(summary.reviewerSessions)}`,
+    `Case package IDs referenced: ${summary.referencedPackageIds.join(", ")}`,
+    `Package schema versions referenced: ${summary.casePackageSchemaVersions.join(", ")}`,
+    `Source stages: ${summary.sourceStages.join(", ")}`,
+    `Disposition distribution: ${formatDistribution(summary.dispositionDistribution)}`,
+    `Reason code counts: ${formatDistribution(summary.reasonCodeCounts)}`,
+    `Compatibility status: ${formatCompatibilityStatus(summary)}`,
+    "Missing required metadata count: 0",
+    "",
+  ].join("\n");
+}
+
 function formatReviewers(
   reviewers: readonly ReviewResultReviewerInspectionReference[],
 ): string {
@@ -271,7 +332,9 @@ function formatDistribution(dist: readonly ReviewResultInspectionCount[]): strin
 }
 
 function formatCompatibilityStatus(
-  summary: ReviewResultImportInspectionSummaryV01,
+  summary:
+    | ReviewResultImportInspectionSummaryV01
+    | QuickDispositionImportInspectionSummaryV01,
 ): string {
   return summary.artifactType === "ReviewResult"
     ? "compatible (single result)"

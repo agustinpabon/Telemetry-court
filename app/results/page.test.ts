@@ -13,7 +13,7 @@ test("results page renders an empty local ReviewResult state outside the review 
 
   assert.match(markup, /Telemetry Court/);
   assert.match(markup, /Local evaluation results/);
-  assert.match(markup, /No ReviewResults available/);
+  assert.match(markup, /No completed ReviewResults available/);
   assert.match(markup, /Import ReviewResult JSON/);
   assert.match(markup, /Review cases/);
   assert.doesNotMatch(markup, /Verdict distribution/);
