@@ -55,15 +55,16 @@ export function QuickDispositionControl({
   onContinueFullReview,
 }: QuickDispositionControlProps) {
   function recordOption(option: QuickDispositionOption) {
+    if (option.continuesFullReview) {
+      onContinueFullReview();
+      return;
+    }
+
     onRecordDisposition({
       sourceStage,
       disposition: option.disposition,
       reasonCodes: option.reasonCodes,
     });
-
-    if (option.continuesFullReview) {
-      onContinueFullReview();
-    }
   }
 
   return (

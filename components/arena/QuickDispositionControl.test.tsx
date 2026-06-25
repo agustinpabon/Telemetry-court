@@ -30,7 +30,7 @@ test("quick disposition control renders early-review actions without triage lang
   assert.doesNotMatch(markup, /remediation/i);
 });
 
-test("continue full review records a quick disposition and preserves the normal review path", () => {
+test("continue full review does not record a quick disposition and preserves the normal review path", () => {
   const events: Array<
     | { type: "record"; event: QuickDispositionControlEvent }
     | { type: "continue" }
@@ -44,14 +44,6 @@ test("continue full review records a quick disposition and preserves the normal 
   findButtonByText(element, "Continue full review").props.onClick();
 
   assert.deepEqual(events, [
-    {
-      type: "record",
-      event: {
-        sourceStage: "case_file",
-        disposition: "escalate_to_full_review",
-        reasonCodes: ["full_review_requested"],
-      },
-    },
     { type: "continue" },
   ]);
 });
