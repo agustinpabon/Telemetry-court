@@ -13,6 +13,10 @@ import {
   ArenaWorkflowShell,
   SectionHeader,
 } from "@/components/arena/WorkflowPrimitives";
+import {
+  QuickDispositionControl,
+  type QuickDispositionControlEvent,
+} from "@/components/arena/QuickDispositionControl";
 import { ReviewTerminologyHelp } from "@/components/arena/ReviewTerminologyHelp";
 import { formatSupportScore, getAverageSupportScore } from "@/lib/caseMetrics";
 import type {
@@ -27,7 +31,9 @@ type CaseFilePanelProps = {
   caseFile: CaseFile;
   cases: CaseFile[];
   landscapeContextNodes?: LandscapeContextNode[];
+  quickDispositionStatusMessage?: string;
   onBackToLandscape?: () => void;
+  onRecordQuickDisposition?: (event: QuickDispositionControlEvent) => void;
   onStartInvestigation: () => void;
 };
 
@@ -107,7 +113,9 @@ export function CaseFilePanel({
   caseFile,
   cases,
   landscapeContextNodes = [],
+  quickDispositionStatusMessage,
   onBackToLandscape,
+  onRecordQuickDisposition = () => undefined,
   onStartInvestigation,
 }: CaseFilePanelProps) {
   const evidencePreviewRows = getEvidencePreviewRows(caseFile);
@@ -281,6 +289,12 @@ export function CaseFilePanel({
                 </div>
               </dl>
             </article>
+            <QuickDispositionControl
+              sourceStage="case_file"
+              statusMessage={quickDispositionStatusMessage}
+              onRecordDisposition={onRecordQuickDisposition}
+              onContinueFullReview={onStartInvestigation}
+            />
 
           </div>
         </aside>

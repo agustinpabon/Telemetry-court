@@ -18,6 +18,7 @@ import {
 } from "@/components/arena/HotFolderCasePackageControl";
 import { ImpostorPanel } from "@/components/arena/ImpostorPanel";
 import { LabelDuelPanel } from "@/components/arena/LabelDuelPanel";
+import type { QuickDispositionControlEvent } from "@/components/arena/QuickDispositionControl";
 import { ReviewSummaryDrawer } from "@/components/arena/ReviewSummaryDrawer";
 import {
   ReviewResultBundleControl,
@@ -47,6 +48,11 @@ import {
   getReviewResultExportFilename,
   serializeReviewResultExport,
 } from "@/lib/exportReview";
+import {
+  buildQuickDispositionExportV01,
+  getQuickDispositionFilenameV01,
+  serializeQuickDispositionV01,
+} from "@/lib/quickDispositionV01";
 import { saveCasePackageToSessionStoreV01 } from "@/lib/casePackageSessionStorageV01";
 import {
   importCasePackageV01Json,
@@ -64,7 +70,8 @@ import {
   importReviewResultBundleToLocalStoreV01,
   serializeReviewResultBundleV01,
 } from "@/lib/reviewResultBundleV01";
-import { importReviewResultArtifactV01Json } from "@/lib/reviewResultImportV01";
+import { importReviewArtifactV01Json } from "@/lib/reviewArtifactImportV01";
+import { saveQuickDispositionToLocalStoreV01 } from "@/lib/quickDispositionStorageV01";
 import {
   loadReviewResultsForCasePackageV01,
   saveReviewResultToLocalStoreV01,
@@ -136,6 +143,7 @@ export function AppShell({
   const sessionHydrationPendingRef = useRef(false);
   const [previewCaseId, setPreviewCaseId] = useState<string>();
   const [exportMessage, setExportMessage] = useState<string>();
+  const [quickDispositionMessage, setQuickDispositionMessage] = useState<string>();
   const [importStatus, setImportStatus] = useState<CasePackageImportStatus>({
     state: "idle",
   });
@@ -502,6 +510,7 @@ export function AppShell({
     );
     rawDispatch(action);
     setExportMessage(undefined);
+    setQuickDispositionMessage(undefined);
   }
 
   function navigateToStage(stage: ReturnType<typeof createInitialArenaState>["activeStage"]) {
@@ -641,7 +650,7 @@ export function AppShell({
   }
 
   function handleImportReviewResultBundleJson(jsonText: string) {
-    const parseResult = importReviewResultArtifactV01Json(jsonText);
+    const parseResult = importReviewArtifactV01Json(jsonText);
 
     if (!parseResult.ok) {
       setReviewBundleStatus({
@@ -654,12 +663,25 @@ export function AppShell({
     if (typeof window === "undefined" || !window.localStorage) {
       setReviewBundleStatus({
         state: "error",
-        message: "Local ReviewResult storage is unavailable.",
+        message: "Local review artifact storage is unavailable.",
       });
       return;
     }
 
     try {
+      if (parseResult.artifactType === "QuickDisposition") {
+        saveQuickDispositionToLocalStoreV01(
+          window.localStorage,
+          parseResult.quickDisposition,
+        );
+        setReviewBundleStatus({
+          state: "success",
+          message:
+            "Imported 1 quick disposition. It is stored separately from completed ReviewResults.",
+        });
+        return;
+      }
+
       if (
         areReviewResultBundleResultsAlreadyLocalV01(
           window.localStorage,
@@ -787,6 +809,58 @@ export function AppShell({
     }
   }
 
+  function handleRecordQuickDisposition(event: QuickDispositionControlEvent) {
+    if (!selectedCase) {
+      setQuickDispositionMessage(
+        "Quick disposition export is unavailable without a selected case.",
+      );
+      return;
+    }
+
+    try {
+      const quickDisposition = buildQuickDispositionExportV01({
+        caseFile: selectedCase,
+        exportTimestamp: new Date().toISOString(),
+        sourceStage: event.sourceStage,
+        disposition: event.disposition,
+        reasonCodes: event.reasonCodes,
+      });
+      let localSaveError: string | undefined;
+
+      if (typeof window === "undefined" || !window.localStorage) {
+        localSaveError = "Local quick disposition storage is unavailable.";
+      } else {
+        try {
+          saveQuickDispositionToLocalStoreV01(
+            window.localStorage,
+            quickDisposition,
+          );
+        } catch (error) {
+          localSaveError =
+            error instanceof Error
+              ? `Local quick disposition save failed: ${error.message}`
+              : "Local quick disposition save failed.";
+        }
+      }
+
+      downloadJsonFile(
+        serializeQuickDispositionV01(quickDisposition),
+        getQuickDispositionFilenameV01(selectedCase),
+      );
+      setQuickDispositionMessage(
+        localSaveError
+          ? `Quick disposition downloaded as JSON. ${localSaveError}`
+          : "Quick disposition saved locally and downloaded as JSON.",
+      );
+    } catch (error) {
+      setQuickDispositionMessage(
+        error instanceof Error
+          ? error.message
+          : "Quick disposition export failed.",
+      );
+    }
+  }
+
   function openReviewDrawer() {
     dispatchArena({ type: "setReviewDrawerOpen", open: true });
   }
@@ -878,6 +952,8 @@ export function AppShell({
               openCaseFile,
               startInvestigation,
               revealAiLabel,
+              quickDispositionMessage,
+              handleRecordQuickDisposition,
               handleCopyReviewJson,
               handleDownloadReviewJson,
               openReviewDrawer,
@@ -1136,6 +1212,8 @@ function renderStage({
   openCaseFile,
   startInvestigation,
   revealAiLabel,
+  quickDispositionMessage,
+  handleRecordQuickDisposition,
   handleCopyReviewJson,
   handleDownloadReviewJson,
   openReviewDrawer,
@@ -1155,6 +1233,8 @@ function renderStage({
   openCaseFile: () => void;
   startInvestigation: () => void;
   revealAiLabel: () => void;
+  quickDispositionMessage?: string;
+  handleRecordQuickDisposition: (event: QuickDispositionControlEvent) => void;
   handleCopyReviewJson: () => void;
   handleDownloadReviewJson: () => void;
   openReviewDrawer: () => void;
@@ -1166,7 +1246,9 @@ function renderStage({
           caseFile={selectedCase}
           cases={cases}
           landscapeContextNodes={landscapeContextNodes}
+          quickDispositionStatusMessage={quickDispositionMessage}
           onBackToLandscape={() => navigateToStage("landscape")}
+          onRecordQuickDisposition={handleRecordQuickDisposition}
           onStartInvestigation={startInvestigation}
         />
       );

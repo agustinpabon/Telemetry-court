@@ -243,6 +243,9 @@ state when no ReviewResults exist, total result and package coverage, compact
 package/pipeline provenance, verdict and label-winner distributions,
 evidence-rating sufficiency signals, reviewer agreement, disputed evidence,
 disagreement indicators, comparison rollups, and per-report JSON/CSV export.
+It also lists validated `quick_disposition.v0.1` artifacts from their separate
+local store as early structured outcomes, but those records are not treated as
+ReviewResults and are not aggregated into `EvaluationReportV01`.
 
 Locally completed reviews and validated imported bundle results enter the same
 versioned local store. The route accepts local ReviewResult bundle JSON through
