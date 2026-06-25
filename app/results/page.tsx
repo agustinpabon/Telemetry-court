@@ -9,14 +9,18 @@ export default function EvaluationResultsPage() {
       <ArenaHeader
         actions={
           <div className="arena-local-file-actions tc-masthead__actions-grid">
-            <div className="tc-masthead__action-group tc-masthead__action-group--results">
-              <span className="tc-masthead__group-label tc-masthead__action-label tc-masthead__action-label--empty" aria-hidden="true" />
+            <div className="tc-masthead__action-group tc-masthead__action-group--review">
+              <span className="tc-masthead__group-label tc-masthead__action-label">
+                Review
+              </span>
               <div className="tc-masthead__action-row tc-masthead__button-row">
                 <Link className="arena-header-link" href="/">
                   Review cases
                 </Link>
               </div>
-              <p className="tc-masthead__action-helper tc-masthead__action-helper--empty" aria-hidden="true" />
+              <p className="tc-masthead__action-helper">
+                Return to the case review workflow.
+              </p>
             </div>
           </div>
         }

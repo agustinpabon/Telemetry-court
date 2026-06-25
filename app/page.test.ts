@@ -202,7 +202,8 @@ test("home page static review flow exposes the core Telemetry Court concepts", (
   assert.match(pageText, /72%/);
   assert.match(pageText, /Open case file/);
   assert.match(pageText, /Import CasePackage/);
-  assert.match(pageText, /ReviewResult import/);
+  assert.match(pageText, /Review outputs/);
+  assert.match(pageText, /Review JSON/);
   assert.match(pageText, /Export reviews/);
   assert.match(pageText, /Import review results/);
   assert.match(pageText, /Local JSON for portable review outputs/);
@@ -246,33 +247,32 @@ test("all workflow stages render one progress rail inside the shared masthead", 
   }
 });
 
-test("shared masthead keeps actions and helper text in explicit groups", () => {
+test("shared masthead keeps controls in semantic action groups", () => {
   const markup = renderHomePageText();
 
   assert.match(
     markup,
-    /class="tc-masthead__action-group tc-masthead__action-group--results"/,
+    /class="case-package-import-control tc-masthead__action-group tc-masthead__action-group--review"[\s\S]*?Review[\s\S]*?Results[\s\S]*?Import CasePackage/,
   );
   assert.match(
     markup,
-    /class="case-package-import-control tc-masthead__action-group"/,
+    /class="hot-folder-case-package-control tc-masthead__action-group tc-masthead__action-group--hot-folder"[\s\S]*?Hot-Folder[\s\S]*?Check Hot-Folder[\s\S]*?Polling/,
   );
   assert.match(
     markup,
-    /class="hot-folder-case-package-control tc-masthead__action-group"/,
-  );
-  assert.match(
-    markup,
-    /class="review-result-bundle-control tc-masthead__action-group"/,
+    /class="review-result-bundle-control tc-masthead__secondary-menu"[\s\S]*?<summary[^>]*>Review outputs<\/summary>[\s\S]*?Review JSON[\s\S]*?Export reviews[\s\S]*?Import review results/,
   );
   assert.equal(
     markup.match(/class="tc-masthead__action-row/g)?.length,
-    4,
+    2,
   );
   assert.equal(
     markup.match(/tc-masthead__helper/g)?.length,
-    3,
+    2,
   );
+  assert.match(markup, /role="switch"/);
+  assert.match(markup, /aria-checked="false"/);
+  assert.doesNotMatch(markup, /Polling off/);
 });
 
 test("invalid package render state shows sanitized validation errors instead of review UI", () => {

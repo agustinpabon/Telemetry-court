@@ -53,10 +53,7 @@ export function ReviewResultBundleControl({
   }
 
   return (
-    <div className="review-result-bundle-control tc-masthead__action-group">
-      <span className="review-result-bundle-label tc-masthead__group-label tc-masthead__action-label">
-        ReviewResult import
-      </span>
+    <details className="review-result-bundle-control tc-masthead__secondary-menu">
       <input
         ref={fileInputRef}
         id={inputId}
@@ -66,7 +63,9 @@ export function ReviewResultBundleControl({
         onChange={handleFileChange}
         aria-describedby={statusId}
       />
-      <div className="tc-masthead__action-row tc-masthead__button-row review-result-bundle-actions">
+      <summary aria-describedby={statusId}>Review outputs</summary>
+      <div className="review-result-bundle-panel" aria-label="Review output files">
+        <span className="review-result-bundle-label">Review JSON</span>
         <button type="button" onClick={onExport} aria-describedby={statusId}>
           Export reviews
         </button>
@@ -77,21 +76,22 @@ export function ReviewResultBundleControl({
         >
           Import review results
         </button>
+        <p
+          id={statusId}
+          className={`review-result-bundle-status is-${status.state}`}
+          role="status"
+        >
+          {getStatusCopy(status)}
+        </p>
+        {status.state === "success" && status.inspectionSummary ? (
+          <ReviewResultImportSummaryPanel
+            summary={status.inspectionSummary}
+            titleId={summaryTitleId}
+            variant="inline"
+          />
+        ) : null}
       </div>
-      <p
-        id={statusId}
-        className={`review-result-bundle-status tc-masthead__helper tc-masthead__action-helper is-${status.state}`}
-        role="status"
-      >
-        {getStatusCopy(status)}
-      </p>
-      {status.state === "success" && status.inspectionSummary ? (
-        <ReviewResultImportSummaryPanel
-          summary={status.inspectionSummary}
-          titleId={summaryTitleId}
-        />
-      ) : null}
-    </div>
+    </details>
   );
 }
 

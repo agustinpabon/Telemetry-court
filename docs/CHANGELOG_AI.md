@@ -19,6 +19,111 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-24: Compact Masthead UI Refinement
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Second-pass masthead UI/UX refinement after the semantic
+  grouping fix solved overflow but left the header too tall and visually
+  dashboard-like.
+- Files changed:
+  - `components/arena/CasePackageImportControl.tsx`
+  - `components/arena/ReviewResultBundleControl.tsx`
+  - `components/arena/ReviewResultBundleControl.test.ts`
+  - `components/arena/WorkflowPrimitives.test.tsx`
+  - `app/page.test.ts`
+  - `app/investigation-workflow.css`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Compacted the masthead toolbar sizing for the current 1040px workflow
+    shell and kept the controls aligned in one row at desktop and 1024px.
+  - Converted ReviewResult export/import into a compact `Review outputs`
+    disclosure menu with `Review JSON`, `Export reviews`, and
+    `Import review results`.
+  - Kept `Package details` as a stable button label with quiet active styling
+    instead of the dominant `Details open` copy.
+  - Promoted the imported package summary to a fixed dialog with scrim,
+    `role="dialog"`, `aria-modal="true"`, Escape/backdrop/close-button
+    dismissal, max height, and internal scrolling.
+  - Lightened the polling switch off state and preserved a green checked state
+    with a white knob.
+- Decisions made:
+  - Kept CasePackage validation, ReviewResult import/export behavior,
+    Hot-Folder checking/polling semantics, schemas, adapters, fixtures, and raw
+    telemetry boundaries unchanged.
+  - Used native disclosure and existing CSS/React patterns without adding
+    dependencies.
+  - Used a modal for package metadata because the panel is large and contains
+    many facts; kept Review outputs as a small menu because it contains two
+    secondary file actions.
+- Checks run:
+  - Focused masthead/control tests passed with 55 tests.
+  - Production Playwright screenshots/checks passed at 1440px, 1024px, and
+    390px with no horizontal overflow or masthead group overlap.
+  - Production Playwright checks confirmed the package summary dialog, stable
+    Package details width, Review outputs menu reachability, and polling
+    switch off/on visual states.
+  - `npm test` passed.
+  - `npx tsc --noEmit` passed.
+  - `npm run lint` passed.
+  - `npm run build` passed.
+  - `git diff --check` passed.
+- Assumptions: Keeping the workflow shell at 1040px is intentional; the header
+  should adapt to that shell instead of widening the page to fit controls.
+- Risks/follow-ups: If additional masthead utilities are added, they should go
+  into an existing compact menu or route-local control rather than becoming
+  permanent toolbar pills.
+- Suggested commit message:
+  `fix(ui): compact masthead controls and details dialog`
+
+## 2026-06-24: Semantic Masthead Control Groups
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Fix the Telemetry Court masthead/header layout regression so
+  controls remain calm, grouped, accessible, and responsive across review and
+  results pages.
+- Files changed:
+  - `components/arena/AppShell.tsx`
+  - `components/arena/CasePackageImportControl.tsx`
+  - `components/arena/HotFolderCasePackageControl.tsx`
+  - `components/arena/ReviewResultBundleControl.tsx`
+  - `components/arena/WorkflowPrimitives.test.tsx`
+  - `app/results/page.tsx`
+  - `app/page.test.ts`
+  - `app/investigation-workflow.css`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Replaced the old equal-pill masthead layout with review, Hot-Folder, and
+    ReviewResult action groups that wrap as complete groups.
+  - Moved `Results`, `Import CasePackage`, and package details into one review
+    action group.
+  - Replaced the `Polling off` / `Polling on` pill with a compact accessible
+    switch using `role="switch"` and `aria-checked`.
+  - Kept package details mounted as a stable open/closed control while the
+    imported package summary panel is open or dismissed.
+- Decisions made:
+  - Kept all CasePackage validation, ReviewResult import/export, Hot-Folder
+    scan, and polling behavior unchanged.
+  - Used existing CSS and React components without adding dependencies.
+  - Updated the results page header to use the same semantic review action
+    group pattern.
+- Checks run:
+  - Focused masthead tests passed with 54 tests.
+  - `npm test` passed.
+  - `npx tsc --noEmit` passed.
+  - `npm run lint` passed.
+  - `npm run build` passed.
+  - Playwright masthead verification passed at desktop, tablet, and mobile
+    widths with no horizontal overflow, a stable package-details control, and
+    a working polling switch.
+  - `git diff --check` passed.
+- Assumptions: The results page only needs a compact review navigation group
+  because package import and Hot-Folder controls live in the review workflow.
+- Risks/follow-ups: If more masthead utilities are added, they should enter an
+  existing semantic group or move into a secondary utility menu rather than
+  becoming another equal-width pill.
+- Suggested commit message:
+  `fix(ui): group masthead controls responsively`
+
 ## 2026-06-24: ReviewResult To EvaluationReport Progression
 
 - Agent/model: Codex (GPT-5)

@@ -31,12 +31,13 @@ export function HotFolderCasePackageControl({
   onLoadNext,
 }: HotFolderCasePackageControlProps) {
   const statusId = useId();
+  const pollingLabelId = useId();
   const isDisabled = status.state === "disabled";
   const isChecking = status.state === "checking";
   const canLoadNext = status.state === "ready" && status.unseenCount > 0;
 
   return (
-    <div className="hot-folder-case-package-control tc-masthead__action-group">
+    <div className="hot-folder-case-package-control tc-masthead__action-group tc-masthead__action-group--hot-folder">
       <span className="hot-folder-case-package-label tc-masthead__group-label tc-masthead__action-label">
         Hot-Folder
       </span>
@@ -54,15 +55,25 @@ export function HotFolderCasePackageControl({
             Load newest
           </button>
         ) : null}
-        <button
-          type="button"
-          onClick={onTogglePolling}
-          disabled={isDisabled || isChecking}
-          aria-pressed={polling}
-          aria-describedby={statusId}
-        >
-          {polling ? "Polling on" : "Polling off"}
-        </button>
+        <div className="tc-masthead__switch-control">
+          <span id={pollingLabelId} className="tc-masthead__switch-label">
+            Polling
+          </span>
+          <button
+            type="button"
+            className="tc-switch"
+            role="switch"
+            onClick={onTogglePolling}
+            disabled={isDisabled || isChecking}
+            aria-checked={polling}
+            aria-describedby={statusId}
+            aria-labelledby={pollingLabelId}
+          >
+            <span className="tc-switch__track" aria-hidden="true">
+              <span className="tc-switch__knob" />
+            </span>
+          </button>
+        </div>
       </div>
       <p
         id={statusId}
