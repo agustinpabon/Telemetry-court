@@ -6,6 +6,7 @@ import test from "node:test";
 
 import { sampleCases } from "@/data/sampleCases";
 import { buildReviewResultExport, type EvidenceArenaReview } from "@/lib/exportReview";
+import { buildQuickDispositionExportV01 } from "@/lib/quickDispositionV01";
 import {
   createReviewResultBundleV01,
   serializeReviewResultBundleV01,
@@ -123,6 +124,30 @@ test("valid ReviewResult bundle passes and prints inspection summary", async () 
   assert.match(result.stdout, /Verdict distribution: supported: 1, uncertain: 1/);
   assert.match(result.stdout, /Compatibility status: compatible/);
   assert.match(result.stdout, /Missing required metadata count: 0/);
+  assert.equal(result.stderr, "");
+});
+
+test("valid quick disposition JSON passes and prints inspection summary", async () => {
+  const quickDisposition = buildQuickDispositionExportV01({
+    caseFile: sampleCases[0],
+    exportTimestamp: "2026-06-24T12:00:00.000Z",
+    sourceStage: "case_file",
+    disposition: "save_for_later",
+    reasonCodes: ["needs_later_review"],
+  });
+
+  const result = await withTempJsonFile(
+    JSON.stringify(quickDisposition),
+    (filePath) => runCli([filePath]),
+  );
+
+  assert.equal(result.exitCode, 0);
+  assert.match(result.stdout, /Validation: PASS/);
+  assert.match(result.stdout, /Schema version: quick_disposition\.v0\.1/);
+  assert.match(result.stdout, /Artifact type: QuickDisposition/);
+  assert.match(result.stdout, /Quick disposition count: 1/);
+  assert.match(result.stdout, /Disposition distribution: save_for_later: 1/);
+  assert.match(result.stdout, /Review result count: 0/);
   assert.equal(result.stderr, "");
 });
 

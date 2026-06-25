@@ -3,6 +3,10 @@ import {
   REVIEW_RESULT_V01_SCHEMA_VERSION,
   type ReviewResultV01,
 } from "@/lib/reviewResultV01";
+import {
+  assertCompleteReviewerIdentityV01,
+  createLocalDemoReviewerV01,
+} from "@/lib/reviewerIdentityV01";
 import type {
   CaseFile,
   CasePackageEvidenceRatingV01,
@@ -139,7 +143,7 @@ export function buildReviewResultExport({
   );
   const reviewResultReviewer =
     reviewer ??
-    createLocalDemoReviewer(packageReference.package_id, packageReference.case_id);
+    createLocalDemoReviewerV01(packageReference.package_id, packageReference.case_id);
   assertCompleteReviewer(reviewResultReviewer);
   const { blind_review_enabled: blindReviewEnabled, ...casePackage } =
     packageReference;
@@ -252,14 +256,7 @@ function assertKnownReviewReferences(
 }
 
 function assertCompleteReviewer(reviewer: ReviewResultReviewer) {
-  requireValue(reviewer.reviewer_id, "reviewer ID");
-  requireValue(reviewer.review_session_id, "review session ID");
-
-  if (reviewer.context !== "synthetic_demo" && reviewer.context !== "local_review") {
-    throw new Error(
-      `Cannot export ReviewResult v0.1 with unsupported reviewer context "${reviewer.context}".`,
-    );
-  }
+  assertCompleteReviewerIdentityV01(reviewer, "ReviewResult v0.1");
 }
 
 export function serializeReviewResultExport(exportResult: ReviewResultV01): string {
@@ -433,17 +430,6 @@ function buildOptionalReferenceArray<Key extends "affected_session_ids" | "evide
   }
 
   return { [outputKey]: uniqueIds } as Partial<Record<Key, string[]>>;
-}
-
-function createLocalDemoReviewer(
-  packageId: string,
-  caseId: string,
-): ReviewResultReviewer {
-  return {
-    reviewer_id: "local-demo-reviewer",
-    review_session_id: `${packageId}:${caseId}:local-session`,
-    context: "synthetic_demo",
-  };
 }
 
 function createReviewResultId(

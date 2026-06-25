@@ -28,6 +28,10 @@ review_result.v0.1
 - `EvaluationReportV01` aggregates compatible review results through the
   separate pure utility in `lib/evaluationReportV01.ts`. It remains distinct
   from this single-review contract and export path.
+- `QuickDispositionV01` (`quick_disposition.v0.1`) is a separate early-review
+  artifact for dismissing, saving, continuing full review, or recording that a
+  reviewer cannot judge from the package. It is stored and imported separately
+  and is not a completed `ReviewResult`.
 
 `ReviewResultV01` does not copy claims, evidence content, support scores, raw
 references, or the full package. This prevents the result from becoming a UI
@@ -192,6 +196,12 @@ The helper:
 The current UI saves the built ReviewResult to this local store when the user
 copies or downloads the structured JSON export. This is a convenience boundary
 for the portable validation slice, not target enterprise infrastructure.
+
+Quick dispositions use their own browser-local store keyed by CasePackage ID.
+They preserve package, reviewer/session, source-stage, disposition, reason-code,
+and timestamp metadata, but intentionally omit evidence ratings, label winners,
+outlier/impostor selections, final verdicts, and recommended actions. They may
+be listed on `/results`, but they are not aggregated into `EvaluationReportV01`.
 
 ## Portable ReviewResult Bundle v0.1
 

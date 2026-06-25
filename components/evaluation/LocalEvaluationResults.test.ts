@@ -9,12 +9,14 @@ import { casePackageFixtures } from "@/data/casePackageFixtures";
 import { sampleEvaluationReportV01 } from "@/data/evaluationReportFixtures";
 import { aggregateReviewResultsV01 } from "@/lib/evaluationReportV01";
 import type { LocalEvaluationResultsSnapshotV01 } from "@/lib/localEvaluationResultsV01";
+import type { QuickDispositionV01 } from "@/lib/quickDispositionV01";
 import type { ReviewResultImportInspectionSummaryV01 } from "@/lib/reviewResultInspectionV01";
 import type { ReviewResultV01 } from "@/lib/reviewResultV01";
 import type { CasePackageV01 } from "@/lib/types";
 
 const populatedSnapshot: LocalEvaluationResultsSnapshotV01 = {
   totalReviewResultCount: sampleEvaluationReportV01.reviewer_count,
+  totalQuickDispositionCount: 0,
   packageGroups: [
     {
       casePackageId: sampleEvaluationReportV01.case_package.package_id,
@@ -23,6 +25,7 @@ const populatedSnapshot: LocalEvaluationResultsSnapshotV01 = {
       sourceReviewResults: createSampleSourceReviewResults(),
     },
   ],
+  quickDispositionGroups: [],
 };
 
 test("results view renders locally stored ReviewResults by compatible package", () => {
@@ -207,6 +210,44 @@ test("results view presents an already imported ReviewResult as a harmless no-op
   assert.match(markup, /2 results/);
 });
 
+test("results view renders quick dispositions separately from EvaluationReports", () => {
+  const quickDisposition = createQuickDisposition();
+  const snapshot: LocalEvaluationResultsSnapshotV01 = {
+    totalReviewResultCount: 0,
+    totalQuickDispositionCount: 1,
+    packageGroups: [],
+    quickDispositionGroups: [
+      {
+        casePackageId: quickDisposition.case_package.package_id,
+        dispositionCount: 1,
+        quickDispositions: [quickDisposition],
+      },
+    ],
+  };
+
+  const markup = renderResults(snapshot, {
+    state: "success",
+    message:
+      "Imported 1 quick disposition. It is stored separately from completed ReviewResults.",
+  });
+
+  assert.match(markup, /Quick dispositions/);
+  assert.match(markup, /1 disposition/);
+  assert.match(markup, /quick disposition is an early structured outcome/i);
+  assert.match(markup, /Cannot judge from this package/);
+  assert.match(markup, /blind review/);
+  assert.match(markup, /insufficient package context/);
+  assert.match(markup, /pkg-quick-results-001/);
+  assert.match(markup, /case-quick-results-001/);
+  assert.match(markup, /cluster-quick-results-001/);
+  assert.match(
+    markup,
+    /No completed ReviewResults available/,
+  );
+  assert.doesNotMatch(markup, /Aggregated reviewer results/);
+  assert.doesNotMatch(markup, /Verdict distribution/);
+});
+
 function renderResults(
   snapshot: LocalEvaluationResultsSnapshotV01,
   importStatus?: React.ComponentProps<
@@ -231,6 +272,7 @@ function createSnapshotFromPackage(
 
   return {
     totalReviewResultCount: reviewResults.length,
+    totalQuickDispositionCount: 0,
     packageGroups: [
       {
         casePackageId: casePackage.package_id,
@@ -239,6 +281,7 @@ function createSnapshotFromPackage(
         sourceReviewResults: reviewResults,
       },
     ],
+    quickDispositionGroups: [],
   };
 }
 
@@ -315,6 +358,34 @@ function createReviewResultFromPackage(
       final_verdict: finalVerdict,
       recommended_action: recommendedAction,
     },
+  };
+}
+
+function createQuickDisposition(): QuickDispositionV01 {
+  return {
+    schema_version: "quick_disposition.v0.1",
+    disposition_id:
+      "quick-disposition:pkg-quick-results-001:reviewer-quick:session-quick:blind_review:2026-06-24T12:00:00.000Z",
+    created_at: "2026-06-24T12:00:00.000Z",
+    case_package: {
+      schema_version: "case_package.v0.1",
+      package_id: "pkg-quick-results-001",
+      case_id: "case-quick-results-001",
+      cluster_id: "cluster-quick-results-001",
+      pipeline: {
+        run_id: "run-quick-results-001",
+        upstream_tool: "quick-results-test",
+        generated_at: "2026-06-24T11:55:00.000Z",
+      },
+    },
+    reviewer: {
+      reviewer_id: "reviewer-quick",
+      review_session_id: "session-quick",
+      context: "local_review",
+    },
+    source_stage: "blind_review",
+    disposition: "cannot_judge_from_package",
+    reason_codes: ["insufficient_package_context"],
   };
 }
 

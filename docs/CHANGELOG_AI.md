@@ -19,6 +19,62 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-25: Variable-Resolution Quick Dispositions
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #188 on a clean `main` branch without
+  depending on PR #193 or implementing issues #189-#192.
+- Files changed:
+  - `lib/quickDispositionV01.ts`
+  - `lib/quickDispositionStorageV01.ts`
+  - `lib/quickDispositionInspectionV01.ts`
+  - `lib/reviewArtifactImportV01.ts`
+  - `components/arena/QuickDispositionControl.tsx`
+  - `components/arena/CaseFilePanel.tsx`
+  - `components/arena/AppShell.tsx`
+  - `components/evaluation/LocalEvaluationResults.tsx`
+  - focused tests for quick disposition model, storage, import, UI, results,
+    and CLI validation
+  - `scripts/validate-review-results.ts`
+  - `docs/REVIEW_RESULT_CONTRACT.md`
+  - `docs/EVALUATION_INFRASTRUCTURE.md`
+  - `app/investigation-workflow.css`
+- Summary:
+  - Added a separate `quick_disposition.v0.1` artifact for early dispositions:
+    not interesting / skip, save for later, continue full review, and cannot
+    judge from this package.
+  - Added strict validation, local storage, import recognition, CLI preflight
+    support, and `/results` visibility for quick dispositions.
+  - Added a case-file quick disposition control that records locally and
+    downloads JSON without fabricating a completed `ReviewResult`.
+- Decisions made:
+  - Kept `ReviewResult v0.1` export and validation behavior unchanged.
+  - Stored quick dispositions under a separate local-store key so they cannot
+    masquerade as full ReviewResults or feed `EvaluationReportV01`.
+  - Used existing local-safe reviewer/session defaults for local exports.
+  - Avoided SOC, alert triage, remediation, auth, accounts, database, cloud
+    sync, and raw telemetry scope.
+- Checks run:
+  - Targeted quick-disposition tests passed with 42 tests.
+  - `npm test` passed with 304 tests.
+  - `npx tsc --noEmit` passed.
+  - `npm run lint` passed.
+  - `npm run build` passed.
+  - `git diff --check` passed.
+  - Playwright desktop/mobile verification passed for `/case-file` quick
+    disposition controls and `/results` quick-disposition rendering with no
+    horizontal overflow.
+- Assumptions: One-click default reason codes are sufficient for the first
+  quick-disposition slice; richer reason selection can be a later scoped issue.
+- Risks/follow-ups: Reviewer walkthroughs should confirm whether auto-download
+  on quick-disposition recording is acceptable or should become a separate
+  explicit export action.
+- Next recommended step: Use the quick-disposition export/import path in the
+  next reviewer walkthrough to confirm the one-click defaults match reviewer
+  expectations.
+- Suggested commit message:
+  `feat: add variable-resolution quick dispositions`
+
 ## 2026-06-24: Compact Masthead UI Refinement
 
 - Agent/model: Codex (GPT-5)
