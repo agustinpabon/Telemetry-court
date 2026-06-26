@@ -12,6 +12,7 @@ import {
   MERGE_RECOMMENDATION_REASONS,
   SPLIT_RECOMMENDATION_REASONS,
 } from "@/lib/types";
+import { REVIEWER_CONTEXTS_V01 } from "@/lib/reviewerIdentityV01";
 
 export type ReviewResultValidationErrorV01 = {
   path: string;
@@ -236,12 +237,14 @@ function validateReviewer(
     `${path}.review_session_id`,
     errors,
   );
-  requireEnum(
-    reviewer.context,
-    ["synthetic_demo", "local_review"] as const,
-    `${path}.context`,
-    errors,
-  );
+  if (reviewer.context !== undefined) {
+    requireEnum(
+      reviewer.context,
+      REVIEWER_CONTEXTS_V01,
+      `${path}.context`,
+      errors,
+    );
+  }
 }
 
 function validateProtocol(

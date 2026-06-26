@@ -10,6 +10,7 @@ import {
   type MergeRecommendationReason,
   type SplitRecommendationReason,
 } from "@/lib/types";
+import type { ReviewerIdentityV01 } from "@/lib/reviewerIdentityV01";
 
 export const REVIEW_RESULT_V01_SCHEMA_VERSION = "review_result.v0.1" as const;
 export const REVIEW_PROTOCOL_V01_VERSION = "telemetry_court_review.v0.1" as const;
@@ -54,11 +55,7 @@ export type ReviewResultV01 = {
   review_id: string;
   created_at: string;
   case_package: Omit<CasePackageReferenceV01, "blind_review_enabled">;
-  reviewer: {
-    reviewer_id: string;
-    review_session_id: string;
-    context: "synthetic_demo" | "local_review";
-  };
+  reviewer: ReviewerIdentityV01;
   protocol: {
     protocol_version: typeof REVIEW_PROTOCOL_V01_VERSION;
     blind_review_enabled: boolean;

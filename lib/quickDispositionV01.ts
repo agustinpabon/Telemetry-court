@@ -2,6 +2,7 @@ import type { ReviewerIdentityV01 } from "@/lib/reviewerIdentityV01";
 import {
   assertCompleteReviewerIdentityV01,
   createLocalDemoReviewerV01,
+  REVIEWER_CONTEXTS_V01,
 } from "@/lib/reviewerIdentityV01";
 import {
   CASE_PACKAGE_V01_SCHEMA_VERSION,
@@ -366,12 +367,14 @@ function validateReviewer(
     `${path}.review_session_id`,
     errors,
   );
-  requireEnum(
-    reviewer.context,
-    ["synthetic_demo", "local_review"] as const,
-    `${path}.context`,
-    errors,
-  );
+  if (reviewer.context !== undefined) {
+    requireEnum(
+      reviewer.context,
+      REVIEWER_CONTEXTS_V01,
+      `${path}.context`,
+      errors,
+    );
+  }
 }
 
 function validateReasonCodes(

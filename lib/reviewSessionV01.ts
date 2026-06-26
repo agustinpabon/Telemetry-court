@@ -4,6 +4,7 @@ import {
   REVIEW_RESULT_V01_SCHEMA_VERSION,
   type ReviewResultV01,
 } from "@/lib/reviewResultV01";
+import { assertSupportedReviewerContextV01 } from "@/lib/reviewerIdentityV01";
 import { CASE_PACKAGE_V01_SCHEMA_VERSION } from "@/lib/types";
 
 type ReviewedCasePackageReferenceV01 = ReviewResultV01["case_package"];
@@ -257,11 +258,7 @@ function assertSupportedReviewer(
   requireMetadataString(reviewer.reviewer_id, "reviewer ID", action);
   requireMetadataString(reviewer.review_session_id, "review session ID", action);
 
-  if (reviewer.context !== "synthetic_demo" && reviewer.context !== "local_review") {
-    throw new Error(
-      `Cannot ${action} with unsupported reviewer context "${reviewer.context}".`,
-    );
-  }
+  assertSupportedReviewerContextV01(reviewer.context, action);
 }
 
 function assertCompatibleCasePackageReference(

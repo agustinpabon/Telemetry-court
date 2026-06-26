@@ -18,6 +18,7 @@ import {
 } from "@/components/arena/HotFolderCasePackageControl";
 import { ImpostorPanel } from "@/components/arena/ImpostorPanel";
 import { LabelDuelPanel } from "@/components/arena/LabelDuelPanel";
+import { LocalReviewExportMetadataControl } from "@/components/arena/LocalReviewExportMetadataControl";
 import type { QuickDispositionControlEvent } from "@/components/arena/QuickDispositionControl";
 import { ReviewSummaryDrawer } from "@/components/arena/ReviewSummaryDrawer";
 import {
@@ -77,6 +78,13 @@ import {
   loadReviewResultsForCasePackageV01,
   saveReviewResultToLocalStoreV01,
 } from "@/lib/reviewResultStorageV01";
+import {
+  createLocalReviewerIdentityV01,
+  DEFAULT_LOCAL_REVIEWER_METADATA_V01,
+  readLocalReviewerMetadataV01,
+  saveLocalReviewerMetadataV01,
+  type LocalReviewerMetadataV01,
+} from "@/lib/reviewerIdentityV01";
 import {
   getInsufficientContextGuidance,
   resolveReviewReadinessChoice,
@@ -150,6 +158,12 @@ export function AppShell({
   });
   const [reviewBundleStatus, setReviewBundleStatus] =
     useState<ReviewResultBundleControlStatus>({ state: "idle" });
+  const [localReviewerMetadata, setLocalReviewerMetadata] =
+    useState<LocalReviewerMetadataV01>({
+      ...DEFAULT_LOCAL_REVIEWER_METADATA_V01,
+    });
+  const [localReviewerMetadataMessage, setLocalReviewerMetadataMessage] =
+    useState<string>();
   const [hotFolderStatus, setHotFolderStatus] =
     useState<HotFolderCasePackageControlStatus>({ state: "idle" });
   const [hotFolderPolling, setHotFolderPolling] = useState(false);
@@ -168,6 +182,22 @@ export function AppShell({
     blindChoiceId,
     aiLabelRevealed,
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.localStorage) {
+      return;
+    }
+
+    const hydrationId = window.setTimeout(() => {
+      setLocalReviewerMetadata(
+        readLocalReviewerMetadataV01(window.localStorage),
+      );
+    }, 0);
+
+    return () => {
+      window.clearTimeout(hydrationId);
+    };
+  }, []);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0 });
@@ -494,10 +524,15 @@ export function AppShell({
   );
   const arenaReview = buildArenaReview(selectedCase, reviewState, evidenceRatings);
   const exportTimestamp = new Date().toISOString();
+  const localReviewer = createLocalReviewerForCaseFile(
+    selectedCase,
+    localReviewerMetadata,
+  );
   const exportResult = tryBuildReviewResultExport({
     caseFile: selectedCase,
     exportTimestamp,
     arenaReview,
+    reviewer: localReviewer,
   });
   const exportJson = exportResult.ok
     ? serializeReviewResultExport(exportResult.reviewResult)
@@ -512,6 +547,36 @@ export function AppShell({
     rawDispatch(action);
     setExportMessage(undefined);
     setQuickDispositionMessage(undefined);
+  }
+
+  function handleLocalReviewerMetadataChange(value: LocalReviewerMetadataV01) {
+    if (typeof window === "undefined" || !window.localStorage) {
+      setLocalReviewerMetadataMessage("Local metadata storage is unavailable.");
+      return;
+    }
+
+    try {
+      const savedMetadata = saveLocalReviewerMetadataV01(
+        window.localStorage,
+        value,
+      );
+      setLocalReviewerMetadata(savedMetadata);
+      setLocalReviewerMetadataMessage(
+        "Local export metadata saved in this browser.",
+      );
+    } catch (error) {
+      setLocalReviewerMetadataMessage(
+        error instanceof Error
+          ? error.message
+          : "Local export metadata could not be saved.",
+      );
+    }
+  }
+
+  function handleResetLocalReviewerMetadata() {
+    handleLocalReviewerMetadataChange({
+      ...DEFAULT_LOCAL_REVIEWER_METADATA_V01,
+    });
   }
 
   function navigateToStage(stage: ReturnType<typeof createInitialArenaState>["activeStage"]) {
@@ -829,6 +894,10 @@ export function AppShell({
         sourceStage: event.sourceStage,
         disposition: event.disposition,
         reasonCodes: event.reasonCodes,
+        reviewer: createLocalReviewerForCaseFile(
+          selectedCase,
+          localReviewerMetadata,
+        ),
       });
       let localSaveError: string | undefined;
 
@@ -920,6 +989,12 @@ export function AppShell({
               onImportText={handleImportReviewResultBundleJson}
               onImportReadError={handleReviewResultBundleImportReadError}
             />
+            <LocalReviewExportMetadataControl
+              value={localReviewerMetadata}
+              statusMessage={localReviewerMetadataMessage}
+              onChange={handleLocalReviewerMetadataChange}
+              onReset={handleResetLocalReviewerMetadata}
+            />
           </div>
         }
       />
@@ -999,6 +1074,24 @@ function tryBuildReviewResultExport(
           : "ReviewResult v0.1 export is unavailable.",
     };
   }
+}
+
+function createLocalReviewerForCaseFile(
+  caseFile: CaseFile,
+  metadata: LocalReviewerMetadataV01,
+) {
+  const packageReference = caseFile.casePackageReference;
+
+  if (!packageReference) {
+    return undefined;
+  }
+
+  return createLocalReviewerIdentityV01({
+    packageId: packageReference.package_id,
+    caseId: packageReference.case_id,
+    reviewerId: metadata.reviewerId,
+    context: metadata.context,
+  });
 }
 
 function formatExportActionMessage(actionMessage: string, saveError?: string) {

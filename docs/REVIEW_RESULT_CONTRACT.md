@@ -39,7 +39,7 @@ state dump and avoids exporting raw restricted telemetry.
 
 ## Top-Level Shape
 
-Every result contains:
+Every newly exported result contains:
 
 - `schema_version` and a deterministic export-scoped `review_id`;
 - `created_at`;
@@ -52,6 +52,31 @@ The local exporter builds the `review_id` from the package ID, reviewer ID,
 review session ID, and export timestamp. This keeps two independent reviewers
 of the same package distinct even when their local exports are produced at the
 same instant.
+
+Reviewer metadata is local export metadata, not authentication, an account, a
+profile, permissions, cloud sync, or durable server-side identity. The browser
+UI can store a non-sensitive local reviewer ID in localStorage and write it
+into exported JSON. New local exports include a review context chosen from the
+approved v0.1 vocabulary:
+
+```text
+synthetic_demo
+local_review
+pilot_reviewer
+expert_walkthrough
+```
+
+The default remains `local-demo-reviewer` with `synthetic_demo`, scoped to the
+current browser and local JSON artifacts. Custom local reviewer IDs are
+portable identifiers only; they must not contain secrets or personal data.
+When a custom reviewer ID is used, the generated local review session ID also
+includes that reviewer ID so separate local reviewers can aggregate without
+colliding on one demo session.
+
+For backward compatibility, imported or stored `review_result.v0.1` artifacts
+that include `reviewer_id` and `review_session_id` but omit `reviewer.context`
+remain valid and aggregatable. Unsupported context values are still rejected
+when context is present. New local exports continue to emit context explicitly.
 
 The package reference preserves:
 

@@ -268,6 +268,14 @@ reported as already imported with no action needed. Results for different
 CasePackage IDs are displayed as separate report groups; exact-reference
 compatibility is still required within each group.
 
+Local exports can carry a non-sensitive local reviewer ID and approved review
+context such as `synthetic_demo`, `local_review`, `pilot_reviewer`, or
+`expert_walkthrough`. This metadata is local JSON/export metadata only; it does
+not introduce authentication, accounts, databases, cloud persistence, or
+remote reviewer profiles. Aggregation still keys independent submissions by
+reviewer/session identity and remains backward compatible with older
+`review_result.v0.1` artifacts that omit reviewer context.
+
 Validated ReviewResult imports can include non-blocking semantic consistency
 warnings in their inspection summary. These warnings make suspicious but
 schema-valid reviewer decisions visible, such as evidence-insufficient blind
