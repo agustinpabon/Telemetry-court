@@ -19,6 +19,72 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-26: Clarify Label And Outlier Review Semantics
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #190 only on top of merged issue #189,
+  without implementing issues #191 or #192, reopening #74, or touching
+  forbidden/local paths.
+- Files changed:
+  - `components/arena/LabelDuelPanel.tsx`
+  - `components/arena/ImpostorPanel.tsx`
+  - `components/arena/AppShell.tsx`
+  - `components/arena/arenaMeta.ts`
+  - `app/investigation-workflow.css`
+  - `app/page.test.ts`
+  - `lib/arenaReviewState.ts`
+  - `lib/arenaReviewState.test.ts`
+  - `lib/casePackageV01ToCaseFile.ts`
+  - `lib/importCasePackageV01.test.ts`
+  - `lib/types.ts`
+  - `data/sampleCaseSeedData.ts`
+  - `docs/REVIEWER_RUBRIC.md`
+  - `docs/REVIEW_RESULT_CONTRACT.md`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Clarified Label Selection copy so `selected_label_id` means the candidate
+    accepted as best-supported and most defensible.
+  - Presented AI-label selection as accepting the AI label as best-supported,
+    while alternative-label selection means the reviewer found another
+    candidate more defensible.
+  - Distinguished package-seeded outlier/impostor candidates from ordinary
+    representative sessions and required explicit confirmation before an
+    ordinary representative session completes the cluster-fit step.
+  - Preserved ReviewResult v0.1 export fidelity by continuing to export the
+    reviewer-selected label and completed outlier/impostor session without
+    changing schema fields.
+- Decisions made:
+  - Added local UI metadata for session-backed outlier/impostor candidates
+    instead of treating fallback `seededImpostorSessionId` values as upstream
+    candidates.
+  - Kept ReviewResult v0.1, EvaluationReport aggregation, and quick
+    disposition behavior unchanged.
+  - Did not add semantic consistency warnings (#191), reviewer identity/review
+    context configuration (#192), reviewer-study workflow, SOC triage, alert
+    triage, remediation, auth, database sync, raw telemetry ingestion, or live
+    collaboration scope.
+  - Did not reopen or modify issue #74 behavior.
+- Checks run:
+  - Focused UI/state/import/mapping tests passed with 75 tests.
+  - Focused fixture adapter tests passed with 8 tests.
+  - Focused arena state tests passed with 13 tests after lint cleanup.
+  - `npm test` passed with 311 tests.
+  - `npx tsc --noEmit` passed.
+  - `npm run lint` passed with 0 warnings after cleanup.
+  - `npm run build` passed.
+  - `git diff --check` passed.
+  - Browser smoke passed on desktop and mobile widths.
+- Assumptions: Existing `duelReasons` remain faithful reviewer/export state;
+  #190 only changes current copy, option presentation, and completion semantics,
+  not legacy review-result normalization.
+- Risks/follow-ups: Future #191 work can add cross-field consistency warnings,
+  but this change intentionally does not warn on or rewrite stored review
+  choices.
+- Next recommended step: Review issue #190 independently from #191/#192 and
+  keep the PR draft until maintainers are ready to review.
+- Suggested commit message:
+  `fix(review): clarify label and outlier semantics`
+
 ## 2026-06-25: Separate Quick Dispositions From Full Verdicts
 
 - Agent/model: Codex (GPT-5)

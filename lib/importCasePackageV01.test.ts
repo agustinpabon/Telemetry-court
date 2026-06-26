@@ -15,6 +15,7 @@ import {
   getCurrentReviewState,
   getEvidenceRatings,
   getSelectedCase,
+  isSeededOutlierImpostorCandidate,
 } from "@/lib/arenaReviewState";
 import { buildReviewResultExport } from "@/lib/exportReview";
 import { importCasePackageV01Json } from "@/lib/importCasePackageV01";
@@ -315,7 +316,9 @@ test("ReviewResult export preserves imported CasePackage identity", () => {
   const caseFile = importResult.caseFile;
   const blindChoice = caseFile.blindInterpretationOptions[0];
   const labelWinner = caseFile.candidateLabels[0];
-  const impostor = caseFile.representativeSessions[0];
+  const impostor = caseFile.representativeSessions.find(
+    (session) => session.id === caseFile.seededImpostorSessionId,
+  );
 
   assert.ok(blindChoice);
   assert.ok(labelWinner);
@@ -438,6 +441,47 @@ test("structurally invalid CasePackage JSON shows validation diagnostics", () =>
         error.path.includes("provenance"),
     ),
     true,
+  );
+});
+
+test("imported fallback impostor session is not treated as a seeded candidate", () => {
+  const packageWithoutSessionBackedCandidate = structuredClone(
+    casePackageFixtures[0],
+  );
+  const evidenceId =
+    packageWithoutSessionBackedCandidate.evidence_items[0]?.evidence_id;
+  assert.ok(evidenceId);
+
+  packageWithoutSessionBackedCandidate.outlier_impostor_candidates =
+    packageWithoutSessionBackedCandidate.outlier_impostor_candidates.map(
+      (candidate) => ({
+        candidate_id: candidate.candidate_id,
+        evidence_id: candidate.evidence_id ?? evidenceId,
+        reason: candidate.reason,
+        expected_review_use: candidate.expected_review_use,
+        ...(candidate.score ? { score: candidate.score } : {}),
+      }),
+    );
+
+  const importResult = importCasePackageV01Json(
+    JSON.stringify(packageWithoutSessionBackedCandidate),
+  );
+
+  assert.equal(importResult.ok, true);
+  if (!importResult.ok) {
+    return;
+  }
+
+  const fallbackSession =
+    importResult.caseFile.representativeSessions.find(
+      (session) => session.id === importResult.caseFile.seededImpostorSessionId,
+    ) ?? importResult.caseFile.representativeSessions[0];
+  assert.ok(fallbackSession);
+  assert.equal(fallbackSession.id, "iam-s-01");
+  assert.equal(fallbackSession.isOutlierImpostorCandidate, undefined);
+  assert.equal(
+    isSeededOutlierImpostorCandidate(importResult.caseFile, fallbackSession.id),
+    false,
   );
 });
 

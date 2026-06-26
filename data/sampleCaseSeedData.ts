@@ -141,6 +141,7 @@ const sampleCasesData: CaseFile[] = [
         featureOverlap: 0.29,
         outlierScore: 0.82,
         summary: "PassRole-style access check appears off-hours and lacks rollout tags.",
+        isOutlierImpostorCandidate: true,
         outlierReason:
           "Lowest feature overlap and highest outlier score; this session is unlike the provisioning majority.",
       },
@@ -449,6 +450,7 @@ const sampleCasesData: CaseFile[] = [
         outlierScore: 0.76,
         summary:
           "Signed maintenance script uses PowerShell but has no encoded payload or external connection.",
+        isOutlierImpostorCandidate: true,
         outlierReason:
           "PowerShell alone is not enough; this session lacks the encoded and external-communication features.",
       },
@@ -727,6 +729,7 @@ const sampleCasesData: CaseFile[] = [
         outlierScore: 0.88,
         summary:
           "Remote shell launches unsigned script that stops a service outside the update window.",
+        isOutlierImpostorCandidate: true,
         outlierReason:
           "This has the highest outlier score and does not share updater signing, timing, or package features.",
       },
@@ -739,6 +742,9 @@ const sampleCasesData: CaseFile[] = [
         outlierScore: 0.69,
         summary:
           "Installer activity shares msiexec but does not restart the same service family.",
+        isOutlierImpostorCandidate: true,
+        outlierReason:
+          "High synthetic outlier score makes this session useful for cluster-purity review.",
       },
     ],
     failureModes: ["cluster_seems_mixed", "better_supported", "more_specific"],
@@ -1023,6 +1029,7 @@ const sampleCasesData: CaseFile[] = [
         featureOverlap: 0.22,
         outlierScore: 0.81,
         summary: "AuthorizeSecurityGroupIngress appears without S3 calls.",
+        isOutlierImpostorCandidate: true,
         outlierReason:
           "This is cloud administration, but it lacks the S3 enumeration feature stack.",
       },
@@ -1303,6 +1310,7 @@ const sampleCasesData: CaseFile[] = [
         outlierScore: 0.79,
         summary:
           "Routine cleanup utility reads browser cache and profile paths without credential-adjacent features.",
+        isOutlierImpostorCandidate: true,
         outlierReason:
           "Shares profile paths, but lacks sequence rarity and credential-adjacent process context.",
       },

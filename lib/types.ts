@@ -147,6 +147,7 @@ export type RepresentativeSession = {
   featureOverlap: number;
   outlierScore: number;
   summary: string;
+  isOutlierImpostorCandidate?: boolean;
   outlierReason?: string;
 };
 

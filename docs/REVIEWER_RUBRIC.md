@@ -102,6 +102,11 @@ Important distinctions:
 Label comparison asks which candidate label is best supported by the evidence,
 not which label sounds most polished.
 
+The selected candidate becomes `selected_label_id` in the ReviewResult.
+Selecting the AI label accepts it as the best-supported, most defensible
+candidate. Selecting another label means that alternative is more defensible
+than the AI label.
+
 When comparing labels:
 
 - prefer the label with the strongest evidence grounding;
@@ -134,7 +139,8 @@ Consistent interpretation:
   specificity.
 - Unsupported intent or abuse claims should use
   `missing_malicious_intent`, `missing_downstream_abuse`, or
-  `less_overclaimed` rather than reviewer intuition.
+  `less_overclaimed` to explain why an alternative label is more defensible,
+  not as reasons for accepting an overclaimed AI label.
 - When a label better preserves unresolved ambiguity, use
   `preserves_uncertainty`.
 
@@ -145,6 +151,11 @@ The outlier or impostor step helps test cluster coherence.
 - Choose the session that most weakens a single coherent interpretation.
 - Prefer sessions that suggest a different behavior family, subgroup, or
   neighboring cluster story.
+- Treat package-seeded outlier or impostor candidates as upstream review
+  prompts, not automatic answers.
+- If selecting an ordinary representative session instead of a seeded
+  candidate, explicitly confirm that it materially weakens the cluster
+  interpretation.
 - Do not treat a merely unusual example as an impostor unless it materially
   weakens the cluster interpretation.
 

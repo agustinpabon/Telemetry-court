@@ -12,6 +12,8 @@ import {
   getReviewCompletion,
   getSelectedCase,
   getStageCompletionMap,
+  isOutlierImpostorSelectionComplete,
+  isSeededOutlierImpostorCandidate,
 } from "@/lib/arenaReviewState";
 import {
   buildReviewResultExport,
@@ -101,7 +103,9 @@ test("arena reducer drives the staged structured-choice happy path", () => {
     sampleCases,
   );
 
-  const impostor = targetCase.representativeSessions[0];
+  const impostor = targetCase.representativeSessions.find(
+    (session) => session.id === targetCase.seededImpostorSessionId,
+  );
   assert.ok(impostor);
 
   arenaState = arenaReducer(
@@ -160,6 +164,214 @@ test("arena reducer drives the staged structured-choice happy path", () => {
   assert.match(exportJson, /"partially_supported"/);
 });
 
+test("changing the selected label clears reasons attached to the previous candidate", () => {
+  const targetCase = sampleCases[0];
+  assert.ok(targetCase);
+
+  let arenaState = createInitialArenaState(sampleCases);
+  arenaState = arenaReducer(
+    arenaState,
+    {
+      type: "selectLabelDuelWinner",
+      candidateId: "label-iam-constrained",
+    },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "toggleDuelReason", reason: "missing_malicious_intent" },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    {
+      type: "setDuelNote",
+      note: "The alternative avoids unsupported intent.",
+    },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "selectImpostorSession", sessionId: "iam-s-03" },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "confirmNonCandidateImpostorSelection" },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "selectLabelDuelWinner", candidateId: "label-iam-baseline" },
+    sampleCases,
+  );
+
+  const reviewState = getCurrentReviewState(arenaState);
+  assert.equal(reviewState.labelDuelWinnerId, "label-iam-baseline");
+  assert.deepEqual(reviewState.duelReasons, []);
+  assert.equal(reviewState.duelNote, undefined);
+  assert.equal(reviewState.impostorSessionId, undefined);
+  assert.equal(reviewState.nonCandidateImpostorConfirmed, undefined);
+});
+
+test("non-candidate outlier confirmation preserves the exact reviewer choices in export", () => {
+  const targetCase = sampleCases[0];
+  assert.ok(targetCase);
+
+  let arenaState = createInitialArenaState(sampleCases);
+  arenaState = arenaReducer(
+    arenaState,
+    {
+      type: "chooseBlindInterpretation",
+      optionId: "suspicious-privilege-escalation",
+    },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "revealAiLabel" },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "selectLabelDuelWinner", candidateId: "label-iam-baseline" },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "toggleDuelReason", reason: "more_specific" },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "selectImpostorSession", sessionId: "iam-s-03" },
+    sampleCases,
+  );
+
+  let reviewState = getCurrentReviewState(arenaState);
+  assert.equal(
+    isOutlierImpostorSelectionComplete(targetCase, reviewState),
+    false,
+  );
+  assert.equal(
+    buildArenaReview(
+      targetCase,
+      reviewState,
+      getEvidenceRatings(targetCase, reviewState),
+    ).impostorSessionId,
+    undefined,
+  );
+
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "selectImpostorSession", sessionId: "iam-s-03" },
+    sampleCases,
+  );
+  reviewState = getCurrentReviewState(arenaState);
+  assert.equal(
+    isOutlierImpostorSelectionComplete(targetCase, reviewState),
+    false,
+  );
+
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "confirmNonCandidateImpostorSelection" },
+    sampleCases,
+  );
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "selectVerdict", verdict: "supported" },
+    sampleCases,
+  );
+
+  reviewState = getCurrentReviewState(arenaState);
+  assert.equal(
+    isOutlierImpostorSelectionComplete(targetCase, reviewState),
+    true,
+  );
+
+  const reviewResult = buildReviewResultExport({
+    caseFile: targetCase,
+    exportTimestamp: "2026-06-25T12:00:00.000Z",
+    arenaReview: buildArenaReview(
+      targetCase,
+      reviewState,
+      getEvidenceRatings(targetCase, reviewState),
+    ),
+  });
+
+  assert.equal(
+    reviewResult.decisions.label_comparison.selected_label_id,
+    "label-iam-baseline",
+  );
+  assert.deepEqual(reviewResult.decisions.label_comparison.reason_codes, [
+    "more_specific",
+  ]);
+  assert.equal(
+    reviewResult.decisions.outlier_impostor.selected_session_id,
+    "iam-s-03",
+  );
+});
+
+test("fallback seededImpostorSessionId does not make a core session a seeded candidate", () => {
+  const targetCase = sampleCases[0];
+  assert.ok(targetCase);
+
+  const caseWithoutSessionBackedCandidates = {
+    ...targetCase,
+    seededImpostorSessionId: "iam-s-01",
+    representativeSessions: targetCase.representativeSessions.map(
+      (session) => ({
+        id: session.id,
+        title: session.title,
+        principal: session.principal,
+        timestamp: session.timestamp,
+        featureOverlap: session.featureOverlap,
+        outlierScore: session.outlierScore,
+        summary: session.summary,
+      }),
+    ),
+  };
+  let arenaState = createInitialArenaState([caseWithoutSessionBackedCandidates]);
+
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "selectImpostorSession", sessionId: "iam-s-01" },
+    [caseWithoutSessionBackedCandidates],
+  );
+
+  let reviewState = getCurrentReviewState(arenaState);
+  assert.equal(
+    isSeededOutlierImpostorCandidate(
+      caseWithoutSessionBackedCandidates,
+      "iam-s-01",
+    ),
+    false,
+  );
+  assert.equal(
+    isOutlierImpostorSelectionComplete(
+      caseWithoutSessionBackedCandidates,
+      reviewState,
+    ),
+    false,
+  );
+
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "confirmNonCandidateImpostorSelection" },
+    [caseWithoutSessionBackedCandidates],
+  );
+  reviewState = getCurrentReviewState(arenaState);
+
+  assert.equal(
+    isOutlierImpostorSelectionComplete(
+      caseWithoutSessionBackedCandidates,
+      reviewState,
+    ),
+    true,
+  );
+});
+
 test("cannot-judge checkpoint records insufficient context and exports existing v0.1 values", () => {
   const targetCase = sampleCases[0];
   assert.ok(targetCase);
@@ -190,7 +402,9 @@ test("cannot-judge checkpoint records insufficient context and exports existing 
   const uncertainLabel = targetCase.candidateLabels.find(
     (candidate) => candidate.source === "uncertain_label",
   );
-  const impostor = targetCase.representativeSessions[0];
+  const impostor = targetCase.representativeSessions.find(
+    (session) => session.id === targetCase.seededImpostorSessionId,
+  );
   assert.ok(uncertainLabel);
   assert.ok(impostor);
 
@@ -488,6 +702,8 @@ test("direct verdict hydration keeps the seeded demo final verdict when persiste
     "missing_evidence",
   ]);
   assert.equal(hydratedReview.blindChoiceId, "cloud-resource-discovery");
+  assert.equal(hydratedReview.impostorSessionId, "iam-s-04");
+  assert.equal(hydratedReview.nonCandidateImpostorConfirmed, undefined);
 });
 
 test("direct verdict hydration preserves an explicitly persisted final verdict", () => {

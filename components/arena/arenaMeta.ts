@@ -157,15 +157,15 @@ export const evidenceRatingOptions: EvidenceRating[] = [
 ];
 
 export const duelReasonLabel: Record<DuelReason, string> = {
-  better_supported: "Better supported",
-  less_overclaimed: "Less overclaimed",
-  more_specific: "More specific",
-  too_broad: "Too broad",
-  missing_evidence: "Missing evidence",
-  missing_malicious_intent: "Missing malicious intent",
-  missing_downstream_abuse: "Missing downstream abuse",
-  preserves_uncertainty: "Preserves uncertainty",
-  cluster_seems_mixed: "Cluster seems mixed",
+  better_supported: "Chosen label is better supported",
+  less_overclaimed: "Chosen label avoids unsupported overclaim",
+  more_specific: "Chosen label is more specific",
+  too_broad: "AI label is too broad",
+  missing_evidence: "AI label lacks required evidence",
+  missing_malicious_intent: "AI label lacks malicious-intent evidence",
+  missing_downstream_abuse: "AI label lacks downstream-abuse evidence",
+  preserves_uncertainty: "Chosen label preserves uncertainty",
+  cluster_seems_mixed: "Cluster may need more than one label",
 };
 
 export const verdictFailureReasonLabel: Partial<Record<DuelReason, string>> = {
