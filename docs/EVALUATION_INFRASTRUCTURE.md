@@ -268,6 +268,16 @@ reported as already imported with no action needed. Results for different
 CasePackage IDs are displayed as separate report groups; exact-reference
 compatibility is still required within each group.
 
+Validated ReviewResult imports can include non-blocking semantic consistency
+warnings in their inspection summary. These warnings make suspicious but
+schema-valid reviewer decisions visible, such as evidence-insufficient blind
+interpretations paired with selected overclaim AI labels, better-evidence
+verdicts without failure-mode reasons, core/high-membership sessions selected
+as outlier or impostor choices, or negative reason codes attached to the
+selected best-supported label. Warnings are not aggregation inputs, do not
+change `EvaluationReportV01`, do not block import, and do not rewrite reviewer
+choices.
+
 Validated CasePackages imported through the review shell or the results map
 control produce a minimal results-map metadata projection in browser
 `sessionStorage`. The projection contains the exact compact package reference,

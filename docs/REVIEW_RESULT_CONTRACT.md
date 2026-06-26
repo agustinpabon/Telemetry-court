@@ -246,6 +246,25 @@ submissions, and incompatible compact CasePackage references. Import is
 atomic: all results are staged before one local-store write, and an existing
 local result is never overwritten by bundle import.
 
+After strict validation succeeds, import inspection can also emit non-blocking
+semantic consistency warnings. These warnings do not reject, mutate, normalize,
+or reinterpret ReviewResult artifacts; they flag combinations that are
+schema-valid but worth reviewer or researcher attention. The current warning
+codes are:
+
+- `semantic.insufficient_blind_interpretation_selected_overclaim_label`
+- `semantic.needs_better_evidence_without_failure_modes`
+- `semantic.core_session_selected_as_outlier`
+- `semantic.negative_reason_on_selected_label`
+
+> [!NOTE]
+> The warning `semantic.insufficient_blind_interpretation_selected_overclaim_label` relies on a text-regex heuristic search over blind interpretation text, label names/rationales, claim text, and mapping rationales. Because it is a text-regex heuristic, it is subject to false positives and false negatives based on phrasing variations. It is intended as a non-blocking diagnostic signal only and does not expand the underlying ReviewResult schema or validation contract.
+
+Context-aware warnings use existing CasePackage or CaseFile label/session
+metadata when available. If that context is unavailable, import still performs
+strict ReviewResult validation and emits only warnings that can be derived from
+the ReviewResult itself.
+
 Each bundle carries results for exactly one CasePackage ID. Every result must
 have the same package revision, exact compact package, pipeline, model,
 embedding, clustering, naming, and prompt references, blind-review setting,
@@ -260,7 +279,7 @@ does not aggregate, adjudicate, score, or render an EvaluationReport.
 
 ## Preflight Validation CLI
 
-A local preflight validation command (`npm run validate-review-results`) validates a supplied `ReviewResult` JSON or `ReviewResultBundle` JSON path before import or aggregation. It performs strict validation using the same schema check and bundle compatibility logic used at the application boundary, printing a safe summary of reviewer counts, referenced CasePackages, and verdict distributions, without requiring backend persistence, raw telemetry files, or fabricating reviewer data.
+A local preflight validation command (`npm run validate-review-results`) validates a supplied `ReviewResult` JSON or `ReviewResultBundle` JSON path before import or aggregation. It performs strict validation using the same schema check and bundle compatibility logic used at the application boundary, printing a safe summary of reviewer counts, referenced CasePackages, verdict distributions, and any non-blocking semantic warnings that can be derived from the supplied artifact, without requiring backend persistence, raw telemetry files, CasePackage fixture loading, or fabricating reviewer data.
 
 ## Deferred Work
 

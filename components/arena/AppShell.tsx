@@ -71,6 +71,7 @@ import {
   serializeReviewResultBundleV01,
 } from "@/lib/reviewResultBundleV01";
 import { importReviewArtifactV01Json } from "@/lib/reviewArtifactImportV01";
+import { buildReviewResultSemanticContextFromCaseFileV01 } from "@/lib/reviewResultSemanticWarningsV01";
 import { saveQuickDispositionToLocalStoreV01 } from "@/lib/quickDispositionStorageV01";
 import {
   loadReviewResultsForCasePackageV01,
@@ -650,7 +651,11 @@ export function AppShell({
   }
 
   function handleImportReviewResultBundleJson(jsonText: string) {
-    const parseResult = importReviewArtifactV01Json(jsonText);
+    const parseResult = importReviewArtifactV01Json(jsonText, {
+      caseContext: selectedCase
+        ? buildReviewResultSemanticContextFromCaseFileV01(selectedCase)
+        : undefined,
+    });
 
     if (!parseResult.ok) {
       setReviewBundleStatus({

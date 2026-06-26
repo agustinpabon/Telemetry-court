@@ -22,6 +22,28 @@ test("ReviewResult artifact import accepts a validated single ReviewResult", () 
   assert.deepEqual(result.inspectionSummary.referencedPackageIds, [
     "pkg-inline-import-001",
   ]);
+  assert.deepEqual(result.inspectionSummary.warnings, []);
+});
+
+test("ReviewResult artifact import includes non-blocking semantic warnings", () => {
+  const review = buildReviewResult({
+    finalVerdict: "needs_better_evidence",
+    recommendedAction: "collect_more_evidence",
+    failureModes: [],
+  });
+  const result = importReviewResultArtifactV01Json(JSON.stringify(review));
+
+  assert.equal(result.ok, true);
+  if (!result.ok) {
+    return;
+  }
+
+  assert.equal(result.artifactType, "ReviewResult");
+  assert.deepEqual(result.bundle.review_results, [review]);
+  assert.deepEqual(
+    result.inspectionSummary.warnings.map((warning) => warning.code),
+    ["semantic.needs_better_evidence_without_failure_modes"],
+  );
 });
 
 test("ReviewResult artifact import accepts an existing ReviewResult bundle", () => {
@@ -72,7 +94,15 @@ test("ReviewResult artifact import keeps invalid bundle failures loud", () => {
   });
 });
 
-function buildReviewResult(): ReviewResultV01 {
+function buildReviewResult({
+  failureModes = ["missing_evidence"],
+  finalVerdict = "supported",
+  recommendedAction = "accept_label",
+}: {
+  failureModes?: ReviewResultV01["decisions"]["failure_modes"];
+  finalVerdict?: ReviewResultV01["decisions"]["final_verdict"];
+  recommendedAction?: ReviewResultV01["decisions"]["recommended_action"];
+} = {}): ReviewResultV01 {
   return {
     schema_version: "review_result.v0.1",
     review_id:
@@ -115,9 +145,9 @@ function buildReviewResult(): ReviewResultV01 {
       outlier_impostor: {
         selected_session_id: "session-inline-import-001",
       },
-      failure_modes: ["missing_evidence"],
-      final_verdict: "supported",
-      recommended_action: "accept_label",
+      failure_modes: failureModes,
+      final_verdict: finalVerdict,
+      recommended_action: recommendedAction,
     },
   };
 }

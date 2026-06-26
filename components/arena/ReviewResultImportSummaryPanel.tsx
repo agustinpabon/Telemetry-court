@@ -37,10 +37,13 @@ export function ReviewResultImportSummaryPanel({
 
       {summary.warnings.length > 0 ? (
         <div className="review-result-import-summary-warnings">
-          <strong>Validation warnings</strong>
+          <strong>Semantic consistency warnings</strong>
           <ul>
             {summary.warnings.map((warning) => (
-              <li key={warning}>{warning}</li>
+              <li key={`${warning.reviewId}:${warning.code}:${warning.path}`}>
+                <code>{warning.code}</code>
+                <span>{warning.message}</span>
+              </li>
             ))}
           </ul>
         </div>
