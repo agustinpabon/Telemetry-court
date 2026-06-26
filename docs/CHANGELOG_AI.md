@@ -55,6 +55,9 @@ Use this file to record AI-assisted changes that affect product context, archite
     rewrite reviewer choices, or enter EvaluationReport aggregation.
   - Used optional CasePackage/CaseFile context for label/session warnings and
     artifact-only checks when full context is unavailable.
+  - Documented the regex-heuristic caveat for the insufficient blind interpretation
+    warning in `docs/REVIEW_RESULT_CONTRACT.md` to clarify its non-blocking,
+    heuristic nature.
   - Did not add #192 reviewer identity/context configuration, backend
     infrastructure, SOC triage, raw telemetry ingestion, auth, database, cloud
     sync, remediation, live collaboration, or real ACME4/Toponymy execution.
