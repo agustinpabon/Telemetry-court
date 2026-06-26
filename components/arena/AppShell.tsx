@@ -1312,6 +1312,9 @@ function renderStage({
           onSelectSession={(sessionId) =>
             dispatchArena({ type: "selectImpostorSession", sessionId })
           }
+          onConfirmNonCandidateSelection={() =>
+            dispatchArena({ type: "confirmNonCandidateImpostorSelection" })
+          }
           onBackToLabelDuel={() => navigateToStage("label_duel")}
           onContinue={() => navigateToStage("verdict")}
         />

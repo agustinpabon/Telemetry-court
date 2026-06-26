@@ -11,6 +11,8 @@ import { formatSupportScore } from "@/lib/caseMetrics";
 import {
   getEvidenceBalance,
   getEvidenceRatings,
+  isOutlierImpostorSelectionComplete,
+  isSeededOutlierImpostorCandidate,
   type CaseReviewState,
 } from "@/lib/arenaReviewState";
 import type { CaseFile, RepresentativeSession } from "@/lib/types";
@@ -19,6 +21,7 @@ type ImpostorPanelProps = {
   caseFile: CaseFile;
   reviewState: CaseReviewState;
   onSelectSession: (sessionId: string) => void;
+  onConfirmNonCandidateSelection?: () => void;
   onBackToLabelDuel?: () => void;
   onContinue: () => void;
 };
@@ -32,6 +35,7 @@ export function ImpostorPanel({
   caseFile,
   reviewState,
   onSelectSession,
+  onConfirmNonCandidateSelection,
   onBackToLabelDuel,
   onContinue,
 }: ImpostorPanelProps) {
@@ -40,6 +44,10 @@ export function ImpostorPanel({
   );
   const selectedLabel = caseFile.candidateLabels.find(
     (candidate) => candidate.id === reviewState.labelDuelWinnerId,
+  );
+  const selectionComplete = isOutlierImpostorSelectionComplete(
+    caseFile,
+    reviewState,
   );
 
   if (!selectedLabel) {
@@ -124,7 +132,8 @@ export function ImpostorPanel({
             <div>
               <h3 id="session-comparison-title">Compare session fit</h3>
               <p>
-                Compare the same two signals across every session.
+                Seeded candidates were flagged upstream. Ordinary representative
+                sessions require confirmation before they are recorded.
               </p>
             </div>
           </div>
@@ -143,6 +152,10 @@ export function ImpostorPanel({
             {rankedSessions.map((session, index) => {
               const isSelected = session.id === reviewState.impostorSessionId;
               const isStrongestCandidate = session.id === strongestCandidate?.id;
+              const isSeededCandidate = isSeededOutlierImpostorCandidate(
+                caseFile,
+                session.id,
+              );
               const matchLevel = getClusterMatchLevel(session.featureOverlap);
               const style: SessionCardStyle = {
                 "--outlier-risk": formatSupportScore(session.outlierScore),
@@ -171,8 +184,23 @@ export function ImpostorPanel({
                             Weakest-fit signal
                           </span>
                         ) : null}
+                        <span
+                          className={
+                            isSeededCandidate
+                              ? "seeded-candidate-badge"
+                              : "representative-session-badge"
+                          }
+                        >
+                          {isSeededCandidate
+                            ? "Seeded outlier / impostor candidate"
+                            : "Representative session"}
+                        </span>
                         <span className="session-selection-state" aria-hidden="true">
-                          {isSelected ? "Selected" : "Select"}
+                          {isSelected
+                            ? selectionComplete
+                              ? "Selected"
+                              : "Selected · confirm"
+                            : "Select"}
                         </span>
                       </span>
                       <strong className="session-card-title">{session.title}</strong>
@@ -210,6 +238,13 @@ export function ImpostorPanel({
         <ImpostorDetailPanel
           selectedSession={selectedSession}
           strongestCandidate={strongestCandidate}
+          isSeededCandidate={
+            selectedSession
+              ? isSeededOutlierImpostorCandidate(caseFile, selectedSession.id)
+              : false
+          }
+          selectionComplete={selectionComplete}
+          onConfirmSelection={onConfirmNonCandidateSelection}
         />
       </div>
 
@@ -218,7 +253,12 @@ export function ImpostorPanel({
         ariaLabel="Cluster Fit Check actions"
         microcopy={
           selectedSession
-            ? formatImpostorFooterMicrocopy(selectedSession, strongestCandidate)
+            ? formatImpostorFooterMicrocopy(
+                selectedSession,
+                strongestCandidate,
+                isSeededOutlierImpostorCandidate(caseFile, selectedSession.id),
+                selectionComplete,
+              )
             : "Choose the session with the weakest match to the cluster before continuing."
         }
         secondaryAction={
@@ -231,7 +271,7 @@ export function ImpostorPanel({
         }
         primaryAction={{
           label: "Continue to final evaluation",
-          disabled: !selectedSession,
+          disabled: !selectionComplete,
           onClick: onContinue,
         }}
       />
@@ -242,9 +282,15 @@ export function ImpostorPanel({
 function ImpostorDetailPanel({
   selectedSession,
   strongestCandidate,
+  isSeededCandidate,
+  selectionComplete,
+  onConfirmSelection,
 }: {
   selectedSession?: RepresentativeSession;
   strongestCandidate?: RepresentativeSession;
+  isSeededCandidate: boolean;
+  selectionComplete: boolean;
+  onConfirmSelection?: () => void;
 }) {
   if (!selectedSession) {
     return (
@@ -257,9 +303,9 @@ function ImpostorDetailPanel({
         {strongestCandidate ? (
           <section
             className="impostor-current-candidate"
-            aria-label="Current weakest-fit candidate"
+            aria-label="Current weakest-fit signal"
           >
-            <span>Current weakest-fit candidate</span>
+            <span>Current weakest-fit signal</span>
             <div>
               <span className="mono-value">{strongestCandidate.id}</span>
               <strong>{strongestCandidate.title}</strong>
@@ -290,12 +336,28 @@ function ImpostorDetailPanel({
         strongestCandidate.outlierScore,
       )} outlier risk and lower cluster match.`
     : "This selection will be recorded, but another session has stronger outlier evidence.";
+  const detailLabel = isSeededCandidate
+    ? "Selection recorded"
+    : selectionComplete
+      ? "Selection confirmed"
+      : "Confirmation required";
+  const indicatorLabel = isSeededCandidate
+    ? "Recorded"
+    : selectionComplete
+      ? "Confirmed"
+      : "Not recorded";
 
   return (
     <aside className="impostor-detail is-resolved" aria-live="polite">
       <div className="impostor-detail-topline">
-        <span className="impostor-detail-label">Selection recorded</span>
-        <span className="impostor-recorded-indicator">Recorded</span>
+        <span className="impostor-detail-label">{detailLabel}</span>
+        <span
+          className={`impostor-recorded-indicator ${
+            selectionComplete ? "" : "is-pending"
+          }`}
+        >
+          {indicatorLabel}
+        </span>
       </div>
       <span className="mono-value">{selectedSession.id}</span>
       <h3>{selectedSession.title}</h3>
@@ -325,6 +387,23 @@ function ImpostorDetailPanel({
             : alternateCandidateNote}
         </p>
       </div>
+      {!isSeededCandidate ? (
+        <div className="non-candidate-confirmation">
+          <strong>Ordinary representative session</strong>
+          <p>
+            This is an ordinary representative session, not a seeded outlier or
+            impostor candidate. Confirm it only if it materially weakens the
+            cluster interpretation.
+          </p>
+          {selectionComplete ? (
+            <span>Non-candidate choice confirmed.</span>
+          ) : (
+            <button type="button" onClick={onConfirmSelection}>
+              Confirm representative session as outlier / impostor
+            </button>
+          )}
+        </div>
+      ) : null}
       {selectedSession.outlierReason ? (
         <p className="impostor-evidence-note">{selectedSession.outlierReason}</p>
       ) : null}
@@ -347,7 +426,13 @@ function getClusterMatchLevel(featureOverlap: number) {
 function formatImpostorFooterMicrocopy(
   selectedSession: RepresentativeSession,
   strongestCandidate?: RepresentativeSession,
+  isSeededCandidate = false,
+  selectionComplete = false,
 ) {
+  if (!isSeededCandidate && !selectionComplete) {
+    return `Selected representative session: ${selectedSession.title}. Confirm this non-candidate choice before continuing.`;
+  }
+
   const selectedCopy = `Selected: ${selectedSession.title} · ${formatSupportScore(
     selectedSession.outlierScore,
   )} outlier risk`;

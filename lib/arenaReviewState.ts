@@ -39,6 +39,7 @@ export type CaseReviewState = {
   duelReasons?: DuelReason[];
   duelNote?: string;
   impostorSessionId?: string;
+  nonCandidateImpostorConfirmed?: boolean;
   failureModes?: DuelReason[];
   finalVerdict?: FinalVerdict;
   clusterRefinement?: {
@@ -88,6 +89,7 @@ export type ArenaAction =
   | { type: "toggleDuelReason"; reason: DuelReason }
   | { type: "setDuelNote"; note: string }
   | { type: "selectImpostorSession"; sessionId: string }
+  | { type: "confirmNonCandidateImpostorSelection" }
   | { type: "selectVerdict"; verdict: FinalVerdict }
   | { type: "toggleFailureMode"; reason: DuelReason }
   | {
@@ -199,10 +201,23 @@ export function arenaReducer(
           [action.evidenceId]: action.rating,
         },
       });
-    case "selectLabelDuelWinner":
+    case "selectLabelDuelWinner": {
+      const currentReview = getCurrentReviewState(state);
+      const candidateChanged =
+        currentReview.labelDuelWinnerId !== action.candidateId;
+
       return updateSelectedReview(state, {
         labelDuelWinnerId: action.candidateId,
+        ...(candidateChanged
+          ? {
+              duelReasons: [],
+              duelNote: undefined,
+              impostorSessionId: undefined,
+              nonCandidateImpostorConfirmed: undefined,
+            }
+          : {}),
       });
+    }
     case "toggleDuelReason":
       return updateSelectedReview(state, {
         duelReasons: toggleArrayValue(
@@ -214,10 +229,43 @@ export function arenaReducer(
       return updateSelectedReview(state, {
         duelNote: action.note.trim() ? action.note : undefined,
       });
-    case "selectImpostorSession":
+    case "selectImpostorSession": {
+      const selectedCase = getSelectedCase(cases, state);
+      const currentReview = getCurrentReviewState(state);
+      const isSeededCandidate = selectedCase
+        ? isSeededOutlierImpostorCandidate(selectedCase, action.sessionId)
+        : false;
+      const keepsExistingNonCandidateConfirmation =
+        !isSeededCandidate &&
+        currentReview.impostorSessionId === action.sessionId &&
+        currentReview.nonCandidateImpostorConfirmed === true;
+
       return updateSelectedReview(state, {
         impostorSessionId: action.sessionId,
+        nonCandidateImpostorConfirmed: keepsExistingNonCandidateConfirmation
+          ? true
+          : undefined,
       });
+    }
+    case "confirmNonCandidateImpostorSelection": {
+      const selectedCase = getSelectedCase(cases, state);
+      const currentReview = getCurrentReviewState(state);
+
+      if (
+        !selectedCase ||
+        !currentReview.impostorSessionId ||
+        isSeededOutlierImpostorCandidate(
+          selectedCase,
+          currentReview.impostorSessionId,
+        )
+      ) {
+        return state;
+      }
+
+      return updateSelectedReview(state, {
+        nonCandidateImpostorConfirmed: true,
+      });
+    }
     case "selectVerdict":
       return updateSelectedReview(state, {
         finalVerdict: action.verdict,
@@ -385,7 +433,7 @@ export function getReviewCompletion(
     reviewState.aiLabelRevealed,
     classifiedEvidenceCount >= caseFile.evidenceItems.length,
     reviewState.labelDuelWinnerId,
-    reviewState.impostorSessionId,
+    isOutlierImpostorSelectionComplete(caseFile, reviewState),
     reviewState.finalVerdict,
   ].filter(Boolean).length;
 }
@@ -406,7 +454,7 @@ export function getStageCompletionMap(
     ai_reveal: Boolean(reviewState.aiLabelRevealed),
     evidence_board: classifiedEvidenceCount >= caseFile.evidenceItems.length,
     label_duel: Boolean(reviewState.labelDuelWinnerId),
-    impostor: Boolean(reviewState.impostorSessionId),
+    impostor: isOutlierImpostorSelectionComplete(caseFile, reviewState),
     verdict: Boolean(reviewState.finalVerdict),
   };
 }
@@ -424,6 +472,10 @@ export function buildArenaReview(
   );
   const impostor = caseFile.representativeSessions.find(
     (session) => session.id === reviewState.impostorSessionId,
+  );
+  const impostorSelectionComplete = isOutlierImpostorSelectionComplete(
+    caseFile,
+    reviewState,
   );
 
   return {
@@ -448,7 +500,7 @@ export function buildArenaReview(
     duelReasons: reviewState.duelReasons ?? [],
     ...(reviewState.duelNote ? { duelNote: reviewState.duelNote } : {}),
     evidenceRatings,
-    ...(impostor
+    ...(impostor && impostorSelectionComplete
       ? {
           impostorSessionId: impostor.id,
           impostorSessionTitle: impostor.title,
@@ -461,6 +513,33 @@ export function buildArenaReview(
     ...buildClusterRefinementReview(reviewState),
     ...(reviewState.finalVerdict ? { finalVerdict: reviewState.finalVerdict } : {}),
   };
+}
+
+export function isSeededOutlierImpostorCandidate(
+  caseFile: CaseFile,
+  sessionId: string,
+): boolean {
+  const session = caseFile.representativeSessions.find(
+    (candidate) => candidate.id === sessionId,
+  );
+
+  return session?.isOutlierImpostorCandidate === true;
+}
+
+export function isOutlierImpostorSelectionComplete(
+  caseFile: CaseFile,
+  reviewState: CaseReviewState,
+): boolean {
+  if (!reviewState.impostorSessionId) {
+    return false;
+  }
+
+  return (
+    isSeededOutlierImpostorCandidate(
+      caseFile,
+      reviewState.impostorSessionId,
+    ) || reviewState.nonCandidateImpostorConfirmed === true
+  );
 }
 
 export function getBlindAgreementCopy(
@@ -594,6 +673,7 @@ function clearPostCheckpointDecisions(): Partial<CaseReviewState> {
     duelReasons: undefined,
     duelNote: undefined,
     impostorSessionId: undefined,
+    nonCandidateImpostorConfirmed: undefined,
     failureModes: undefined,
     finalVerdict: undefined,
     clusterRefinement: undefined,
@@ -707,7 +787,7 @@ function getSeededVerdictDemoReview(
     blindChoiceId: "cloud-resource-discovery",
     aiLabelRevealed: true,
     labelDuelWinnerId: "label-iam-baseline",
-    impostorSessionId: "iam-s-01",
+    impostorSessionId: "iam-s-04",
     failureModes: ["less_overclaimed", "missing_evidence"],
     finalVerdict: "unsupported_overclaimed",
   };

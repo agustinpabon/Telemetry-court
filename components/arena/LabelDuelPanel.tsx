@@ -1,6 +1,4 @@
-import {
-  duelReasonLabel,
-} from "@/components/arena/arenaMeta";
+import { duelReasonLabel } from "@/components/arena/arenaMeta";
 import { Fragment } from "react";
 import {
   ArenaActionFooter,
@@ -17,13 +15,18 @@ import {
 import type { InsufficientContextGuidance } from "@/lib/reviewReadiness";
 import type { CandidateLabel, CaseFile, DuelReason } from "@/lib/types";
 
-const labelDuelReasonOptions: DuelReason[] = [
+const alternativeLabelReasonOptions: DuelReason[] = [
   "less_overclaimed",
   "missing_malicious_intent",
   "missing_downstream_abuse",
   "better_supported",
   "preserves_uncertainty",
   "cluster_seems_mixed",
+];
+
+const aiLabelReasonOptions: DuelReason[] = [
+  "more_specific",
+  "preserves_uncertainty",
 ];
 
 type LabelDuelPanelProps = {
@@ -76,9 +79,13 @@ export function LabelDuelPanel({
           </ArenaStatusBadge>
         }
         title="Which label is best supported?"
-        summary="Choose the most defensible label—not the strongest wording."
+        summary="Select the candidate you judge best-supported and most defensible."
       />
       <ReviewTerminologyHelp terms={["ai_label", "claim", "evidence"]} />
+      <p className="duel-contract-note">
+        ReviewResult meaning: selected_label_id records the candidate you accept
+        as best-supported and most defensible.
+      </p>
 
       <section className="duel-evidence-summary" aria-label="Evidence summary">
         <div>
@@ -124,6 +131,7 @@ export function LabelDuelPanel({
 
         {selectedCandidate?.id === recommendedCandidate?.id ? (
           <DuelReasonPanel
+            selectedCandidate={selectedCandidate}
             reviewState={reviewState}
             onToggleReason={onToggleReason}
             onSetDuelNote={onSetDuelNote}
@@ -148,6 +156,7 @@ export function LabelDuelPanel({
                 />
                 {selectedCandidate?.id === candidate.id ? (
                   <DuelReasonPanel
+                    selectedCandidate={selectedCandidate}
                     reviewState={reviewState}
                     onToggleReason={onToggleReason}
                     onSetDuelNote={onSetDuelNote}
@@ -164,7 +173,9 @@ export function LabelDuelPanel({
         ariaLabel="Label Selection actions"
         microcopy={
           selectedCandidate
-            ? `Selected: ${selectedCandidate.label}. Its cluster fit will be checked next.`
+            ? selectedCandidate.source === "baseline_ai"
+              ? `AI label accepted as best-supported: ${selectedCandidate.label}. Its cluster fit will be checked next.`
+              : `Chosen as more defensible than the AI label: ${selectedCandidate.label}. Its cluster fit will be checked next.`
             : "Select one label to continue."
         }
         secondaryAction={
@@ -186,22 +197,35 @@ export function LabelDuelPanel({
 }
 
 function DuelReasonPanel({
+  selectedCandidate,
   reviewState,
   onToggleReason,
   onSetDuelNote,
 }: {
+  selectedCandidate: CandidateLabel;
   reviewState: CaseReviewState;
   onToggleReason: (reason: DuelReason) => void;
   onSetDuelNote: (note: string) => void;
 }) {
+  const isAiLabel = selectedCandidate.source === "baseline_ai";
+  const reasonOptions = isAiLabel
+    ? aiLabelReasonOptions
+    : alternativeLabelReasonOptions;
+
   return (
     <section className="reason-panel" aria-labelledby="duel-reason-title">
       <div className="duel-section-heading">
-        <h3 id="duel-reason-title">Why this label?</h3>
-        <p>Select reasons or add an optional note.</p>
+        <h3 id="duel-reason-title">
+          {isAiLabel ? "Why accept the AI label?" : "Why this label?"}
+        </h3>
+        <p>
+          {isAiLabel
+            ? "Choosing the AI label accepts it as the best-supported candidate; these reasons should support that choice, not describe it as flawed."
+            : "These reasons compare the selected label with the AI label and explain why it is more defensible."}
+        </p>
       </div>
       <div className="chip-row">
-        {labelDuelReasonOptions.map((reason) => {
+        {reasonOptions.map((reason) => {
           const isSelected = (reviewState.duelReasons ?? []).includes(reason);
 
           return (
@@ -223,7 +247,7 @@ function DuelReasonPanel({
           value={reviewState.duelNote ?? ""}
           onChange={(event) => onSetDuelNote(event.currentTarget.value)}
           rows={3}
-          placeholder="Optional note for the final review..."
+          placeholder="Optional rationale for why this candidate is best-supported..."
         />
       </label>
     </section>
@@ -244,6 +268,14 @@ function CandidateLabelCard({
   onSelectWinner: (candidateId: string) => void;
 }) {
   const decisionMeta = getCandidateDecisionMeta(candidate, isRecommended);
+  const isAiLabel = candidate.source === "baseline_ai";
+  const selectionLabel = isSelected
+    ? isAiLabel
+      ? "Accepted as best supported"
+      : "Chosen as best supported"
+    : isAiLabel
+      ? "Accept as best supported"
+      : "Choose as best supported";
 
   return (
     <button
@@ -268,7 +300,7 @@ function CandidateLabelCard({
           className={`duel-card-affordance ${isSelected ? "is-selected" : ""}`}
           aria-hidden="true"
         >
-          {isSelected ? "Selected" : isRecommended ? "Select label" : "Select"}
+          {selectionLabel}
         </span>
       </div>
       <strong>{candidate.label}</strong>
@@ -295,7 +327,7 @@ function getCandidateDecisionMeta(
     }
   > = {
     "label-iam-baseline": {
-      badge: "Original AI claim",
+      badge: "AI-generated label",
       fitLabel: "Too strong",
       description:
         "Assumes suspicious escalation from IAM changes, but the evidence does not prove unauthorized use.",

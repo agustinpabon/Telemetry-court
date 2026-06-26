@@ -7184,6 +7184,15 @@
   padding: 0 9px;
 }
 
+.arena-shell.arena-shell-investigate .duel-contract-note {
+  color: rgba(50, 48, 47, 0.68);
+  font-size: 12.5px;
+  line-height: 1.45;
+  margin: 0;
+  padding: 0 2px;
+  text-wrap: pretty;
+}
+
 .arena-shell.arena-shell-investigate .duel-candidate-section {
   display: grid;
   gap: 9px;
@@ -7339,7 +7348,9 @@
   line-height: 1.2;
   min-height: 24px;
   padding: 4px 9px;
-  white-space: nowrap;
+  max-width: 176px;
+  text-align: right;
+  white-space: normal;
 }
 
 .arena-shell.arena-shell-investigate .label-duel-stage .duel-card-affordance:not(.is-selected)::after {
@@ -7847,6 +7858,8 @@
 }
 
 .arena-shell.arena-shell-investigate .strongest-candidate-badge,
+.arena-shell.arena-shell-investigate .seeded-candidate-badge,
+.arena-shell.arena-shell-investigate .representative-session-badge,
 .arena-shell.arena-shell-investigate .session-selection-state {
   align-items: center;
   border-radius: 999px;
@@ -7862,6 +7875,18 @@
   background: rgba(95, 111, 82, 0.06);
   border: 1px solid rgba(95, 111, 82, 0.18);
   color: var(--workflow-focus);
+}
+
+.arena-shell.arena-shell-investigate .seeded-candidate-badge {
+  background: rgba(95, 111, 82, 0.08);
+  border: 1px solid rgba(95, 111, 82, 0.16);
+  color: var(--workflow-focus);
+}
+
+.arena-shell.arena-shell-investigate .representative-session-badge {
+  background: rgba(50, 48, 47, 0.04);
+  border: 1px solid rgba(50, 48, 47, 0.08);
+  color: rgba(50, 48, 47, 0.6);
 }
 
 .arena-shell.arena-shell-investigate .strongest-candidate-badge::before {
@@ -8193,6 +8218,16 @@
   width: 6px;
 }
 
+.arena-shell.arena-shell-investigate .impostor-recorded-indicator.is-pending {
+  background: rgba(154, 106, 47, 0.08);
+  border-color: rgba(154, 106, 47, 0.16);
+  color: #725126;
+}
+
+.arena-shell.arena-shell-investigate .impostor-recorded-indicator.is-pending::before {
+  background: currentColor;
+}
+
 .arena-shell.arena-shell-investigate .impostor-detail .mono-value {
   color: rgba(50, 48, 47, 0.6);
   font-size: 11px;
@@ -8278,6 +8313,57 @@
 
 .arena-shell.arena-shell-investigate .outlier-explanation.is-strong-candidate p {
   color: rgba(72, 86, 61, 0.95);
+}
+
+.arena-shell.arena-shell-investigate .non-candidate-confirmation {
+  border-top: 1px solid rgba(154, 106, 47, 0.16);
+  display: grid;
+  gap: 6px;
+  padding-top: 12px;
+}
+
+.arena-shell.arena-shell-investigate .non-candidate-confirmation strong {
+  color: var(--workflow-ink);
+  font-size: 12.5px;
+  font-weight: 780;
+}
+
+.arena-shell.arena-shell-investigate .non-candidate-confirmation p {
+  color: rgba(50, 48, 47, 0.68);
+  font-size: 12px;
+  line-height: 1.42;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.arena-shell.arena-shell-investigate .non-candidate-confirmation span {
+  color: var(--workflow-focus);
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.arena-shell.arena-shell-investigate .non-candidate-confirmation button {
+  background: rgba(251, 250, 247, 0.88);
+  border: 1px solid rgba(154, 106, 47, 0.24);
+  border-radius: 999px;
+  color: #664b28;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 760;
+  justify-self: start;
+  min-height: 34px;
+  padding: 7px 12px;
+}
+
+.arena-shell.arena-shell-investigate .non-candidate-confirmation button:hover {
+  background: rgba(154, 106, 47, 0.09);
+  border-color: rgba(154, 106, 47, 0.36);
+}
+
+.arena-shell.arena-shell-investigate .non-candidate-confirmation button:focus-visible {
+  outline: 3px solid rgba(154, 106, 47, 0.2);
+  outline-offset: 2px;
 }
 
 .arena-shell.arena-shell-investigate .impostor-detail .impostor-evidence-note {

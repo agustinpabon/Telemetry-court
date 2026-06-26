@@ -82,8 +82,9 @@ The current export records:
 
 - blind interpretation ID, label, and AI-label agreement;
 - AI-label reveal state;
-- selected candidate-label ID, structured reason codes, and the optional
-  rationale already supported by the label-comparison note;
+- selected candidate-label ID, meaning the candidate the reviewer judged
+  best-supported and most defensible, plus structured reason codes and the
+  optional rationale already supported by the label-comparison note;
 - one canonical rating for every evidence ID in the reviewed package;
 - selected outlier or impostor session ID;
 - optional reviewer confidence, when a protocol captures it;
@@ -91,6 +92,18 @@ The current export records:
 - canonical final verdict;
 - canonical recommended action.
 - optional reviewer notes.
+
+Selecting the AI-generated label means accepting it as the best-supported
+candidate for the reviewed evidence. Selecting another candidate means the
+reviewer found that alternative more defensible. The exporter preserves the
+reviewer's exact `selected_label_id`; it does not reinterpret the selected
+label as the label being rejected or replace it with a seeded recommendation.
+
+The outlier/impostor session ID likewise preserves the exact completed
+reviewer choice. The current UI distinguishes package-seeded candidates from
+ordinary representative sessions and requires explicit confirmation before an
+ordinary non-candidate session completes the cluster-fit step. That
+confirmation is UI protocol state, not a new `ReviewResult v0.1` field.
 
 The current synthetic UI does not have a separate recommended-action picker.
 For v0.1, the exporter deterministically derives the canonical action from the

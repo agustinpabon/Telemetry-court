@@ -1066,7 +1066,7 @@ test("each review stage states the decision the reviewer must make", () => {
   );
   assert.match(
     markup,
-    /Choose the most defensible label—not the strongest wording\./,
+    /Select the candidate you judge best-supported and most defensible\./,
   );
   assert.match(
     markup,
@@ -1783,9 +1783,13 @@ test("label duel turns evidence balance into a defensible label decision", () =>
   assert.match(emptyMarkup, /Select one label to continue\./);
   assert.match(
     emptyMarkup,
-    /Choose the most defensible label—not the strongest wording\./,
+    /Select the candidate you judge best-supported and most defensible\./,
   );
-  assert.match(emptyMarkup, /Original AI claim/);
+  assert.match(
+    emptyMarkup,
+    /selected_label_id records the candidate you accept as best-supported/,
+  );
+  assert.match(emptyMarkup, /AI-generated label/);
   assert.match(emptyMarkup, /Suspicious IAM privilege escalation/);
   assert.match(emptyMarkup, /Your evidence read/);
   assert.match(emptyMarkup, /1 weak support · 2 contradictions · 1 needs context/);
@@ -1801,10 +1805,10 @@ test("label duel turns evidence balance into a defensible label decision", () =>
     emptyMarkup,
     /Best matches the observed IAM activity without assuming malicious escalation/,
   );
-  assert.match(emptyMarkup, /Select label/);
+  assert.match(emptyMarkup, /Choose as best supported/);
   assert.doesNotMatch(emptyMarkup, /Recommended/);
   assert.doesNotMatch(emptyMarkup, /Selected/);
-  assert.match(emptyMarkup, /Original AI claim/);
+  assert.match(emptyMarkup, /AI-generated label/);
   assert.match(emptyMarkup, /Too strong/);
   assert.match(emptyMarkup, /Other possible labels/);
   assert.match(emptyMarkup, /More specific label/);
@@ -1836,21 +1840,24 @@ test("label duel turns evidence balance into a defensible label decision", () =>
   );
 
   assert.match(selectedMarkup, /Why this label\?/);
-  assert.match(selectedMarkup, /Selected/);
+  assert.match(selectedMarkup, /Chosen as best supported/);
   assert.match(
     selectedMarkup,
-    /Select reasons or add an optional note/,
+    /These reasons compare the selected label with the AI label/,
   );
-  assert.match(selectedMarkup, /Less overclaimed/);
-  assert.match(selectedMarkup, /Missing malicious intent/);
-  assert.match(selectedMarkup, /Missing downstream abuse/);
-  assert.match(selectedMarkup, /Better supported/);
-  assert.match(selectedMarkup, /Cluster seems mixed/);
+  assert.match(selectedMarkup, /Chosen label avoids unsupported overclaim/);
+  assert.match(selectedMarkup, /AI label lacks malicious-intent evidence/);
+  assert.match(selectedMarkup, /AI label lacks downstream-abuse evidence/);
+  assert.match(selectedMarkup, /Chosen label is better supported/);
+  assert.match(selectedMarkup, /Cluster may need more than one label/);
   assert.match(selectedMarkup, /Add a short note, optional/);
-  assert.match(selectedMarkup, /Optional note for the final review/);
   assert.match(
     selectedMarkup,
-    /Selected: Routine IAM role provisioning\. Its cluster fit will be checked next\./,
+    /Optional rationale for why this candidate is best-supported/,
+  );
+  assert.match(
+    selectedMarkup,
+    /Chosen as more defensible than the AI label: Routine IAM role provisioning\./,
   );
   assert.match(
     selectedMarkup,
@@ -1860,6 +1867,37 @@ test("label duel turns evidence balance into a defensible label decision", () =>
     selectedMarkup,
     /disabled="">Proceed to cluster fit check/,
   );
+
+  const aiAcceptedMarkup = renderStaticMarkup(
+    React.createElement(LabelDuelPanel, {
+      caseFile: selectedCase,
+      reviewState: {
+        blindChoiceId: "cloud-resource-discovery",
+        aiLabelRevealed: true,
+        labelDuelWinnerId: "label-iam-baseline",
+        duelReasons: ["more_specific"],
+      },
+      onSelectWinner: () => undefined,
+      onToggleReason: () => undefined,
+      onSetDuelNote: () => undefined,
+      onBackToEvidenceBoard: () => undefined,
+      onContinue: () => undefined,
+    }),
+  );
+
+  assert.match(aiAcceptedMarkup, /Why accept the AI label\?/);
+  assert.match(
+    aiAcceptedMarkup,
+    /Choosing the AI label accepts it as the best-supported candidate/,
+  );
+  assert.match(aiAcceptedMarkup, /Accepted as best supported/);
+  assert.match(
+    aiAcceptedMarkup,
+    /AI label accepted as best-supported: Suspicious IAM privilege escalation\./,
+  );
+  assert.doesNotMatch(aiAcceptedMarkup, /Chosen label is better supported/);
+  assert.doesNotMatch(aiAcceptedMarkup, /AI label lacks malicious-intent evidence/);
+  assert.doesNotMatch(aiAcceptedMarkup, /AI label lacks downstream-abuse evidence/);
 });
 
 test("impostor review teaches the comparison before a session is selected", () => {
@@ -1894,6 +1932,12 @@ test("impostor review teaches the comparison before a session is selected", () =
     /Weakest fit = high outlier risk \+ low cluster pattern match/,
   );
   assert.match(markup, /Weakest-fit signal/);
+  assert.match(markup, /Seeded outlier \/ impostor candidate/);
+  assert.match(markup, /Representative session/);
+  assert.match(
+    markup,
+    /Seeded candidates were flagged upstream\. Ordinary representative sessions require confirmation/,
+  );
   assert.match(markup, /What to look for/);
   assert.match(markup, /High outlier risk/);
   assert.match(markup, /Low cluster pattern match/);
@@ -1990,13 +2034,48 @@ test("impostor review explains the strength of the selected session", () => {
     alternateMarkup,
     /Selection recorded, but iam-s-04 has stronger outlier evidence: 82% outlier risk and lower cluster match\./,
   );
+  assert.match(alternateMarkup, /Confirmation required/);
   assert.match(
     alternateMarkup,
-    /Selected: Role validation checks · 28% outlier risk\. Weakest-fit signal: iam-s-04 · 82%\./,
+    /This is an ordinary representative session, not a seeded outlier or impostor candidate/,
   );
+  assert.match(
+    alternateMarkup,
+    /Confirm representative session as outlier \/ impostor/,
+  );
+  assert.match(
+    alternateMarkup,
+    /Selected representative session: Role validation checks\. Confirm this non-candidate choice before continuing\./,
+  );
+  assert.match(alternateMarkup, /disabled="">Continue to final evaluation/);
   assert.doesNotMatch(
     alternateMarkup,
     /This is the strongest mismatch candidate because it has the highest outlier risk/,
+  );
+
+  const confirmedAlternateMarkup = renderStaticMarkup(
+    React.createElement(ImpostorPanel, {
+      caseFile: selectedCase,
+      reviewState: {
+        labelDuelWinnerId: "label-iam-uncertain",
+        impostorSessionId: "iam-s-03",
+        nonCandidateImpostorConfirmed: true,
+      },
+      onSelectSession: () => undefined,
+      onBackToLabelDuel: () => undefined,
+      onContinue: () => undefined,
+    }),
+  );
+
+  assert.match(confirmedAlternateMarkup, /Selection confirmed/);
+  assert.match(confirmedAlternateMarkup, /Non-candidate choice confirmed/);
+  assert.doesNotMatch(
+    confirmedAlternateMarkup,
+    /Confirm representative session as outlier \/ impostor/,
+  );
+  assert.doesNotMatch(
+    confirmedAlternateMarkup,
+    /disabled="">Continue to final evaluation/,
   );
 });
 

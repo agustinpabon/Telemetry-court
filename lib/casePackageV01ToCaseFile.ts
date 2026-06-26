@@ -127,7 +127,7 @@ export function createCaseFileCompatibilitySeedFromCasePackageV01(
     seededImpostorSessionId,
     representativeSessions: packageFixture.representative_sessions.map(
       (session) => {
-        const outlierReason = readOutlierReason(
+        const outlierCandidate = readOutlierImpostorCandidate(
           packageFixture,
           session.session_id,
         );
@@ -149,7 +149,10 @@ export function createCaseFileCompatibilitySeedFromCasePackageV01(
             0,
           ),
           summary: session.summary,
-          ...(outlierReason ? { outlierReason } : {}),
+          ...(outlierCandidate ? { isOutlierImpostorCandidate: true } : {}),
+          ...(outlierCandidate?.reason
+            ? { outlierReason: outlierCandidate.reason }
+            : {}),
         };
       },
     ),
@@ -583,6 +586,10 @@ function mapValidatedCasePackageV01ToCaseFile(
         const seedSession = compatibilitySeed.representativeSessions.find(
           (candidate) => candidate.id === session.session_id,
         );
+        const outlierCandidate = readOutlierImpostorCandidate(
+          packageFixture,
+          session.session_id,
+        );
 
         return {
           id: session.session_id,
@@ -598,8 +605,9 @@ function mapValidatedCasePackageV01ToCaseFile(
             0,
           ),
           summary: session.summary,
-          ...(seedSession?.outlierReason
-            ? { outlierReason: seedSession.outlierReason }
+          ...(outlierCandidate ? { isOutlierImpostorCandidate: true } : {}),
+          ...(outlierCandidate?.reason
+            ? { outlierReason: outlierCandidate.reason }
             : {}),
         };
       },
@@ -923,13 +931,13 @@ function readFailureModes(packageFixture: CasePackageV01): CaseFile["failureMode
   return [...failureModes].slice(0, 5);
 }
 
-function readOutlierReason(
+function readOutlierImpostorCandidate(
   packageFixture: CasePackageV01,
   sessionId: string,
-): string | undefined {
+): CasePackageV01["outlier_impostor_candidates"][number] | undefined {
   return packageFixture.outlier_impostor_candidates.find(
     (candidate) => candidate.session_id === sessionId,
-  )?.reason;
+  );
 }
 
 function readClaimRationale(claim: CasePackageV01["claims"][number]): string {
