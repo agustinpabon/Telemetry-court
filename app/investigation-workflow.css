@@ -366,8 +366,16 @@
 }
 
 .review-result-import-summary-warnings li {
+  display: grid;
+  gap: 3px;
   font-size: 13px;
   line-height: 1.45;
+}
+
+.review-result-import-summary-warnings code {
+  color: var(--workflow-ink, var(--color-ink));
+  font-size: 11px;
+  overflow-wrap: anywhere;
 }
 
 .case-package-import-suggested-fix {

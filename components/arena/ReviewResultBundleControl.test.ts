@@ -51,7 +51,42 @@ test("ReviewResult bundle control renders imported result inspection summary", (
   assert.match(markup, /supported: 1, uncertain: 1/);
   assert.match(markup, /high: 1/);
   assert.match(markup, /missing_evidence: 2/);
-  assert.doesNotMatch(markup, /Validation warnings/);
+  assert.doesNotMatch(markup, /Semantic consistency warnings/);
+});
+
+test("ReviewResult bundle control renders semantic import warnings", () => {
+  const markup = renderToStaticMarkup(
+    React.createElement(ReviewResultBundleControl, {
+      status: {
+        state: "success",
+        message: "Imported 1 ReviewResult from local JSON.",
+        inspectionSummary: {
+          ...inlineInspectionSummary,
+          resultCount: 1,
+          warnings: [
+            {
+              path: "$.decisions.failure_modes",
+              code: "semantic.needs_better_evidence_without_failure_modes",
+              message:
+                "ReviewResult requests better evidence but has no failure_mode reason codes explaining the evidence gap.",
+              reviewId: "review-inline-warning-001",
+            },
+          ],
+        },
+      },
+      onExport: () => undefined,
+      onImportStart: () => undefined,
+      onImportText: () => undefined,
+      onImportReadError: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /Semantic consistency warnings/);
+  assert.match(
+    markup,
+    /semantic\.needs_better_evidence_without_failure_modes/,
+  );
+  assert.match(markup, /has no failure_mode reason codes/);
 });
 
 const inlineInspectionSummary: ReviewResultImportInspectionSummaryV01 = {

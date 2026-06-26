@@ -8,6 +8,7 @@ import {
   inspectReviewResultBundleV01,
   inspectReviewResultV01,
   type ReviewResultImportInspectionSummaryV01,
+  type ReviewResultInspectionOptionsV01,
 } from "@/lib/reviewResultInspectionV01";
 import { validateReviewResultV01 } from "@/lib/reviewResultValidationV01";
 
@@ -22,6 +23,7 @@ export type ReviewResultArtifactImportResultV01 =
 
 export function importReviewResultArtifactV01Json(
   jsonText: string,
+  options: ReviewResultInspectionOptionsV01 = {},
 ): ReviewResultArtifactImportResultV01 {
   let parsed: unknown;
 
@@ -56,7 +58,10 @@ export function importReviewResultArtifactV01Json(
       ok: true,
       artifactType: "ReviewResultBundle",
       bundle: bundleImport.bundle,
-      inspectionSummary: inspectReviewResultBundleV01(bundleImport.bundle),
+      inspectionSummary: inspectReviewResultBundleV01(
+        bundleImport.bundle,
+        options,
+      ),
     };
   }
 
@@ -83,7 +88,10 @@ export function importReviewResultArtifactV01Json(
         bundleId: `review-result-import:${validation.reviewResult.review_id}`,
         createdAt: validation.reviewResult.created_at,
       }),
-      inspectionSummary: inspectReviewResultV01(validation.reviewResult),
+      inspectionSummary: inspectReviewResultV01(
+        validation.reviewResult,
+        options,
+      ),
     };
   }
 

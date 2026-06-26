@@ -19,6 +19,62 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-26: Non-Blocking ReviewResult Semantic Warnings
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #191 only, after merged #190/#196,
+  without implementing #192 or touching forbidden local fixture/notebook paths.
+- Files changed:
+  - `lib/reviewResultSemanticWarningsV01.ts`
+  - `lib/reviewResultSemanticWarningsV01.test.ts`
+  - `lib/reviewResultInspectionV01.ts`
+  - `lib/reviewResultImportV01.ts`
+  - `lib/reviewArtifactImportV01.ts`
+  - `components/arena/AppShell.tsx`
+  - `components/arena/ReviewResultImportSummaryPanel.tsx`
+  - `components/arena/ReviewResultBundleControl.test.ts`
+  - `app/investigation-workflow.css`
+  - `scripts/validate-review-results.ts`
+  - `scripts/validate-review-results.test.ts`
+  - `docs/REVIEW_RESULT_CONTRACT.md`
+  - `docs/EVALUATION_INFRASTRUCTURE.md`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Added structured, stable semantic warning diagnostics for schema-valid
+    ReviewResult artifacts.
+  - Warnings cover insufficient-evidence blind interpretations paired with a
+    selected overclaim AI label, better-evidence outcomes without failure-mode
+    reasons, core/high-membership sessions selected as outliers or impostors,
+    and negative reason codes attached to the selected best-supported label.
+  - Surfaced warning codes and messages in ReviewResult import summaries and
+    CLI preflight output while preserving strict validation errors.
+- Decisions made:
+  - Kept `ReviewResult v0.1` artifacts unchanged and faithful to reviewer
+    selections.
+  - Kept warnings non-blocking: they do not reject imports, mutate artifacts,
+    rewrite reviewer choices, or enter EvaluationReport aggregation.
+  - Used optional CasePackage/CaseFile context for label/session warnings and
+    artifact-only checks when full context is unavailable.
+  - Did not add #192 reviewer identity/context configuration, backend
+    infrastructure, SOC triage, raw telemetry ingestion, auth, database, cloud
+    sync, remediation, live collaboration, or real ACME4/Toponymy execution.
+- Checks run:
+  - Focused semantic warning, import, UI summary, and CLI tests passed.
+  - `npm test` passed with 321 tests.
+  - `npx tsc --noEmit` passed.
+  - `npm run lint` passed.
+  - `npm run build` passed.
+  - `git diff --check` passed.
+- Assumptions: Import-time context can only add the warnings that existing
+  CasePackage/CaseFile metadata can support; standalone ReviewResult files
+  still receive artifact-only warnings without loading fixtures.
+- Risks/follow-ups: Future contracts with per-label rejected-label reasons
+  could make the selected-label reason warning more granular.
+- Next recommended step: Review warning wording and code stability in the
+  draft PR before applying the diagnostics to any future reviewer-study tools.
+- Suggested commit message:
+  `feat: add ReviewResult semantic warnings`
+
 ## 2026-06-26: Clarify Label And Outlier Review Semantics
 
 - Agent/model: Codex (GPT-5)

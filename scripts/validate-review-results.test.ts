@@ -103,6 +103,25 @@ test("valid single ReviewResult JSON passes and prints inspection summary", asyn
   assert.equal(result.stderr, "");
 });
 
+test("semantic warnings keep ReviewResult preflight validation passing", async () => {
+  const review = buildReviewResult(sampleCases[0], "reviewer-1", "session-1", {
+    finalVerdict: "needs_better_evidence",
+    failureModes: [],
+  });
+  const result = await withTempJsonFile(JSON.stringify(review), (filePath) =>
+    runCli([filePath]),
+  );
+
+  assert.equal(result.exitCode, 0);
+  assert.match(result.stdout, /Validation: PASS/);
+  assert.match(result.stdout, /Warnings: 1/);
+  assert.match(
+    result.stdout,
+    /semantic\.needs_better_evidence_without_failure_modes/,
+  );
+  assert.equal(result.stderr, "");
+});
+
 test("valid ReviewResult bundle passes and prints inspection summary", async () => {
   const caseFile = sampleCases[0];
   const r1 = buildReviewResult(caseFile, "reviewer-1", "session-1", { finalVerdict: "supported" });

@@ -1,5 +1,10 @@
 import type { ReviewResultBundleV01 } from "@/lib/reviewResultBundleV01";
 import type { ReviewResultV01 } from "@/lib/reviewResultV01";
+import {
+  getReviewResultSemanticWarningsV01,
+  type ReviewResultSemanticCaseContextV01,
+  type ReviewResultSemanticWarningV01,
+} from "@/lib/reviewResultSemanticWarningsV01";
 
 export type ReviewResultInspectionCount = {
   value: string;
@@ -44,16 +49,18 @@ export type ReviewResultImportInspectionSummaryV01 = {
     status: "compatible";
     message: string;
   };
-  warnings: string[];
+  warnings: ReviewResultSemanticWarningV01[];
 };
 
 export function inspectReviewResultV01(
   reviewResult: ReviewResultV01,
+  options: ReviewResultInspectionOptionsV01 = {},
 ): ReviewResultImportInspectionSummaryV01 {
   return inspectReviewResults({
     artifactType: "ReviewResult",
     artifactSchemaVersion: reviewResult.schema_version,
     reviewResults: [reviewResult],
+    caseContext: options.caseContext,
     compatibilityMessage:
       "Strict validation confirmed one single validated ReviewResult: a full evidence ReviewResult artifact. It can be stored locally and aggregated as a single-review report until compatible peer results are added.",
   });
@@ -61,28 +68,36 @@ export function inspectReviewResultV01(
 
 export function inspectReviewResultBundleV01(
   bundle: ReviewResultBundleV01,
+  options: ReviewResultInspectionOptionsV01 = {},
 ): ReviewResultImportInspectionSummaryV01 {
   return inspectReviewResults({
     artifactType: "ReviewResultBundle",
     artifactSchemaVersion: bundle.schema_version,
     bundleId: bundle.metadata.bundle_id,
     reviewResults: bundle.review_results,
+    caseContext: options.caseContext,
     compatibilityMessage:
       "Strict validation confirmed full evidence ReviewResult artifacts with one compatible CasePackage/protocol/evidence set for local aggregation.",
   });
 }
+
+export type ReviewResultInspectionOptionsV01 = {
+  caseContext?: ReviewResultSemanticCaseContextV01;
+};
 
 function inspectReviewResults({
   artifactType,
   artifactSchemaVersion,
   bundleId,
   reviewResults,
+  caseContext,
   compatibilityMessage,
 }: {
   artifactType: ReviewResultImportInspectionSummaryV01["artifactType"];
   artifactSchemaVersion: string;
   bundleId?: string;
   reviewResults: readonly ReviewResultV01[];
+  caseContext?: ReviewResultSemanticCaseContextV01;
   compatibilityMessage: string;
 }): ReviewResultImportInspectionSummaryV01 {
   return {
@@ -121,7 +136,9 @@ function inspectReviewResults({
       status: "compatible",
       message: compatibilityMessage,
     },
-    warnings: [],
+    warnings: reviewResults.flatMap((reviewResult) =>
+      getReviewResultSemanticWarningsV01(reviewResult, { caseContext }),
+    ),
   };
 }
 

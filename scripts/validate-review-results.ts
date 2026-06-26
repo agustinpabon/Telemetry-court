@@ -279,6 +279,16 @@ function formatValidationSuccess(
     lines.push(`Failure mode counts: ${formatDistribution(summary.failureModeCounts)}`);
   }
 
+  if (summary.warnings.length > 0) {
+    lines.push(`Warnings: ${summary.warnings.length}`);
+    lines.push(
+      ...summary.warnings.map(
+        (warning) =>
+          `- ${warning.path} [${warning.code}] ${warning.message}`,
+      ),
+    );
+  }
+
   lines.push(`Compatibility status: ${formatCompatibilityStatus(summary)}`);
   lines.push("Missing required metadata count: 0");
   lines.push("");

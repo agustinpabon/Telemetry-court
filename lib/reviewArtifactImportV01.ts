@@ -8,6 +8,7 @@ import {
   importReviewResultArtifactV01Json,
   type ReviewResultArtifactImportResultV01,
 } from "@/lib/reviewResultImportV01";
+import type { ReviewResultInspectionOptionsV01 } from "@/lib/reviewResultInspectionV01";
 
 export type ReviewArtifactImportResultV01 =
   | ReviewResultArtifactImportResultV01
@@ -31,6 +32,7 @@ export type ReviewArtifactImportResultV01 =
 
 export function importReviewArtifactV01Json(
   jsonText: string,
+  options: ReviewResultInspectionOptionsV01 = {},
 ): ReviewArtifactImportResultV01 {
   let parsed: unknown;
 
@@ -79,7 +81,7 @@ export function importReviewArtifactV01Json(
     };
   }
 
-  return importReviewResultArtifactV01Json(jsonText);
+  return importReviewResultArtifactV01Json(jsonText, options);
 }
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
