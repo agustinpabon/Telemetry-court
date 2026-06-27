@@ -3,6 +3,8 @@
 This document describes the compatibility UI model implemented by the static
 validation slice. The approved package and result boundaries are documented in
 `docs/CASE_PACKAGE_CONTRACT.md` and `docs/REVIEW_RESULT_CONTRACT.md`.
+The future evidence-constrained assistance response boundary is documented in
+`docs/AI_ASSISTANCE_RESPONSE_CONTRACT.md`.
 
 The target model must separate:
 

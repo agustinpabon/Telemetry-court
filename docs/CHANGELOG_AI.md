@@ -19,6 +19,58 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-27: Evidence-Constrained AI Response Contract
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #68 only by defining a strict local
+  AI assistance response contract that requires stable evidence IDs and does
+  not add live AI behavior.
+- Files changed:
+  - `lib/aiAssistanceResponseV01.ts`
+  - `lib/aiAssistanceResponseValidationV01.ts`
+  - `lib/aiAssistanceResponseValidationHelpersV01.ts`
+  - `lib/aiAssistanceResponseV01.test.ts`
+  - `docs/AI_ASSISTANCE_RESPONSE_CONTRACT.md`
+  - `docs/DATA_MODEL.md`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Added `ai_assistance_response.v0.1` TypeScript types for future
+    evidence-constrained assistance responses.
+  - Added a strict runtime validator that rejects ungrounded successful
+    answers, requires evidence IDs for substantive findings, validates stable
+    evidence-ID syntax, and checks evidence references against supplied
+    `CasePackageV01` or `ReviewResultV01` context.
+  - Added explicit insufficiency and refusal paths for questions that cannot be
+    grounded in provided evidence.
+  - Added a separate `ai_assistance.generic_chatbot_answer` non-blocking
+    warning namespace without reusing ReviewResult semantic warning codes.
+- Decisions made:
+  - Kept this as contract-only foundation work: no live LLM calls, provider
+    integration, prompt execution, chatbot UI, streaming, persistence, auth,
+    cloud sync, raw telemetry ingestion, SOC triage, alert triage, incident
+    response, or remediation behavior.
+  - Kept `CasePackage`, `ReviewResult`, `EvaluationReport`,
+    `QuickDisposition`, and existing semantic warning behavior unchanged.
+  - Required model and prompt references inside the local response metadata so
+    future artifacts remain evaluable without invoking a provider.
+- Checks run:
+  - `npm test -- lib/aiAssistanceResponseV01.test.ts`
+  - `npm test`
+  - `npx tsc --noEmit`
+  - `npm run lint`
+  - `npm run build`
+  - `git diff --check`
+- Assumptions: Future evidence-assistance questions can be represented by
+  typed question metadata and stable evidence references before any UI or model
+  call exists.
+- Risks/follow-ups: A later issue should wire this contract to any future
+  evidence-assistance question UI or prompt runner without relaxing grounding
+  rules.
+- Next recommended step: Use the contract as the boundary for the next
+  evidence-constrained AI assistance issue after core review workflows need it.
+- Suggested commit message:
+  `feat: define evidence AI response contract`
+
 ## 2026-06-27: Fix Collapsed Metadata Summary Contrast
 
 - Agent/model: Codex (GPT-5)
