@@ -19,6 +19,79 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-27: Fix Collapsed Metadata Summary Contrast
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Fix blocking visual regression in draft PR #199 where the
+  collapsed export metadata value text became unreadable on later workflow
+  steps.
+- Files changed:
+  - `app/investigation-workflow.css`
+  - `app/page.test.ts`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Added an explicit high-specificity workflow ink color for the collapsed
+    local export metadata value span.
+  - Added a focused CSS regression test so the value text cannot fall back to
+    broad legacy masthead span colors.
+- Decisions made:
+  - Kept the collapsed disclosure UX from PR #199.
+  - Did not change `ReviewResult`, exported JSON metadata, reviewer ID
+    validation, review context vocabulary, localStorage key, or persistence.
+  - Did not touch issue #74, issue #191 semantic warnings, auth/accounts,
+    database/cloud persistence, remote sync, or unrelated milestone work.
+- Checks run:
+  - Focused metadata/page tests passed.
+  - Headless computed-color checks passed across Steps 1-8 with value text at
+    `rgb(50, 48, 47)` and opacity `1`.
+- Assumptions: The no-selected-case state does not render the metadata summary,
+  so the contrast regression only applies where the masthead control exists.
+- Risks/follow-ups: None known.
+- Next recommended step: Let PR #199 rerun its full CI after the pushed fix.
+- Suggested commit message:
+  `fix: restore export metadata summary contrast`
+
+## 2026-06-27: Collapse Local Export Metadata Controls
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Create a small UX cleanup PR after PR #198 to reduce masthead
+  visual weight by collapsing local export metadata controls while preserving
+  ReviewResult/export metadata behavior.
+- Files changed:
+  - `components/arena/LocalReviewExportMetadataControl.tsx`
+  - `components/arena/LocalReviewExportMetadataControl.test.tsx`
+  - `app/investigation-workflow.css`
+  - `app/page.test.ts`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Replaced the always-expanded local export metadata form with a compact
+    native disclosure summary in the masthead.
+  - Kept reviewer ID, review context, localStorage persistence, reset, and
+    existing export metadata wiring unchanged.
+  - Styled the expanded controls as a lightweight export-adjacent popover.
+- Decisions made:
+  - Used native `details` / `summary` instead of adding a modal or new UI
+    dependency.
+  - Kept `ReviewResult v0.1`, reviewer ID validation, and review context
+    vocabulary unchanged.
+  - Did not add auth, accounts, profiles, databases, cloud persistence, remote
+    sync, reviewer-test workflows, issue #74 work, or unrelated milestone work.
+- Checks run:
+  - `npm test -- components/arena/LocalReviewExportMetadataControl.test.tsx app/page.test.ts`
+  - `npm test` passed with 326 tests.
+  - `npx tsc --noEmit`
+  - `npm run lint`
+  - `npm run build`
+  - `git diff --check`
+  - Headless browser smoke on desktop and mobile against local dev server.
+- Assumptions: Native disclosure behavior is sufficient for the lightweight
+  edit affordance and matches the existing masthead secondary-menu pattern.
+- Risks/follow-ups: None known.
+- Next recommended step: Review the draft PR visually in the existing local
+  review workflow before merge.
+- Suggested commit message:
+  `fix: collapse local export metadata controls`
+
 ## 2026-06-26: Local Reviewer Identity And Review Context
 
 - Agent/model: Codex (GPT-5)

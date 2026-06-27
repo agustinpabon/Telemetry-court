@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import * as React from "react";
@@ -101,6 +102,13 @@ function renderVerdictPageText(): string {
 
 function renderStaticMarkup(element: React.ReactElement): string {
   return renderToStaticMarkup(element).replace(/\s+/g, " ");
+}
+
+function readInvestigationWorkflowCss(): string {
+  return readFileSync(
+    new URL("./investigation-workflow.css", import.meta.url),
+    "utf8",
+  );
 }
 
 function assertNoMixedVerdictState(markup: string): void {
@@ -264,7 +272,11 @@ test("shared masthead keeps controls in semantic action groups", () => {
   );
   assert.match(
     markup,
-    /class="local-reviewer-metadata-control tc-masthead__action-group"[\s\S]*?Local export metadata[\s\S]*?Local reviewer ID[\s\S]*?Review context/,
+    /class="local-reviewer-metadata-control tc-masthead__secondary-menu"[\s\S]*?<summary[^>]*>[\s\S]*?Export metadata:[\s\S]*?local-demo-reviewer[\s\S]*?Demo \/ local test[\s\S]*?Edit/,
+  );
+  assert.match(
+    markup,
+    /<details class="local-reviewer-metadata-control tc-masthead__secondary-menu"><summary/,
   );
   assert.equal(
     markup.match(/class="tc-masthead__action-row/g)?.length,
@@ -278,6 +290,53 @@ test("shared masthead keeps controls in semantic action groups", () => {
   assert.match(markup, /aria-checked="false"/);
   assert.doesNotMatch(markup, /Polling off/);
 });
+
+test("local export metadata summary value uses explicit readable masthead color", () => {
+  const css = readInvestigationWorkflowCss();
+  const valueRule = css.match(
+    /\.arena-shell \.arena-topbar-actions \.local-reviewer-metadata-summary-values\s*\{([^}]+)\}/,
+  );
+  const valueRuleBody = valueRule?.[1];
+
+  assert.ok(valueRuleBody);
+  assert.match(valueRuleBody, /color:\s*var\(--workflow-ink\)/);
+  assert.doesNotMatch(valueRuleBody, /opacity:/);
+});
+
+test("expanded local export metadata panel uses explicit readable colors and no opacity for text elements", () => {
+  const css = readInvestigationWorkflowCss();
+
+  const panelRule = css.match(
+    /\.arena-shell \.local-reviewer-metadata-panel\s*\{([^}]+)\}/,
+  );
+  assert.ok(panelRule?.[1]);
+  assert.match(panelRule[1], /color:\s*var\(--workflow-ink\)/);
+
+  const titleRule = css.match(
+    /\.arena-shell \.local-reviewer-metadata-panel \.tc-masthead__action-label span\s*\{([^}]+)\}/,
+  );
+  assert.ok(titleRule?.[1]);
+  assert.match(titleRule[1], /color:\s*var\(--workflow-ink\)/);
+
+  const labelRule = css.match(
+    /\.arena-shell \.local-reviewer-metadata-panel \.local-reviewer-metadata-fields label span\s*\{([^}]+)\}/,
+  );
+  assert.ok(labelRule?.[1]);
+  assert.match(labelRule[1], /color:\s*var\(--workflow-muted\)/);
+
+  const helperRule = css.match(
+    /\.arena-shell \.local-reviewer-metadata-panel \.tc-masthead__helper\s*\{([^}]+)\}/,
+  );
+  assert.ok(helperRule?.[1]);
+  assert.match(helperRule[1], /color:\s*var\(--workflow-muted\)/);
+
+  const controlRule = css.match(
+    /\.arena-shell \.local-reviewer-metadata-panel \.local-reviewer-metadata-fields input,\s*[\s\S]*?\.arena-shell \.local-reviewer-metadata-fields select\s*\{([^}]+)\}/,
+  );
+  assert.ok(controlRule?.[1]);
+  assert.match(controlRule[1], /color:\s*var\(--workflow-ink\)/);
+});
+
 
 test("invalid package render state shows sanitized validation errors instead of review UI", () => {
   const invalidPackage = structuredClone(casePackageFixtures[0]) as Record<
