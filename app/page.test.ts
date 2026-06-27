@@ -264,7 +264,11 @@ test("shared masthead keeps controls in semantic action groups", () => {
   );
   assert.match(
     markup,
-    /class="local-reviewer-metadata-control tc-masthead__action-group"[\s\S]*?Local export metadata[\s\S]*?Local reviewer ID[\s\S]*?Review context/,
+    /class="local-reviewer-metadata-control tc-masthead__secondary-menu"[\s\S]*?<summary[^>]*>[\s\S]*?Export metadata:[\s\S]*?local-demo-reviewer[\s\S]*?Demo \/ local test[\s\S]*?Edit/,
+  );
+  assert.match(
+    markup,
+    /<details class="local-reviewer-metadata-control tc-masthead__secondary-menu"><summary/,
   );
   assert.equal(
     markup.match(/class="tc-masthead__action-row/g)?.length,
