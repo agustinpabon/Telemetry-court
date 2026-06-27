@@ -4999,8 +4999,10 @@
   font-weight: 720;
 }
 
-.arena-shell .local-reviewer-metadata-summary-values {
+.arena-shell .arena-topbar-actions .local-reviewer-metadata-summary-values {
+  color: var(--workflow-ink);
   flex: 1 1 auto;
+  font-weight: 680;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;

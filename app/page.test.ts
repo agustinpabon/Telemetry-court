@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import * as React from "react";
@@ -101,6 +102,13 @@ function renderVerdictPageText(): string {
 
 function renderStaticMarkup(element: React.ReactElement): string {
   return renderToStaticMarkup(element).replace(/\s+/g, " ");
+}
+
+function readInvestigationWorkflowCss(): string {
+  return readFileSync(
+    new URL("./investigation-workflow.css", import.meta.url),
+    "utf8",
+  );
 }
 
 function assertNoMixedVerdictState(markup: string): void {
@@ -281,6 +289,18 @@ test("shared masthead keeps controls in semantic action groups", () => {
   assert.match(markup, /role="switch"/);
   assert.match(markup, /aria-checked="false"/);
   assert.doesNotMatch(markup, /Polling off/);
+});
+
+test("local export metadata summary value uses explicit readable masthead color", () => {
+  const css = readInvestigationWorkflowCss();
+  const valueRule = css.match(
+    /\.arena-shell \.arena-topbar-actions \.local-reviewer-metadata-summary-values\s*\{([^}]+)\}/,
+  );
+  const valueRuleBody = valueRule?.[1];
+
+  assert.ok(valueRuleBody);
+  assert.match(valueRuleBody, /color:\s*var\(--workflow-ink\)/);
+  assert.doesNotMatch(valueRuleBody, /opacity:/);
 });
 
 test("invalid package render state shows sanitized validation errors instead of review UI", () => {

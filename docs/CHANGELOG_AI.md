@@ -19,6 +19,38 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-27: Fix Collapsed Metadata Summary Contrast
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Fix blocking visual regression in draft PR #199 where the
+  collapsed export metadata value text became unreadable on later workflow
+  steps.
+- Files changed:
+  - `app/investigation-workflow.css`
+  - `app/page.test.ts`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Added an explicit high-specificity workflow ink color for the collapsed
+    local export metadata value span.
+  - Added a focused CSS regression test so the value text cannot fall back to
+    broad legacy masthead span colors.
+- Decisions made:
+  - Kept the collapsed disclosure UX from PR #199.
+  - Did not change `ReviewResult`, exported JSON metadata, reviewer ID
+    validation, review context vocabulary, localStorage key, or persistence.
+  - Did not touch issue #74, issue #191 semantic warnings, auth/accounts,
+    database/cloud persistence, remote sync, or unrelated milestone work.
+- Checks run:
+  - Focused metadata/page tests passed.
+  - Headless computed-color checks passed across Steps 1-8 with value text at
+    `rgb(50, 48, 47)` and opacity `1`.
+- Assumptions: The no-selected-case state does not render the metadata summary,
+  so the contrast regression only applies where the masthead control exists.
+- Risks/follow-ups: None known.
+- Next recommended step: Let PR #199 rerun its full CI after the pushed fix.
+- Suggested commit message:
+  `fix: restore export metadata summary contrast`
+
 ## 2026-06-27: Collapse Local Export Metadata Controls
 
 - Agent/model: Codex (GPT-5)
