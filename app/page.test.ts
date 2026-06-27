@@ -303,6 +303,41 @@ test("local export metadata summary value uses explicit readable masthead color"
   assert.doesNotMatch(valueRuleBody, /opacity:/);
 });
 
+test("expanded local export metadata panel uses explicit readable colors and no opacity for text elements", () => {
+  const css = readInvestigationWorkflowCss();
+
+  const panelRule = css.match(
+    /\.arena-shell \.local-reviewer-metadata-panel\s*\{([^}]+)\}/,
+  );
+  assert.ok(panelRule?.[1]);
+  assert.match(panelRule[1], /color:\s*var\(--workflow-ink\)/);
+
+  const titleRule = css.match(
+    /\.arena-shell \.local-reviewer-metadata-panel \.tc-masthead__action-label span\s*\{([^}]+)\}/,
+  );
+  assert.ok(titleRule?.[1]);
+  assert.match(titleRule[1], /color:\s*var\(--workflow-ink\)/);
+
+  const labelRule = css.match(
+    /\.arena-shell \.local-reviewer-metadata-panel \.local-reviewer-metadata-fields label span\s*\{([^}]+)\}/,
+  );
+  assert.ok(labelRule?.[1]);
+  assert.match(labelRule[1], /color:\s*var\(--workflow-muted\)/);
+
+  const helperRule = css.match(
+    /\.arena-shell \.local-reviewer-metadata-panel \.tc-masthead__helper\s*\{([^}]+)\}/,
+  );
+  assert.ok(helperRule?.[1]);
+  assert.match(helperRule[1], /color:\s*var\(--workflow-muted\)/);
+
+  const controlRule = css.match(
+    /\.arena-shell \.local-reviewer-metadata-panel \.local-reviewer-metadata-fields input,\s*[\s\S]*?\.arena-shell \.local-reviewer-metadata-fields select\s*\{([^}]+)\}/,
+  );
+  assert.ok(controlRule?.[1]);
+  assert.match(controlRule[1], /color:\s*var\(--workflow-ink\)/);
+});
+
+
 test("invalid package render state shows sanitized validation errors instead of review UI", () => {
   const invalidPackage = structuredClone(casePackageFixtures[0]) as Record<
     string,
