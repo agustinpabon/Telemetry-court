@@ -12,6 +12,7 @@ import {
   type CasePackageRecommendedActionV01,
   type CasePackageVerdictV01,
 } from "@/lib/types";
+import { assertSupportedReviewerContextV01 } from "@/lib/reviewerIdentityV01";
 
 export const EVALUATION_REPORT_V01_SCHEMA_VERSION =
   "evaluation_report.v0.1" as const;
@@ -605,14 +606,10 @@ function assertRequiredMetadata(reviewResult: ReviewResultV01) {
     "review session ID",
   );
 
-  if (
-    reviewResult.reviewer.context !== "synthetic_demo" &&
-    reviewResult.reviewer.context !== "local_review"
-  ) {
-    throw new Error(
-      `Cannot aggregate EvaluationReport v0.1 with unsupported reviewer context "${reviewResult.reviewer.context}".`,
-    );
-  }
+  assertSupportedReviewerContextV01(
+    reviewResult.reviewer.context,
+    "aggregate EvaluationReport v0.1",
+  );
 
   if (!reviewResult.protocol) {
     throw new Error(

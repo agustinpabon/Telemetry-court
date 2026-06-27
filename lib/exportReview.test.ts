@@ -13,6 +13,8 @@ import {
   REVIEW_RESULT_V01_RECOMMENDED_ACTIONS,
   REVIEW_RESULT_V01_VERDICTS,
 } from "@/lib/reviewResultV01";
+import { aggregateReviewResultsV01 } from "@/lib/evaluationReportV01";
+import { createLocalReviewerIdentityV01 } from "@/lib/reviewerIdentityV01";
 import { validateReviewResultV01 } from "@/lib/reviewResultValidationV01";
 import type { CaseFile, FinalVerdict } from "@/lib/types";
 
@@ -158,6 +160,74 @@ test("review result export fails loudly for missing package metadata or decision
       }),
     /unsupported final verdict/,
   );
+});
+
+test("review result export accepts configurable local reviewer metadata", () => {
+  const caseFile = sampleCases[0];
+  const packageReference = caseFile.casePackageReference;
+  assert.ok(packageReference);
+
+  const reviewer = createLocalReviewerIdentityV01({
+    packageId: packageReference.package_id,
+    caseId: packageReference.case_id,
+    reviewerId: "pilot-reviewer-a",
+    context: "pilot_reviewer",
+  });
+  const exportResult = buildReviewResultExport({
+    caseFile,
+    exportTimestamp: "2026-06-12T12:00:00.000Z",
+    arenaReview: completeArenaReview(caseFile),
+    reviewer,
+  });
+
+  assert.deepEqual(exportResult.reviewer, {
+    reviewer_id: "pilot-reviewer-a",
+    review_session_id:
+      "pkg-synthetic-arena-001:case-arena-001:pilot-reviewer-a:local-session",
+    context: "pilot_reviewer",
+  });
+  assert.equal(
+    exportResult.review_id,
+    "review:pkg-synthetic-arena-001:pilot-reviewer-a:pkg-synthetic-arena-001:case-arena-001:pilot-reviewer-a:local-session:2026-06-12T12:00:00.000Z",
+  );
+  assert.deepEqual(validateReviewResultV01(exportResult), {
+    ok: true,
+    reviewResult: exportResult,
+  });
+});
+
+test("ReviewResult validation and aggregation accept legacy reviewer metadata without context", () => {
+  const caseFile = sampleCases[0];
+  const exportTimestamp = "2026-06-12T12:00:00.000Z";
+  const currentReview = buildReviewResultExport({
+    caseFile,
+    exportTimestamp,
+    arenaReview: completeArenaReview(caseFile),
+  });
+  const legacyReview = {
+    ...currentReview,
+    review_id: [
+      "review",
+      currentReview.case_package.package_id,
+      "legacy-reviewer",
+      "legacy-session",
+      exportTimestamp,
+    ].join(":"),
+    reviewer: {
+      reviewer_id: "legacy-reviewer",
+      review_session_id: "legacy-session",
+    },
+  };
+  const validation = validateReviewResultV01(legacyReview);
+
+  assert.equal(validation.ok, true);
+  if (!validation.ok) {
+    return;
+  }
+
+  const report = aggregateReviewResultsV01([validation.reviewResult]);
+  assert.equal(report.reviewer_count, 1);
+  assert.deepEqual(report.source_review_ids, [legacyReview.review_id]);
 });
 
 test("review result export rejects incomplete required decisions", () => {

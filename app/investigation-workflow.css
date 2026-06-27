@@ -4975,6 +4975,63 @@
   min-width: min(100%, 244px);
 }
 
+.arena-shell .local-reviewer-metadata-control {
+  flex: 0 1 382px;
+  gap: 5px;
+  grid-template-rows: none;
+  max-width: 382px;
+  min-width: min(100%, 316px);
+}
+
+.arena-shell .local-reviewer-metadata-control .tc-masthead__action-label,
+.arena-shell .local-reviewer-metadata-control .tc-masthead__helper,
+.arena-shell .local-reviewer-metadata-control .tc-masthead__action-row {
+  grid-row: auto;
+}
+
+.arena-shell .local-reviewer-metadata-fields {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: minmax(142px, 1fr) minmax(144px, 1fr);
+  min-width: 0;
+  width: 100%;
+}
+
+.arena-shell .local-reviewer-metadata-fields label {
+  color: var(--workflow-muted);
+  display: grid;
+  font-size: 10px;
+  font-weight: 720;
+  gap: 3px;
+  line-height: 1.15;
+  min-width: 0;
+}
+
+.arena-shell .local-reviewer-metadata-fields input,
+.arena-shell .local-reviewer-metadata-fields select {
+  background: var(--workflow-surface);
+  border: 1px solid var(--workflow-border);
+  border-radius: 10px;
+  box-sizing: border-box;
+  color: var(--workflow-ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 680;
+  height: 34px;
+  min-width: 0;
+  padding: 0 10px;
+  width: 100%;
+}
+
+.arena-shell .local-reviewer-metadata-fields select {
+  appearance: auto;
+}
+
+.arena-shell .local-reviewer-metadata-control .tc-masthead__action-row {
+  height: auto;
+  min-height: 0;
+}
+
 .arena-shell .tc-masthead__action-label,
 .arena-shell .tc-masthead__actions .tc-masthead__group-label {
   color: var(--workflow-ink);
@@ -5226,6 +5283,8 @@
 .arena-shell .tc-masthead__button-row .arena-header-link:focus-visible,
 .arena-shell .tc-masthead__action-row button:focus-visible,
 .arena-shell .tc-masthead__action-row .arena-header-link:focus-visible,
+.arena-shell .local-reviewer-metadata-fields input:focus-visible,
+.arena-shell .local-reviewer-metadata-fields select:focus-visible,
 .arena-shell .tc-masthead__secondary-menu summary:focus-visible,
 .arena-shell .review-result-bundle-panel button:focus-visible {
   outline: 3px solid rgba(95, 111, 82, 0.3);
@@ -9517,6 +9576,16 @@
   .arena-shell .tc-masthead__action-group--review,
   .arena-shell .tc-masthead__action-group--hot-folder {
     max-width: none;
+  }
+
+  .arena-shell .local-reviewer-metadata-control {
+    grid-template-rows: none;
+    max-width: none;
+    width: 100%;
+  }
+
+  .arena-shell .local-reviewer-metadata-fields {
+    grid-template-columns: 1fr;
   }
 
   .arena-shell .tc-masthead__secondary-menu {

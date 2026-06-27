@@ -19,6 +19,56 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-26: Local Reviewer Identity And Review Context
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #192 only, starting from
+  `abbc41a5ca0e3f12d408d0530d5799f7f10e749c`, without touching issue #74,
+  forbidden local fixture/notebook paths, or unrelated milestone work.
+- Files changed:
+  - `lib/reviewerIdentityV01.ts`
+  - `lib/reviewerIdentityV01.test.ts`
+  - `lib/reviewResultV01.ts`
+  - `lib/reviewResultValidationV01.ts`
+  - `lib/reviewSessionV01.ts`
+  - `lib/evaluationReportV01.ts`
+  - `lib/exportReview.test.ts`
+  - `lib/quickDispositionV01.ts`
+  - `components/arena/AppShell.tsx`
+  - `components/arena/LocalReviewExportMetadataControl.tsx`
+  - `components/arena/LocalReviewExportMetadataControl.test.tsx`
+  - `app/investigation-workflow.css`
+  - `app/page.test.ts`
+  - `docs/REVIEW_RESULT_CONTRACT.md`
+  - `docs/EVALUATION_INFRASTRUCTURE.md`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Added a browser-local export metadata control for `Local reviewer ID` and
+    `Review context`.
+  - Added approved ReviewResult reviewer contexts for synthetic demo, local
+    review, pilot reviewer, and expert walkthrough exports.
+  - Kept default exports on `local-demo-reviewer` / `synthetic_demo`.
+  - Reused the same local metadata for quick disposition exports.
+- Decisions made:
+  - Kept `review_result.v0.1` unchanged and made `reviewer.context` optional
+    for imported or stored legacy artifacts while still emitted on new exports.
+  - Restricted configurable local reviewer IDs to portable non-sensitive
+    identifier characters and local browser storage.
+  - Did not add auth, accounts, profiles, permissions, databases, cloud
+    persistence, remote sync, SOC triage, raw telemetry ingestion, or real
+    ACME4/Toponymy execution.
+- Checks run:
+  - Focused reviewer identity, export, validation, session, storage, bundle,
+    import, quick disposition, CLI, and UI tests passed with 69 tests.
+- Assumptions: Reviewer IDs are local non-sensitive study identifiers supplied
+  by the user or pilot protocol, not personal or credential-bearing identity.
+- Risks/follow-ups: A future pilot workflow may want a roster/checklist outside
+  the app, but that remains separate from ReviewResult export metadata.
+- Next recommended step: Use the metadata control in a local pilot walkthrough
+  to confirm the context labels match the reviewer protocol.
+- Suggested commit message:
+  `feat: add local reviewer export metadata`
+
 ## 2026-06-26: Non-Blocking ReviewResult Semantic Warnings
 
 - Agent/model: Codex (GPT-5)
