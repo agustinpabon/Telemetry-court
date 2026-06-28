@@ -103,6 +103,48 @@ signal. `question-assistance-unavailable-v01` may optionally include the target
 question ID or unavailable reason when explaining why no substantive answer is
 allowed.
 
+## Question Request Guardrails
+
+Issue #71 adds a deterministic request guardrail helper that must sit in front
+of any future AI assistance UI, fixture runner, prompt runner, or provider
+integration:
+
+```ts
+import { guardAiAssistanceQuestionRequestV01 } from "@/lib/aiAssistanceQuestionGuardrailsV01";
+```
+
+The helper accepts only a structured `question_id` plus explicit references
+such as `claim_id`, `evidence_id`, or `label_id`. It validates that the question
+is in `AI_ASSISTANCE_QUESTION_SET_V01`, that the supplied `CasePackageV01`
+validates, that required references are present, and that referenced claim,
+evidence, and label IDs exist in the supplied package.
+
+The helper returns only bounded states:
+
+- `allowed` for a predefined question with valid package context and required
+  references;
+- `unavailable` for unsupported question IDs, missing valid package context,
+  missing required references, or unknown package references;
+- `refused` for free-form prompts, chatbot-style message envelopes, generic
+  cybersecurity advice, SOC or alert triage, remediation, operational
+  investigation, raw telemetry lookup, external lookup, or any request outside
+  the CasePackage evidence boundary.
+
+Blocked helper results use stable reason codes including
+`unsupported_question_id`, `missing_valid_case_package`,
+`missing_required_reference`, `unknown_claim_id`, `unknown_evidence_id`,
+`unknown_label_id`, `outside_case_scope`, `freeform_prompt_disallowed`,
+`generic_chatbot_request_disallowed`, `operational_action_disallowed`, and
+`external_lookup_disallowed`. When a response artifact is ever needed, these
+states map back to the existing `answer.status: "refused"` path and existing
+response refusal reasons rather than creating a parallel chatbot schema.
+
+Future UI must expose fixed question buttons, menus, or selectors derived from
+`AI_ASSISTANCE_QUESTION_SET_V01`. It must not render a blank chatbot prompt box,
+arbitrary text submission field, chat history, or "ask anything" affordance.
+Assistance metadata may be recorded when assistance is used, but this guardrail
+does not change `ReviewResult` storage or `EvaluationReport` aggregation.
+
 ## Availability Rules
 
 AI assistance must remain unavailable when:

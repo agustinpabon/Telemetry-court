@@ -19,6 +19,59 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-28: AI Assistance Question Guardrails
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #71 only by adding deterministic
+  guardrails that prevent future AI assistance from behaving like a generic
+  chatbot.
+- Files changed:
+  - `lib/aiAssistanceQuestionGuardrailsV01.ts`
+  - `lib/aiAssistanceQuestionGuardrailsV01.test.ts`
+  - `docs/AI_ASSISTANCE_RESPONSE_CONTRACT.md`
+  - `docs/PRODUCT_DECISIONS.md`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Added a pure guardrail helper that accepts only fixed
+    `AI_ASSISTANCE_QUESTION_SET_V01` question IDs plus explicit references.
+  - The helper validates the supplied `CasePackageV01`, required references,
+    and known claim, evidence, and label IDs before returning `allowed`.
+  - Unsupported IDs, missing package context, missing references, and unknown
+    references return bounded `unavailable` results with stable reason codes.
+  - Free-form prompts, chat message envelopes, generic cybersecurity advice,
+    SOC or alert triage, remediation, operational investigation, raw telemetry
+    lookup, external lookup, and out-of-scope request fields return bounded
+    `refused` results.
+- Decisions made:
+  - Reused the existing AI assistance `answer.status: "refused"` path and
+    existing refusal reasons for blocked helper metadata instead of creating a
+    parallel chatbot response schema.
+  - Kept this as guardrail-only work: no UI, live AI calls, prompt execution,
+    provider integration, streaming, persistence, auth, database/cloud sync,
+    raw telemetry ingestion, Toponymy/ACME4 execution, EvaluationReport
+    aggregation changes, or reviewer-pilot work.
+  - Documented that future UI must expose fixed question buttons, menus, or
+    selectors only, never a blank chatbot prompt box or arbitrary text
+    submission.
+- Checks run:
+  - `npm test -- lib/aiAssistanceQuestionGuardrailsV01.test.ts`
+  - `npm test -- lib/aiAssistanceQuestionSetV01.test.ts lib/aiAssistanceQuestionGuardrailsV01.test.ts`
+  - `npm test`
+  - `npx tsc --noEmit`
+  - `npm run lint`
+  - `npm run build`
+- Assumptions: Future AI assistance callers can pass a validated package
+  context separately from the structured request and can derive allowed
+  question affordances from `AI_ASSISTANCE_QUESTION_SET_V01`.
+- Risks/follow-ups: A later UI or execution issue must call this helper at the
+  selection boundary before using fixtures, prompt runners, providers, or
+  stored assistance metadata.
+- Next recommended step: Keep AI assistance hidden or unavailable until a
+  separate scoped issue wires fixed question affordances to deterministic mocks
+  or a future evidence-constrained execution path.
+- Suggested commit message:
+  `feat: add AI assistance question guardrails`
+
 ## 2026-06-28: Evidence-Constrained AI Question Set
 
 - Agent/model: Codex (GPT-5)
