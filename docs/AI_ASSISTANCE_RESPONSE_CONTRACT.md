@@ -142,6 +142,37 @@ The first warning is `ai_assistance.generic_chatbot_answer`, which flags
 generic chatbot-style summary copy while preserving the response as valid when
 the findings are still grounded.
 
+## Deterministic Claim Critic Report
+
+Issue #70 adds a deterministic verifier helper on top of the existing response
+contract:
+
+```ts
+import { createAiAssistanceClaimCriticReportV01 } from "@/lib/aiAssistanceClaimCriticV01";
+```
+
+The helper accepts an `AiAssistanceResponseV01` plus a `CasePackageV01`
+validation context. It first runs `validateAiAssistanceResponseV01`, then
+returns a stable `ai_assistance_claim_critic.v0.1` report containing:
+
+- validator errors and warnings, including generic-chatbot warnings;
+- answer-path assessment for grounded answers, insufficient evidence, and
+  refusals;
+- sorted claim IDs referenced by findings;
+- sorted evidence IDs cited by the answer and findings;
+- support counts for `supports`, `weak_support`, `contradicts`,
+  `insufficient`, and `needs_more_context`;
+- per-claim coverage summaries with stable claim IDs, finding IDs, evidence
+  IDs, support counts, and uncertainty levels;
+- missing, unsupported, unknown-claim, and unknown-evidence ID summaries;
+- critique items keyed to stable claim IDs, evidence IDs, finding IDs,
+  warning codes, or validator error codes where applicable.
+
+This report is deterministic verifier metadata for inspection and future
+evaluation-report metadata. It is not live AI output, not prompt execution, not
+a chatbot interface, not a final human verdict, and not an automated label
+adjudication. It does not change `EvaluationReportV01` aggregation.
+
 ## Deterministic Mock Fixtures
 
 Deterministic synthetic examples live in:

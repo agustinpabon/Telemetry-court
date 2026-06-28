@@ -19,6 +19,51 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-28: AI Assistance Claim Critic Verifier
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #70 only by adding deterministic
+  validator/verifier helpers and focused tests for claim grounding on top of
+  `ai_assistance_response.v0.1`.
+- Files changed:
+  - `lib/aiAssistanceClaimCriticV01.ts`
+  - `lib/aiAssistanceClaimCriticV01.test.ts`
+  - `docs/AI_ASSISTANCE_RESPONSE_CONTRACT.md`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Added a pure `createAiAssistanceClaimCriticReportV01` helper that runs the
+    existing response validator with `CasePackageV01` context and returns a
+    stable `ai_assistance_claim_critic.v0.1` report.
+  - The report summarizes cited evidence IDs, referenced claim IDs, support
+    counts, per-claim coverage, missing or unsupported claims, unknown
+    claim/evidence references, answer-path grounding, warnings, and stable
+    critique items.
+  - Added focused tests for grounded responses, weak support, contradiction,
+    insufficient evidence, refusal, missing coverage, unknown references,
+    generic-chatbot validator warnings/rejection, and keeping the invalid
+    validator-only fixture out of the normal valid fixture list.
+- Decisions made:
+  - Reused the existing `ai_assistance_response.v0.1` contract and validator
+    without creating a parallel chatbot schema.
+  - Kept the helper deterministic and local so it can feed later evaluation
+    metadata without changing `EvaluationReportV01` aggregation.
+  - Did not add UI, live AI calls, prompt execution, chatbot behavior,
+    streaming, persistence, auth, database/cloud sync, SOC or alert triage,
+    incident response, remediation, raw telemetry ingestion, Toponymy/ACME4
+    execution, or reviewer-pilot work.
+- Checks run:
+  - `npm test -- lib/aiAssistanceClaimCriticV01.test.ts`
+  - `npx tsc --noEmit`
+  - `npm run lint`
+- Assumptions: The existing minimal synthetic `CasePackageV01` fixture remains
+  the correct deterministic context for AI assistance verifier tests.
+- Risks/follow-ups: Future EvaluationReport metadata can consume this helper
+  output, but any aggregation change should be a separate scoped issue.
+- Next recommended step: Use the verifier output only as inspection metadata
+  until an EvaluationReport metadata issue explicitly consumes it.
+- Suggested commit message:
+  `feat: add AI assistance claim critic verifier`
+
 ## 2026-06-27: Mocked Evidence-Constrained AI Responses
 
 - Agent/model: Codex (GPT-5)
