@@ -2,6 +2,29 @@
 
 This is the initial decision log for Telemetry Court. Add new entries when product direction, architecture, or evidence-model assumptions change.
 
+## 2026-06-28: AI Assistance Uses Fixed Cross-Examination Questions
+
+Decision: Evidence-constrained AI assistance may only answer a predefined
+question set focused on claim support, evidence sufficiency, contradiction,
+uncertainty, missing evidence, overclaim detection, cluster impurity, and
+unavailable/refusal behavior.
+
+Rationale: AI assistance should help reviewers cross-examine a `CasePackage`
+without turning Telemetry Court into a generic chatbot, SOC triage surface, raw
+telemetry investigation tool, or remediation assistant.
+
+Consequences:
+
+- Future assistance affordances must select from
+  `AI_ASSISTANCE_QUESTION_SET_V01` rather than accept arbitrary reviewer text.
+- Substantive successful answers must remain grounded in stable evidence IDs.
+- In-scope questions with inadequate package evidence use
+  `insufficient_evidence`; out-of-scope or unsupported requests use `refused`
+  or remain unavailable before a response is generated.
+- This does not add UI, live AI calls, prompt execution, provider integration,
+  persistence, raw telemetry ingestion, Toponymy/ACME4 execution, or
+  EvaluationReport aggregation changes.
+
 ## 2026-06-21: Utility Gate Comes Before AI Assistance
 
 Decision: A feature is useful only if it helps produce or improve an auditable
