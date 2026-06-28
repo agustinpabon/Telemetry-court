@@ -2,6 +2,36 @@
 
 This is the initial decision log for Telemetry Court. Add new entries when product direction, architecture, or evidence-model assumptions change.
 
+## 2026-06-28: AI Assistance Requests Pass Deterministic Guardrails
+
+Decision: Any future AI assistance request must pass a deterministic guardrail
+helper before it can produce or retrieve assistance output. The helper accepts
+only fixed `AI_ASSISTANCE_QUESTION_SET_V01` question IDs plus explicit
+CasePackage references and returns bounded `allowed`, `unavailable`, or
+`refused` states with stable reason codes.
+
+Rationale: The product boundary rejects chat-first workflows, generic
+cybersecurity advice, SOC or alert triage, remediation, operational
+investigation, raw telemetry lookup, and external lookup behavior. A reusable
+guardrail layer makes the safe path easy for future code and makes generic
+chatbot behavior a deliberate bypass rather than an accidental default.
+
+Consequences:
+
+- Future UI must show fixed evidence-question buttons, menus, or selectors and
+  must not include a blank chatbot prompt box or arbitrary prompt submission.
+- Unsupported, missing-context, unknown-reference, free-form, generic chatbot,
+  operational, and external-lookup requests produce bounded unavailable or
+  refused states before any response artifact or model execution exists.
+- The helper reuses the existing AI assistance refused answer path when a
+  response artifact is needed; it does not create a parallel chatbot schema.
+- Assistance remains secondary to structured human review. Metadata can be
+  recorded when assistance is used, but this decision does not change
+  `EvaluationReport` aggregation.
+- This does not add UI, live AI calls, prompt execution, provider integration,
+  persistence, raw telemetry ingestion, Toponymy/ACME4 execution, SOC triage,
+  alert triage, incident response, remediation, or reviewer-pilot work.
+
 ## 2026-06-28: AI Assistance Uses Fixed Cross-Examination Questions
 
 Decision: Evidence-constrained AI assistance may only answer a predefined
