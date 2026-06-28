@@ -142,6 +142,26 @@ The first warning is `ai_assistance.generic_chatbot_answer`, which flags
 generic chatbot-style summary copy while preserving the response as valid when
 the findings are still grounded.
 
+## Deterministic Mock Fixtures
+
+Deterministic synthetic examples live in:
+
+```ts
+import { mockAiAssistanceResponseV01Fixtures } from "@/lib/aiAssistanceResponseV01Fixtures";
+```
+
+These mocks conform to `ai_assistance_response.v0.1` and validate against the
+existing synthetic `CasePackageV01` fixture. They cover grounded answered
+output, explicit insufficient-evidence output, and refused out-of-scope output.
+
+The mocks are not live AI output, not prompt execution, not pilot evidence, and
+not evidence that Telemetry Court has run a real model or reviewer study. They
+exist only to support future UI, verifier, and contract tests without network
+calls or provider integration.
+
+A deliberately invalid generic-chatbot-style sample is exported separately with
+a validator-test-only name. Do not use it as a product fixture or UI demo.
+
 ## Contract Separation
 
 `AiAssistanceResponseV01` is not a `CasePackage`, `ReviewResult`, or

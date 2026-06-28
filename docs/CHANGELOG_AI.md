@@ -19,6 +19,52 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-27: Mocked Evidence-Constrained AI Responses
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #69 only by adding deterministic mocked
+  AI assistance responses that conform to `ai_assistance_response.v0.1` without
+  adding live AI behavior.
+- Files changed:
+  - `lib/aiAssistanceResponseV01Fixtures.ts`
+  - `lib/aiAssistanceResponseV01Fixtures.test.ts`
+  - `docs/AI_ASSISTANCE_RESPONSE_CONTRACT.md`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Added synthetic, deterministic AI assistance response fixtures for a
+    grounded answered response, an explicit insufficient-evidence response, and
+    an out-of-scope refusal response.
+  - Added a clearly named invalid generic-chatbot-like sample for validator
+    tests only.
+  - Valid mocks cite existing synthetic CasePackage evidence IDs where they
+    make grounded claims and omit evidence IDs only on explicit insufficiency
+    or refusal paths.
+- Decisions made:
+  - Reused the existing `ai_assistance_response.v0.1` contract and validator
+    from issue #68 without changing the contract.
+  - Kept all examples synthetic and local; they are not live AI output, prompt
+    execution, pilot evidence, reviewer-agreement work, or model results.
+  - Did not add live LLM calls, provider/API integration, chatbot UI,
+    streaming, backend persistence, auth/accounts, cloud sync, raw telemetry
+    ingestion, SOC triage, alert triage, incident response, or remediation
+    actions.
+- Checks run:
+  - `npm test -- lib/aiAssistanceResponseV01Fixtures.test.ts lib/aiAssistanceResponseV01.test.ts`
+  - `npm test`
+  - `npx tsc --noEmit`
+  - `npm run lint`
+  - `npm run build`
+  - `git diff --check`
+- Assumptions: The existing minimal synthetic CasePackage fixture is the right
+  context for reusable mock AI assistance examples because it includes valid
+  evidence, claim, and label IDs.
+- Risks/follow-ups: Future UI work should import only the valid fixture list and
+  keep the validator-test-only invalid sample out of product demo flows.
+- Next recommended step: Use these mocks in a later UI/verifier issue without
+  relaxing evidence-ID grounding.
+- Suggested commit message:
+  `feat: add mocked evidence AI responses`
+
 ## 2026-06-27: Evidence-Constrained AI Response Contract
 
 - Agent/model: Codex (GPT-5)
