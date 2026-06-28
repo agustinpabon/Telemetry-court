@@ -19,6 +19,58 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-28: Synthetic EvaluationReport Examples
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #76 only by adding honest
+  synthetic/sanitized EvaluationReport examples without touching
+  `public/fixtures/` or introducing pilot claims.
+- Files changed:
+  - `lib/evaluationReportV01Examples.ts`
+  - `lib/evaluationReportV01Examples.test.ts`
+  - `docs/EVALUATION_REPORT_EXAMPLES.md`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Added a deterministic `EvaluationReport v0.1` example artifact generated
+    from the existing synthetic `CasePackage v0.1` fixture and two synthetic
+    `ReviewResult v0.1` source artifacts.
+  - The example demonstrates traceability from report to source review IDs and
+    compact CasePackage metadata while preserving access to the source
+    CasePackage and ReviewResults in the exported TypeScript artifact.
+  - The report surfaces synthetic overclaim, evidence insufficiency, disputed
+    evidence, selected-label disagreement, and split-recommendation signals.
+  - Added documentation that states the example is synthetic/sanitized demo
+    data and does not claim live reviewer pilots, real analyst agreement,
+    restricted telemetry, or operational performance.
+- Decisions made:
+  - Kept the actual `EvaluationReportV01` object schema-clean and placed demo
+    metadata, source artifacts, intended uses, and limitations beside it in a
+    typed example wrapper.
+  - Reused the existing `minimalSyntheticCasePackageV01` and
+    `aggregateReviewResultsV01` boundary instead of adding loose JSON files or
+    a new fixture directory.
+  - Did not add UI, live AI calls, prompt execution, chatbot behavior,
+    streaming, persistence, auth, database/cloud sync, raw telemetry ingestion,
+    SOC or alert triage, incident response, remediation, external lookup,
+    Toponymy/ACME4 execution, or reviewer-pilot work.
+- Checks run:
+  - `npm test -- lib/evaluationReportV01Examples.test.ts`
+  - `npm test`
+  - `npx tsc --noEmit`
+  - `npm run lint`
+  - `npm run build`
+  - `git diff --check`
+  - `git diff --cached --check`
+- Assumptions: The existing minimal synthetic CasePackage remains the safest
+  traceable source context for public demo EvaluationReport examples.
+- Risks/follow-ups: Future real or realistic pilot artifacts must be created
+  under an approved study protocol and must not reuse this synthetic example as
+  validation evidence.
+- Next recommended step: Use the example for contract demos and presentations
+  only until approved reviewer-pilot ReviewResults exist.
+- Suggested commit message:
+  `feat: add synthetic evaluation report examples`
+
 ## 2026-06-28: AI Assistance Question Guardrails
 
 - Agent/model: Codex (GPT-5)
