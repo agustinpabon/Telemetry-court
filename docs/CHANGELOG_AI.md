@@ -19,6 +19,57 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-06-28: Evidence-Constrained AI Question Set
+
+- Agent/model: Codex (GPT-5)
+- Prompt scope: Implement GitHub issue #67 only by defining the fixed,
+  evidence-constrained AI assistance question set reviewers may use to
+  cross-examine CasePackage claims and evidence.
+- Files changed:
+  - `lib/aiAssistanceQuestionSetV01.ts`
+  - `lib/aiAssistanceQuestionSetV01.test.ts`
+  - `docs/AI_ASSISTANCE_RESPONSE_CONTRACT.md`
+  - `docs/PRODUCT_DECISIONS.md`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Added `ai_assistance_question_set.v0.1`, a deterministic fixed set of
+    eight predefined questions for claim support, evidence sufficiency,
+    contradiction, uncertainty, missing evidence, overclaim detection, cluster
+    impurity, and unavailable/refusal behavior.
+  - Added focused tests proving the question IDs and text are stable, each
+    question declares required references and expected answer statuses, the set
+    avoids free-form chatbot wording, and disallowed examples remain refused.
+  - Documented the question set, required input references, answer status
+    expectations, unavailability rules, and examples of disallowed generic
+    chatbot or operational questions.
+- Decisions made:
+  - Included a small contract-level helper because the fixed question set is a
+    reusable boundary for future mocks, prompt runners, and response metadata.
+  - Kept the existing `ai_assistance_response.v0.1` response contract and
+    deterministic claim critic/verifier intact.
+  - Did not add UI, live AI calls, prompt execution, chatbot behavior,
+    streaming, persistence, auth, database/cloud sync, SOC or alert triage,
+    incident response, remediation, raw telemetry ingestion, Toponymy/ACME4
+    execution, EvaluationReport aggregation changes, or reviewer-pilot work.
+- Checks run:
+  - `npm test -- lib/aiAssistanceQuestionSetV01.test.ts`
+  - `npm test`
+  - `npx tsc --noEmit`
+  - `npm run lint`
+  - `npm run build`
+  - `git diff --check`
+  - `git diff --cached --check`
+- Assumptions: Future AI assistance entry points can choose from stable
+  question IDs before any UI, prompt runner, or provider integration exists.
+- Risks/follow-ups: A later UI or execution issue should enforce these
+  question IDs at the selection boundary and may update mocked responses to use
+  the allowed question metadata directly.
+- Next recommended step: Keep AI assistance unavailable in product UI until a
+  separate scoped issue explicitly wires these fixed questions to deterministic
+  mocks or a future evidence-constrained execution path.
+- Suggested commit message:
+  `feat: define AI assistance question set`
+
 ## 2026-06-28: AI Assistance Claim Critic Verifier
 
 - Agent/model: Codex (GPT-5)

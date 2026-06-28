@@ -62,6 +62,83 @@ The validator accepts `unknown` input and returns a typed result. It can also
 validate evidence references against a supplied `CasePackageV01` or
 `ReviewResultV01` context.
 
+## Fixed Cross-Examination Question Set
+
+Issue #67 defines the only predefined questions that future AI assistance may
+answer. The question set is local, deterministic, and evidence-review oriented:
+
+```ts
+import {
+  AI_ASSISTANCE_QUESTION_SET_V01,
+  toAiAssistanceResponseQuestionV01,
+} from "@/lib/aiAssistanceQuestionSetV01";
+```
+
+The question set version is:
+
+```text
+ai_assistance_question_set.v0.1
+```
+
+The response contract remains `ai_assistance_response.v0.1`. Each selected
+question maps into the response `question` object through `question_id`,
+`question_type`, and `text`. Future UI, fixture, or prompt-runner code must
+choose from this fixed set rather than accepting arbitrary user-entered
+questions.
+
+| Question ID | Question | Inspecting | Required references | Expected answer status |
+| --- | --- | --- | --- | --- |
+| `question-claim-supporting-evidence-v01` | Which evidence items support this claim? | claim support, evidence sufficiency | `case_package`, `claim_id` | `answered` or `insufficient_evidence` |
+| `question-evidence-supported-claim-v01` | Which claim is best supported by this evidence? | claim support, evidence sufficiency, uncertainty | `case_package`, `evidence_id` | `answered` or `insufficient_evidence` |
+| `question-claim-weak-evidence-v01` | What evidence is weak, indirect, or insufficient for this claim? | evidence sufficiency, uncertainty, missing evidence | `case_package`, `claim_id` | `answered` or `insufficient_evidence` |
+| `question-claim-missing-context-v01` | What missing context would be needed to judge this claim? | missing evidence, uncertainty, evidence sufficiency | `case_package`, `claim_id` | `answered` or `insufficient_evidence` |
+| `question-claim-contradiction-v01` | Does any evidence contradict this claim? | contradiction, claim support | `case_package`, `claim_id` | `answered` or `insufficient_evidence` |
+| `question-label-overclaim-v01` | Does the label or explanation claim more than the evidence supports? | overclaim detection, evidence sufficiency, missing evidence | `case_package`, `label_id` | `answered` or `insufficient_evidence` |
+| `question-cluster-impurity-v01` | Which evidence suggests the cluster may be mixed or impure? | cluster-boundary or impurity, contradiction, uncertainty | `case_package` | `answered` or `insufficient_evidence` |
+| `question-assistance-unavailable-v01` | Why is AI assistance unavailable for this question or case? | refusal and unavailable behavior, uncertainty | `case_package` | `refused` |
+
+`question-cluster-impurity-v01` may optionally include a focused `evidence_id`,
+`claim_id`, or `label_id` if a later caller wants to inspect a specific boundary
+signal. `question-assistance-unavailable-v01` may optionally include the target
+question ID or unavailable reason when explaining why no substantive answer is
+allowed.
+
+## Availability Rules
+
+AI assistance must remain unavailable when:
+
+- there is no validated `CasePackageV01` or compatible review context;
+- the requested `question_id` is not in `AI_ASSISTANCE_QUESTION_SET_V01`;
+- required references such as `claim_id`, `evidence_id`, or `label_id` are
+  missing or unknown in the supplied package;
+- the case or evidence is not reviewable under package metadata;
+- the reviewer enters a free-form question instead of selecting a predefined
+  one;
+- the request asks for operational remediation, SOC or alert triage, incident
+  response, live investigation, raw telemetry search, external lookup, generic
+  cybersecurity advice, or broad chatbot behavior;
+- the only possible answer would require data outside the supplied
+  `CasePackage` or `ReviewResult`.
+
+If a selected question is in scope but the package does not contain enough
+evidence to ground an answer, emit `answer.status: "insufficient_evidence"` and
+include `answer.insufficiency_reason`.
+
+If a question is outside the evidence bench or asks for unsupported behavior,
+emit `answer.status: "refused"` and include `answer.refusal_reason` when a
+response artifact is needed. In a future UI, the preferred behavior can be to
+withhold the assistance affordance entirely before any response is generated.
+
+Examples that must not become allowed questions:
+
+| Disallowed question | Reason | Expected status if represented as a response |
+| --- | --- | --- |
+| Can I ask anything about this telemetry cluster? | Free-form chatbot request. | `refused` |
+| Explain IAM security best practices in general. | Generic cybersecurity question outside the package. | `refused` |
+| What remediation actions should the SOC take next? | Operational remediation request. | `refused` |
+| Investigate the live alert and search the raw logs. | Live investigation and raw telemetry request. | `refused` |
+| Look up external threat intelligence for this principal. | External lookup beyond supplied evidence. | `refused` |
+
 ## Top-Level Shape
 
 Every response includes:
