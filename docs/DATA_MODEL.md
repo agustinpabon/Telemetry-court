@@ -1,16 +1,19 @@
 # Data Model
 
-This document describes the compatibility UI model implemented by the static
-validation slice. The approved package and result boundaries are documented in
+This document describes the compatibility UI model used by the local review
+workflow. The approved package and result boundaries are documented in
 `docs/CASE_PACKAGE_CONTRACT.md` and `docs/REVIEW_RESULT_CONTRACT.md`.
-The future evidence-constrained assistance response boundary is documented in
+The implemented deterministic mocked assistance response boundary is documented in
 `docs/AI_ASSISTANCE_RESPONSE_CONTRACT.md`.
 
-The target model must separate:
+The model must separate:
 
 - `CasePackage`: the versioned upstream cluster interpretation and evidence under review;
 - `ReviewResult`: one human review of that package;
 - `EvaluationReport`: aggregated metrics across compatible review results.
+- `QuickDisposition`: a shallow early artifact excluded from full aggregation.
+- `cluster_refinement.v0.1`: review-derived recommendations for an external
+  upstream consumer.
 
 Do not treat the current `CaseFile` shape as either versioned contract. The
 existing adapter carries a compact CasePackage reference into the UI model so
@@ -20,14 +23,16 @@ Current product flow:
 
 ```text
 Telemetry landscape
--> CaseFile
+-> validated CasePackage / compatibility CaseFile
 -> blind interpretation
 -> AI label reveal
 -> evidence ratings
 -> label duel
 -> impostor session
 -> structured verdict
--> review export
+-> ReviewResult export
+-> EvaluationReport
+-> cluster refinement export
 ```
 
 ## TypeScript-Like Pseudocode
@@ -247,9 +252,11 @@ Typing must not be required to produce this export.
 The export does not include the full cluster, claims, evidence items, support
 scores, or raw telemetry. It is one local review artifact. The current app can
 persist that artifact in browser-local storage by CasePackage ID after copy or
-download. The current app also includes a fixture-backed read-only
-`EvaluationReport` results view with JSON/CSV downloads for the existing report
-artifact. The report includes deterministic descriptive rollups grouped by
+download. The local `/results` view aggregates compatible browser-local or
+imported full ReviewResults into `EvaluationReportV01`, with JSON/CSV downloads
+and `cluster_refinement.v0.1` export when exact source reviews are available.
+Quick dispositions are stored and summarized separately and never enter those
+aggregates. The report includes deterministic descriptive rollups grouped by
 selected label ID and compact package/pipeline metadata, with absent optional
 metadata recorded as unavailable. It also includes descriptive agreement signals
 for verdict, label winner, evidence ratings by stable evidence ID, and a major
@@ -257,9 +264,9 @@ failure mode when a review selects exactly one mode. Agreement signals retain
 compared and unavailable review counts, observed value counts, explicit
 available/incomplete/unavailable states, and disputed-evidence flags without
 choosing a correct value or consensus. Exact package-reference compatibility means
-non-label metadata remains single-value context; durable backend storage, real
-cross-package report workflows, confidence capture, and broader
-`EvaluationReport` production remain future work.
+non-label metadata remains single-value context; durable backend storage,
+cross-package report-set ranking, confidence capture, and production
+multi-user workflows remain future work.
 
 ## Runtime Fixture
 

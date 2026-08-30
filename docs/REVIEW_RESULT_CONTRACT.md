@@ -130,12 +130,12 @@ ordinary representative sessions and requires explicit confirmation before an
 ordinary non-candidate session completes the cluster-fit step. That
 confirmation is UI protocol state, not a new `ReviewResult v0.1` field.
 
-The current synthetic UI does not have a separate recommended-action picker.
+The current local review UI does not have a separate recommended-action picker.
 For v0.1, the exporter deterministically derives the canonical action from the
 reviewer's final verdict. It does not add a new screen or claim that an
 independent action choice was collected.
 
-The current synthetic UI also does not have separate controls for reviewer
+The current local review UI also does not have separate controls for reviewer
 confidence or free-form notes. The `ReviewResultV01` contract allows those
 fields for compatible future protocols, but the local exporter omits them
 instead of fabricating values.

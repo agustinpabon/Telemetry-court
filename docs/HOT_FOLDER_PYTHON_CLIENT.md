@@ -30,6 +30,13 @@ The path should point to a local handoff folder containing approved or
 sanitized JSON artifacts only. Do not put raw telemetry, notebooks, parquet,
 CSV, logs, or private working directories in the Hot-Folder.
 
+The app's CasePackage scanner ignores supported
+`cluster_refinement.v0.1` handoffs (and canonical
+`*-cluster-refinement.json` export names), so placing a completed refinement
+back into this shared folder does not create a false invalid-CasePackage
+warning. The Python consumer remains responsible for validating that
+refinement before upstream use.
+
 ## Write A CasePackage
 
 In an approved upstream notebook or script, build or load a complete
@@ -95,16 +102,45 @@ if refinements:
 non-JSON files. It does not recurse. Results are newest-first by default with a
 filename tiebreak for deterministic ordering.
 
-`read_refinement` only accepts visible top-level JSON files in the configured
-Hot-Folder, confirms the artifact schema is exactly `cluster_refinement.v0.1`,
-and returns parsed Python data. Upstream code remains responsible for deciding
-whether and how to apply pruning, split hints, or merge hints outside Telemetry
-Court.
+`read_refinement` only accepts visible, regular, non-symlinked top-level JSON
+files in the configured Hot-Folder. Reads are capped at 8 MiB, use a no-follow
+file descriptor where the platform supports it, and verify that the opened
+descriptor is still a regular file. Device, inode, size, modification time, and
+change time must remain stable through the read, and the byte count must match
+the final file size. Consumer-facing validation and folder errors omit supplied
+unknown field names and configured absolute folder paths.
+
+Before returning parsed Python data, the reader enforces the v0.1 consumer
+boundary:
+
+- exact schema, calculation, source-application, local format, CasePackage,
+  review protocol, ReviewResult, and EvaluationReport compatibility versions;
+- complete source review ID metadata with a matching positive `reviewer_count`;
+- sorted, unique source, recommendation, and prune IDs;
+- well-formed session exclusion, split, and merge recommendations that only
+  reference the artifact's source reviews and cluster;
+- `prune_session_ids` exactly derived from recommendations whose status is
+  `recommended`.
+
+A valid artifact may have empty `prune_session_ids`, `split_recommendations`,
+and `merge_recommendations`. The reader accepts that exact no-action handoff;
+the upstream consumer must preserve its provenance and make no dataset,
+clustering, naming, or topology mutation. The TypeScript validator remains
+canonical for non-actionable presentation metadata such as detailed
+uncertainty and disagreement signals. `find_refinements` skips files that fail
+the Python consumer checks. Upstream code remains responsible for deciding
+whether and how to apply accepted pruning, split hints, or merge hints outside
+Telemetry Court.
 
 ## Tests
 
 Run the focused Python tests with:
 
 ```bash
-python3 -m unittest discover -s python/tests -p "*test.py"
+python3 -m unittest discover -s python/tests -p "*_test.py"
 ```
+
+When the repository's `tsx` dependency is installed, the suite also builds
+artifacts through the canonical TypeScript exporter. It verifies both an
+accepted actionable export and exact acceptance of a canonical no-action
+export without adding or changing payload fields.

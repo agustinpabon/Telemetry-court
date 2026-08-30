@@ -2,12 +2,16 @@
 
 ## Direction
 
-Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations. The roadmap is organized around proving validation value, not adding generic product infrastructure.
+Telemetry Court is an evidence-based human-in-the-loop validation bench and
+topological refiner for AI-generated telemetry cluster interpretations. The
+roadmap is organized around proving validation value, not adding generic
+product infrastructure.
 
 ## Utility Gate
 
 A feature is useful only if it helps produce or improve an auditable
-`EvaluationReport` from real or realistic `CasePackage` inputs.
+`EvaluationReport` and useful external refinement output from real or realistic
+`CasePackage` inputs.
 
 The next proof of value is:
 
@@ -18,33 +22,36 @@ import CasePackage JSON
 -> persist/export ReviewResult
 -> import/aggregate ReviewResults
 -> produce EvaluationReport
+-> export cluster_refinement.v0.1
+-> evaluate an external upstream refinement/rerun
 ```
 
-Work that does not improve this loop should wait unless it fixes correctness,
-validation, data handling, or a serious evidence-review usability blocker.
-Evidence-constrained AI assistance is intentionally later priority until local
-package import, result exchange, and aggregation are usable.
+The local artifact loop is implemented. Work that does not strengthen its
+correctness, validation, data handling, study operability, or evidence-review
+quality should wait. The next proof is human and external, not another layer of
+synthetic feature breadth.
 
 ## Milestone Overview
 
 | Milestone | Status | Outcome |
 |---|---|---|
-| Milestone 0 - Current Static Validation Slice | Complete/current baseline | Synthetic interface demonstrates the review protocol without claiming real validation infrastructure. |
+| Milestone 0 - Historical Static Validation Slice | Complete/historical baseline | Synthetic interface established the review protocol; it no longer describes the full current repository. |
 | Milestone 1 - Product Realignment And Documentation | Complete | Repository language, planning, architecture, and agent guidance align around the validation-bench direction. |
 | Milestone 2 - Case Package Contract And Validation Infrastructure | Complete/current foundation | Versioned `CasePackage`, `ReviewResult`, and `EvaluationReport` contracts, package validation, package-shaped fixtures, and local export/aggregation foundations. |
 | Milestone 3 - Local Utility Gate | Complete | Local CasePackage import, useful invalid-package failure UI, ReviewResult persistence/export/import, results from local/imported ReviewResults, and an end-to-end imported-package smoke test. |
-| Milestone 4 - Toponymy / ACME4 Adapter Prototype & Hot-Loop Connection | Active/In progress | Build the local hot-reload daemon API, Python companion client, and visual claim-to-log highlighting to connect Toponymy with Telemetry Court. See [MILESTONE_4_ADAPTER_BOUNDARY.md](./MILESTONE_4_ADAPTER_BOUNDARY.md) and [MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md](./MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md). |
-| Milestone 5 - Evidence-Constrained AI Assistance | Later/deferred | Predefined evidence-citing questions with explicit missing-evidence behavior after import/results/aggregation are usable. |
-| Milestone 6 - Research Validation Study | Target proof | Multiple reviewers demonstrate useful evaluation signals on real or realistic cases. |
+| Milestone 4 - Toponymy / ACME4 Adapter Prototype & Hot-Loop Connection | Repository engineering complete; external proof pending | Sanitized mapper/CLI, Hot-Folder scan/polling, Python file helper, evidence highlights, split/merge capture, and refinement handoff are implemented. No upstream system executes inside Telemetry Court. See [MILESTONE_4_ADAPTER_BOUNDARY.md](./MILESTONE_4_ADAPTER_BOUNDARY.md) and [MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md](./MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md). |
+| Milestone 5 - Evidence-Constrained AI Assistance | Active; first mocked UI slice implemented | The Evidence Board exposes fixed evidence-citing questions through a deterministic local resolver and guardrail/validation chain. Live providers and artifact metadata remain separately scoped. |
+| Milestone 6 - Research Validation Study | Active external/human proof | Approved realistic packages and independent reviewers must demonstrate useful evaluation and refinement signals. No pilot result is claimed yet. |
 
-## Milestone 0 - Current Static Validation Slice
+## Milestone 0 - Historical Static Validation Slice
 
 - Existing Next.js review interface and five synthetic cases.
 - Telemetry landscape, case file, blind review, AI reveal, evidence classification, label comparison, outlier selection, verdict, and local JSON export.
-- Browser-local `ReviewResult` persistence keyed by CasePackage ID for exported review artifacts.
-- Deterministic in-memory `EvaluationReport` aggregation, a fixture-backed read-only results view, and JSON/CSV export for that existing report shape.
 - Useful for demonstrating and testing the review protocol.
-- Not real validation infrastructure: no package import, durable multi-user review storage, or report-generation workflow.
+- At that milestone there was no versioned package import, browser-local
+  ReviewResult exchange, or EvaluationReport/refinement workflow. Those local
+  capabilities were added in Milestones 2-4; durable multi-user storage remains
+  out of scope.
 
 ## Milestone 1 - Product Realignment And Documentation
 
@@ -89,36 +96,78 @@ artifacts, and produce an auditable EvaluationReport without a backend service.
 
 ## Milestone 4 - Toponymy / ACME4 Adapter Prototype & Hot-Loop Connection
 
-- Define the adapter boundary and loop refinement spec. See [MILESTONE_4_ADAPTER_BOUNDARY.md](./MILESTONE_4_ADAPTER_BOUNDARY.md).
-- Complete the docs-first sanitized adapter prototype plan before adding any
-  executable adapter workflow. See
-  [MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md](./MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md).
-- Build the directory-watcher daemon (Hot-Folder watcher) and Python companion module (`telemetry_court_client.py`) to automate case import from notebooks.
-- Implement visual log highlighting in the Evidence Board to pinpoint exactly which telemetry fields support or contradict AI claims.
-- Add visual split and merge buttons next to UMAP neighborhood boundaries in the UI to let reviewers easily record split/merge recommendations.
-- Keep raw restricted telemetry outside the public or portable app via local preflight validation.
+Repository-owned engineering is implemented:
 
-Definition of done: a reviewer can launch a case automatically from a Python notebook, inspect visual claim-to-evidence highlighted logs, record split/merge recommendations, and sync refinement outputs back to the notebook without manual file drag-and-drop.
+- adapter boundary and `cluster_refinement.v0.1` consumer specification;
+- pure sanitized `CasePackageV01` mapper, CLI, explicit input/output flags,
+  and deterministic preflight validation;
+- local server-side Hot-Folder scan/polling route that validates top-level JSON
+  candidates without exposing the configured absolute path to the browser;
+- standard-library `telemetry_court_client.py` helper for safe atomic package
+  writes and refinement discovery/readback;
+- optional sanitized field highlights in the Evidence Board;
+- structured split and merge controls carried into ReviewResult and
+  refinement artifacts;
+- documentation for upstream notebook/script and refinement-consumer handoff.
+
+The Hot-Folder is intentionally a local polling path, not a remote daemon or raw
+telemetry ingestion service. The browser exports refinement JSON locally; an
+approved upstream workflow still decides how to place/read it and whether to
+apply pruning, split, or merge recommendations. Direct Toponymy, DataMapPlot,
+UMAP/HDBSCAN, and ACME4 execution remains upstream.
+
+Engineering definition of done: the file-contract boundaries are implemented
+and tested with synthetic data. Research definition of done remains part of
+Milestone 6: exercise them with an approved realistic package and external
+upstream consumer.
 
 ## Milestone 5 - Evidence-Constrained AI Assistance
 
-- Offer predefined cross-examination questions only where they improve review quality.
-- Require responses to cite case-package evidence IDs and admit missing evidence.
-- Record model and prompt metadata for evaluation.
-- Do not add generic chatbot behavior.
-- Do not start before local CasePackage import, ReviewResult bundle exchange,
-  and EvaluationReport aggregation from local/imported results are usable.
+Implemented first slice:
+
+- a collapsed, visually secondary panel on the Evidence Board only;
+- the canonical fixed eight-question set, with no arbitrary prompt input;
+- exact validated claim/evidence/label references from the current CasePackage;
+- request guardrail -> deterministic local resolver -> response validation ->
+  claim critic -> UI;
+- distinct answered, insufficient-evidence, unavailable, guardrail-refused, and
+  invalid-response-withheld states;
+- visible question, finding, evidence, claim, label, warning, and critic
+  references without mutating ratings, verdicts, or workflow state.
+
+Not implemented and not implied by this milestone slice: live providers,
+prompt execution, streaming, transcripts, configurable question sets,
+assistance metadata in ReviewResult, assistance-use metrics in EvaluationReport,
+external intelligence, or raw telemetry drill-down. Each requires separate
+product, safety, and schema scope.
 
 ## Milestone 6 - Research Validation Study
 
-- Run multiple reviewers across real or realistic cases.
+- Obtain human approval for 3-5 frozen realistic/sanitized CasePackages and a
+  2-3 reviewer roster.
+- Run reviewers independently across the same package bytes.
 - Evaluate reviewer agreement, label support, evidence sufficiency, and common failure modes.
-- Compare at least one upstream variable such as label, prompt, model, embedding, or evidence extraction method.
-- Publish a reproducible evaluation report and limitations.
+- Compare at least one deliberately controlled upstream variable such as label,
+  prompt, model, embedding, or evidence extraction method; keep cross-package
+  analysis manual and explicit because v0.1 reports do not rank across runs.
+- Validate and aggregate actual ReviewResults, export per-package reports and
+  refinement artifacts, and evaluate an external upstream iteration.
+- Publish or share findings only with explicit data-safety and claim approval,
+  with limitations stated.
+
+Status: not completed. Issue #74 recorded one synthetic expert walkthrough and
+ReviewResult as product feedback, not the required independent validation
+study. Synthetic fixtures, automated tests, mocked assistance, and synthetic
+EvaluationReport examples are rehearsals, not completion evidence.
 
 ## Product-Level Definition Of Done
 
-Telemetry Court becomes a serious tool only when it can ingest a real or realistic precomputed cluster, accept a defensible evidence package, support multiple blind human reviews, store structured verdicts, aggregate judgments, and export metrics that improve labels, prompts, embeddings, or pipeline design.
+Telemetry Court becomes a serious tool only when it can ingest an approved
+realistic precomputed cluster, accept a defensible evidence package, support
+multiple blind human reviews, store structured verdicts, aggregate judgments,
+export auditable evaluation/refinement artifacts, and demonstrate through an
+external upstream iteration that those signals can improve labels, prompts,
+embeddings, evidence extraction, or cluster design.
 
 ## Planning Guardrails
 
@@ -126,7 +175,11 @@ Telemetry Court becomes a serious tool only when it can ingest a real or realist
 - Do not start with auth, production database design, admin UX, user management, or generic CRUD.
 - Do not add SIEM, SOC, alert-triage, raw-search, or live-ingestion work.
 - Do not schedule UI polish as a substitute for package and evaluation proof.
-- Keep the Adapter Prototype and Refinement Integration as the active implementation milestone.
-- Keep evidence-constrained AI assistance later until import/results/aggregation
-  can produce an auditable EvaluationReport.
-- Create only a small executable issue batch for the active milestone and its immediate blocker.
+- Treat the adapter/Hot-Folder/refinement engineering as implemented; do not
+  reopen completed slices because older status prose says they are missing.
+- Keep any next AI assistance slice separate from the deterministic mocked UI
+  and require explicit provider, secret, failure, and artifact-schema
+  decisions before implementation.
+- Prioritize Milestone 6 study readiness and honest external proof over new
+  speculative capability.
+- Create only small, independently reviewable issue slices for confirmed gaps.

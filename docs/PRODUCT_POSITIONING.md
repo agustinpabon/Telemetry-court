@@ -2,7 +2,8 @@
 
 ## One-Sentence Definition
 
-Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.
+Telemetry Court is an evidence-based human-in-the-loop validation bench and
+topological refiner for AI-generated telemetry cluster interpretations.
 
 ## Product Thesis
 
@@ -15,16 +16,20 @@ AI-generated cluster labels can sound plausible while being unsupported, overbro
 - A validation layer between clustering or labeling pipelines and the teams improving those pipelines.
 - A source of reviewer agreement, evidence sufficiency, overclaim, impurity, split, merge, and uncertainty signals.
 - A downstream companion to Toponymy-style cluster naming workflows.
+- A versioned local handoff from compatible human reviews to external upstream
+  pruning, split, merge, and rerun decisions.
 
 ## What Telemetry Court Is Not
 
 - A SIEM, EDR, SOC dashboard, alert-triage system, or incident-response console.
 - A raw log search, telemetry ingestion, or detection platform.
 - A general cyber investigation tool.
-- A generic chatbot or open-ended AI assistant.
+- A generic chatbot or open-ended AI assistant. The current mocked assistance
+  panel exposes only fixed, evidence-constrained questions.
 - A game, leaderboard, or theatrical courtroom experience.
 - An auth-first SaaS application or generic CRUD backend.
-- A claim that the current synthetic interface already provides research validation.
+- A claim that synthetic fixtures or the implemented local workflow already
+  establish research validation.
 
 ## Primary Users
 
@@ -44,20 +49,27 @@ Clustering pipelines can produce coherent-looking maps and confident labels with
 
 ## Strongest Use Case
 
-A research or AI/ML team imports a real or realistic precomputed cluster as a versioned case package, has multiple reviewers inspect it without seeing the generated label first, captures structured evidence ratings and verdicts, and exports an evaluation report that identifies which label, prompt, model, embedding, or evidence package performed better.
+A research or AI/ML team imports an approved realistic precomputed cluster as
+a versioned case package, has multiple reviewers inspect it without seeing the
+generated label first, captures structured evidence ratings and verdicts, and
+exports an auditable per-package EvaluationReport and refinement artifact. A
+controlled study may compare separately designed package groups manually;
+`EvaluationReport v0.1` does not rank prompts, models, embeddings, or packages
+across runs by itself.
 
 ## Utility Gate
 
 A feature is useful only if it helps produce or improve an auditable
-`EvaluationReport` from real or realistic `CasePackage` inputs. The near-term
-product should prioritize local package import, strict invalid-package failure,
-structured `ReviewResult` persistence/export/import, and aggregation from
-local or imported results before evidence-constrained AI assistance.
+`EvaluationReport` and upstream refinement artifact from real or realistic
+`CasePackage` inputs. The local import, strict validation, ReviewResult
+exchange, EvaluationReport aggregation, results topology, and refinement export
+are implemented. The current Evidence Assistance slice is deterministic and
+mocked; it does not move live AI ahead of validation proof.
 
-The target proof is small but real: several real or realistic packages,
-multiple independent reviewers, exported ReviewResults, and one report that
-surfaces label support, overclaim, evidence sufficiency, cluster impurity, and
-reviewer disagreement.
+The target proof is small but real: several approved realistic/sanitized
+packages, multiple independent reviewers, exported ReviewResults, reports that
+surface label support, overclaim, evidence sufficiency, cluster impurity, and
+reviewer disagreement, and an externally evaluated refinement/rerun.
 
 ## Contract Separation
 
@@ -69,11 +81,22 @@ These objects must not collapse into one generic case or database record.
 
 ## Relationship To Toponymy
 
-Telemetry Court begins after an upstream cluster naming process. Toponymy is a credible upstream system and the official [TutteInstitute/toponymy](https://github.com/TutteInstitute/toponymy) repository is the only authoritative source for Toponymy facts in this repo. Telemetry Court does not currently integrate with or execute Toponymy. A future adapter should convert approved Toponymy outputs into the versioned `CasePackage` contract.
+Telemetry Court begins after an upstream cluster naming process. Toponymy is a
+credible upstream system and the official
+[TutteInstitute/toponymy](https://github.com/TutteInstitute/toponymy)
+repository is the only authoritative source for Toponymy facts in this repo.
+Telemetry Court does not integrate with or execute Toponymy. The current
+sanitized mapper, Hot-Folder, and Python file helper accept already-approved,
+precomputed CasePackage-shaped outputs; a concrete Toponymy notebook or script
+must still perform the upstream mapping outside Telemetry Court.
 
 ## Relationship To ACME4-Style Datasets
 
-ACME4-style and other real or realistic datasets can supply meaningful validation cases, but they should be processed in an appropriate environment. Adapters or notebooks should emit sanitized, minimal, auditable case packages. Telemetry Court should not require raw restricted telemetry in the public or portable app, and it does not currently ingest ACME4.
+ACME4-style and other real or realistic datasets can supply meaningful
+validation cases, but they should be processed in an appropriate environment.
+Adapters or notebooks should emit sanitized, minimal, auditable case packages.
+The synthetic ACME4-style fixture is a contract rehearsal, not an integration;
+Telemetry Court does not execute or ingest ACME4 or its raw data.
 
 ## Relationship To SIEM, EDR, And SOC Tools
 
@@ -93,7 +116,11 @@ Telemetry Court is successful when it can:
 - support blind, structured review by multiple people;
 - expose missing, weak, irrelevant, and contradictory evidence;
 - aggregate reviewer judgments and disagreements;
-- export evaluation metrics that lead to measurable improvements in labels, prompts, embeddings, evidence extraction, or clustering decisions.
+- export evaluation and refinement artifacts that an external upstream process
+  can use to improve labels, prompts, embeddings, evidence extraction, or
+  clustering decisions;
+- demonstrate that usefulness with approved realistic inputs and independent
+  human reviewers before making validation claims.
 
 Visual polish and review completion alone are not success criteria.
 

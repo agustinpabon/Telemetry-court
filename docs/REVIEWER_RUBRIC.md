@@ -2,8 +2,8 @@
 
 ## Purpose
 
-Telemetry Court is an evidence-based human-in-the-loop validation bench for
-AI-generated telemetry cluster interpretations.
+Telemetry Court is an evidence-based human-in-the-loop validation bench and
+topological refiner for AI-generated telemetry cluster interpretations.
 
 Core line:
 
@@ -40,6 +40,11 @@ Reviewers should:
 - choose the strongest supported structured judgment, not the most dramatic
   story.
 
+Before a study review, set the browser-local reviewer ID and approved review
+context to the non-sensitive values assigned in the roster. These fields are
+artifact metadata for traceability, not authentication, a reviewer profile, or
+a performance score.
+
 ## Blind Review
 
 Blind review comes before AI reveal.
@@ -52,6 +57,29 @@ Blind review comes before AI reveal.
 
 The blind step is successful when the reviewer records an honest first
 evidence-based interpretation before the AI label can steer the judgment.
+
+## Mocked Evidence Assistance
+
+The Evidence Board may expose a collapsed deterministic mocked assistance
+panel after AI reveal. It is not a live model, independent expert, or source of
+new evidence.
+
+- Use only the fixed questions and exact claim/evidence/label references
+  offered from the validated CasePackage.
+- Record human evidence ratings before consulting it when the study protocol
+  permits its use.
+- Treat answered, insufficient-evidence, unavailable, and refused outputs as
+  bounded package cross-checks, not verdicts.
+- Follow the cited stable IDs back to the package evidence.
+- Do not change a rating merely because assistance says it found support; the
+  reviewer remains responsible for the judgment.
+- Do not use assistance during blind review or to rewrite the blind
+  interpretation.
+- Record use in manual study notes when required. `ReviewResult v0.1` and
+  `EvaluationReport v0.1` do not persist assistance metadata.
+
+If the study protocol disables assistance, leave the panel unused for every
+reviewer. Do not silently mix assisted and unassisted conditions.
 
 ## Evidence Ratings
 
@@ -310,8 +338,23 @@ reviewer choice:
   reconsideration.
 - `mark_uncertain`: The responsible outcome is to preserve uncertainty.
 
-For the current local validation slice, treat recommended action as derived
+For the current local implementation, treat recommended action as derived
 review metadata, not as a separate required reviewer decision.
+
+## Quick Dispositions
+
+`quick_disposition.v0.1` records an early local choice such as save for later,
+cannot judge from this package, or not interesting/skipped. It is intentionally
+shallower than the full evidence protocol.
+
+- A quick disposition is not a completed `ReviewResult` or final evidence
+  verdict.
+- It is stored, imported, and summarized separately.
+- It never enters `EvaluationReport` or `cluster_refinement.v0.1` aggregation.
+- In a study that requires one full review per reviewer/package, stopping at a
+  quick disposition leaves that matrix cell incomplete or explicitly excluded.
+- Escalating to full review is allowed; the completed full ReviewResult remains
+  a distinct artifact.
 
 ## ReviewResult And EvaluationReport
 

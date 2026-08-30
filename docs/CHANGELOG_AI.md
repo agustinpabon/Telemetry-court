@@ -19,6 +19,100 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-08-30: Current Capability And Pilot Truth Reconciliation
+
+- Agent/model: Codex (GPT-5.6, maximum reasoning)
+- Prompt scope: Reconcile canonical capability, milestone, architecture,
+  development, historical release, and study guidance against current code,
+  tests, merged history, and GitHub state without fabricating pilot results or
+  expanding live AI scope.
+- Files changed:
+  - `AGENTS.md`
+  - `CLAUDE.md`
+  - `START_HERE_FOR_AGENTS.md`
+  - `README.md`
+  - `CONTRIBUTING.md`
+  - `PROMPTING_GUIDE.md`
+  - `RELEASE_v0.1.md`
+  - `docs/PRODUCT_VISION.md`
+  - `docs/PRODUCT_POSITIONING.md`
+  - `docs/PROJECT_CONTEXT.md`
+  - `docs/PRODUCT_DECISIONS.md`
+  - `docs/ROADMAP.md`
+  - `docs/ARCHITECTURE.md`
+  - `docs/DEVELOPMENT_WORKFLOW.md`
+  - `docs/DESIGN_DIRECTION.md`
+  - `docs/AGENT_WORKFLOWS.md`
+  - `docs/DATA_MODEL.md`
+  - `docs/GITHUB_PLANNING.md`
+  - `docs/MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md`
+  - `docs/AI_ASSISTANCE_RESPONSE_CONTRACT.md`
+  - `docs/CASE_PACKAGE_CONTRACT.md`
+  - `docs/EVALUATION_INFRASTRUCTURE.md`
+  - `docs/CLUSTER_REFINEMENT_HANDOFF.md`
+  - `docs/HOT_FOLDER_PYTHON_CLIENT.md`
+  - `docs/REVIEW_RESULT_CONTRACT.md`
+  - `docs/TOPONYMY_NOTES.md`
+  - `docs/VALIDATION_PILOT_PROTOCOL.md`
+  - `docs/REVIEWER_RUBRIC.md`
+  - `docs/PILOT_74_PREFLIGHT.md`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Replaced stale static-slice and future-Local-Utility-Gate claims with the
+    verified local artifact loop: package import/validation, full ReviewResult
+    exchange, separate quick dispositions, EvaluationReport aggregation,
+    results topology, and cluster-refinement export.
+  - Marked Milestone 3 complete and Milestone 4 repository engineering
+    complete while preserving the explicit boundary that Toponymy, DataMapPlot,
+    UMAP/HDBSCAN, ACME4, raw telemetry, and upstream refinement execution remain
+    external.
+  - Recorded the first Milestone 5 UI as deterministic mocked assistance only:
+    fixed questions, exact package IDs, guardrails, response validation, and
+    critic, with no live provider or review-artifact metadata.
+  - Reframed Milestone 6 as the incomplete human/external proof boundary:
+    issue #72 delivered protocol guidance, while #74 closed as not
+    planned/superseded after one synthetic expert walkthrough rather than the
+    required independent realistic-package study.
+  - Made the study handoff executable with reviewer metadata, one consistent
+    mocked-assistance condition, quick-disposition exclusions, package/result
+    validation CLIs, results-map recovery, refinement validation, and an
+    external apply/reject/defer/no-action record.
+  - Documented the 2 MiB CasePackage and 8 MiB review-artifact local import
+    bounds, fatal UTF-8 decoding for byte-backed inputs, redacted Hot-Folder
+    validation/unsupported review-schema errors, and the consolidated
+    developer verification commands.
+  - Preserved `RELEASE_v0.1.md` as a truthful historical `v0.1.0` snapshot
+    while pointing readers to current capability documents.
+- Decisions made:
+  - Described implemented local mechanics separately from unproven research
+    value; no synthetic fixture or automated check is pilot evidence.
+  - Kept quick dispositions outside full ReviewResult/EvaluationReport/
+    refinement semantics and kept mocked assistance outside ReviewResult v0.1.
+  - Treated the browser/Python/Hot-Folder path as a local file-contract handoff,
+    not a backend, daemon service, direct upstream integration, or clustering
+    engine.
+  - Kept valid explicit no-action refinement artifacts valid across the
+    TypeScript/Python boundary; consumers preserve provenance and make no
+    upstream mutation.
+- Checks run:
+  - verified GitHub issue #72 and #74 closure state, #74's closure comments,
+    and current milestone issue counts;
+  - searched canonical docs for stale static/future-capability language;
+  - verified all relative Markdown links in edited files resolve;
+  - `npm test` (`414` passing, `0` failing);
+  - `git diff --check` on the documentation set.
+- Assumptions: The guarded mocked Evidence Assistance commit and release
+  hardening changes are reviewed as the current branch stack; none changes the
+  existing v0.1 artifact schemas or authorizes a live provider.
+- Risks/follow-ups: The repository still needs human approval of realistic
+  packages and reviewers, actual independent ReviewResults, and an external
+  refinement/rerun before it can claim validation value.
+- Next recommended step: Run the preflight with the study owner, freeze the
+  approved package manifest and reviewer roster, and execute Milestone 6
+  without substituting synthetic artifacts.
+- Suggested commit message:
+  `docs: reconcile current capability and pilot readiness`
+
 ## 2026-08-30: Guarded Mocked Evidence Assistance Panel
 
 - Agent/model: Codex (GPT-5.6, maximum reasoning)

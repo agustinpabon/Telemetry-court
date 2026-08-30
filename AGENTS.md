@@ -2,7 +2,8 @@
 
 ## Project Identity
 
-Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.
+Telemetry Court is an evidence-based human-in-the-loop validation bench and
+topological refiner for AI-generated telemetry cluster interpretations.
 
 ```text
 AI names the cluster. Humans test the evidence.
@@ -17,12 +18,29 @@ is that interpretation actually supported by the evidence?
 
 Treat `docs/PRODUCT_VISION.md`, `docs/PRODUCT_POSITIONING.md`, and `docs/PROJECT_CONTEXT.md` as the current product source of truth. The older Evidence Arena identity and frontend-MVP framing are superseded. Current arena terminology may describe UI components, but it must not define the product.
 
-## Current State And Next Milestone
+## Current State And Next Proof
 
-- The current application is a static validation slice with synthetic cases, local package validation, and local review export.
-- Real Toponymy ingestion and ACME4 ingestion are not implemented.
-- The active implementation milestone is the Toponymy / ACME4 Adapter Prototype (focusing on script-level adapter boundaries, sanitized mappers, and notebook-level loop refinements).
-- Backend work must start with `CasePackage`, `ReviewResult`, and `EvaluationReport` contracts, not generic APIs, databases, or authentication.
+- Milestone 3 (the Local Utility Gate) is implemented: strict local
+  `CasePackage` import, structured review, browser-local `ReviewResult`
+  persistence and bundle exchange, per-package `EvaluationReport` aggregation,
+  results topology, and `cluster_refinement.v0.1` export.
+- Milestone 4's repository-owned engineering is implemented: the sanitized
+  adapter mapper and CLI, local Hot-Folder scan/polling path, standard-library
+  Python companion, sanitized evidence highlights, split/merge capture, and
+  external refinement-consumer handoff.
+- Milestone 5 now includes a deterministic mocked Evidence Assistance panel on
+  the Evidence Board. It uses fixed questions, validated package references,
+  guardrails, response validation, and the claim critic. It is not live AI and
+  does not write assistance metadata into review or evaluation artifacts.
+- Milestone 6 is the active proof boundary: approved realistic packages and
+  independent human reviewers must exercise the loop. Synthetic fixtures and
+  automated tests cannot establish research validity.
+- Real Toponymy, DataMapPlot, UMAP/HDBSCAN, and ACME4 execution are not
+  implemented. The repository accepts their approved, sanitized, precomputed
+  outputs only through the versioned package boundary.
+- Backend work must start with `CasePackage`, `ReviewResult`, and
+  `EvaluationReport` requirements, not generic APIs, databases, or
+  authentication.
 
 ## Product Boundary
 
@@ -32,7 +50,8 @@ Upstream clustering and labeling systems
 -> Telemetry Court validation and review
 -> ReviewResult JSON
 -> EvaluationReport metrics
--> upstream pipeline improvement
+-> cluster_refinement.v0.1
+-> external upstream pipeline improvement
 ```
 
 Telemetry Court owns reviewability, evidence grounding, auditability, structured human verdicts, and evaluation output. It does not own raw telemetry processing, live detection, or operational response.
@@ -50,6 +69,7 @@ Telemetry landscape
 -> structured verdict
 -> ReviewResult export
 -> multi-reviewer EvaluationReport
+-> cluster refinement export
 ```
 
 ## Product Rules
@@ -78,13 +98,17 @@ Telemetry landscape
 
 ## Implementation Priorities
 
-1. Case package schema and versioning.
-2. Runtime package validation.
-3. Evidence provenance and sanitization.
-4. Structured review results.
-5. Multi-reviewer aggregation.
-6. Evaluation exports and deterministic metrics.
-7. Toponymy and ACME4 adapter boundaries.
+1. Preserve the existing `CasePackage`, `ReviewResult`, `EvaluationReport`,
+   quick-disposition, and cluster-refinement contract boundaries.
+2. Keep package, result, local-storage, Hot-Folder, and refinement validation
+   strict, deterministic, and safe for sanitized inputs.
+3. Fix correctness, accessibility, browser, test, CI, and documentation gaps
+   in the implemented local loop.
+4. Prepare and execute the approved Milestone 6 study with realistic packages
+   and independent human reviewers; record limitations honestly.
+5. Scope live provider-backed assistance only through a separate product and
+   schema decision. Never extend the mocked panel into generic chat by
+   convenience.
 
 ## Design Rules
 

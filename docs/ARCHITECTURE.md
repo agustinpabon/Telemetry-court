@@ -2,7 +2,9 @@
 
 ## Architectural Purpose
 
-Telemetry Court is the validation layer for AI-generated telemetry cluster interpretations. It does not own the full telemetry-processing stack.
+Telemetry Court is the validation and human-derived topological-refinement
+layer for AI-generated telemetry cluster interpretations. It does not own the
+full telemetry-processing stack.
 
 ```text
 Upstream systems
@@ -10,7 +12,8 @@ Upstream systems
 -> Telemetry Court review interface and validation engine
 -> ReviewResult JSON
 -> EvaluationReport metrics
--> upstream pipeline improvement
+-> cluster_refinement.v0.1
+-> external upstream pipeline improvement
 ```
 
 ## Upstream
@@ -30,9 +33,10 @@ The integration boundary is a validated, versioned `CasePackage`, not direct acc
 
 The package contains the cluster interpretation, claims, evidence, provenance, review configuration, and safe references needed for review. Adapters translate approved upstream output into this contract. See [CASE_PACKAGE_CONTRACT.md](./CASE_PACKAGE_CONTRACT.md).
 
-This repository must not claim real Toponymy support, real ACME4 support,
-DataMapPlot execution, or raw restricted telemetry ingestion until a concrete
-adapter is implemented, validated, and documented.
+The repository implements a generic sanitized mapper/CLI and local file handoff,
+not direct Toponymy or ACME4 integration. It must not claim Toponymy,
+DataMapPlot, UMAP/HDBSCAN, or ACME4 execution, or raw restricted telemetry
+ingestion. Concrete upstream notebooks/scripts remain outside Telemetry Court.
 
 ## Telemetry Court
 
@@ -47,19 +51,43 @@ Telemetry Court owns:
 - structured verdict capture;
 - review result integrity;
 - multi-reviewer aggregation;
-- evaluation export and auditability.
+- evaluation export and auditability;
+- results topology from compatible CasePackage coordinates;
+- versioned refinement export for external upstream use.
 
-The current repository implements the static review interface, local state,
-synthetic fixtures, package validation, `ReviewResultV01` export, browser-local
-ReviewResult storage keyed by CasePackage ID, and a pure in-memory
-`EvaluationReportV01` aggregation utility with a fixture-backed read-only
-results view and JSON/CSV export helpers. It has no package upload flow,
-server-side persistence layer, multi-reviewer service, durable report workflow,
-Toponymy adapter, or ACME4 adapter yet.
+The current repository implements strict manual CasePackage import, a
+server-configured local Hot-Folder scan/polling route, browser-local review and
+package metadata, structured ReviewResult and separate quick-disposition
+artifacts, result/bundle validation and exchange, deterministic
+`EvaluationReportV01` aggregation, results topology, JSON/CSV export, and
+validated `cluster_refinement.v0.1` export. A standard-library Python companion
+writes approved package-shaped JSON atomically and reads refinement artifacts.
+
+The Evidence Board also has optional sanitized field highlights and a
+deterministic mocked assistance layer. The assistance boundary uses only fixed
+questions and exact validated package references, and validates/criticizes the
+response before display. It has no provider, network call, prompt execution,
+transcript, or persistence into ReviewResult/EvaluationReport.
+
+There is no server-side review persistence, multi-user service, durable report
+workflow, production database, authentication system, direct Toponymy adapter,
+or ACME4 adapter/executor.
 
 ## Outputs
 
-`ReviewResult` contains one reviewer's versioned decisions about one case package. `EvaluationReport` aggregates compatible review results into agreement, disagreement, support, overclaim, uncertainty, impurity, split or merge, evidence sufficiency, label winner, and comparison metrics.
+`ReviewResult` contains one reviewer's versioned decisions about one case
+package. `EvaluationReport` aggregates compatible full ReviewResults into
+agreement, disagreement, support, overclaim, uncertainty, impurity, split or
+merge, evidence sufficiency, label winner, and comparison metrics.
+
+`QuickDisposition v0.1` is a shallower early disposition. It is stored and
+displayed separately and never masquerades as a completed ReviewResult or
+enters EvaluationReport/refinement aggregation.
+
+`cluster_refinement.v0.1` is derived from an EvaluationReport plus the exact
+compatible source ReviewResults. It carries traceable pruning, split, merge,
+uncertainty, and disagreement recommendations. It is a review-derived recipe,
+not an executable clustering command or an automatic verdict.
 
 The current comparison metrics group canonical verdict and evidence-rating
 counts by selected label ID and metadata already present in compact CasePackage
@@ -69,7 +97,11 @@ cross-run benchmarking is not implemented.
 
 ## Downstream
 
-Outputs should support prompt improvement, label refinement, model and embedding comparison, evidence-extraction improvement, cluster split or merge decisions, research reports, and validation studies.
+Outputs should support external prompt improvement, label refinement, model and
+embedding comparison, evidence-extraction improvement, cluster pruning/split/
+merge decisions, research reports, and validation studies. Telemetry Court
+exports recommendations; the authorized upstream environment decides whether
+and how to apply them.
 
 ## Data Handling Boundary
 
@@ -83,21 +115,41 @@ package revision, not raw telemetry access or ingestion.
 
 Missing provenance, unsupported schema versions, broken evidence links, and invalid references are validation errors. They are not UI warnings to ignore.
 
+Local file reads are bounded at the UI/server boundary: CasePackage browser and
+Hot-Folder inputs use a 2 MiB limit, while browser-imported review artifacts use
+an 8 MiB limit. Browser readers check file metadata before reading and actual
+UTF-8 bytes afterward. Hot-Folder reads also use top-level/no-follow path checks
+and post-read race/size verification. Byte-backed browser and Hot-Folder
+imports reject invalid UTF-8. Hot-Folder validation diagnostics and unsupported
+ReviewResult/bundle import-schema errors stay generic and do not echo supplied
+values or artifact content.
+
 ## Current Repository Structure
 
-- `app/`: Next.js App Router entry and route handling.
-- `components/`: Review workflow and visual components.
-- `data/`: Current synthetic fixtures.
-- `lib/`: Current TypeScript domain types, review state, metrics, and export helpers.
+- `app/`: Next.js App Router entry, results route, and local Hot-Folder API.
+- `components/`: Review, assistance, results, and topology UI components.
+- `data/`: Synthetic fixtures and synthetic report examples.
+- `lib/`: Versioned contracts, validators, review state, storage/import helpers,
+  aggregation, assistance guardrails, and refinement logic.
+- `scripts/`: Local validation/adapter/browser utilities; no raw telemetry
+  processing.
+- `python/`: Standard-library Hot-Folder file-contract companion and tests; no
+  Toponymy/ACME4/clustering execution.
 - `docs/`: Product, contract, architecture, evaluation, and workflow guidance.
 
 These folders describe the present implementation, not the final service decomposition.
 
-## Next Architectural Milestone
+## Next Architectural Proof
 
-The next architectural milestone is the Toponymy / ACME4 Adapter Prototype and loop refinement integration (Milestone 4). This includes writing notebook/script-level adapters that convert realistic cluster outputs into conforming `CasePackage` JSON, and consuming exported `cluster_refinement.v0.1` JSON to perform outlier pruning, splitting, and merging.
+The repository-owned Local Utility Gate and adapter/refinement boundaries are
+implemented. The next architectural proof is not a new service layer: an
+approved external notebook/script must produce realistic sanitized packages,
+independent reviewers must create compatible ReviewResults, and an authorized
+upstream consumer must inspect and deliberately apply, reject, defer, or record
+an explicit no-action outcome for the exported refinement artifact.
 
-This milestone should stay contract-first. Do not choose a production
-database, authentication system, workspace model, admin interface, broad API
-surface, raw telemetry ingestion path, or chatbot-first UI
-before the loop refinement integration is proven.
+Do not choose a production database, authentication system, workspace model,
+admin interface, broad API surface, raw telemetry ingestion path, or live
+provider architecture until a concrete, separately approved contract or study
+need requires it. Do not let any future assistance provider leak into the UI or
+weaken blind/human review.

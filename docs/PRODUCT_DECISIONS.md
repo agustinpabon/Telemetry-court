@@ -2,6 +2,37 @@
 
 This is the initial decision log for Telemetry Court. Add new entries when product direction, architecture, or evidence-model assumptions change.
 
+## 2026-08-30: Local Engineering Loop Is Implemented; Human Proof Is Next
+
+Decision: Treat Milestone 3 and the repository-owned Milestone 4 engineering as
+implemented capability, and treat Milestone 6 as the next proof boundary.
+Status prose from the earlier static/Local Utility Gate phase must not cause
+agents to rebuild package import, result exchange, aggregation, Hot-Folder,
+Python companion, evidence highlights, split/merge capture, results topology,
+or refinement export.
+
+Rationale: Runtime code, tests, and merged history now implement those local
+file-contract paths. The main remaining product risk is claiming usefulness
+from synthetic fixtures before approved realistic packages and independent
+reviewers exercise the loop and an external upstream environment evaluates the
+refinement output.
+
+Consequences:
+
+- Current capability docs distinguish the historical static slice from the
+  local research implementation.
+- Milestone 5 may continue through narrow evidence-constrained slices, but the
+  current UI remains deterministic and mocked; live providers and assistance
+  artifact metadata require separate decisions.
+- Milestone 6 cannot be completed by generating synthetic reviews, agreement,
+  success rates, or pilot claims.
+- Direct Toponymy, DataMapPlot, UMAP/HDBSCAN, ACME4, and raw telemetry execution
+  remain upstream. The generic sanitized mapper and file handoff do not imply
+  those integrations.
+- Production auth, database, multi-user workflow, and generic backend work
+  remain out of scope until a concrete research or contract requirement is
+  approved.
+
 ## 2026-08-30: First Assistance Surface Is Mocked And Secondary
 
 Decision: The first Evidence Assistance UI is an optional, deterministic mocked

@@ -27,7 +27,11 @@ Secondary pages may be mentioned only as non-authoritative navigation aids. They
 
 ## Telemetry Court Stance
 
-Telemetry Court treats Toponymy as a credible upstream producer category and future adapter source, not as a current implementation dependency.
+Telemetry Court treats Toponymy as a credible upstream producer category and a
+possible external adapter source, not as a current implementation dependency.
+The repository's generic sanitized mapper, Hot-Folder, and Python file helper
+accept approved precomputed CasePackage-shaped output; none is a Toponymy
+adapter or Toponymy execution path.
 
 The broader adapter boundary for Toponymy, DataMapPlot, ACME4-style,
 CloudTrail-style, and synthetic/sanitized producers is documented in
@@ -42,7 +46,8 @@ integration status.
 Use careful language:
 
 - "downstream of Toponymy-style cluster naming"
-- "a future adapter could convert approved Toponymy output into `CasePackage` JSON"
+- "an external adapter could convert approved Toponymy output into
+  `CasePackage` JSON"
 - "Telemetry Court does not currently execute or integrate with Toponymy"
 - "Toponymy output assumptions remain unverified until grounded in the official repository"
 
@@ -50,9 +55,12 @@ Use careful language:
 
 - Do not claim current Toponymy integration.
 - Do not add direct Toponymy execution, raw ingestion, auth, database work, or persistence under the banner of "Toponymy support."
-- Define and validate the `CasePackage` boundary before implementing an adapter.
+- Preserve the validated `CasePackage` boundary for any future source-specific
+  adapter.
 - Keep raw restricted telemetry outside the public or portable application.
-- Telemetry Court currently remains a static downstream validation slice; Toponymy integration is a target capability.
+- Telemetry Court currently implements a local downstream validation/refinement
+  loop; direct Toponymy integration remains unimplemented and separately
+  scoped.
 
 ## Working Rule For Agents
 

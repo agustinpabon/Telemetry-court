@@ -5,13 +5,18 @@ Use this guide for durable agent prompts. Do not include temporary PR, branch, o
 ## Required Product Context
 
 ```text
-Telemetry Court is an evidence-based human-in-the-loop validation bench
-for AI-generated telemetry cluster interpretations.
+Telemetry Court is an evidence-based human-in-the-loop validation bench and
+topological refiner for AI-generated telemetry cluster interpretations.
 
 AI names the cluster. Humans test the evidence.
 
-Current state: static synthetic validation slice.
-Next milestone: Case Package Contract and Validation Infrastructure.
+Current state: the local CasePackage -> ReviewResult -> EvaluationReport ->
+cluster_refinement.v0.1 loop and Milestone 4 repository engineering are
+implemented. Evidence Assistance is fixed-question, deterministic, and mocked.
+
+Next proof: Milestone 6 requires approved realistic/sanitized packages,
+independent human reviewers, and an external refinement/rerun. Do not fabricate
+that evidence.
 ```
 
 ## Prompt Structure
@@ -30,6 +35,7 @@ Contract impact:
 - CasePackage
 - ReviewResult
 - EvaluationReport
+- QuickDisposition / cluster_refinement / mocked assistance, if applicable
 
 Scope:
 <what changes>
@@ -43,9 +49,8 @@ Out of scope:
 - invented evidence or Toponymy capabilities
 
 Required checks:
-- npm test
-- npm run lint
-- npm run build
+- npm run check
+- relevant browser smoke for UI/workflow changes
 
 Final response:
 - files changed
@@ -53,14 +58,15 @@ Final response:
 - checks and results
 - assumptions
 - risks and remaining ambiguities
-- recommended next milestone
+- recommended next proof or narrow slice
 ```
 
 ## Implementation Prompt
 
 ```text
 You are working on Telemetry Court, an evidence-based human-in-the-loop
-validation bench for AI-generated telemetry cluster interpretations.
+validation bench and topological refiner for AI-generated telemetry cluster
+interpretations.
 
 Task:
 Implement <narrow issue>.
@@ -79,22 +85,25 @@ Required context:
 
 Product gate:
 - Explain how this improves evidence grounding, structured review, provenance,
-  aggregation, or evaluation output.
-- Preserve CasePackage / ReviewResult / EvaluationReport separation.
+  aggregation, evaluation output, or refinement handoff.
+- Preserve CasePackage / ReviewResult / EvaluationReport / QuickDisposition /
+  cluster_refinement separation.
 - If backend work is involved, identify the contract requirement that justifies it.
 
 Constraints:
 - Make the smallest complete change.
 - Preserve blind review and structured choices.
 - Preserve stable evidence links and visible uncertainty.
-- Do not claim current Toponymy or ACME4 support unless implemented and verified.
+- Do not claim direct Toponymy, DataMapPlot, UMAP/HDBSCAN, or ACME4 execution;
+  the current adapter is a sanitized file-contract boundary only.
+- Do not turn the deterministic mocked assistance panel into live AI or generic
+  chat without a separate approved issue and schema/safety decision.
 - Do not add generic infrastructure or redesign unrelated UI.
 - Update docs/CHANGELOG_AI.md.
 
 Run:
-- npm test
-- npm run lint
-- npm run build
+- npm run check
+- the relevant browser smoke for UI/workflow changes
 
 Do not commit, push, or open a PR unless explicitly asked.
 ```
@@ -116,7 +125,7 @@ Prioritize:
 - missing tests
 
 Report findings first with file and line references.
-Run npm test, npm run lint, and npm run build when practical.
+Run `npm run check` and relevant browser smoke when practical.
 Do not merge or commit unless explicitly asked.
 ```
 
@@ -125,7 +134,10 @@ Do not merge or commit unless explicitly asked.
 ```text
 Plan only the next small executable issue batch from docs/ROADMAP.md.
 
-Milestone 4 (Toponymy / ACME4 Adapter Prototype) is the active implementation milestone.
+Milestone 3 and the repository-owned Milestone 4 engineering are implemented.
+Milestone 5 contains the first deterministic mocked assistance UI. Milestone 6
+is the active human/external proof boundary; do not convert it into fabricated
+synthetic reviewer work.
 Prefer thin vertical slices that connect contract, validation, fixture,
 UI compatibility, export, and tests where applicable.
 

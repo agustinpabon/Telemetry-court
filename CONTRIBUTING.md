@@ -1,20 +1,23 @@
 # Contributing
 
-Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations. The current application is a static synthetic validation slice; the next implementation milestone is the Local Utility Gate (external/approved CasePackage validation workflow, package authoring/inspection support, and realistic/sanitized package readiness).
+Telemetry Court is an evidence-based human-in-the-loop validation bench and
+topological refiner for AI-generated telemetry cluster interpretations. The
+local CasePackage -> ReviewResult -> EvaluationReport -> cluster-refinement
+loop and repository-owned adapter/Hot-Folder engineering are implemented. The
+next proof is the approved human research study, not another generic service
+layer.
 
 ## Setup
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
 Run checks with:
 
 ```bash
-npm test
-npm run lint
-npm run build
+npm run check
 ```
 
 ## Before Contributing
@@ -24,13 +27,17 @@ Read `AGENTS.md`, `docs/PRODUCT_VISION.md`, `docs/PRODUCT_POSITIONING.md`, `docs
 ## Contribution Rules
 
 - Keep changes narrow and use existing TypeScript and Next.js patterns.
-- Preserve the distinction between `CasePackage`, `ReviewResult`, and `EvaluationReport`.
+- Preserve the distinction between `CasePackage`, `ReviewResult`,
+  `EvaluationReport`, separate quick dispositions, and cluster-refinement
+  artifacts.
 - Do not add generic dashboards, SIEM/SOC workflows, alert triage, raw log search, chat-first UX, gamification, generic CRUD, or auth-first infrastructure.
 - Do not add a database or API unless a defined contract and evaluation requirement needs it.
 - Keep sample data synthetic, sanitized, or explicitly approved.
 - Preserve evidence IDs, provenance, sanitization metadata, and visible uncertainty.
 - Use only the official `TutteInstitute/toponymy` repository for factual Toponymy claims.
-- Do not claim current Toponymy or ACME4 integration.
+- Do not claim direct Toponymy, DataMapPlot, UMAP/HDBSCAN, or ACME4 execution.
+  The existing sanitized mapper and local file handoff accept approved
+  precomputed packages only.
 - Do not add dependencies without a clear reason.
 
 ## Pull Requests
