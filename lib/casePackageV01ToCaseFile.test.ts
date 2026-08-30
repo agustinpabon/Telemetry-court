@@ -48,6 +48,7 @@ test("adapts a complete CasePackage v0.1 into the existing UI case shape", () =>
     },
     blind_review_enabled: true,
   });
+  assert.deepEqual(result.casePackage, casePackageFixtures[0]);
 });
 
 test("maps package representative-session content instead of copying the compatibility seed", () => {

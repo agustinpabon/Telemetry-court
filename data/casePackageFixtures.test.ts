@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { casePackageFixtures } from "@/data/casePackageFixtures";
-import { sampleCases } from "@/data/sampleCases";
+import {
+  sampleCases,
+  samplePackageReviewRenderState,
+} from "@/data/sampleCases";
 import { sampleCaseSeedData } from "@/data/sampleCaseSeedData";
 import { validateCasePackageV01 } from "@/lib/casePackageValidation";
 import {
@@ -87,5 +90,25 @@ test("CasePackage compatibility adapter preserves the current UI sample case sha
       return compatibleCase;
     }),
     sampleCaseSeedData,
+  );
+});
+
+test("validated sample packages remain available to evidence-constrained helpers", () => {
+  assert.equal(samplePackageReviewRenderState.ok, true);
+  if (!samplePackageReviewRenderState.ok) {
+    return;
+  }
+
+  assert.deepEqual(
+    samplePackageReviewRenderState.casePackages,
+    casePackageFixtures,
+  );
+  assert.deepEqual(
+    samplePackageReviewRenderState.casePackages.map(
+      (casePackage) => casePackage.case.case_id,
+    ),
+    samplePackageReviewRenderState.cases.map(
+      (caseFile) => caseFile.casePackageReference?.case_id,
+    ),
   );
 });

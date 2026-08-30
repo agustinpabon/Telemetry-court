@@ -1,4 +1,5 @@
 import {
+  AI_ASSISTANCE_UNAVAILABLE_REASONS_V01,
   getAiAssistanceQuestionDefinitionV01,
   toAiAssistanceResponseQuestionV01,
   type AiAssistanceQuestionDefinitionV01,
@@ -192,6 +193,17 @@ export function guardAiAssistanceQuestionRequestV01(
   }
 
   const references = readReferences(request.references);
+  if (
+    hasReferencesOutsideQuestionDefinition(definition, references) ||
+    hasUnknownFixedBoundaryReference(references)
+  ) {
+    return blockedResult({
+      status: "refused",
+      reasonCode: "outside_case_scope",
+      questionId: definition.question_id,
+    });
+  }
+
   const missingReference = findMissingRequiredReference(definition, references);
 
   if (missingReference) {
@@ -225,6 +237,41 @@ export function guardAiAssistanceQuestionRequestV01(
     required_references: definition.required_references,
     expected_answer_statuses: definition.expected_answer_statuses,
   };
+}
+
+function hasReferencesOutsideQuestionDefinition(
+  definition: AiAssistanceQuestionDefinitionV01,
+  references: AiAssistanceQuestionGuardrailReferencesV01,
+): boolean {
+  const allowedReferences = new Set([
+    ...definition.required_references,
+    ...(definition.optional_references ?? []),
+  ]);
+
+  return Object.keys(references).some(
+    (referenceType) =>
+      !allowedReferences.has(
+        referenceType as AiAssistanceQuestionReferenceTypeV01,
+      ),
+  );
+}
+
+function hasUnknownFixedBoundaryReference(
+  references: AiAssistanceQuestionGuardrailReferencesV01,
+): boolean {
+  if (
+    references.target_question_id &&
+    !getAiAssistanceQuestionDefinitionV01(references.target_question_id)
+  ) {
+    return true;
+  }
+
+  return Boolean(
+    references.unavailable_reason &&
+      !AI_ASSISTANCE_UNAVAILABLE_REASONS_V01.includes(
+        references.unavailable_reason as (typeof AI_ASSISTANCE_UNAVAILABLE_REASONS_V01)[number],
+      ),
+  );
 }
 
 function detectDisallowedRequestEnvelope(

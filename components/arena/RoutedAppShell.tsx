@@ -4,16 +4,22 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { AppShell } from "@/components/arena/AppShell";
 import type { ArenaStage } from "@/lib/arenaReviewState";
-import type { CaseFile, LandscapeContextNode } from "@/lib/types";
+import type {
+  CaseFile,
+  CasePackageV01,
+  LandscapeContextNode,
+} from "@/lib/types";
 
 type RoutedAppShellProps = {
   cases: CaseFile[];
+  casePackages: CasePackageV01[];
   landscapeContextNodes?: LandscapeContextNode[];
   initialStage: ArenaStage;
 };
 
 export function RoutedAppShell({
   cases,
+  casePackages,
   landscapeContextNodes = [],
   initialStage,
 }: RoutedAppShellProps) {
@@ -23,6 +29,7 @@ export function RoutedAppShell({
   return (
     <AppShell
       cases={cases}
+      casePackages={casePackages}
       landscapeContextNodes={landscapeContextNodes}
       initialStage={initialStage}
       pathname={pathname}

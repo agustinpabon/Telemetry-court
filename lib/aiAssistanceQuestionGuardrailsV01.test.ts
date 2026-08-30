@@ -285,3 +285,41 @@ test("rejects structured request fields outside the evidence question boundary",
     response_refusal_reason: "outside_case_scope",
   });
 });
+
+test("rejects optional references outside the selected fixed-question shape", () => {
+  const result = guardAiAssistanceQuestionRequestV01(
+    {
+      question_id: "question-claim-supporting-evidence-v01",
+      references: {
+        claim_id: "claim-role-changes",
+        unavailable_reason: "external_lookup_or_provider_unavailable",
+      },
+    },
+    { casePackage: minimalSyntheticCasePackageV01 },
+  );
+
+  assertBlocked(result);
+  assert.equal(result.status, "refused");
+  assert.equal(result.reason_code, "outside_case_scope");
+});
+
+test("rejects unknown target question and unavailable reason values", () => {
+  const invalidReferences = [
+    { target_question_id: "question-not-canonical-v01" },
+    { unavailable_reason: "provider_said_something_untrusted" },
+  ];
+
+  for (const references of invalidReferences) {
+    const result = guardAiAssistanceQuestionRequestV01(
+      {
+        question_id: "question-assistance-unavailable-v01",
+        references,
+      },
+      { casePackage: minimalSyntheticCasePackageV01 },
+    );
+
+    assertBlocked(result);
+    assert.equal(result.status, "refused");
+    assert.equal(result.reason_code, "outside_case_scope");
+  }
+});

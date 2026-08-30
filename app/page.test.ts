@@ -551,6 +551,7 @@ test("blind read protects the AI judgment until the reviewer chooses", () => {
   assert.match(pageText, /Cluster Fit Check/);
   assert.match(pageText, /Final Evaluation/);
   assert.match(pageText, /AI claim hidden/);
+  assert.doesNotMatch(pageText, /Deterministic mocked evidence assistance/);
   assert.match(pageText, /Terms in this step/);
   assert.match(pageText, /Blind assessment/);
   assert.match(pageText, /Can you judge this case\?/);

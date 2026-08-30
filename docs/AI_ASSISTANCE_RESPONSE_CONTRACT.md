@@ -2,17 +2,20 @@
 
 ## Purpose
 
-`AI assistance response v0.1` is a local, strict TypeScript contract for future
-evidence-constrained AI assistance.
+`AI assistance response v0.1` is the local, strict TypeScript contract for
+evidence-constrained assistance.
 
-It exists so any future assistant output can be audited against stable evidence
-IDs from the current `CasePackage` or `ReviewResult` context.
+It exists so any assistant output can be audited against stable evidence IDs
+from the current `CasePackage` or `ReviewResult` context.
 
 ```text
-CasePackage / ReviewResult context
--> evidence-constrained question
+validated CasePackage context
+-> fixed evidence-constrained question
+-> deterministic mocked resolver
+-> response validation
+-> deterministic claim critic
 -> AI assistance response v0.1
--> human review or evaluation use
+-> optional Evidence Board display
 ```
 
 Telemetry Court remains an evidence-based validation bench:
@@ -35,8 +38,8 @@ This contract does not implement:
 - raw telemetry ingestion;
 - SOC triage, alert triage, incident response, or remediation actions.
 
-The contract is local and deterministic. It defines what a response must look
-like if evidence-constrained assistance is added later.
+The contract is local and deterministic. The first UI integration uses it only
+for mocked Evidence Board assistance; it does not execute a model.
 
 ## Schema Identity
 
@@ -64,8 +67,8 @@ validate evidence references against a supplied `CasePackageV01` or
 
 ## Fixed Cross-Examination Question Set
 
-Issue #67 defines the only predefined questions that future AI assistance may
-answer. The question set is local, deterministic, and evidence-review oriented:
+Issue #67 defines the only predefined questions that AI assistance may answer.
+The question set is local, deterministic, and evidence-review oriented:
 
 ```ts
 import {
@@ -82,7 +85,7 @@ ai_assistance_question_set.v0.1
 
 The response contract remains `ai_assistance_response.v0.1`. Each selected
 question maps into the response `question` object through `question_id`,
-`question_type`, and `text`. Future UI, fixture, or prompt-runner code must
+`question_type`, and `text`. UI, fixture, or any later prompt-runner code must
 choose from this fixed set rather than accepting arbitrary user-entered
 questions.
 
@@ -139,7 +142,7 @@ Blocked helper results use stable reason codes including
 states map back to the existing `answer.status: "refused"` path and existing
 response refusal reasons rather than creating a parallel chatbot schema.
 
-Future UI must expose fixed question buttons, menus, or selectors derived from
+Assistance UI must expose fixed question buttons, menus, or selectors derived from
 `AI_ASSISTANCE_QUESTION_SET_V01`. It must not render a blank chatbot prompt box,
 arbitrary text submission field, chat history, or "ask anything" affordance.
 Assistance metadata may be recorded when assistance is used, but this guardrail
@@ -168,8 +171,8 @@ include `answer.insufficiency_reason`.
 
 If a question is outside the evidence bench or asks for unsupported behavior,
 emit `answer.status: "refused"` and include `answer.refusal_reason` when a
-response artifact is needed. In a future UI, the preferred behavior can be to
-withhold the assistance affordance entirely before any response is generated.
+response artifact is needed. The current UI withholds invalid output and shows
+a bounded unavailable or refused state instead.
 
 Examples that must not become allowed questions:
 
@@ -180,6 +183,36 @@ Examples that must not become allowed questions:
 | What remediation actions should the SOC take next? | Operational remediation request. | `refused` |
 | Investigate the live alert and search the raw logs. | Live investigation and raw telemetry request. | `refused` |
 | Look up external threat intelligence for this principal. | External lookup beyond supplied evidence. | `refused` |
+
+## Current Evidence Board Integration
+
+Issue #206 adds the first assistance surface. It is an optional disclosure at
+the end of the Evidence Board, after the human evidence-rating controls. It is
+not rendered during blind review, AI reveal, Results, or any other workflow
+stage.
+
+The runtime path is:
+
+```text
+canonical fixed question + explicit package IDs
+-> guardAiAssistanceQuestionRequestV01
+-> resolveMockAiAssistanceQuestionV01
+-> validateAiAssistanceResponseV01
+-> createAiAssistanceClaimCriticReportV01
+-> bounded Evidence Board result
+```
+
+The resolver is deterministic and local. It restates producer-declared
+CasePackage mappings and outlier links; it performs no network request, prompt
+execution, streaming, provider call, or external lookup. A guardrail failure,
+missing required reference, missing validated package, response validation
+failure, or critic validation failure produces an unavailable/refused/withheld
+state rather than an answer.
+
+The panel can focus an evidence card by an exact cited `evidence_id`, but it has
+no evidence-rating callback, verdict callback, workflow-advance callback, or
+persistence path. Assistance cannot alter a human rating, choose a verdict, or
+write to `ReviewResultV01` or `EvaluationReportV01`.
 
 ## Top-Level Shape
 
@@ -221,6 +254,12 @@ When a `CasePackageV01` context is supplied, cited evidence IDs must exist in
 `casePackage.evidence_items`. When only a `ReviewResultV01` context is supplied,
 the validator can check cited IDs against the evidence IDs present in the
 review's evidence ratings.
+
+The `evidence-...`, `claim-...`, and `label-...` prefixes remain the authoring
+convention. For compatibility with already-valid v0.1 packages, response
+validation also accepts an exact non-empty ID present in the supplied validated
+context, even when an older synthetic fixture uses a legacy-style ID. It never
+accepts an unknown ID by convenience.
 
 ## Insufficient Evidence And Refusal
 
@@ -292,7 +331,7 @@ evaluation-report metadata. It is not live AI output, not prompt execution, not
 a chatbot interface, not a final human verdict, and not an automated label
 adjudication. It does not change `EvaluationReportV01` aggregation.
 
-## Deterministic Mock Fixtures
+## Deterministic Mocks
 
 Deterministic synthetic examples live in:
 
@@ -304,9 +343,15 @@ These mocks conform to `ai_assistance_response.v0.1` and validate against the
 existing synthetic `CasePackageV01` fixture. They cover grounded answered
 output, explicit insufficient-evidence output, and refused out-of-scope output.
 
+The Evidence Board uses the separate deterministic resolver in
+`lib/aiAssistanceMockResolverV01.ts`. It keys output to the guarded
+`question_id`, explicit claim/evidence/label reference, and current validated
+CasePackage. Static contract fixtures remain test patterns; they are not a
+shadow question set or live response source.
+
 The mocks are not live AI output, not prompt execution, not pilot evidence, and
 not evidence that Telemetry Court has run a real model or reviewer study. They
-exist only to support future UI, verifier, and contract tests without network
+exist only to support UI, verifier, and contract tests without network
 calls or provider integration.
 
 A deliberately invalid generic-chatbot-style sample is exported separately with
@@ -319,5 +364,5 @@ a validator-test-only name. Do not use it as a product fixture or UI demo.
 
 It does not copy package evidence content, raw references, raw telemetry, or a
 completed human review. It carries compact package metadata plus stable
-evidence references so future assistance can remain auditable and subordinate
+evidence references so assistance can remain auditable and subordinate
 to the review workflow.
