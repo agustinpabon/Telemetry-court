@@ -168,12 +168,14 @@ async function loadNewestHotFolderPackage(page: Page) {
 
   await page.getByRole("button", { name: "Check Hot-Folder" }).click();
   const loadNewest = page.getByRole("button", { name: "Load newest" });
-  await Promise.race([
+  await Promise.any([
     page.waitForURL((url) => url.pathname === "/case-file", {
       timeout: 10_000,
     }),
     loadNewest.waitFor({ state: "visible", timeout: 10_000 }),
-  ]);
+  ]).catch(() => {
+    throw new Error("Hot-Folder package did not auto-load or expose Load newest.");
+  });
 
   if (new URL(page.url()).pathname === "/case-file") {
     await expectText(page.locator("body"), releaseCasePackage.case.title);
@@ -234,7 +236,9 @@ async function completeReview(
   );
   await activateControl(
     page,
-    page.getByRole("button", { name: /^Reveal AI claim$/ }),
+    page.getByRole("button", {
+      name: /^(Reveal AI claim|Continue to AI Claim Check)/,
+    }),
     useKeyboard,
   );
   await expectPath(page, "/ai-reveal");
@@ -315,6 +319,8 @@ async function activateControl(
   control: Locator,
   useKeyboard: boolean,
 ) {
+  await control.waitFor({ state: "visible", timeout: 10_000 });
+
   if (!useKeyboard) {
     await control.click();
     return;
