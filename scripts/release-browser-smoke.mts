@@ -77,6 +77,7 @@ async function runBrowserLoop(hotFolder: string, hotFolderPackageFilename: strin
 
   try {
     await page.goto(baseUrl, { waitUntil: "networkidle" });
+    await waitForHotFolderCasePackageApi(page, releaseCasePackage.package_id);
     await loadNewestHotFolderPackage(page);
     await dismissImportSummaryIfOpen(page);
     await configureReviewer(page);
@@ -185,6 +186,47 @@ async function loadNewestHotFolderPackage(page: Page) {
   await loadNewest.click();
   await expectPath(page, "/case-file");
   await expectText(page.locator("body"), releaseClusterName);
+}
+
+async function waitForHotFolderCasePackageApi(page: Page, packageId: string) {
+  const deadline = Date.now() + 15_000;
+  let lastValidCount = 0;
+  let lastInvalidCount = 0;
+
+  while (Date.now() < deadline) {
+    try {
+      const response = await page.request.get(
+        new URL("/api/hot-folder/casepackages", baseUrl).toString(),
+      );
+      if (response.ok()) {
+        const scan = (await response.json()) as {
+          validCandidates?: Array<{ packageId?: unknown }>;
+          invalidCandidates?: unknown[];
+        };
+        const validCandidates = Array.isArray(scan.validCandidates)
+          ? scan.validCandidates
+          : [];
+        const invalidCandidates = Array.isArray(scan.invalidCandidates)
+          ? scan.invalidCandidates
+          : [];
+        lastValidCount = validCandidates.length;
+        lastInvalidCount = invalidCandidates.length;
+        if (
+          validCandidates.some((candidate) => candidate.packageId === packageId)
+        ) {
+          return;
+        }
+      }
+    } catch {
+      // The dev server can briefly refuse connections while Turbopack settles.
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+
+  throw new Error(
+    `Hot-Folder API did not expose ${packageId} before UI load. Last scan: ${lastValidCount} valid, ${lastInvalidCount} invalid.`,
+  );
 }
 
 async function completeReview(
