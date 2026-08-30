@@ -19,6 +19,133 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-08-30: Release-Candidate Local Loop Hardening
+
+- Agent/model: Codex (GPT-5.6, maximum reasoning)
+- Prompt scope: Audit and harden the complete browser-local review,
+  Hot-Folder, Python refinement, export, Results, CI, and responsive browser
+  loop after the guarded mocked Evidence Assistance slice, without changing
+  v0.1 artifact semantics or adding backend/live-provider scope.
+- Files changed:
+  - `.github/workflows/ci.yml`
+  - `.gitignore`
+  - `package.json`
+  - `package-lock.json`
+  - `next.config.ts`
+  - `next-env.d.ts` (removed from version control as generated output)
+  - `components/arena/AppShell.tsx`
+  - `components/arena/AppShell.test.ts`
+  - `components/arena/CaseFilePanel.tsx`
+  - `components/arena/CasePackageImportControl.tsx`
+  - `components/arena/ReviewResultBundleControl.tsx`
+  - `components/arena/ReviewResultBundleControl.test.ts`
+  - `components/arena/WorkflowPrimitives.test.tsx`
+  - `components/evaluation/LocalEvaluationResults.tsx`
+  - `components/evaluation/LocalEvaluationResults.test.ts`
+  - `app/page.test.ts`
+  - `lib/arenaReviewState.ts`
+  - `lib/arenaReviewState.test.ts`
+  - `lib/arenaSessionHydrationV01.ts`
+  - `lib/artifactFilenameV01.ts`
+  - `lib/artifactFilenameV01.test.ts`
+  - `lib/localJsonFileRead.ts`
+  - `lib/localJsonFileRead.test.ts`
+  - `lib/hotFolderCasePackageScan.ts`
+  - `lib/hotFolderCasePackageScan.test.ts`
+  - `lib/reviewResultImportV01.ts`
+  - `lib/reviewResultImportV01.test.ts`
+  - `lib/reviewResultBundleV01.ts`
+  - `lib/reviewResultBundleV01.test.ts`
+  - `lib/exportReview.ts`
+  - `lib/exportReview.test.ts`
+  - `lib/quickDispositionV01.ts`
+  - `lib/quickDispositionV01.test.ts`
+  - `lib/evaluationReportExportV01.ts`
+  - `lib/evaluationReportExportV01.test.ts`
+  - `lib/resultsGalaxyMapV01.ts`
+  - `lib/resultsGalaxyMapV01.test.ts`
+  - `lib/clusterRefinementV01.ts`
+  - `lib/clusterRefinementV01.test.ts`
+  - `lib/clusterRefinementValidationHelpersV01.ts`
+  - `lib/clusterRefinementValidationV01.ts`
+  - `python/telemetry_court_client.py`
+  - `python/cluster_refinement_v01.py`
+  - `python/tests/telemetry_court_client_test.py`
+  - `scripts/evidence-assistance-browser-smoke.mjs`
+  - `scripts/release-browser-smoke.mts`
+  - `scripts/screenshots.js`
+  - `README.md`
+  - `docs/DEVELOPMENT_WORKFLOW.md`
+  - `docs/HOT_FOLDER_PYTHON_CLIENT.md`
+  - `docs/CLUSTER_REFINEMENT_HANDOFF.md`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Preserved review state across built-in and imported route transitions,
+    delayed route guards until browser-session hydration completes, and
+    sanitized every nested persisted review field before it reaches the
+    reducer.
+  - Replaced demo-specific IAM/synthetic copy on imported CasePackage case
+    files with package-neutral language while preserving the blind-review
+    boundary.
+  - Bounded CasePackage reads at 2 MiB and review/bundle reads at 8 MiB,
+    decoded byte-backed files as fatal UTF-8, redacted invalid artifact
+    details, and sanitized every local download filename segment.
+  - Hardened Hot-Folder discovery against hidden/nested/non-JSON files,
+    symbolic links, descriptor/path replacement, unstable size/timestamps,
+    malformed UTF-8, partial/oversized reads, nondeterministic ordering, and
+    content-bearing validation errors. The CasePackage scanner now ignores
+    refinement handoffs in the same bidirectional folder instead of reporting
+    them as invalid packages.
+  - Added a strict standard-library Python `cluster_refinement.v0.1` consumer
+    that enforces path containment, regular non-symlink files, bounded stable
+    reads, exact compatibility/count/ID/recommendation coherence, and valid
+    explicit no-action artifacts without mutating payloads.
+  - Rejected duplicate refinement IDs in TypeScript and preserved exact
+    ReviewResult, EvaluationReport, and refinement compatibility semantics.
+  - Upgraded Next.js and `eslint-config-next` from `16.2.9` to `16.3.3`,
+    removed the resulting high-severity dependency audit findings, stopped
+    Next from rewriting repository agent instructions, and excluded generated
+    `next-env.d.ts` from version control.
+  - Added explicit Node/Python CI versions, typecheck, Python tests, dependency
+    audit, 80% production-code line/branch/function coverage thresholds, the
+    deterministic Evidence Assistance smoke, and a full synthetic local-loop
+    browser smoke.
+  - Extended screenshot verification to Results and configurable
+    desktop/tablet/mobile output directories, with route-level overflow,
+    console, page-error, and Next overlay failures.
+- Decisions made:
+  - Kept all storage and exchange local; no auth, database, server persistence,
+    raw telemetry, live provider, or upstream clustering execution was added.
+  - Kept quick dispositions separate from full ReviewResults and excluded from
+    EvaluationReport/refinement calculations.
+  - Treated a canonical no-action refinement as a valid, provenance-preserving
+    stop decision, while rejecting malformed or internally inconsistent
+    actionable recommendations.
+  - Extracted only the new pure browser-session sanitizer from the large arena
+    reducer; no application-wide state or component rewrite was attempted.
+- Checks run:
+  - `npm run test:coverage` passed with `416` tests and production-code
+    coverage of `91.22%` lines, `82.37%` branches, and `89.47%` functions;
+  - `npm run test:python` passed with `27` tests;
+  - focused arena hydration and Hot-Folder suites passed;
+  - `npm run typecheck` and scoped lint passed;
+  - `npm run test:browser:release` passed the imported/built-in/quick/full/
+    Results/refinement/Python/corrupt-storage/keyboard loop;
+  - all nine routes were captured at 1440, 820, and 390 pixels with no
+    horizontal overflow, console errors, page errors, or Next.js overlays.
+- Assumptions: The shared Hot-Folder is an approved local handoff containing
+  sanitized JSON artifacts only. Browser storage is convenience state, not a
+  durable or trusted study database.
+- Risks/follow-ups: The engineering loop remains local and single-browser.
+  Independent realistic-package reviewers, research governance, and an
+  external upstream refinement/rerun are still required before any validation
+  or model-quality claim.
+- Next recommended step: Freeze an approved realistic/sanitized package
+  manifest and reviewer roster, then execute the independent Milestone 6 study
+  without substituting synthetic results.
+- Suggested commit message:
+  `fix: harden the local evaluation and refinement loop`
+
 ## 2026-08-30: Current Capability And Pilot Truth Reconciliation
 
 - Agent/model: Codex (GPT-5.6, maximum reasoning)
