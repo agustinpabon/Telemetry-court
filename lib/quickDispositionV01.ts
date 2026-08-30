@@ -1,4 +1,5 @@
 import type { ReviewerIdentityV01 } from "@/lib/reviewerIdentityV01";
+import { sanitizeArtifactFilenameSegmentV01 } from "@/lib/artifactFilenameV01";
 import {
   assertCompleteReviewerIdentityV01,
   createLocalDemoReviewerV01,
@@ -180,7 +181,12 @@ export function serializeQuickDispositionV01(
 }
 
 export function getQuickDispositionFilenameV01(caseFile: CaseFile): string {
-  return `${caseFile.casePackageReference?.case_id ?? caseFile.id}-quick-disposition.json`;
+  const caseId = sanitizeArtifactFilenameSegmentV01(
+    caseFile.casePackageReference?.case_id ?? caseFile.id,
+    "case",
+  );
+
+  return `${caseId}-quick-disposition.json`;
 }
 
 export function validateQuickDispositionV01(

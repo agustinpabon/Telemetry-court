@@ -17,6 +17,7 @@ import {
   assertValidReviewResultV01,
   validateReviewResultV01,
 } from "@/lib/reviewResultValidationV01";
+import { sanitizeArtifactFilenameSegmentV01 } from "@/lib/artifactFilenameV01";
 import { CASE_PACKAGE_V01_SCHEMA_VERSION } from "@/lib/types";
 
 export const REVIEW_RESULT_BUNDLE_V01_SCHEMA_VERSION =
@@ -165,8 +166,10 @@ export function serializeReviewResultBundleV01(
 export function getReviewResultBundleFilename(
   bundle: ReviewResultBundleV01,
 ): string {
-  const date = /^\d{4}-\d{2}-\d{2}/.exec(bundle.metadata.created_at)?.[0] ??
-    "local";
+  const date = sanitizeArtifactFilenameSegmentV01(
+    /^\d{4}-\d{2}-\d{2}/.exec(bundle.metadata.created_at)?.[0],
+    "local",
+  );
 
   return `telemetry-court-review-results-${date}.json`;
 }
@@ -194,7 +197,8 @@ export function importReviewResultBundleV01Json(
     return {
       ok: false,
       reason: "unsupported_schema",
-      message: `Unsupported ReviewResult bundle schema version "${String(parsed.schema_version)}".`,
+      message:
+        "Unsupported ReviewResult bundle schema version. Only review_result_bundle.v0.1 is accepted.",
     };
   }
 

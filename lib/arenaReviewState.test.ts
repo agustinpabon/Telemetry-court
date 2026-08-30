@@ -731,3 +731,54 @@ test("direct verdict hydration preserves an explicitly persisted final verdict",
   assert.equal(getCurrentReviewState(arenaState).finalVerdict, "supported");
   assert.deepEqual(getCurrentReviewState(arenaState).failureModes, []);
 });
+
+test("arena reducer sanitizes corrupt nested persisted review state before use", () => {
+  const targetCase = sampleCases[0];
+  const validEvidence = targetCase?.evidenceItems[0];
+  assert.ok(targetCase);
+  assert.ok(validEvidence);
+
+  let arenaState = arenaReducer(
+    createInitialArenaState(sampleCases, "evidence_board"),
+    {
+      type: "hydrateSession",
+      selectedCaseId: targetCase.id,
+      reviewsByCase: {
+        [targetCase.id]: {
+          blindChoiceId: targetCase.blindInterpretationOptions[0]?.id,
+          aiLabelRevealed: true,
+          evidenceRatings: {
+            [validEvidence.id]: "weak_support",
+            "unknown-evidence": "supports_label",
+            [targetCase.evidenceItems[1]?.id ?? "missing"]: "fabricated-rating",
+          },
+          duelReasons: { includes: "not-a-function" },
+          failureModes: ["missing_evidence", "fabricated-mode"],
+        },
+        "unknown-case": {
+          finalVerdict: "supported",
+        },
+      },
+    } as never,
+    sampleCases,
+  );
+
+  assert.deepEqual(getCurrentReviewState(arenaState), {
+    blindChoiceId: targetCase.blindInterpretationOptions[0]?.id,
+    aiLabelRevealed: true,
+    evidenceRatings: {
+      [validEvidence.id]: "weak_support",
+    },
+    failureModes: ["missing_evidence"],
+  });
+  assert.equal(Object.hasOwn(arenaState.reviewsByCase, "unknown-case"), false);
+
+  arenaState = arenaReducer(
+    arenaState,
+    { type: "toggleDuelReason", reason: "better_supported" },
+    sampleCases,
+  );
+  assert.deepEqual(getCurrentReviewState(arenaState).duelReasons, [
+    "better_supported",
+  ]);
+});

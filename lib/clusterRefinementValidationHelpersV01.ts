@@ -139,6 +139,14 @@ export function requireSortedStringArray(
       message: "Expected values to be sorted lexicographically.",
     });
   }
+
+  if (new Set(value).size !== value.length) {
+    errors.push({
+      path,
+      code: "duplicate_value",
+      message: "Expected values to be unique.",
+    });
+  }
 }
 
 export function requireSortedEnumArray<const Value extends string>(
@@ -169,6 +177,28 @@ export function requireSortedEnumArray<const Value extends string>(
       message: "Expected values to be sorted lexicographically.",
     });
   }
+}
+
+export function rejectDuplicateId(
+  path: string,
+  value: unknown,
+  seenIds: Set<string>,
+  errors: ClusterRefinementValidationErrorV01[],
+) {
+  if (typeof value !== "string" || value.trim() === "") {
+    return;
+  }
+
+  if (seenIds.has(value)) {
+    errors.push({
+      path,
+      code: "duplicate_id",
+      message: "Expected this ID to be unique within its collection.",
+    });
+    return;
+  }
+
+  seenIds.add(value);
 }
 
 export function isRecord(value: unknown): value is Record<string, unknown> {

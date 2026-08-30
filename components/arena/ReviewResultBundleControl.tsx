@@ -1,6 +1,12 @@
 import { useId, useRef, type ChangeEvent } from "react";
 
 import { ReviewResultImportSummaryPanel } from "@/components/arena/ReviewResultImportSummaryPanel";
+import {
+  LocalJsonFileReadError,
+  REVIEW_ARTIFACT_JSON_MAX_BYTES,
+  formatLocalJsonByteLimit,
+  readBoundedLocalJsonFile,
+} from "@/lib/localJsonFileRead";
 import type { ReviewResultImportInspectionSummaryV01 } from "@/lib/reviewResultInspectionV01";
 
 export type ReviewResultBundleControlStatus =
@@ -44,9 +50,20 @@ export function ReviewResultBundleControl({
     onImportStart();
 
     try {
-      onImportText(await file.text(), file.name);
-    } catch {
-      onImportReadError("Could not read the selected ReviewResult JSON file.");
+      onImportText(
+        await readBoundedLocalJsonFile(
+          file,
+          REVIEW_ARTIFACT_JSON_MAX_BYTES,
+        ),
+        file.name,
+      );
+    } catch (error) {
+      onImportReadError(
+        error instanceof LocalJsonFileReadError &&
+          error.code === "file_too_large"
+          ? `The selected review artifact exceeds the ${formatLocalJsonByteLimit(REVIEW_ARTIFACT_JSON_MAX_BYTES)} local import limit. Nothing was imported.`
+          : "Could not safely read the selected ReviewResult JSON file. Nothing was imported.",
+      );
     } finally {
       input.value = "";
     }
@@ -104,6 +121,6 @@ function getStatusCopy(status: ReviewResultBundleControlStatus): string {
       return status.message;
     case "idle":
     default:
-      return "Local JSON for portable review outputs.";
+      return `Local JSON for portable review outputs, up to ${formatLocalJsonByteLimit(REVIEW_ARTIFACT_JSON_MAX_BYTES)}.`;
   }
 }

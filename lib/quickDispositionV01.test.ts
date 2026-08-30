@@ -4,6 +4,7 @@ import test from "node:test";
 import { sampleCases } from "@/data/sampleCases";
 import {
   buildQuickDispositionExportV01,
+  getQuickDispositionFilenameV01,
   QUICK_DISPOSITION_V01_DISPOSITIONS,
   QUICK_DISPOSITION_V01_REASON_CODES,
   QUICK_DISPOSITION_V01_SCHEMA_VERSION,
@@ -63,6 +64,21 @@ test("quick disposition export emits a versioned artifact without full-review de
   assert.doesNotMatch(
     serialized,
     /evidence_ratings|label_comparison|outlier_impostor|final_verdict|recommended_action/,
+  );
+});
+
+test("quick disposition download filenames sanitize CasePackage IDs", () => {
+  const caseFile = {
+    ...sampleCases[0],
+    casePackageReference: {
+      ...sampleCases[0].casePackageReference!,
+      case_id: "../../private\\case:\u0000report\n",
+    },
+  };
+
+  assert.equal(
+    getQuickDispositionFilenameV01(caseFile),
+    "private-case-report-quick-disposition.json",
   );
 });
 

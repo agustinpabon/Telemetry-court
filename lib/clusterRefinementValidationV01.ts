@@ -4,6 +4,7 @@ import {
   compareStrings,
   isRecord,
   rejectUnexpectedKeys,
+  rejectDuplicateId,
   requireBoolean,
   requireExactString,
   requireNonEmptyString,
@@ -270,6 +271,8 @@ function validateSourceReviews(
     pushUnstableOrder(path, "Source reviews must be sorted by review_id.", errors);
   }
 
+  const seenReviewIds = new Set<string>();
+
   for (const [index, sourceReview] of value.entries()) {
     const itemPath = `${path}[${index}]`;
 
@@ -285,6 +288,12 @@ function validateSourceReviews(
       errors,
     );
     requireNonEmptyString(`${itemPath}.review_id`, sourceReview.review_id, errors);
+    rejectDuplicateId(
+      `${itemPath}.review_id`,
+      sourceReview.review_id,
+      seenReviewIds,
+      errors,
+    );
     requireOptionalString(
       `${itemPath}.review_session_id`,
       sourceReview.review_session_id,
@@ -305,6 +314,7 @@ function validateSessionRecommendations(
   }
 
   const sessionIds: string[] = [];
+  const seenSessionIds = new Set<string>();
 
   for (const [index, recommendation] of value.entries()) {
     const itemPath = `${path}[${index}]`;
@@ -319,6 +329,12 @@ function validateSessionRecommendations(
     if (typeof recommendation.session_id === "string") {
       sessionIds.push(recommendation.session_id);
     }
+    rejectDuplicateId(
+      `${itemPath}.session_id`,
+      recommendation.session_id,
+      seenSessionIds,
+      errors,
+    );
     requireOneOf(
       `${itemPath}.status`,
       recommendation.status,
@@ -430,6 +446,8 @@ function validateClusterRecommendations({
     return;
   }
 
+  const seenClusterIds = new Set<string>();
+
   for (const [index, recommendation] of value.entries()) {
     const itemPath = `${path}[${index}]`;
 
@@ -445,6 +463,12 @@ function validateClusterRecommendations({
       errors,
     );
     requireNonEmptyString(`${itemPath}.cluster_id`, recommendation.cluster_id, errors);
+    rejectDuplicateId(
+      `${itemPath}.cluster_id`,
+      recommendation.cluster_id,
+      seenClusterIds,
+      errors,
+    );
     requireExactString(
       `${itemPath}.status`,
       recommendation.status,

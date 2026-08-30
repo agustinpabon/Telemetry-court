@@ -4,7 +4,10 @@ import test from "node:test";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { LocalEvaluationResultsView } from "@/components/evaluation/LocalEvaluationResults";
+import {
+  LocalEvaluationResultsView,
+  loadLocalEvaluationResultsForPresentation,
+} from "@/components/evaluation/LocalEvaluationResults";
 import { casePackageFixtures } from "@/data/casePackageFixtures";
 import { sampleEvaluationReportV01 } from "@/data/evaluationReportFixtures";
 import { aggregateReviewResultsV01 } from "@/lib/evaluationReportV01";
@@ -13,6 +16,7 @@ import { summarizeQuickDispositionsV01 } from "@/lib/quickDispositionInspectionV
 import type { QuickDispositionV01 } from "@/lib/quickDispositionV01";
 import type { ReviewResultImportInspectionSummaryV01 } from "@/lib/reviewResultInspectionV01";
 import type { ReviewResultV01 } from "@/lib/reviewResultV01";
+import { REVIEW_RESULT_LOCAL_STORE_V01_KEY } from "@/lib/reviewResultStorageV01";
 import type { CasePackageV01 } from "@/lib/types";
 
 const populatedSnapshot: LocalEvaluationResultsSnapshotV01 = {
@@ -45,6 +49,8 @@ test("results view renders locally stored ReviewResults by compatible package", 
     /Individual reviews roll up into multi-reviewer EvaluationReport-style metrics/,
   );
   assert.match(markup, /Import on \/results/);
+  assert.match(markup, /Local JSON only, up to 8 MiB/);
+  assert.match(markup, /CasePackage JSON up to 2 MiB/);
   assert.match(markup, /Group compatible reviews/);
   assert.match(
     markup,
@@ -81,6 +87,33 @@ test("results view renders locally stored ReviewResults by compatible package", 
     markup,
     /upstream refinement recipe derived from human review aggregation/i,
   );
+});
+
+test("corrupt browser-local review artifacts render a fixed redacted error", () => {
+  const privateMarker = "private-package-marker-do-not-render";
+  const values = new Map<string, string>([
+    [
+      REVIEW_RESULT_LOCAL_STORE_V01_KEY,
+      JSON.stringify({
+        schema_version: privateMarker,
+        review_results_by_case_package_id: {},
+      }),
+    ],
+  ]);
+  const loadResult = loadLocalEvaluationResultsForPresentation({
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+  });
+  const markup = renderToStaticMarkup(
+    React.createElement(LocalEvaluationResultsView, {
+      snapshot: loadResult.snapshot,
+      loadError: loadResult.loadError,
+    }),
+  );
+
+  assert.match(markup, /Browser-local review artifacts are invalid/);
+  assert.match(markup, /Supplied values are not shown/);
+  assert.doesNotMatch(markup, new RegExp(privateMarker));
 });
 
 test("results view renders a topology map when compatible package coordinates exist", () => {

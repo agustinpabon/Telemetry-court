@@ -10,6 +10,12 @@ import {
 
 import type { CasePackageInspectionSummary } from "@/lib/casePackageInspection";
 import type { CasePackageImportResult } from "@/lib/importCasePackageV01";
+import {
+  CASE_PACKAGE_JSON_MAX_BYTES,
+  LocalJsonFileReadError,
+  formatLocalJsonByteLimit,
+  readBoundedLocalJsonFile,
+} from "@/lib/localJsonFileRead";
 
 export type CasePackageImportFailureDetails =
   | Omit<Extract<CasePackageImportResult, { ok: false }>, "ok">
@@ -95,10 +101,18 @@ export function CasePackageImportControl({
     onImportStart();
 
     try {
-      const jsonText = await file.text();
+      const jsonText = await readBoundedLocalJsonFile(
+        file,
+        CASE_PACKAGE_JSON_MAX_BYTES,
+      );
       onImportText(jsonText, file.name);
-    } catch {
-      onImportReadError("Could not read the selected CasePackage file.");
+    } catch (error) {
+      onImportReadError(
+        error instanceof LocalJsonFileReadError &&
+          error.code === "file_too_large"
+          ? `The selected CasePackage exceeds the ${formatLocalJsonByteLimit(CASE_PACKAGE_JSON_MAX_BYTES)} local import limit. Review not started.`
+          : "Could not safely read the selected CasePackage file. Review not started.",
+      );
     } finally {
       input.value = "";
     }
@@ -220,7 +234,7 @@ function getStatusCopy(status: CasePackageImportStatus): string {
       return status.failure.message;
     case "idle":
     default:
-      return "Import a local CasePackage JSON.";
+      return `Import a local CasePackage JSON up to ${formatLocalJsonByteLimit(CASE_PACKAGE_JSON_MAX_BYTES)}.`;
   }
 }
 

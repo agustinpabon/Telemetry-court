@@ -3,7 +3,14 @@ async function captureScreenshots() {
   const path = await import("node:path");
   const { chromium } = await import("playwright");
   const baseUrl = process.env.TELEMETRY_COURT_BASE_URL ?? "http://localhost:3000";
-  const screenshotDir = path.resolve(process.cwd(), "screenshots");
+  const screenshotDir = path.resolve(
+    process.env.TELEMETRY_COURT_SCREENSHOT_DIR ??
+      path.join(process.cwd(), "screenshots"),
+  );
+  const viewport = {
+    width: readViewportDimension("TELEMETRY_COURT_SCREENSHOT_WIDTH", 1440),
+    height: readViewportDimension("TELEMETRY_COURT_SCREENSHOT_HEIGHT", 1000),
+  };
   const seededState = {
     selectedCaseId: "case-arena-001",
     reviewsByCase: {
@@ -27,14 +34,19 @@ async function captureScreenshots() {
     { path: "/label-duel", fileName: "06-label-duel.png" },
     { path: "/impostor", fileName: "07-impostor.png" },
     { path: "/verdict", fileName: "08-verdict.png" },
+    { path: "/results", fileName: "09-results.png" },
   ];
 
   await fs.mkdir(screenshotDir, { recursive: true });
 
   const browser = await chromium.launch();
-  const page = await browser.newPage({
-    viewport: { width: 1440, height: 1000 },
+  const page = await browser.newPage({ viewport });
+  const browserErrors = [];
+
+  page.on("console", (message) => {
+    if (message.type() === "error") browserErrors.push(message.text());
   });
+  page.on("pageerror", (error) => browserErrors.push(error.message));
 
   try {
     console.log(`Setting origin to ${baseUrl} and seeding state...`);
@@ -51,6 +63,7 @@ async function captureScreenshots() {
     for (const route of routes) {
       console.log(`Capturing ${route.fileName} on route ${route.path}...`);
       const url = new URL(route.path, baseUrl).toString();
+      const routeErrorStart = browserErrors.length;
 
       await page.goto(url, { waitUntil: "networkidle" });
       
@@ -68,6 +81,23 @@ async function captureScreenshots() {
 
       if (errorOverlay > 0) {
         throw new Error(`Next.js error overlay detected on ${route.path}`);
+      }
+
+      const layout = await page.evaluate(() => ({
+        viewportWidth: document.documentElement.clientWidth,
+        contentWidth: document.documentElement.scrollWidth,
+      }));
+      if (layout.contentWidth > layout.viewportWidth + 1) {
+        throw new Error(
+          `Horizontal overflow on ${route.path}: ${layout.contentWidth}px content for ${layout.viewportWidth}px viewport.`,
+        );
+      }
+
+      const routeErrors = browserErrors.slice(routeErrorStart);
+      if (routeErrors.length > 0) {
+        throw new Error(
+          `Browser errors detected on ${route.path}:\n${routeErrors.join("\n")}`,
+        );
       }
 
       if (route.path === "/verdict") {
@@ -105,6 +135,21 @@ async function captureScreenshots() {
   } finally {
     await browser.close();
   }
+}
+
+function readViewportDimension(environmentKey, fallback) {
+  const rawValue = process.env[environmentKey];
+
+  if (rawValue === undefined) {
+    return fallback;
+  }
+
+  const parsedValue = Number(rawValue);
+  if (!Number.isSafeInteger(parsedValue) || parsedValue <= 0) {
+    throw new Error(`${environmentKey} must be a positive integer.`);
+  }
+
+  return parsedValue;
 }
 
 captureScreenshots().catch((error) => {

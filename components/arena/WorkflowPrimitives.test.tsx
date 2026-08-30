@@ -176,6 +176,20 @@ test("CasePackage import control renders local import status", () => {
   assert.doesNotMatch(errorMarkup, /case_package\.v9-secret-account-111111111111/);
 });
 
+test("CasePackage import control discloses the bounded local file limit", () => {
+  const markup = renderStaticMarkup(
+    React.createElement(CasePackageImportControl, {
+      status: { state: "idle" },
+      onImportStart: () => undefined,
+      onImportText: () => undefined,
+      onImportReadError: () => undefined,
+      onClearImport: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /up to 2 MiB/);
+});
+
 test("Hot-Folder CasePackage control renders disabled, ready, and loaded states", () => {
   const disabledMarkup = renderStaticMarkup(
     React.createElement(HotFolderCasePackageControl, {

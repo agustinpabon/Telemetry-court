@@ -12,30 +12,38 @@ import json
 import math
 import os
 import re
+import stat
 import tempfile
 from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+if __package__:
+    from .cluster_refinement_v01 import (
+        ClusterRefinementValidationError,
+        validate_cluster_refinement_v01,
+    )
+else:
+    from cluster_refinement_v01 import (
+        ClusterRefinementValidationError,
+        validate_cluster_refinement_v01,
+    )
+
 CASE_PACKAGE_SCHEMA_VERSION = "case_package.v0.1"
 CLUSTER_REFINEMENT_SCHEMA_VERSION = "cluster_refinement.v0.1"
 CLUSTER_REFINEMENT_CALCULATION_VERSION = "cluster_refinement_calculation.v0.1"
+CLUSTER_REFINEMENT_JSON_MAX_BYTES = 8 * 1024 * 1024
 HOT_FOLDER_ENV_VAR = "TELEMETRY_COURT_HOT_FOLDER"
 
 _SAFE_FRAGMENT_PATTERN = re.compile(r"[^A-Za-z0-9._-]+")
-_REQUIRED_REFINEMENT_FIELDS = {
-    "schema_version",
-    "refinement_id",
-    "generated_at",
-    "case_package",
-    "source_review_ids",
-    "prune_session_ids",
-    "split_recommendations",
-    "merge_recommendations",
-    "uncertainty",
-    "disagreement",
-}
+_STABLE_FILE_STAT_FIELDS = (
+    "st_dev",
+    "st_ino",
+    "st_size",
+    "st_mtime_ns",
+    "st_ctime_ns",
+)
 
 
 class TelemetryCourtHotFolderError(Exception):
@@ -234,17 +242,21 @@ class TelemetryCourtHotFolder:
             refinement_path,
             RefinementReadError,
         )
+        try:
+            if refinement_path.is_symlink():
+                raise RefinementReadError(
+                    "Refinement path must not be a symbolic link."
+                )
+        except OSError:
+            raise RefinementReadError(
+                f"Could not inspect refinement JSON file: {refinement_path.name}"
+            ) from None
         if not _is_visible_json_file(refinement_path):
             raise RefinementReadError(
                 f"Refinement path must be a visible top-level .json file: {refinement_path.name}"
             )
 
-        try:
-            raw_text = refinement_path.read_text(encoding="utf-8")
-        except OSError as error:
-            raise RefinementReadError(
-                f"Could not read refinement JSON file: {refinement_path}"
-            ) from error
+        raw_text = _read_regular_file_text(refinement_path)
 
         refinement = _coerce_json_object(
             raw_text,
@@ -275,6 +287,55 @@ def _coerce_json_object(
         raise error_type(f"{label} must be a JSON object.")
 
     return parsed
+
+
+def _read_regular_file_text(path: Path) -> str:
+    flags = os.O_RDONLY
+    no_follow = getattr(os, "O_NOFOLLOW", 0)
+    flags |= no_follow
+    descriptor: int | None = None
+
+    try:
+        descriptor = os.open(path, flags)
+        initial_stat = os.fstat(descriptor)
+        if not stat.S_ISREG(initial_stat.st_mode):
+            raise RefinementReadError(
+                f"Refinement path must be a regular JSON file: {path.name}"
+            )
+        if initial_stat.st_size > CLUSTER_REFINEMENT_JSON_MAX_BYTES:
+            raise RefinementReadError(
+                f"Refinement JSON exceeds the {CLUSTER_REFINEMENT_JSON_MAX_BYTES}-byte limit."
+            )
+        with os.fdopen(descriptor, "rb") as refinement_file:
+            descriptor = None
+            raw_bytes = refinement_file.read(CLUSTER_REFINEMENT_JSON_MAX_BYTES + 1)
+            final_stat = os.fstat(refinement_file.fileno())
+        if len(raw_bytes) > CLUSTER_REFINEMENT_JSON_MAX_BYTES:
+            raise RefinementReadError(
+                f"Refinement JSON exceeds the {CLUSTER_REFINEMENT_JSON_MAX_BYTES}-byte limit."
+            )
+        _assert_stable_file_read(initial_stat, final_stat, len(raw_bytes))
+        return raw_bytes.decode("utf-8")
+    except RefinementReadError:
+        raise
+    except (OSError, UnicodeError):
+        raise RefinementReadError(
+            f"Could not read refinement JSON file: {path.name}"
+        ) from None
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+
+
+def _assert_stable_file_read(initial_stat: Any, final_stat: Any, byte_length: int) -> None:
+    identity_changed = any(
+        getattr(initial_stat, field) != getattr(final_stat, field)
+        for field in _STABLE_FILE_STAT_FIELDS
+    )
+    if identity_changed or byte_length != final_stat.st_size:
+        raise RefinementReadError(
+            "Refinement JSON changed or was replaced while it was being read."
+        )
 
 
 def _to_json_compatible(
@@ -429,8 +490,11 @@ def _assert_top_level_path_in_folder(
     candidate_path: Path,
     error_type: type[TelemetryCourtHotFolderError],
 ) -> None:
-    resolved_folder = folder_path.expanduser().resolve(strict=False)
-    resolved_candidate = candidate_path.expanduser().resolve(strict=False)
+    try:
+        resolved_folder = folder_path.expanduser().resolve(strict=False)
+        resolved_candidate = candidate_path.expanduser().resolve(strict=False)
+    except (OSError, RuntimeError):
+        raise error_type("Hot-Folder path could not be validated.") from None
 
     if resolved_candidate.parent != resolved_folder:
         raise error_type("Path must be a top-level file inside the Hot-Folder.")
@@ -440,13 +504,13 @@ def _require_existing_folder(folder_path: Path) -> Path:
     try:
         if folder_path.is_dir():
             return folder_path
-    except OSError as error:
+    except OSError:
         raise HotFolderPathError(
-            f"Configured Hot-Folder could not be inspected: {folder_path}"
-        ) from error
+            "Configured Hot-Folder could not be inspected."
+        ) from None
 
     raise HotFolderPathError(
-        f"Configured Hot-Folder does not exist or is not a directory: {folder_path}"
+        "Configured Hot-Folder does not exist or is not a directory."
     )
 
 
@@ -478,10 +542,10 @@ def _atomic_write_text(output_path: Path, text: str) -> None:
             temp_file_path = Path(temp_file.name)
 
         os.replace(temp_file_path, output_path)
-    except OSError as error:
+    except OSError:
         raise HotFolderWriteError(
             f"Could not write CasePackage JSON to Hot-Folder: {output_path.name}"
-        ) from error
+        ) from None
     finally:
         if temp_file_path is not None and temp_file_path.exists():
             try:
@@ -508,23 +572,12 @@ def _validate_refinement_shape(
     refinement: Mapping[str, Any],
     refinement_path: Path,
 ) -> None:
-    schema_version = refinement.get("schema_version")
-    if schema_version != CLUSTER_REFINEMENT_SCHEMA_VERSION:
+    try:
+        validate_cluster_refinement_v01(refinement)
+    except ClusterRefinementValidationError as error:
         raise RefinementSchemaError(
-            f"Unsupported refinement schema_version in {refinement_path.name}: {schema_version!r}"
-        )
-
-    missing_fields = sorted(_REQUIRED_REFINEMENT_FIELDS - refinement.keys())
-    if missing_fields:
-        raise RefinementSchemaError(
-            f"Refinement {refinement_path.name} is missing required fields: {', '.join(missing_fields)}"
-        )
-
-    case_package = refinement.get("case_package")
-    if not isinstance(case_package, Mapping):
-        raise RefinementSchemaError(
-            f"Refinement {refinement_path.name} must include a case_package object."
-        )
+            f"Refinement {refinement_path.name} is incompatible: {error}"
+        ) from error
 
 
 def _extract_refinement_identity(refinement: Mapping[str, Any]) -> dict[str, str | None]:

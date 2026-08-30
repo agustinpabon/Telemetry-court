@@ -23,6 +23,7 @@ test("ReviewResult bundle control exposes local JSON import and export actions",
   assert.match(markup, /Export reviews/);
   assert.match(markup, /Import review results/);
   assert.match(markup, /Local JSON/);
+  assert.match(markup, /up to 8 MiB/);
   assert.match(markup, /accept="application\/json,\.json"/);
 });
 

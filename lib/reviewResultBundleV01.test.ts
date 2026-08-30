@@ -61,6 +61,32 @@ test("ReviewResult bundle v0.1 exports a versioned portable envelope", () => {
   );
 });
 
+test("ReviewResult bundle download filenames use only a sanitized date segment", () => {
+  const bundle = createReviewResultBundleV01({
+    reviewResults: [
+      buildReviewResult(sampleCases[0], {
+        reviewer_id: "reviewer-filename",
+        review_session_id: "session-filename",
+        context: "local_review",
+      }),
+    ],
+    bundleId: "bundle-local-filename",
+    createdAt: "2026-06-21T16:00:00.000Z",
+  });
+  const bundleWithUnsafeTimestamp = {
+    ...bundle,
+    metadata: {
+      ...bundle.metadata,
+      created_at: "../../private\\bundle:\u0000report\n",
+    },
+  };
+
+  assert.equal(
+    getReviewResultBundleFilename(bundleWithUnsafeTimestamp),
+    "telemetry-court-review-results-local.json",
+  );
+});
+
 test("ReviewResult bundle v0.1 imports valid local JSON", () => {
   const review = buildReviewResult(sampleCases[0], {
     reviewer_id: "reviewer-a",
@@ -92,9 +118,10 @@ test("ReviewResult bundle v0.1 rejects malformed JSON", () => {
 });
 
 test("ReviewResult bundle v0.1 rejects unsupported bundle schemas", () => {
+  const privateMarker = "PRIVATE_BUNDLE_SCHEMA_MARKER";
   const result = importReviewResultBundleV01Json(
     JSON.stringify({
-      schema_version: "review_result_bundle.v9",
+      schema_version: `review_result_bundle.${privateMarker}`,
       metadata: {},
       compatibility: {},
       review_results: [],
@@ -105,8 +132,9 @@ test("ReviewResult bundle v0.1 rejects unsupported bundle schemas", () => {
     ok: false,
     reason: "unsupported_schema",
     message:
-      'Unsupported ReviewResult bundle schema version "review_result_bundle.v9".',
+      "Unsupported ReviewResult bundle schema version. Only review_result_bundle.v0.1 is accepted.",
   });
+  assert.doesNotMatch(JSON.stringify(result), new RegExp(privateMarker));
 });
 
 test("ReviewResult bundle v0.1 rejects out-of-contract bundle fields", () => {
