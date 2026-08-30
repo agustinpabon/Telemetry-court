@@ -128,6 +128,7 @@ async function runBrowserLoop(hotFolder: string, hotFolderPackageFilename: strin
     );
     await copyFile(refinementPath, hotFolderRefinementPath);
     await readRefinementWithPythonClient(hotFolder, hotFolderRefinementPath);
+    await assertHotFolderCasePackageScanIsClean(page);
 
     await verifyResponsiveResults(page);
     await assertNoRuntimeErrors(page, browserErrors);
@@ -426,6 +427,28 @@ async function verifyResponsiveResults(page: Page) {
         `Results overflow at ${width}px: ${dimensions.content}px content for ${dimensions.viewport}px viewport.`,
       );
     }
+  }
+}
+
+async function assertHotFolderCasePackageScanIsClean(page: Page) {
+  const response = await page.request.get(
+    new URL("/api/hot-folder/casepackages", baseUrl).toString(),
+  );
+  const scan = (await response.json()) as {
+    validCandidates?: unknown[];
+    invalidCandidates?: unknown[];
+  };
+
+  if (
+    !response.ok() ||
+    !Array.isArray(scan.validCandidates) ||
+    !Array.isArray(scan.invalidCandidates) ||
+    scan.validCandidates.length !== 0 ||
+    scan.invalidCandidates.length !== 0
+  ) {
+    throw new Error(
+      "The shared Hot-Folder did not distinguish refinement output from CasePackage candidates.",
+    );
   }
 }
 

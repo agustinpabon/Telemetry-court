@@ -42,6 +42,7 @@ logs
 
 # typescript
 *.tsbuildinfo
+/next-env.d.ts
 
 # local test logs
 test-results.txt
