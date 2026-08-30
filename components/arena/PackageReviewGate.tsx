@@ -24,6 +24,7 @@ export function PackageReviewGate({
   return (
     <RoutedAppShell
       cases={renderState.cases}
+      casePackages={renderState.casePackages}
       landscapeContextNodes={landscapeContextNodes}
       initialStage={initialStage}
     />

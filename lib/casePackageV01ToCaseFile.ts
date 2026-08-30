@@ -43,7 +43,7 @@ export type CaseFileCompatibilitySeed = Pick<
 >;
 
 export type CasePackageV01ToCaseFileResult =
-  | { ok: true; caseFile: CaseFile }
+  | { ok: true; caseFile: CaseFile; casePackage: CasePackageV01 }
   | { ok: false; errors: CasePackageValidationError[] };
 
 export function casePackageV01ToCaseFile(
@@ -67,6 +67,7 @@ export function casePackageV01ToCaseFile(
 
   return {
     ok: true,
+    casePackage: validation.package,
     caseFile: mapValidatedCasePackageV01ToCaseFile(
       validation.package,
       compatibilitySeed,

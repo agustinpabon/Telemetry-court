@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { navigatePath } from "@/components/arena/AppShell";
+import {
+  findCasePackageForCaseFile,
+  navigatePath,
+} from "@/components/arena/AppShell";
+import { casePackageFixtures } from "@/data/casePackageFixtures";
+import { sampleCases } from "@/data/sampleCases";
 
 test("imported-case navigation preserves in-memory state across stage paths", () => {
   const calls: Array<{ kind: "push" | "preserve"; path: string }> = [];
@@ -35,4 +40,24 @@ test("built-in demo navigation still uses router navigation", () => {
   });
 
   assert.deepEqual(calls, [{ kind: "push", path: "/ai-reveal" }]);
+});
+
+test("evidence assistance resolves only an exact CasePackage reference", () => {
+  assert.equal(
+    findCasePackageForCaseFile(sampleCases[0], casePackageFixtures),
+    casePackageFixtures[0],
+  );
+
+  const caseWithUnknownRevision = {
+    ...sampleCases[0],
+    casePackageReference: {
+      ...sampleCases[0].casePackageReference!,
+      package_revision: "unknown-revision",
+    },
+  };
+
+  assert.equal(
+    findCasePackageForCaseFile(caseWithUnknownRevision, casePackageFixtures),
+    undefined,
+  );
 });

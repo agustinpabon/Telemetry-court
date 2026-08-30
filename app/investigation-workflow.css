@@ -7135,6 +7135,379 @@
   display: none;
 }
 
+.arena-shell.arena-shell-investigate .evidence-review-card:focus {
+  border-color: rgba(95, 111, 82, 0.42);
+  outline: 3px solid rgba(95, 111, 82, 0.2);
+  outline-offset: 3px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-panel {
+  margin-top: 5px;
+  min-width: 0;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-panel > details {
+  background: rgba(247, 245, 239, 0.3);
+  border: 1px solid rgba(50, 48, 47, 0.055);
+  border-radius: 16px;
+  color: var(--workflow-ink);
+  overflow: hidden;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-heading {
+  align-items: center;
+  cursor: pointer;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) auto 18px;
+  list-style: none;
+  min-height: 64px;
+  padding: 11px 14px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-heading::-webkit-details-marker {
+  display: none;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-heading::after {
+  color: var(--workflow-muted);
+  content: "+";
+  font-size: 17px;
+  font-weight: 760;
+  line-height: 1;
+  text-align: center;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-panel details[open]
+  > .evidence-assistance-heading::after {
+  content: "−";
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-heading > span:first-child {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-heading strong {
+  color: var(--workflow-ink);
+  font-size: 14px;
+  font-weight: 760;
+  line-height: 1.3;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-kicker,
+.arena-shell.arena-shell-investigate .evidence-assistance-secondary-label {
+  color: var(--workflow-muted);
+  font-size: 10.5px;
+  font-weight: 720;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-kicker {
+  text-transform: uppercase;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-secondary-label {
+  max-width: 28ch;
+  text-align: right;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-body {
+  border-top: 1px solid rgba(50, 48, 47, 0.055);
+  display: grid;
+  gap: 13px;
+  padding: 14px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-boundary {
+  color: var(--workflow-muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 76ch;
+  text-wrap: pretty;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-controls {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-controls label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-controls label > span {
+  color: var(--workflow-muted);
+  font-size: 11px;
+  font-weight: 760;
+  line-height: 1.2;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-controls select {
+  appearance: none;
+  background:
+    linear-gradient(45deg, transparent 50%, rgba(50, 48, 47, 0.56) 50%)
+      calc(100% - 14px) 50% / 5px 5px no-repeat,
+    linear-gradient(135deg, rgba(50, 48, 47, 0.56) 50%, transparent 50%)
+      calc(100% - 9px) 50% / 5px 5px no-repeat,
+    rgba(251, 250, 247, 0.9);
+  border: 1px solid rgba(50, 48, 47, 0.1);
+  border-radius: 10px;
+  color: var(--workflow-ink);
+  font: inherit;
+  font-size: 12px;
+  min-height: 40px;
+  min-width: 0;
+  padding: 7px 28px 7px 10px;
+  width: 100%;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-run-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-run {
+  background: rgba(251, 250, 247, 0.9);
+  border: 1px solid rgba(50, 48, 47, 0.14);
+  border-radius: 10px;
+  color: var(--workflow-ink);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 760;
+  min-height: 38px;
+  padding: 7px 12px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-run:hover:not(:disabled),
+.arena-shell.arena-shell-investigate .evidence-assistance-reference-list button:hover {
+  background: rgba(50, 48, 47, 0.055);
+  border-color: rgba(50, 48, 47, 0.2);
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-run:disabled {
+  color: rgba(50, 48, 47, 0.42);
+  cursor: not-allowed;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-run-row > code {
+  color: var(--workflow-muted);
+  font-size: 10.5px;
+  overflow-wrap: anywhere;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-state {
+  background: rgba(251, 250, 247, 0.72);
+  border: 1px solid rgba(50, 48, 47, 0.075);
+  border-radius: 12px;
+  display: grid;
+  gap: 11px;
+  padding: 12px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-state-answered {
+  border-color: rgba(63, 125, 85, 0.25);
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-state-insufficient_evidence {
+  border-color: rgba(154, 106, 47, 0.3);
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-state-refused,
+.arena-shell.arena-shell-investigate .evidence-assistance-state-guardrail_refused,
+.arena-shell.arena-shell-investigate .evidence-assistance-state-unavailable,
+.arena-shell.arena-shell-investigate .evidence-assistance-state-invalid_response {
+  border-color: rgba(155, 61, 53, 0.24);
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-status-line {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-status-line > span {
+  align-items: center;
+  background: rgba(50, 48, 47, 0.055);
+  border: 1px solid rgba(50, 48, 47, 0.075);
+  border-radius: 999px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 820;
+  height: 22px;
+  justify-content: center;
+  width: 22px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-status-line strong,
+.arena-shell.arena-shell-investigate .evidence-assistance-findings h4,
+.arena-shell.arena-shell-investigate .evidence-assistance-warnings h4 {
+  color: var(--workflow-ink);
+  font-size: 12px;
+  font-weight: 780;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-state > p,
+.arena-shell.arena-shell-investigate .evidence-assistance-findings p,
+.arena-shell.arena-shell-investigate .evidence-assistance-warnings p {
+  color: var(--workflow-muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-metadata {
+  display: grid;
+  gap: 7px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  margin: 0;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-metadata div {
+  background: rgba(247, 245, 239, 0.54);
+  border-radius: 8px;
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 7px 8px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-metadata dt,
+.arena-shell.arena-shell-investigate .evidence-assistance-reference-list > span {
+  color: var(--workflow-muted);
+  font-size: 10px;
+  font-weight: 760;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-metadata dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-panel code {
+  color: rgba(50, 48, 47, 0.78);
+  font-family:
+    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 10.5px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-reference-list {
+  align-items: flex-start;
+  display: grid;
+  gap: 6px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-reference-list > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-reference-list code,
+.arena-shell.arena-shell-investigate .evidence-assistance-reference-list button {
+  background: rgba(247, 245, 239, 0.72);
+  border: 1px solid rgba(50, 48, 47, 0.075);
+  border-radius: 7px;
+  color: rgba(50, 48, 47, 0.78);
+  font-family:
+    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 10.5px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  padding: 5px 7px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-reference-list button {
+  cursor: pointer;
+  text-align: left;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-findings,
+.arena-shell.arena-shell-investigate .evidence-assistance-warnings {
+  border-top: 1px solid rgba(50, 48, 47, 0.055);
+  display: grid;
+  gap: 8px;
+  padding-top: 10px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-findings article {
+  background: rgba(247, 245, 239, 0.42);
+  border: 1px solid rgba(50, 48, 47, 0.055);
+  border-radius: 10px;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-finding-heading {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-finding-heading span {
+  background: rgba(251, 250, 247, 0.84);
+  border: 1px solid rgba(50, 48, 47, 0.07);
+  border-radius: 999px;
+  color: var(--workflow-muted);
+  font-size: 10px;
+  font-weight: 760;
+  padding: 4px 7px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-reason,
+.arena-shell.arena-shell-investigate .evidence-assistance-uncertainty {
+  display: grid;
+  gap: 3px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-reason strong,
+.arena-shell.arena-shell-investigate .evidence-assistance-uncertainty strong {
+  color: var(--workflow-ink);
+  font-size: 11px;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-warnings ul {
+  display: grid;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-warnings li {
+  color: var(--workflow-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.arena-shell.arena-shell-investigate .evidence-assistance-heading:focus-visible,
+.arena-shell.arena-shell-investigate .evidence-assistance-controls select:focus-visible,
+.arena-shell.arena-shell-investigate .evidence-assistance-run:focus-visible,
+.arena-shell.arena-shell-investigate .evidence-assistance-reference-list button:focus-visible {
+  outline: 3px solid rgba(95, 111, 82, 0.24);
+  outline-offset: 2px;
+}
+
 .arena-shell.arena-shell-investigate .evidence-board-actions {
   margin-top: 4px;
 }
@@ -7214,6 +7587,14 @@
   .arena-shell.arena-shell-investigate .evidence-rating-row .rating-control {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .arena-shell.arena-shell-investigate .evidence-assistance-heading {
+    grid-template-columns: minmax(0, 1fr) 18px;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-assistance-secondary-label {
+    display: none;
+  }
 }
 
 @media (max-width: 620px) {
@@ -7274,6 +7655,25 @@
 
   .arena-shell.arena-shell-investigate .evidence-board-actions .primary-action {
     white-space: nowrap;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-assistance-heading,
+  .arena-shell.arena-shell-investigate .evidence-assistance-body {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-assistance-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-assistance-run-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .arena-shell.arena-shell-investigate .evidence-assistance-run {
+    width: 100%;
   }
 }
 

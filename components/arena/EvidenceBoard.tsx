@@ -1,4 +1,5 @@
 import { evidenceRatingMeta, evidenceRatingOptions } from "@/components/arena/arenaMeta";
+import { EvidenceAssistancePanel } from "@/components/arena/EvidenceAssistancePanel";
 import { ReviewTerminologyHelp } from "@/components/arena/ReviewTerminologyHelp";
 import {
   ArenaActionFooter,
@@ -14,6 +15,7 @@ import type {
 import type { InsufficientContextGuidance } from "@/lib/reviewReadiness";
 import type {
   CaseFile,
+  CasePackageV01,
   EvidenceHighlight,
   EvidenceItem,
   EvidenceRating,
@@ -61,6 +63,7 @@ const evidenceHighlightReasonLabel: Record<
 
 type EvidenceBoardProps = {
   caseFile: CaseFile;
+  casePackage?: CasePackageV01;
   reviewState?: CaseReviewState;
   evidenceRatings: Record<string, EvidenceRating>;
   balance: EvidenceBalanceValue;
@@ -72,6 +75,7 @@ type EvidenceBoardProps = {
 
 export function EvidenceBoard({
   caseFile,
+  casePackage,
   reviewState = {},
   evidenceRatings,
   balance,
@@ -95,6 +99,23 @@ export function EvidenceBoard({
     caseFile.landscapeStatus === "overclaimed"
       ? "Likely overclaim"
       : "Needs evidence review";
+
+  function focusEvidence(evidenceId: string) {
+    const evidenceIndex = caseFile.evidenceItems.findIndex(
+      (evidence) => evidence.id === evidenceId,
+    );
+
+    if (evidenceIndex < 0) {
+      return;
+    }
+
+    const evidenceElement = document.getElementById(
+      `evidence-review-item-${evidenceIndex}`,
+    );
+
+    evidenceElement?.focus({ preventScroll: true });
+    evidenceElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
 
   return (
     <ArenaWorkflowShell
@@ -217,7 +238,7 @@ export function EvidenceBoard({
           </details>
 
           <div className="evidence-review-list">
-            {caseFile.evidenceItems.map((evidence) => {
+            {caseFile.evidenceItems.map((evidence, evidenceIndex) => {
               const suggestedRating =
                 caseFile.defaultEvidenceRatings[evidence.id] ?? "needs_context";
               const reviewerRating = reviewerRatings[evidence.id];
@@ -238,7 +259,9 @@ export function EvidenceBoard({
               return (
                 <article
                   key={evidence.id}
+                  id={`evidence-review-item-${evidenceIndex}`}
                   className={`evidence-review-card evidence-review-card-${rating}`}
+                  tabIndex={-1}
                 >
                   <div className="evidence-review-card-header">
                     <h3>{evidence.title}</h3>
@@ -323,6 +346,11 @@ export function EvidenceBoard({
           </div>
         </div>
       </div>
+
+      <EvidenceAssistancePanel
+        casePackage={casePackage}
+        onFocusEvidence={focusEvidence}
+      />
 
       {onContinue ? (
         <ArenaActionFooter

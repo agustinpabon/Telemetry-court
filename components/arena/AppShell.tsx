@@ -97,6 +97,7 @@ import type {
 
 type AppShellProps = {
   cases: CaseFile[];
+  casePackages?: CasePackageV01[];
   landscapeContextNodes?: LandscapeContextNode[];
   initialStage: ReturnType<typeof createInitialArenaState>["activeStage"];
   pathname: string;
@@ -114,6 +115,7 @@ type CasePackageImportOptions = {
 
 export function AppShell({
   cases,
+  casePackages = [],
   landscapeContextNodes = [],
   initialStage,
   pathname,
@@ -121,6 +123,8 @@ export function AppShell({
   onNavigatePathPreservingState = onNavigatePath,
 }: AppShellProps) {
   const [importedCases, setImportedCases] = useState<CaseFile[]>([]);
+  const [importedCasePackagesByReviewId, setImportedCasePackagesByReviewId] =
+    useState<Record<string, CasePackageV01>>({});
   const importedCaseIds = useMemo(
     () => new Set(importedCases.map((caseFile) => caseFile.id)),
     [importedCases],
@@ -171,6 +175,14 @@ export function AppShell({
   const pendingHotFolderCandidatesRef = useRef<HotFolderCasePackageValidCandidate[]>([]);
   const hotFolderInitialScanRef = useRef(false);
   const selectedCase = getSelectedCase(activeCases, arenaState);
+  const selectedCasePackage = useMemo(
+    () =>
+      selectedCase
+        ? importedCasePackagesByReviewId[selectedCase.id] ??
+          findCasePackageForCaseFile(selectedCase, casePackages)
+        : undefined,
+    [casePackages, importedCasePackagesByReviewId, selectedCase],
+  );
   const selectedCaseIsImported = selectedCase
     ? importedCaseIds.has(selectedCase.id)
     : false;
@@ -297,6 +309,10 @@ export function AppShell({
         importedCase,
         ...currentCases.filter((caseFile) => caseFile.id !== importedCase.id),
       ]);
+      setImportedCasePackagesByReviewId((currentPackages) => ({
+        ...currentPackages,
+        [importedCase.id]: importResult.package,
+      }));
       setPreviewCaseId(undefined);
       setExportMessage(undefined);
       rawDispatch({
@@ -633,6 +649,7 @@ export function AppShell({
     const demoCaseId = cases[0]?.id;
 
     setImportedCases([]);
+    setImportedCasePackagesByReviewId({});
     setPreviewCaseId(undefined);
     setExportMessage(undefined);
     setImportStatus({ state: "idle" });
@@ -1016,6 +1033,7 @@ export function AppShell({
               cases: activeCases,
               landscapeContextNodes,
               selectedCase,
+              selectedCasePackage,
               previewCaseId,
               activeStage,
               reviewState,
@@ -1151,6 +1169,28 @@ export function navigatePath({
   }
 
   onNavigatePath(nextPath);
+}
+
+export function findCasePackageForCaseFile(
+  caseFile: CaseFile,
+  casePackages: readonly CasePackageV01[],
+): CasePackageV01 | undefined {
+  const reference = caseFile.casePackageReference;
+
+  if (!reference) {
+    return undefined;
+  }
+
+  return casePackages.find(
+    (casePackage) =>
+      casePackage.schema_version === reference.schema_version &&
+      casePackage.package_id === reference.package_id &&
+      casePackage.package_revision === reference.package_revision &&
+      casePackage.case.case_id === reference.case_id &&
+      casePackage.cluster.cluster_id === reference.cluster_id &&
+      casePackage.pipeline.run_id === reference.pipeline.run_id &&
+      casePackage.pipeline.generated_at === reference.pipeline.generated_at,
+  );
 }
 
 function toImportFailureDetails(
@@ -1294,6 +1334,7 @@ function renderStage({
   cases,
   landscapeContextNodes,
   selectedCase,
+  selectedCasePackage,
   previewCaseId,
   activeStage,
   reviewState,
@@ -1315,6 +1356,7 @@ function renderStage({
   cases: CaseFile[];
   landscapeContextNodes: LandscapeContextNode[];
   selectedCase: CaseFile;
+  selectedCasePackage?: CasePackageV01;
   previewCaseId?: string;
   activeStage: ReturnType<typeof createInitialArenaState>["activeStage"];
   reviewState: ReturnType<typeof getCurrentReviewState>;
@@ -1374,6 +1416,7 @@ function renderStage({
       return (
         <EvidenceBoard
           caseFile={selectedCase}
+          casePackage={selectedCasePackage}
           reviewState={reviewState}
           evidenceRatings={evidenceRatings}
           balance={evidenceBalance}

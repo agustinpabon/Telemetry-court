@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --test --import tsx",
+    "test:browser:assistance": "node scripts/evidence-assistance-browser-smoke.mjs",
     "validate-package": "tsx scripts/validate-package.ts",
     "validate-review-results": "tsx scripts/validate-review-results.ts",
     "sanitized-case-package-adapter-v01": "tsx scripts/sanitized-case-package-adapter-v01.ts"

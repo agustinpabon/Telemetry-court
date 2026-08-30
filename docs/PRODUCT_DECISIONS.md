@@ -2,6 +2,30 @@
 
 This is the initial decision log for Telemetry Court. Add new entries when product direction, architecture, or evidence-model assumptions change.
 
+## 2026-08-30: First Assistance Surface Is Mocked And Secondary
+
+Decision: The first Evidence Assistance UI is an optional, deterministic mocked
+panel on the Evidence Board only. It consumes the canonical fixed question set,
+requires exact validated CasePackage references, and runs the existing request
+guardrail, response validator, and claim critic before showing output.
+
+Rationale: The helper chain is mature enough to prove the interaction boundary,
+but live model execution and assistance persistence still require separate
+product and schema decisions. Human evidence classification must remain the
+primary review action.
+
+Consequences:
+
+- The panel appears after the human rating controls and is collapsed by default.
+- It provides no text prompt, chat history, network call, provider integration,
+  workflow advancement, rating mutation, or verdict selection.
+- Missing package context, missing or unknown IDs, guardrail refusal, invalid
+  response output, and insufficient evidence remain visible bounded states.
+- Assistance metadata is not written to `ReviewResultV01` or aggregated into
+  `EvaluationReportV01` in this milestone.
+- Live providers, prompt execution, transcripts, configurable questions, and
+  assistance-use metrics remain separate future issues.
+
 ## 2026-06-28: AI Assistance Requests Pass Deterministic Guardrails
 
 Decision: Any future AI assistance request must pass a deterministic guardrail

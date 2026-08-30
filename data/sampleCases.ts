@@ -5,10 +5,14 @@ import {
 } from "@/data/sampleCaseSeedData";
 import { casePackageV01ToCaseFile } from "@/lib/casePackageV01ToCaseFile";
 import type { CasePackageValidationError } from "@/lib/casePackageValidation";
-import type { CaseFile, LandscapeContextNode } from "@/lib/types";
+import type {
+  CaseFile,
+  CasePackageV01,
+  LandscapeContextNode,
+} from "@/lib/types";
 
 export type PackageReviewRenderState =
-  | { ok: true; cases: CaseFile[] }
+  | { ok: true; cases: CaseFile[]; casePackages: CasePackageV01[] }
   | { ok: false; errors: CasePackageValidationError[] };
 
 export const samplePackageReviewRenderState = buildPackageReviewRenderState(
@@ -29,6 +33,7 @@ export function buildPackageReviewRenderState(
   compatibilitySeeds: readonly (CaseFile | undefined)[],
 ): PackageReviewRenderState {
   const cases: CaseFile[] = [];
+  const casePackages: CasePackageV01[] = [];
   const errors: CasePackageValidationError[] = [];
 
   packageFixtures.forEach((packageFixture, index) => {
@@ -39,6 +44,7 @@ export function buildPackageReviewRenderState(
 
     if (result.ok) {
       cases.push(result.caseFile);
+      casePackages.push(result.casePackage);
       return;
     }
 
@@ -49,7 +55,7 @@ export function buildPackageReviewRenderState(
     return { ok: false, errors };
   }
 
-  return { ok: true, cases };
+  return { ok: true, cases, casePackages };
 }
 
 function prefixPackageErrors(

@@ -19,6 +19,97 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-08-30: Guarded Mocked Evidence Assistance Panel
+
+- Agent/model: Codex (GPT-5.6, maximum reasoning)
+- Prompt scope: Implement GitHub issue #206 as a narrow, deterministic,
+  evidence-constrained Evidence Board integration without live providers,
+  arbitrary prompts, persistence, or evaluation-schema changes.
+- Files changed:
+  - `components/arena/EvidenceAssistancePanel.tsx`
+  - `components/arena/EvidenceAssistancePanel.test.tsx`
+  - `components/arena/EvidenceBoard.tsx`
+  - `components/arena/AppShell.tsx`
+  - `components/arena/AppShell.test.ts`
+  - `components/arena/PackageReviewGate.tsx`
+  - `components/arena/RoutedAppShell.tsx`
+  - `lib/aiAssistanceMockResolverV01.ts`
+  - `lib/aiAssistanceMockResolverV01.test.ts`
+  - `lib/aiAssistanceQuestionGuardrailsV01.ts`
+  - `lib/aiAssistanceQuestionGuardrailsV01.test.ts`
+  - `lib/aiAssistanceResponseValidationHelpersV01.ts`
+  - `lib/casePackageV01ToCaseFile.ts`
+  - `lib/casePackageV01ToCaseFile.test.ts`
+  - `data/sampleCases.ts`
+  - `data/casePackageFixtures.test.ts`
+  - `app/page.test.ts`
+  - `app/investigation-workflow.css`
+  - `scripts/evidence-assistance-browser-smoke.mjs`
+  - `package.json`
+  - `screenshots/05-evidence-board.png`
+  - `docs/AI_ASSISTANCE_RESPONSE_CONTRACT.md`
+  - `docs/PRODUCT_DECISIONS.md`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Added an optional, collapsed Evidence Board panel sourced directly from the
+    canonical eight-question set, with validated package claim/evidence/label
+    selectors and no arbitrary text input.
+  - Added a deterministic local resolver that runs question guardrails first,
+    builds only package-mapping-derived mock output, validates the response,
+    and runs the deterministic claim critic before returning displayable data.
+  - Made optional cluster-boundary evidence, claim, and label filters effective;
+    validated availability-boundary question/reason selectors and surfaced
+    those exact selections in response metadata.
+  - Preserved the exact validated `CasePackageV01` alongside its `CaseFile` for
+    built-in and imported review paths instead of reconstructing provenance from
+    display data.
+  - Added distinct answered, insufficient-evidence, unavailable,
+    guardrail-refused, refused, and invalid-response-withheld UI states with
+    visible question, response, finding, evidence, claim, label, warning, and
+    critic metadata.
+  - Linked cited evidence IDs back to keyboard-focusable evidence cards without
+    exposing evidence-rating, verdict, workflow-advance, or persistence
+    callbacks to the assistance component.
+  - Kept response validation strict for unknown IDs while accepting exact IDs
+    from a validated v0.1 context so existing contract-valid synthetic packages
+    remain usable.
+- Decisions made:
+  - Kept assistance collapsed and after all human evidence controls so it stays
+    visibly secondary.
+  - Used a deterministic resolver keyed by fixed question and explicit package
+    references; did not repurpose fixture-only question IDs or create a shadow
+    response contract.
+  - Did not add live AI calls, provider SDKs, API keys, streaming, prompt
+    execution, chat history, persistence, ReviewResult/EvaluationReport changes,
+    external lookup, raw telemetry access, or operational advice.
+- Checks run:
+  - `npm test` (`386` passing, `0` failing);
+  - focused AI assistance, component, adapter, AppShell, and page tests;
+  - `npx tsc --noEmit`;
+  - `npm run lint`;
+  - `npm run build`;
+  - `python3 -m unittest discover -s python/tests -p '*_test.py'` (`10`
+    passing, `0` failing);
+  - `git diff --check`;
+  - `npm run test:browser:assistance` (real Chromium interaction, including
+    fixed-question/filter selection, exact visible references, evidence focus,
+    human-rating independence, route isolation, and browser error checks);
+  - Playwright imported-package workflow at 1440px, 820px, and 390px with no
+    horizontal overflow, console errors, or rating mutation;
+  - keyboard disclosure/focus and cited-evidence focus checks;
+  - relevant screenshot regeneration and visual review.
+- Assumptions: Existing contract-valid v0.1 package IDs are authoritative within
+  their validated package context even if older synthetic fixtures predate the
+  recommended `evidence-...` and `claim-...` prefixes.
+- Risks/follow-ups: Live model execution, assistance transcripts, ReviewResult
+  assistance metadata, EvaluationReport assistance metrics, and configurable
+  question sets remain separately scoped future work. Research value still
+  requires approved realistic packages and independent human reviewers.
+- Next recommended step: Merge only after review and full repository checks;
+  then keep any live-provider proposal behind a separate issue and explicit
+  product/schema decision.
+- Suggested commit message: `feat: add guarded mocked evidence assistance`
+
 ## 2026-06-28: Synthetic EvaluationReport Examples
 
 - Agent/model: Codex (GPT-5)

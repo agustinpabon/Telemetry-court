@@ -162,7 +162,9 @@ export function validateStableReferenceArrayValues(
       return;
     }
 
-    if (!pattern.test(value)) {
+    const isKnownContextId = allowedIds?.has(value) ?? false;
+
+    if (!pattern.test(value) && !isKnownContextId) {
       addError(
         errors,
         itemPath,
@@ -180,7 +182,7 @@ export function validateStableReferenceArrayValues(
     seen.add(value);
     values.push(value);
 
-    if (allowedIds && !allowedIds.has(value)) {
+    if (allowedIds && !isKnownContextId) {
       addError(
         errors,
         itemPath,
