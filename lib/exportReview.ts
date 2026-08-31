@@ -7,6 +7,7 @@ import {
   assertCompleteReviewerIdentityV01,
   createLocalDemoReviewerV01,
 } from "@/lib/reviewerIdentityV01";
+import { sanitizeArtifactFilenameSegmentV01 } from "@/lib/artifactFilenameV01";
 import type {
   CaseFile,
   CasePackageEvidenceRatingV01,
@@ -264,7 +265,12 @@ export function serializeReviewResultExport(exportResult: ReviewResultV01): stri
 }
 
 export function getReviewResultExportFilename(caseFile: CaseFile): string {
-  return `${caseFile.casePackageReference?.case_id ?? caseFile.id}-review-result.json`;
+  const caseId = sanitizeArtifactFilenameSegmentV01(
+    caseFile.casePackageReference?.case_id ?? caseFile.id,
+    "case",
+  );
+
+  return `${caseId}-review-result.json`;
 }
 
 function requireBlindInterpretation(

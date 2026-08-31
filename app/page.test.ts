@@ -492,6 +492,49 @@ test("case file region context falls back when neighbour coordinates are unavail
   assert.doesNotMatch(markup, /Landscape locator/);
 });
 
+test("imported CasePackage case files use package-neutral context copy", () => {
+  const selectedCase = sampleCases[0];
+  assert.ok(selectedCase);
+  const importedCase = {
+    ...selectedCase,
+    cluster: {
+      ...selectedCase.cluster,
+      id: "cluster-imported-generic",
+      name: "Imported behaviour region",
+      size: 4,
+    },
+    dataset: "Approved sanitized research package",
+    nearestNeighbor: {
+      clusterId: "cluster-neighbour-generic",
+      label: "Adjacent behaviour region",
+      distance: 0.22,
+      note: "Package-supplied neighbour context.",
+    },
+  };
+
+  const markup = renderStaticMarkup(
+    React.createElement(CaseFilePanel, {
+      caseFile: importedCase,
+      cases: [importedCase],
+      isImportedCase: true,
+      onBackToLandscape: () => undefined,
+      onStartInvestigation: () => undefined,
+    }),
+  );
+
+  assert.match(markup, /4 sessions/);
+  assert.match(markup, /Adjacent behaviour region/);
+  assert.match(markup, /Compare the generated interpretation with the supplied evidence/);
+  assert.match(markup, /Validate the selected cluster against its own evidence/);
+  assert.match(
+    markup,
+    /<button type="button" class="region-context-action"[^>]*>View in landscape<\/button>/,
+  );
+  assert.doesNotMatch(markup, /synthetic sessions/);
+  assert.doesNotMatch(markup, /IAM administration/);
+  assert.doesNotMatch(markup, /routine role lifecycle/);
+});
+
 test("case file region context renders a real locator for real context nodes", () => {
   const selectedCase = sampleCases[0];
   const neighbourNode = sampleLandscapeContextNodes.find(

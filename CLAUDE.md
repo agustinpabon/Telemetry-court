@@ -10,18 +10,24 @@ Before editing this repository, read:
 6. `docs/ARCHITECTURE.md`
 7. `docs/CASE_PACKAGE_CONTRACT.md` and `docs/EVALUATION_INFRASTRUCTURE.md` for contract or backend work
 
-Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.
+Telemetry Court is an evidence-based human-in-the-loop validation bench and
+topological refiner for AI-generated telemetry cluster interpretations.
 
 ```text
 AI names the cluster. Humans test the evidence.
 ```
 
-The current static synthetic interface demonstrates the review flow. It is not complete validation infrastructure. The next backend milestone is the Case Package Contract and Validation Infrastructure.
+The local CasePackage -> ReviewResult -> EvaluationReport ->
+cluster_refinement.v0.1 artifact loop and repository-owned Milestone 4
+engineering are implemented. Evidence Assistance is fixed-question,
+deterministic, and mocked. The next proof is the human/external Milestone 6
+study; do not fabricate it or replace it with generic backend work.
 
 ## Rules
 
 - Keep changes narrow and inspect current files before editing.
-- Preserve the distinction between `CasePackage`, `ReviewResult`, and `EvaluationReport`.
+- Preserve the distinction between `CasePackage`, `ReviewResult`,
+  `EvaluationReport`, separate quick dispositions, and cluster refinement.
 - Prioritize package validation, evidence provenance, structured reviews, aggregation, and evaluation exports.
 - Do not add generic dashboards, SIEM/SOC workflows, alert triage, raw log search, chat-first UX, gamification, generic CRUD, auth-first work, or speculative backend infrastructure.
 - Keep sample data synthetic and clearly marked.
@@ -30,5 +36,5 @@ The current static synthetic interface demonstrates the review flow. It is not c
 - Use only the official `TutteInstitute/toponymy` repository for factual Toponymy claims.
 - Follow the design docs for UI work and do not copy protected brand expression.
 - Update `docs/CHANGELOG_AI.md` after material AI-assisted changes.
-- Run applicable tests, lint, and build, and report failures.
+- Run `npm run check` plus relevant browser smoke, and report failures.
 - Do not commit unless explicitly asked.

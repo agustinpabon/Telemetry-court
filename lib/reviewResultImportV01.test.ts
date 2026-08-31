@@ -94,6 +94,36 @@ test("ReviewResult artifact import keeps invalid bundle failures loud", () => {
   });
 });
 
+test("ReviewResult artifact import does not echo an unsupported schema value", () => {
+  const privateMarker = "PRIVATE_REVIEW_SCHEMA_MARKER";
+  const result = importReviewResultArtifactV01Json(
+    JSON.stringify({ schema_version: `review_result.${privateMarker}` }),
+  );
+
+  assert.deepEqual(result, {
+    ok: false,
+    reason: "unsupported_schema",
+    message:
+      "Unsupported ReviewResult schema version. Only review_result.v0.1 is accepted.",
+  });
+  assert.doesNotMatch(JSON.stringify(result), new RegExp(privateMarker));
+});
+
+test("ReviewResult artifact import does not echo an unknown artifact schema", () => {
+  const privateMarker = "PRIVATE_UNKNOWN_SCHEMA_MARKER";
+  const result = importReviewResultArtifactV01Json(
+    JSON.stringify({ schema_version: `unknown.${privateMarker}` }),
+  );
+
+  assert.deepEqual(result, {
+    ok: false,
+    reason: "unsupported_schema",
+    message:
+      "Unsupported ReviewResult import schema. Import a review_result.v0.1 or review_result_bundle.v0.1 artifact.",
+  });
+  assert.doesNotMatch(JSON.stringify(result), new RegExp(privateMarker));
+});
+
 function buildReviewResult({
   failureModes = ["missing_evidence"],
   finalVerdict = "supported",

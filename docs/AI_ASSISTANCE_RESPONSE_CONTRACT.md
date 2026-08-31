@@ -14,8 +14,7 @@ validated CasePackage context
 -> deterministic mocked resolver
 -> response validation
 -> deterministic claim critic
--> AI assistance response v0.1
--> optional Evidence Board display
+-> bounded Evidence Board display
 ```
 
 Telemetry Court remains an evidence-based validation bench:
@@ -40,6 +39,19 @@ This contract does not implement:
 
 The contract is local and deterministic. The first UI integration uses it only
 for mocked Evidence Board assistance; it does not execute a model.
+
+## Current Capability Status
+
+The response contract, fixed question set, request guardrails, deterministic
+fixtures, mocked package-aware resolver, response validator, claim critic, and
+Evidence Board UI are implemented. This is the first narrow Milestone 5 slice,
+not groundwork waiting for a UI and not a live-assistance feature.
+
+Still unimplemented: provider calls, prompt execution, streaming, transcripts,
+configurable or arbitrary questions, assistance metadata in ReviewResult,
+assistance-use metrics in EvaluationReport, external lookup, and raw telemetry
+drill-down. Each remains separate scope and must not be inferred from the
+mocked panel.
 
 ## Schema Identity
 
@@ -213,6 +225,12 @@ The panel can focus an evidence card by an exact cited `evidence_id`, but it has
 no evidence-rating callback, verdict callback, workflow-advance callback, or
 persistence path. Assistance cannot alter a human rating, choose a verdict, or
 write to `ReviewResultV01` or `EvaluationReportV01`.
+
+Any reviewer study must record one consistent condition: leave the mock unused
+for every reviewer, or permit the same fixed-question panel for every reviewer
+only after human evidence ratings. Because v0.1 review artifacts do not record
+assistance use, mixed conditions cannot be reconstructed from ReviewResult and
+must not be introduced silently.
 
 ## Top-Level Shape
 

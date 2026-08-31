@@ -2,9 +2,14 @@
 
 ## Orientation
 
-Every agent task must preserve the product identity: Telemetry Court is validation infrastructure for AI-generated telemetry cluster interpretations.
+Every agent task must preserve the product identity: Telemetry Court is a
+validation bench and topological refiner for AI-generated telemetry cluster
+interpretations.
 
-The current static interface is a protocol demonstration. The next implementation work begins with the case package and evaluation contracts, not generic backend development.
+The local CasePackage -> ReviewResult -> EvaluationReport -> refinement loop,
+Milestone 4 repository engineering, and the first deterministic mocked
+assistance panel are implemented. The next proof is an approved human study and
+external refinement/rerun, not generic backend development.
 
 ## Required Context
 
@@ -25,17 +30,19 @@ Before product, architecture, data, or backend work, read:
 
 ```text
 You are working on Telemetry Court, an evidence-based human-in-the-loop
-validation bench for AI-generated telemetry cluster interpretations.
+validation bench and topological refiner for AI-generated telemetry cluster
+interpretations.
 
-The current app is a static synthetic validation slice.
-The next backend direction is Case Package Contract and Evaluation Infrastructure.
+The local artifact loop is implemented. Evidence Assistance is fixed-question,
+deterministic, and mocked. Milestone 6 human/external proof is not complete.
 
 Task:
 <narrow task>
 
 Product checks:
 - Does this improve evidence grounding, review structure, or evaluation output?
-- Does it preserve CasePackage / ReviewResult / EvaluationReport separation?
+- Does it preserve CasePackage / ReviewResult / EvaluationReport /
+  QuickDisposition / cluster_refinement separation?
 - Does it avoid SIEM, SOC, dashboard, raw-ingestion, chat-first, and generic-backend drift?
 - If backend work is involved, is the case package contract defined first?
 
@@ -56,12 +63,12 @@ Expected output:
 
 ## Good Tasks
 
-- Define one contract decision for `CasePackage v0.1`.
-- Add runtime validation for broken evidence-to-claim references.
-- Adapt one synthetic fixture through a package boundary.
-- Version the `ReviewResult` export.
-- Define and test one deterministic evaluation metric.
-- Document a Toponymy or ACME4 adapter boundary without implementing raw ingestion.
+- Fix one confirmed contract, import, state, accessibility, or browser defect.
+- Add focused validation coverage for one real local-file or artifact boundary.
+- Improve one study-preflight blocker without fabricating reviewer output.
+- Harden one deterministic evaluation/refinement rule with contract tests.
+- Document a verified external producer/consumer gap without implementing raw
+  ingestion.
 
 ## Bad Tasks
 
@@ -100,4 +107,6 @@ Use the official [TutteInstitute/toponymy](https://github.com/TutteInstitute/top
 
 ## Required Handoff
 
-Report files changed, positioning or contract impact, checks and results, assumptions, risks, deferred work, and the recommended next roadmap milestone. Do not commit unless explicitly asked.
+Report files changed, positioning or contract impact, checks and results,
+assumptions, risks, deferred work, and the recommended next proof or narrow
+slice. Do not commit unless explicitly asked.

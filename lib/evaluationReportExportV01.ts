@@ -9,6 +9,7 @@ import {
   REVIEW_RESULT_V01_RECOMMENDED_ACTIONS,
   REVIEW_RESULT_V01_VERDICTS,
 } from "@/lib/reviewResultV01";
+import { sanitizeArtifactFilenameSegmentV01 } from "@/lib/artifactFilenameV01";
 
 const evaluationReportCsvHeadersV01 = [
   "schema_version",
@@ -55,13 +56,23 @@ export function serializeEvaluationReportJsonV01(
 export function getEvaluationReportJsonExportFilenameV01(
   report: EvaluationReportV01,
 ): string {
-  return `${report.case_package.case_id}-evaluation-report.json`;
+  const caseId = sanitizeArtifactFilenameSegmentV01(
+    report.case_package.case_id,
+    "case",
+  );
+
+  return `${caseId}-evaluation-report.json`;
 }
 
 export function getEvaluationReportCsvExportFilenameV01(
   report: EvaluationReportV01,
 ): string {
-  return `${report.case_package.case_id}-evaluation-report.csv`;
+  const caseId = sanitizeArtifactFilenameSegmentV01(
+    report.case_package.case_id,
+    "case",
+  );
+
+  return `${caseId}-evaluation-report.csv`;
 }
 
 export function serializeEvaluationReportCsvV01(

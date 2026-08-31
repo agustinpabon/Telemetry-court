@@ -27,6 +27,7 @@ import {
   type SplitFinalVerdictV01,
   type SplitRecommendedActionV01,
 } from "@/lib/clusterRefinementTypesV01";
+import { sanitizeArtifactFilenameSegmentV01 } from "@/lib/artifactFilenameV01";
 export {
   CLUSTER_REFINEMENT_MERGE_FINAL_VERDICTS,
   CLUSTER_REFINEMENT_MERGE_RECOMMENDED_ACTIONS,
@@ -173,7 +174,12 @@ export function serializeClusterRefinementJsonV01(
 export function getClusterRefinementJsonExportFilenameV01(
   artifact: ClusterRefinementV01,
 ): string {
-  return `${artifact.case_package.case_id}-cluster-refinement.json`;
+  const caseId = sanitizeArtifactFilenameSegmentV01(
+    artifact.case_package.case_id,
+    "case",
+  );
+
+  return `${caseId}-cluster-refinement.json`;
 }
 
 function assertCompatibleInputs(

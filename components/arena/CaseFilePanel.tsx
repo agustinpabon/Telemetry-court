@@ -30,6 +30,7 @@ import type {
 type CaseFilePanelProps = {
   caseFile: CaseFile;
   cases: CaseFile[];
+  isImportedCase?: boolean;
   landscapeContextNodes?: LandscapeContextNode[];
   quickDispositionStatusMessage?: string;
   onBackToLandscape?: () => void;
@@ -86,6 +87,32 @@ const heroDescriptionCopy: Record<LandscapeStatus, string> = {
     "A behavioural region with suggestive signals and material context gaps.",
 };
 
+const importedCaseBriefReviewCopy: Record<LandscapeStatus, string> = {
+  supported:
+    "Confirm that the generated interpretation remains supported by the supplied evidence.",
+  overclaimed:
+    "Compare the generated interpretation with the supplied evidence without assuming intent beyond the package.",
+  impure:
+    "Check whether the supplied sessions represent one coherent behaviour or require a split.",
+  too_broad:
+    "Check whether a narrower interpretation better fits the supplied evidence.",
+  uncertain:
+    "Preserve uncertainty when the supplied package does not support a confident interpretation.",
+};
+
+const importedHeroDescriptionCopy: Record<LandscapeStatus, string> = {
+  supported:
+    "A supplied behavioural region with comparatively strong evidence for review.",
+  overclaimed:
+    "A supplied behavioural region where the generated interpretation may exceed the available evidence.",
+  impure:
+    "A supplied behavioural region with signs that the cluster may contain mixed behaviours.",
+  too_broad:
+    "A supplied behavioural region whose evidence may support a narrower interpretation.",
+  uncertain:
+    "A supplied behavioural region with material evidence or context gaps.",
+};
+
 const sourceTypePreviewType: Record<EvidenceSourceType, EvidencePreviewType> = {
   telemetry_event: "feature",
   session_feature: "feature",
@@ -112,6 +139,7 @@ function getCaseFileStatusTone(status: LandscapeStatus) {
 export function CaseFilePanel({
   caseFile,
   cases,
+  isImportedCase = false,
   landscapeContextNodes = [],
   quickDispositionStatusMessage,
   onBackToLandscape,
@@ -134,7 +162,11 @@ export function CaseFilePanel({
           </ArenaStatusBadge>
         }
         title={caseFile.cluster.name}
-        summary={heroDescriptionCopy[caseFile.landscapeStatus]}
+        summary={
+          isImportedCase
+            ? importedHeroDescriptionCopy[caseFile.landscapeStatus]
+            : heroDescriptionCopy[caseFile.landscapeStatus]
+        }
         context="AI claim remains hidden until your first read."
       />
       <ReviewTerminologyHelp
@@ -159,7 +191,10 @@ export function CaseFilePanel({
               </div>
               <div>
                 <dt>Sessions</dt>
-                <dd>{caseFile.cluster.size ?? "Unknown"} synthetic sessions</dd>
+                <dd>
+                  {caseFile.cluster.size ?? "Unknown"}{" "}
+                  {isImportedCase ? "sessions" : "synthetic sessions"}
+                </dd>
               </div>
               <div>
                 <dt>Review status</dt>
@@ -168,7 +203,11 @@ export function CaseFilePanel({
             </dl>
             <div className="case-file-why-review">
               <span>Why review</span>
-              <p>{caseBriefReviewCopy[caseFile.landscapeStatus]}</p>
+              <p>
+                {isImportedCase
+                  ? importedCaseBriefReviewCopy[caseFile.landscapeStatus]
+                  : caseBriefReviewCopy[caseFile.landscapeStatus]}
+              </p>
             </div>
           </article>
 
@@ -264,7 +303,9 @@ export function CaseFilePanel({
           <RegionContext
             caseFile={caseFile}
             cases={cases}
+            isImportedCase={isImportedCase}
             landscapeContextNodes={landscapeContextNodes}
+            onViewInLandscape={onBackToLandscape}
             relativeDistanceLabel={relativeDistanceLabel}
           />
 
@@ -370,12 +411,16 @@ function lowerFirst(value: string): string {
 function RegionContext({
   caseFile,
   cases,
+  isImportedCase,
   landscapeContextNodes,
+  onViewInLandscape,
   relativeDistanceLabel,
 }: {
   caseFile: CaseFile;
   cases: CaseFile[];
+  isImportedCase: boolean;
   landscapeContextNodes: LandscapeContextNode[];
+  onViewInLandscape?: () => void;
   relativeDistanceLabel: string;
 }) {
   const nearestNeighbourNode = getLandscapeNodeByClusterId(
@@ -404,9 +449,19 @@ function RegionContext({
         </div>
       )}
       <p className="region-context-statement">
-        <span className="mono-value">{caseFile.cluster.id}</span> is closest to a
-        routine role lifecycle neighbour, but evidence strength is lower than
-        uncertainty.
+        {isImportedCase ? (
+          <>
+            <span className="mono-value">{caseFile.cluster.id}</span> is closest
+            to {caseFile.nearestNeighbor.label}. Compare similarity, evidence
+            strength, and uncertainty before interpreting the region.
+          </>
+        ) : (
+          <>
+            <span className="mono-value">{caseFile.cluster.id}</span> is closest
+            to a routine role lifecycle neighbour, but evidence strength is
+            lower than uncertainty.
+          </>
+        )}
       </p>
       <div className="region-context-comparison" aria-label="Region comparison">
         <section className="region-context-entity">
@@ -435,19 +490,33 @@ function RegionContext({
         </div>
       </dl>
       <p className="region-context-caption">
-        This suggests the selected region may belong near routine IAM
-        administration rather than a malicious interpretation.
+        {isImportedCase
+          ? "Neighbour proximity is context only. Validate the selected cluster against its own evidence."
+          : "This suggests the selected region may belong near routine IAM administration rather than a malicious interpretation."}
       </p>
       <p className="region-context-note">
-        Review before assigning malicious intent.
+        {isImportedCase
+          ? "Review the evidence before assigning intent."
+          : "Review before assigning malicious intent."}
       </p>
-      <Link
-        className="region-context-action"
-        href="/"
-        aria-label={`View ${caseFile.cluster.id} in the Evidence Landscape`}
-      >
-        View in landscape
-      </Link>
+      {onViewInLandscape ? (
+        <button
+          type="button"
+          className="region-context-action"
+          aria-label={`View ${caseFile.cluster.id} in the Evidence Landscape`}
+          onClick={onViewInLandscape}
+        >
+          View in landscape
+        </button>
+      ) : (
+        <Link
+          className="region-context-action"
+          href="/"
+          aria-label={`View ${caseFile.cluster.id} in the Evidence Landscape`}
+        >
+          View in landscape
+        </Link>
+      )}
     </article>
   );
 }

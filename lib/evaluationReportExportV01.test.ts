@@ -46,6 +46,25 @@ test("evaluation report JSON export preserves versioned report metadata", () => 
   assert.equal("raw_telemetry" in parsedExport, false);
 });
 
+test("evaluation report download filenames sanitize CasePackage IDs", () => {
+  const report: EvaluationReportV01 = {
+    ...sampleEvaluationReportV01,
+    case_package: {
+      ...sampleEvaluationReportV01.case_package,
+      case_id: "../../private\\case:\u0000report\n",
+    },
+  };
+
+  assert.equal(
+    getEvaluationReportJsonExportFilenameV01(report),
+    "private-case-report-evaluation-report.json",
+  );
+  assert.equal(
+    getEvaluationReportCsvExportFilenameV01(report),
+    "private-case-report-evaluation-report.csv",
+  );
+});
+
 test("evaluation report CSV export includes deterministic audit rows", () => {
   const csvExport = serializeEvaluationReportCsvV01(sampleEvaluationReportV01);
   const rows = csvExport.trimEnd().split("\n");

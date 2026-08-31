@@ -36,13 +36,17 @@ CloudTrail ingestion, or research-grade statistical power.
 
 ## Protocol Status
 
-Issue #72 is labeled `needs-decision` and `human-in-the-loop`. Treat this
-document as the draft operating protocol for a first credible study, not as
-final approval to use real data, recruit reviewers, or publish findings.
+GitHub issue #72 closed after the protocol artifact was prepared. Issue #74
+later closed as not planned/superseded: one expert walkthrough and one
+synthetic ReviewResult produced useful product feedback, but the required
+multiple-reviewer realistic-package study was not completed. Treat this
+document as operating guidance for a first credible study, not as final
+approval to use realistic/private data, recruit reviewers, publish findings,
+or claim that a pilot passed.
 
 Use [`PILOT_74_PREFLIGHT.md`](./PILOT_74_PREFLIGHT.md) as the execution gate and
-artifact checklist for issue #74. That preflight does not run the pilot or
-replace the requirement for real independent reviewer outputs.
+artifact checklist. That historical issue-named document remains current as a
+checklist, but it does not replace real independent reviewer outputs.
 
 Assumptions that require explicit human approval before execution:
 
@@ -54,10 +58,13 @@ Assumptions that require explicit human approval before execution:
 
 ## Study Objective
 
-Run 3-5 approved synthetic, sanitized, or otherwise safe `CasePackageV01` files
-through 2-3 independent reviewers, exchange exported `ReviewResult` bundles,
-and produce auditable per-package `EvaluationReportV01` JSON/CSV outputs where
-the current local app supports them.
+Run 3-5 approved realistic/sanitized `CasePackageV01` files through 2-3
+independent reviewers, exchange exported `ReviewResult` bundles, and produce
+auditable per-package `EvaluationReportV01` JSON/CSV outputs where the current
+local app supports them. Export `cluster_refinement.v0.1` for each compatible
+group and have an authorized upstream owner record whether and how the
+recommendations would be applied to a next iteration. Synthetic packages may
+rehearse the workflow but do not complete this study.
 
 The question is practical:
 
@@ -88,8 +95,8 @@ cluster impurity, and reviewer disagreement where those signals are available.
 
 ## Required Inputs
 
-- 3-5 approved synthetic, sanitized, realistic, or otherwise safe
-  `case_package.v0.1` JSON files.
+- 3-5 approved realistic/sanitized `case_package.v0.1` JSON files. Use
+  synthetic packages only for a separately labeled rehearsal.
 - 2-3 independent reviewers.
 - Reviewer IDs and review-session IDs, using non-sensitive identifiers.
 - A reviewer assignment table or note that records reviewer domain familiarity
@@ -100,6 +107,11 @@ cluster impurity, and reviewer disagreement where those signals are available.
   enabled.
 - One coordinator browser profile for importing ReviewResult bundles and
   checking `/results`.
+- A recorded study decision that either disables/avoids mocked Evidence
+  Assistance for every reviewer or permits the same fixed-question mocked panel
+  for every reviewer after AI reveal. Do not mix conditions silently.
+- An authorized external owner for any refinement/rerun step. Telemetry Court
+  exports recommendations but does not execute the upstream pipeline.
 
 If reviewers share one machine, use separate browser profiles where practical.
 Otherwise, export each review bundle before the next reviewer starts and keep a
@@ -112,11 +124,11 @@ performance score.
 
 ## Package Selection
 
-Use only CasePackages that are synthetic, sanitized, approved, or otherwise safe
-for the local app and review environment. No restricted or raw telemetry may be
-copied into the public or portable app unless the study owner explicitly
-approves that use and the package still satisfies the `CasePackageV01`
-sanitization and provenance requirements.
+Use approved realistic/sanitized CasePackages for the study and synthetic
+CasePackages only for a separately labeled rehearsal. No restricted or raw
+telemetry may be copied into the public or portable app unless the study owner
+explicitly approves that use and the package still satisfies the
+`CasePackageV01` sanitization and provenance requirements.
 
 For the first credible study, prefer 3-5 packages rather than a larger batch.
 Select a mix when available:
@@ -188,6 +200,9 @@ study.
   uncertainty or caveats when the upstream system produced them.
 - [ ] The package imports cleanly into Telemetry Court, or fails loudly with
   useful diagnostics that a package author can act on.
+- [ ] `npm run validate-package -- path/to/package.json` succeeds on the exact
+  frozen file before reviewer assignment; record its SHA-256 digest in the
+  package manifest.
 
 ## Reviewer Workflow
 
@@ -199,28 +214,43 @@ Use [`REVIEWER_RUBRIC.md`](./REVIEWER_RUBRIC.md) during reviewer onboarding so
 evidence ratings, label comparison, verdicts, and failure modes are applied
 consistently across reviewers.
 
-1. Open Telemetry Court in the local browser environment.
-2. Import the assigned `CasePackageV01` JSON file.
-3. Confirm the imported package identity and stop if the package fails
+1. Open Telemetry Court in the assigned isolated browser profile.
+2. Set the non-sensitive local reviewer ID and approved review context before
+   any export. Confirm they match the study roster.
+3. Import the assigned `CasePackageV01` JSON file, or load the exact approved
+   Hot-Folder candidate if that path is part of the recorded study setup.
+4. Confirm the imported package identity and stop if the package fails
    validation.
-4. Complete the blind review before revealing the AI interpretation.
-5. Reveal the AI label, explanation, and claims.
-6. Classify each evidence item against the relevant claim using the available
+5. Complete the blind review before revealing the AI interpretation.
+6. Reveal the AI label, explanation, and claims.
+7. Classify each evidence item against the relevant claim using the available
    current UI ratings: supports, weak support, irrelevant or noise,
    contradicts, or needs more context. The canonical v0.1 vocabulary also
    includes `insufficient`, but the current local review flow does not collect
    it as a separate evidence-rating choice.
-7. Compare candidate labels and select the best-supported label when possible.
-8. Select any impostor or outlier signal requested by the review flow.
-9. Select the applicable failure modes using the current structured reason-code
+8. If mocked Evidence Assistance is permitted by the study setup, use only its
+   fixed questions after recording human evidence ratings. Record usage in
+   manual study notes because `ReviewResultV01` does not persist assistance
+   metadata. Do not interpret the mock as an expert or independent model.
+9. Compare candidate labels and select the best-supported label when possible.
+10. Select any impostor or outlier signal requested by the review flow and
+    record split/merge recommendations when the evidence supports them.
+11. Select the applicable failure modes using the current structured reason-code
    vocabulary.
-10. Complete the structured final verdict. The current local export derives the
+12. Complete the structured final verdict. The current local export derives the
     canonical recommended action from that verdict rather than collecting a
     separate action choice.
-11. Download or copy the structured `ReviewResult` so it is saved to the local
+13. Download or copy the structured `ReviewResult` so it is saved to the local
     review store, then export the package `ReviewResult` bundle.
-12. Record manual study notes about confusion, missing evidence, UI friction,
+14. Record manual study notes about confusion, missing evidence, UI friction,
     or package-authoring friction.
+
+The study matrix requires a full `ReviewResultV01` for every assigned
+reviewer/package cell. A `quick_disposition.v0.1` artifact is useful operational
+context but is deliberately excluded from EvaluationReport and refinement
+aggregation; it cannot substitute for a full study review. If a reviewer stops
+at a quick disposition, mark that matrix cell incomplete or excluded according
+to the recorded protocol decision.
 
 Do not create fake reviewer outputs to fill a report. Incomplete or uncertain
 reviews are valid study findings when they reflect the evidence.
@@ -234,6 +264,9 @@ Blind review is a study integrity requirement, not a decorative UI step.
   claims, rationales, candidate-label details, or prompt variants.
 - Do not reveal the AI label, generated claim, generated rationale, or
   candidate-label details before the blind step is complete.
+- Evidence Assistance is never available during blind review. If the study
+  permits the deterministic mock after reveal, it must not be used to rewrite
+  the already-recorded blind interpretation or silently replace human ratings.
 - Reviewers should judge only the evidence and case context visible before the
   reveal.
 - If a reviewer recognizes the case, label, source dataset, or upstream output
@@ -253,9 +286,24 @@ finish.
 2. Import each reviewer bundle.
 3. Reject or quarantine any bundle that fails strict import validation.
 4. Open `/results`.
-5. Generate or inspect the `EvaluationReport` for each compatible
+5. If a results topology map is required, import or restore the exact matching
+   CasePackage so its projection coordinates are available; ReviewResult alone
+   intentionally carries no map coordinates.
+6. Generate or inspect the `EvaluationReport` for each compatible
    CasePackage reference.
-6. Export the report JSON or CSV needed for the study record.
+7. Export the report JSON or CSV needed for the study record.
+8. Export `cluster_refinement.v0.1` from the same report group and compatible
+   source ReviewResults. Before handing the artifact to the external owner,
+   place the downloaded file in the configured Hot-Folder and, following the
+   [Python companion instructions](./HOT_FOLDER_PYTHON_CLIENT.md#read-refinement-exports),
+   load it with
+   `TelemetryCourtHotFolder.from_env().read_refinement("<filename>.json")`.
+   The strict Python consumer accepts a valid explicit no-action artifact;
+   preserve its provenance, record the no-action outcome, and leave the
+   upstream working set unchanged.
+9. Have the external owner record which prune/split/merge recommendations were
+   accepted, rejected, deferred, or part of an explicit no-action artifact and
+   why; compare the next upstream iteration when an action changes it.
 
 For each report, verify:
 
@@ -271,6 +319,10 @@ For each report, verify:
 - unavailable or excluded data is shown as unavailable or excluded, not as a
   silent zero;
 - JSON and CSV export shape is readable enough to audit.
+- refinement `source_review_ids`, reviewer count, package reference,
+  uncertainty, and disagreement match the report group;
+- quick dispositions are summarized separately and do not enter report or
+  refinement counts.
 
 `EvaluationReportV01` currently aggregates compatible reviews for one exact
 CasePackage reference. If the study reviews 3-5 different packages, treat each
@@ -369,6 +421,11 @@ Expected artifacts for the study record:
   `review_result_bundle.v0.1` files from each reviewer;
 - per-package `EvaluationReportV01` JSON and CSV outputs where the current
   local results view supports export;
+- per-package `cluster_refinement.v0.1` JSON outputs derived from the exact
+  compatible full ReviewResults, plus validation status;
+- an external upstream decision log recording which refinement recommendations
+  were accepted, rejected, deferred, or part of an explicit no-action outcome,
+  plus any applicable next-iteration comparison;
 - study notes covering confusion, missing evidence, import/export issues,
   package-authoring issues, and limitations;
 - a summary of upstream improvement recommendations, separated from raw report
@@ -400,13 +457,16 @@ auditable without exposing raw telemetry in the app or public repository.
 
 ## Human Approval Checkpoints
 
-Because this protocol is still a `needs-decision` / `human-in-the-loop`
-artifact, require explicit human approval before:
+Although the documentation issues are closed, study execution remains a
+`human-in-the-loop` decision. Require explicit human approval before:
 
 - using real, realistic, proprietary, restricted, or sensitive datasets;
 - selecting the final study CasePackage list;
 - recruiting or assigning reviewers;
+- enabling or comparing mocked Evidence Assistance during the study;
 - exposing any safe drill-down references outside the authorized environment;
+- applying an exported refinement recommendation to an upstream dataset or
+  pipeline;
 - changing the reviewer rubric or structured values for study convenience;
 - publishing, presenting, or externally sharing study results;
 - claiming generalizable findings, model superiority, detection quality, SOC
@@ -426,9 +486,15 @@ The study succeeds for the current local Utility Gate if:
   available in the current contract;
 - excluded, duplicate, incompatible, or unavailable artifacts are visible
   enough for the coordinator to explain;
-- at least one actionable upstream improvement is identified, such as changing
-  a label, prompt, embedding choice, evidence extraction step, package
-  authoring rule, or split/merge decision;
+- exported refinement artifacts validate and remain traceable to the exact
+  report/source reviews;
+- the external owner can make and document a deliberate
+  apply/reject/defer/no-action decision without treating Telemetry Court
+  recommendations as automatic;
+- at least one auditable upstream decision is justified, whether that means
+  changing a label, prompt, embedding choice, evidence extraction step,
+  package-authoring rule, or split/merge decision, or preserving the current
+  upstream working set as an explicit no-action outcome;
 - the study can distinguish validation value from UI preference feedback.
 
 ## Failure Criteria
@@ -443,6 +509,8 @@ The study fails or needs redesign if:
   bundle import, or report inspection;
 - exported results cannot be re-imported reliably;
 - `/results` cannot explain disagreement, exclusions, or unavailable data;
+- refinement output cannot be validated, traced, or interpreted safely by the
+  authorized upstream owner;
 - the `EvaluationReport` does not help improve labels, prompts, embeddings,
   evidence extraction, or clustering decisions;
 - study notes mostly describe visual taste, navigation preference, or general
@@ -459,6 +527,8 @@ Reviewer ID:
 Review session ID:
 Reviewer domain familiarity:
 Known prior exposure:
+Mocked assistance condition and questions used:
+Quick disposition recorded (if any):
 Time to complete:
 Final verdict:
 Selected label:
@@ -469,6 +539,8 @@ UI friction:
 Schema or package friction:
 Import/export issues:
 Results/report issues:
+Refinement recommendations:
+External apply/reject/defer/no-action decision:
 Suggested upstream fix:
 Study limitation:
 ```
@@ -487,9 +559,14 @@ After the study, decide which path is justified by the evidence:
   outlier, or verdict steps;
 - improve `/results` or `EvaluationReport` explanations, exports, unavailable
   states, or disagreement visibility;
-- begin Toponymy/DataMapPlot adapter-boundary work only if the package,
-  review, bundle, and report loop proved useful enough with realistic inputs.
+- improve the existing sanitized adapter/Hot-Folder/Python/refinement handoff
+  only where realistic package or external-consumer evidence shows a concrete
+  gap;
+- scope any live provider-backed assistance separately and only if the study
+  shows the fixed mocked assistance boundary improves review quality without
+  weakening independent human judgment.
 
 Do not treat a visually completed review as success by itself. The study is
-successful only when it produces auditable evaluation output that can improve an
-upstream pipeline.
+successful only when it produces auditable evaluation and refinement output
+that an external upstream owner can use, reject, or turn into a testable next
+iteration.

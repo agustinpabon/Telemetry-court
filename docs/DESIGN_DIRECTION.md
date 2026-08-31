@@ -6,7 +6,11 @@ The visual direction uses premium restraint, warm neutral surfaces, clear hierar
 
 ## Current Interface
 
-The current static validation slice uses a Telemetry Galaxy, case file, blind read, AI reveal, Evidence Board, Label Duel, impostor review, and verdict stages. These names describe the shipped interface. They do not make Telemetry Court a game, generic investigation environment, command center, or product category called an Evidence Arena.
+The current local review interface uses a Telemetry Galaxy, case file, blind
+read, AI reveal, Evidence Board, Label Duel, impostor review, and verdict
+stages. These names describe the shipped interface. They do not make Telemetry
+Court a game, generic investigation environment, command center, or product
+category called an Evidence Arena.
 
 The court metaphor is acceptable only when it improves evidence-based review. Avoid theatrical, competitive, or playful framing.
 

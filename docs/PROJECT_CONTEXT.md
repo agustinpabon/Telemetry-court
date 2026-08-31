@@ -1,12 +1,13 @@
 # Project Context
 
-_Last updated: 2026-06-23._
+_Last updated: 2026-08-30._
 
 This document supersedes the older Evidence Arena framing as the repository's concise product context. `docs/PRODUCT_VISION.md` and `docs/PRODUCT_POSITIONING.md` define the broader product direction; this file is the compact operating context for planning, issues, and coding agents.
 
 ## Product Identity
 
-Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.
+Telemetry Court is an evidence-based human-in-the-loop validation bench and
+topological refiner for AI-generated telemetry cluster interpretations.
 
 ```text
 AI names the cluster. Humans test the evidence.
@@ -16,7 +17,10 @@ It turns generated cluster labels into testable claims and records structured hu
 
 ## Utility Gate
 
-Telemetry Court is useful only if it can ingest real or realistic `CasePackage` JSON, collect structured `ReviewResult` objects, and produce auditable `EvaluationReport` outputs that help improve an upstream clustering or naming pipeline.
+Telemetry Court is useful only if it can ingest real or realistic
+`CasePackage` JSON, collect structured `ReviewResult` objects, produce auditable
+`EvaluationReport` outputs, and hand review-derived refinement recommendations
+back to an external upstream clustering or naming pipeline.
 
 A polished review UI is not enough. Prioritize features only when they improve one of these capabilities:
 
@@ -26,32 +30,49 @@ A polished review UI is not enough. Prioritize features only when they improve o
 - multi-reviewer aggregation;
 - `EvaluationReport` quality;
 - adapter compatibility with Toponymy, DataMapPlot, notebooks, or sanitized telemetry experiments;
+- topology/refinement handoff quality;
 - execution of a small validation pilot.
 
 ## Current Truth
 
-- The current application is a local validation slice using synthetic demo
-  cases and validated local `CasePackage` JSON import.
-- It demonstrates the evidence-first review flow, strict package validation
-  and invalid-package failure surfaces, local structured export, browser-local
-  `ReviewResult` persistence by CasePackage ID, and strict local
-  `ReviewResult` bundle exchange.
-- It does not implement real Toponymy or ACME4 ingestion.
-- It does not yet include a real approved Toponymy/DataMapPlot/ACME4 notebook
-  adapter, upstream refinement consumer, or real-data pilot.
-- It includes synthetic, non-authoritative adapter-boundary fixtures for Toponymy/DataMapPlot-style and ACME4-style `CasePackage v0.1` shapes.
-- It includes deterministic in-memory `EvaluationReportV01` aggregation and a
-  local results view with per-package EvaluationReport JSON/CSV downloads and
-  `cluster_refinement.v0.1` export when compatible source ReviewResults are
-  available.
-- It does not provide durable server-side review storage, multi-user
-  persistence, a durable report workflow, or research-grade metrics.
-- Because one report still requires one exact compact CasePackage reference, package/pipeline/model/prompt/embedding rollups are currently single-value context or explicitly unavailable, not cross-run rankings.
-- The main product risk is not visual quality. The main risk is mistaking the
-  local validation loop for real-world validation before an approved adapter,
-  realistic packages, and independent reviewer exercise prove the loop.
-- Evidence-constrained AI assistance remains later priority until the approved
-  adapter, refinement, and pilot loop has evidence beyond synthetic demos.
+- Milestone 3 is implemented. Reviewers can import and strictly validate local
+  `CasePackage v0.1` JSON, complete the evidence-first workflow, persist/export
+  one structured `ReviewResult` per reviewer session, exchange validated
+  bundles, and aggregate compatible results locally.
+- The results route produces per-package `EvaluationReport v0.1` JSON/CSV,
+  shows disagreement and unavailable states, renders topology from coordinates
+  supplied by a compatible CasePackage, and exports validated
+  `cluster_refinement.v0.1` artifacts from full evidence ReviewResults.
+- Quick dispositions are a separate validated artifact and local-store path.
+  They remain visible on Results but are excluded from full ReviewResult,
+  EvaluationReport, and refinement aggregation.
+- Reviewer ID/context controls and non-blocking ReviewResult semantic warnings
+  are implemented locally. They do not add accounts, reviewer scoring, or
+  server identity.
+- Milestone 4's repository-owned engineering is implemented: a pure sanitized
+  adapter mapper and CLI, deterministic preflight, local Hot-Folder scan and
+  polling, a standard-library Python file-contract companion, sanitized
+  evidence field highlights, structured split/merge review controls, and an
+  external refinement-consumer handoff.
+- The repository still does not execute Toponymy, DataMapPlot, UMAP/HDBSCAN,
+  ACME4, or a notebook pipeline. The Toponymy-style and ACME4-style fixtures are
+  synthetic, non-authoritative contract rehearsals.
+- Milestone 5 now includes the first UI slice: a collapsed, deterministic
+  mocked Evidence Assistance panel on the Evidence Board. It uses the canonical
+  fixed question set, exact validated package IDs, request guardrails, response
+  validation, and the claim critic. It has no live provider, arbitrary prompt,
+  streaming, transcript, or ReviewResult/EvaluationReport persistence.
+- Browser-local state and local files are the persistence boundary. There is no
+  durable server-side review store, multi-user service, report warehouse, auth,
+  or production backend.
+- One EvaluationReport still requires one exact CasePackage reference.
+  Package/pipeline/model/prompt/embedding metadata is therefore per-package
+  context or explicitly unavailable, not a cross-run ranking.
+- Milestone 6's acceptance study has not been completed. Issue #74 recorded one
+  synthetic expert walkthrough and ReviewResult as product feedback, not a
+  clean independent validation study. No approved realistic package set,
+  independent reviewer result set, scientific validation, model-superiority
+  result, or upstream-improvement claim exists in the repository.
 
 ## Intended Architecture
 
@@ -67,13 +88,15 @@ Boundary:
 Telemetry Court:
   package validation, blind review, evidence classification,
   label comparison, outlier review, structured verdict capture,
-  review result persistence/export/import, multi-reviewer aggregation
+  review result persistence/export/import, multi-reviewer aggregation,
+  results topology, deterministic mocked evidence assistance
 
 Outputs:
-  ReviewResult JSON and EvaluationReport JSON/CSV
+  ReviewResult JSON, EvaluationReport JSON/CSV,
+  cluster_refinement.v0.1 JSON
 
 Downstream:
-  prompt improvement, label refinement, embedding comparison,
+  external prompt improvement, label refinement, embedding comparison,
   evidence extraction improvement, split/merge decisions,
   research reports and validation studies
 ```
@@ -97,6 +120,9 @@ local CasePackage import
 -> ReviewResult persistence/export/import
 -> local or imported result aggregation
 -> EvaluationReport JSON/CSV
+-> results topology when compatible coordinates exist
+-> cluster_refinement.v0.1 export
+-> external upstream consumer
 ```
 
 Features that do not improve this path should wait unless they fix correctness, validation, data handling, or serious review usability blockers.
@@ -109,37 +135,32 @@ Do not drift toward:
 - SIEM, SOC, EDR, or alert-triage workflows;
 - raw telemetry search or live ingestion;
 - chat-first UX or gamification;
-- authentication or database work before the imported-package review-to-report
-  loop is proven locally;
+- authentication or database work without a separately approved contract and
+  validated research need;
 - generic CRUD or speculative enterprise features.
 
 Do not add Splunk, Elastic, remediation, or operational action generation as a core promise. If tactical queries or actions ever appear, they must be optional upstream metadata inside a `CasePackage`, not something Telemetry Court invents.
 
-## Priority Correction
+## Milestone Reality And Priority
 
-This is not a full product reset. Preserve the CasePackage -> ReviewResult -> EvaluationReport direction. The priority correction is to move the real utility loop ahead of further cosmetic polish or evidence-constrained AI assistance.
+This is not a product reset. Preserve the
+CasePackage -> ReviewResult -> EvaluationReport -> cluster refinement direction.
 
-Milestone 4 is active: Toponymy / DataMapPlot / ACME4 Adapter Prototype & Hot-Loop Connection.
+- Milestone 3 is complete in the repository.
+- Milestone 4's planned local engineering is complete. The Hot-Folder is a
+  local scan/polling path, not a remote daemon or ingestion service; the Python
+  module is a file-contract helper, not a clustering SDK.
+- Milestone 5 is active and deliberately narrow. The first fixed-question
+  mocked panel is implemented. Live providers, prompt execution, transcripts,
+  configurable questions, assistance-use metrics, and ReviewResult schema
+  changes remain separate unresolved scope.
+- Milestone 6 is the priority proof step. Run the approved protocol with 3-5
+  realistic/sanitized packages and 2-3 independent reviewers, then evaluate an
+  external refinement/rerun. Code and synthetic examples cannot complete it.
 
-Completed local Milestone 4 producer pieces:
-
-1. Define the adapter boundary and loop refinement spec.
-2. Complete the sanitized adapter prototype plan.
-3. Implement the pure sanitized `CasePackageV01` adapter mapper helper.
-4. Create the CLI wrapper for the sanitized CasePackage adapter mapper.
-5. Document the sanitized adapter input contract and notebook handoff.
-6. Add deterministic mapper/CLI preflight validation.
-7. Add explicit CLI input and output flags.
-
-Prioritize next:
-
-1. Build a local file system watcher daemon API in Next.js that loads packages from a Hot-Folder and reloads the browser dynamically.
-2. Create `telemetry_court_client.py`, a simple Python helper module, to automate sending clusters from Jupyter notebooks and picking up results.
-3. Implement visual log highlighting in the Evidence Board to show exactly which telemetry fields support/contradict LLM-generated claims.
-4. Add visual split and merge controls in the UI next to UMAP neighborhood boundaries.
-5. Consume `cluster_refinement.v0.1` and run a small approved pilot with 3-5 real or realistic packages to verify the closed-loop developer workflow.
-
-Evidence-constrained AI assistance remains a later milestone. It should cite evidence IDs, admit missing evidence, and avoid generic chatbot behavior.
+Near-term engineering should harden correctness, local file and browser-state
+boundaries, accessibility, tests, CI, and study operability. Do not add another
+speculative feature layer to avoid the human proof.
 
 Fast review is allowed when it means evidence validation or batch validation.
 It must preserve blind review, claim-to-evidence grounding, structured ratings,
@@ -157,7 +178,7 @@ The official [TutteInstitute/toponymy](https://github.com/TutteInstitute/toponym
 
 ## Definition Of Real Usefulness
 
-Telemetry Court becomes serious when someone can run this loop:
+Telemetry Court's local implementation can run this artifact loop:
 
 ```text
 external real or realistic CasePackage
@@ -166,10 +187,15 @@ external real or realistic CasePackage
 -> structured ReviewResult export
 -> multi-reviewer import/aggregation
 -> EvaluationReport showing label support, overclaim, evidence sufficiency, cluster impurity, and reviewer disagreement
--> upstream prompt/model/embedding/evidence extraction improvement
+-> cluster_refinement.v0.1
+-> external upstream prompt/model/embedding/evidence extraction improvement
 ```
 
-A credible proof point is 3-5 real or realistic case packages, 2-3 independent reviewers, exported ReviewResults, and one EvaluationReport that identifies what should be accepted, renamed, split, merged, rerun, or marked uncertain.
+A credible proof point still requires 3-5 approved realistic/sanitized case
+packages, 2-3 independent reviewers, exported ReviewResults, auditable
+EvaluationReports, and an external upstream iteration that evaluates what
+should be accepted, renamed, split, merged, rerun, or marked uncertain. None of
+those human study results should be inferred from repository fixtures.
 
 ## Glossary
 

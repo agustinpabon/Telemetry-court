@@ -99,8 +99,8 @@ export function importReviewResultArtifactV01Json(
     ok: false,
     reason: "unsupported_schema",
     message: schemaVersion.startsWith("review_result.")
-      ? `Unsupported ReviewResult schema version "${schemaVersion}".`
-      : `Unsupported ReviewResult import schema version "${schemaVersion}".`,
+      ? "Unsupported ReviewResult schema version. Only review_result.v0.1 is accepted."
+      : "Unsupported ReviewResult import schema. Import a review_result.v0.1 or review_result_bundle.v0.1 artifact.",
   };
 }
 

@@ -58,7 +58,7 @@ async function waitForServer(url, server) {
   const deadline = Date.now() + 60_000;
 
   while (Date.now() < deadline) {
-    if (server?.exitCode !== null) {
+    if (server && server.exitCode !== null) {
       throw new Error(
         `Next.js exited before browser smoke startup.\n${server.serverOutput.join("")}`,
       );
@@ -217,11 +217,18 @@ async function stopServer(server) {
   if (!server || server.exitCode !== null) return;
 
   server.kill("SIGTERM");
+  await waitForServerExit(server, 5_000);
+  if (server.exitCode === null) server.kill("SIGKILL");
+  await waitForServerExit(server, 5_000);
+  await new Promise((resolve) => setTimeout(resolve, 750));
+}
+
+async function waitForServerExit(server, timeoutMs) {
+  if (server.exitCode !== null) return;
   await Promise.race([
     new Promise((resolve) => server.once("exit", resolve)),
-    new Promise((resolve) => setTimeout(resolve, 5_000)),
+    new Promise((resolve) => setTimeout(resolve, timeoutMs)),
   ]);
-  if (server.exitCode === null) server.kill("SIGKILL");
 }
 
 run().catch((error) => {

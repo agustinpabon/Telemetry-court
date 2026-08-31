@@ -402,7 +402,7 @@ package references for the same package ID. Re-exporting from the same local
 reviewer/session replaces that reviewer/session's stored result instead of
 creating duplicate local submissions.
 
-This is a portable validation-slice capability. It is not a backend API,
+This is a portable local research capability. It is not a backend API,
 database, auth/account system, admin workflow, generic CRUD surface, or durable
 multi-user study store.
 
@@ -420,16 +420,19 @@ synthetic demo flow, exports structured ReviewResults, stores them in browser
 local storage by CasePackage ID, and exchanges strict local ReviewResult
 bundles. The repository provides deterministic in-memory aggregation of
 compatible ReviewResult objects and a local results view with per-package
-EvaluationReport JSON/CSV export. It does not provide server uploads, durable
-server-side review storage, a multi-reviewer service, a durable report workflow,
-or research-grade metrics.
+EvaluationReport JSON/CSV export, results topology from compatible package
+coordinates, and `cluster_refinement.v0.1` export from the exact full source
+ReviewResults. Quick dispositions remain separate and excluded from report and
+refinement aggregation. It does not provide server uploads, durable server-side
+review storage, a multi-reviewer service, a durable report workflow, or
+research-grade metrics.
 
-The next proof after this local results slice is a narrow Milestone 4 adapter
-exercise: produce an approved sanitized draft outside Telemetry Court, map it
-through the existing adapter path, import and review the resulting package,
-export ReviewResults, EvaluationReport, and `cluster_refinement.v0.1`, consume
-the refinement artifact upstream, and produce the next approved package
-iteration without relying on synthetic-only assumptions.
+Milestone 4 repository engineering is implemented through the sanitized
+mapper/CLI, Hot-Folder, Python file helper, evidence highlights, split/merge
+capture, and external refinement handoff. The next proof is Milestone 6: use
+approved realistic/sanitized packages and independent reviewers, consume the
+validated refinement artifact externally, and compare the next approved
+package iteration without relying on synthetic-only assumptions.
 
 ## Deferred Concerns
 

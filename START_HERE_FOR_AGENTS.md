@@ -1,12 +1,19 @@
 # Start Here For Agents
 
-Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.
+Telemetry Court is an evidence-based human-in-the-loop validation bench and
+topological refiner for AI-generated telemetry cluster interpretations.
 
 ```text
 AI names the cluster. Humans test the evidence.
 ```
 
-The current application is a static synthetic validation slice. The target product ingests versioned case packages, supports blind structured review by multiple people, and exports evaluation metrics that improve upstream AI/ML pipelines.
+The current application is a local research product, not only a static demo. It
+accepts strictly validated `CasePackage v0.1` JSON through manual import or a
+configured Hot-Folder, supports the blind structured review protocol, exchanges
+browser-local `ReviewResult` artifacts, aggregates compatible results into
+`EvaluationReport v0.1`, renders package-provided topology, and exports
+`cluster_refinement.v0.1` recommendations for external upstream use. Built-in
+cases and public examples remain synthetic.
 
 ## Read First
 
@@ -34,12 +41,28 @@ Upstream cluster output
 -> Telemetry Court review
 -> ReviewResult
 -> EvaluationReport
+-> cluster_refinement.v0.1
+-> external upstream refinement/rerun
 ```
 
 Do not turn the project into a SIEM, SOC dashboard, raw telemetry explorer, alert-triage tool, generic chatbot, generic CRUD backend, or auth-first application.
 
-## Next Implementation Milestone
+## Current Milestones And Next Proof
 
-The next milestone is the **Local Utility Gate** (focusing on external/approved CasePackage validation workflow, package authoring/inspection support, and realistic/sanitized package readiness). It will support local CasePackage JSON file import, show useful validation failures for invalid inputs, persist and export ReviewResults, and aggregate compatible results into an EvaluationReport.
+- Milestone 3, the Local Utility Gate, is implemented.
+- Milestone 4's repository engineering is implemented: sanitized mapper/CLI,
+  Hot-Folder scan and polling, Python file-contract companion, evidence field
+  highlights, structured split/merge recommendations, and refinement handoff.
+- Milestone 5 has a deterministic mocked Evidence Assistance panel on the
+  Evidence Board. It uses only canonical fixed questions and validated package
+  IDs; it has no provider, prompt execution, streaming, arbitrary chat, or
+  review-artifact persistence.
+- Milestone 6 remains the honest proof step. It requires a human-approved set
+  of realistic/sanitized packages and independent reviewers. Do not infer pilot
+  success, scientific validation, or real-world performance from fixtures,
+  automated tests, or synthetic EvaluationReport examples.
 
-Before modifying code, inspect git status and the task-relevant files. Do not assume current branch, issues, or capabilities from documentation alone.
+Real Toponymy, DataMapPlot, UMAP/HDBSCAN, and ACME4 execution remain upstream
+and are not implemented by this repository. Before modifying code, inspect git
+status and task-relevant files; do not infer current capabilities from one
+status document alone.

@@ -1,12 +1,18 @@
 # Milestone 4 - Sanitized Adapter Prototype Plan
 
-This plan tracks the Milestone 4 adapter prototype workflow for producing
+> **Historical plan:** This document preserves the intended Milestone 4 shape.
+> Use [`ROADMAP.md`](./ROADMAP.md) and
+> [`PROJECT_CONTEXT.md`](./PROJECT_CONTEXT.md) for current capability status.
+> The implemented Hot-Folder is a local scan/polling path, not a daemon; the
+> Python companion writes already-approved CasePackage-shaped objects and does
+> not run/marshal Toponymy or UMAP; browser refinement export does not write
+> directly into an arbitrary Hot-Folder.
+
+This plan describes the Milestone 4 adapter prototype workflow for producing
 sanitized `CasePackageV01` files from an upstream clustering or naming
 environment and for consuming Telemetry Court refinement exports back upstream.
-It now distinguishes completed local producer pieces from the remaining
-approved-notebook and refinement-consumer work. It does not authorize fixtures,
-runtime behavior, UI changes, public packages, pilot data, or raw telemetry
-access.
+It does not authorize fixtures, runtime behavior, UI changes, public packages,
+pilot data, or raw telemetry access.
 
 The contract source of truth remains `CasePackageV01` in
 [`lib/types.ts`](../lib/types.ts), the package guidance in
@@ -22,24 +28,33 @@ upstream refinement consumption is covered by
 
 ## Current Milestone 4 Status
 
-Completed local producer pieces:
+Completed repository engineering:
 
 - sanitized adapter boundary and prototype plan;
 - implemented sanitized draft-to-`CasePackageV01` mapper;
 - CLI wrapper for the sanitized mapper;
 - sanitized adapter input contract and notebook handoff checklist;
 - mapper/CLI preflight validation;
-- explicit CLI input and output flags.
+- explicit CLI input and output flags;
+- local Hot-Folder scan/polling and validated package load;
+- standard-library Python package-write/refinement-read helper;
+- sanitized evidence highlights and structured split/merge capture;
+- refinement consumer guidance and `cluster_refinement.v0.1` export.
 
-Remaining prototype work:
+Remaining external proof:
 
-- Build and verify the local file system watcher daemon API in Next.js (Hot-Folder daemon) to load packages from a local directory;
-- Create the Python companion client (`telemetry_court_client.py`) to automate case submission and refinement retrieval from Jupyter notebooks;
-- Implement visual log highlighting on the Evidence Board to show exactly which telemetry fields support/contradict LLM-generated claims;
-- Integrate visual split and merge controls in the UI next to UMAP neighborhood boundaries;
-- Run a small approved pilot with 3-5 real or realistic packages to verify the closed-loop developer workflow.
+- An approved upstream producer must create realistic/sanitized packages, 2-3
+  independent reviewers must review the same frozen packages, and an authorized
+  upstream consumer must apply, reject, defer, or record an explicit no-action
+  outcome for the exported refinement. This is Milestone 6 human/external work,
+  not missing synthetic implementation.
 
-## 1. Sanitized Prototype Flow
+## 1. Target Sanitized Prototype Flow (Historical)
+
+The following is the original target flow. It is not a claim that Telemetry
+Court executes Toponymy/UMAP, that the Python helper maps raw upstream output,
+or that the browser writes a refinement file directly back to the Hot-Folder.
+Current automation stops at the documented local file boundaries.
 
 ```text
 1. Upstream notebook or pipeline runs Toponymy & UMAP

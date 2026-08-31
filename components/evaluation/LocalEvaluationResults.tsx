@@ -20,6 +20,13 @@ import {
   type LocalEvaluationResultsSnapshotV01,
   type LocalQuickDispositionGroupV01,
 } from "@/lib/localEvaluationResultsV01";
+import {
+  CASE_PACKAGE_JSON_MAX_BYTES,
+  LocalJsonFileReadError,
+  REVIEW_ARTIFACT_JSON_MAX_BYTES,
+  formatLocalJsonByteLimit,
+  readBoundedLocalJsonFile,
+} from "@/lib/localJsonFileRead";
 import type {
   QuickDispositionImportInspectionSummaryV01,
   QuickDispositionInspectionCount,
@@ -63,6 +70,27 @@ const emptySnapshot: LocalEvaluationResultsSnapshotV01 = {
   quickDispositionGroups: [],
 };
 
+const corruptLocalReviewArtifactMessage =
+  "Browser-local review artifacts are invalid and were not loaded. Supplied values are not shown.";
+
+export function loadLocalEvaluationResultsForPresentation(
+  storage: Parameters<typeof loadLocalEvaluationResultsV01>[0],
+): {
+  snapshot: LocalEvaluationResultsSnapshotV01;
+  loadError?: string;
+} {
+  try {
+    return {
+      snapshot: loadLocalEvaluationResultsV01(storage),
+    };
+  } catch {
+    return {
+      snapshot: emptySnapshot,
+      loadError: corruptLocalReviewArtifactMessage,
+    };
+  }
+}
+
 export function LocalEvaluationResults() {
   const [snapshot, setSnapshot] = useState(emptySnapshot);
   const [loadError, setLoadError] = useState<string>();
@@ -88,13 +116,14 @@ export function LocalEvaluationResults() {
       }
 
       try {
-        setSnapshot(loadLocalEvaluationResultsV01(window.localStorage));
-      } catch (error) {
-        setLoadError(
-          error instanceof Error
-            ? error.message
-            : "Local ReviewResults could not be validated.",
+        const loadResult = loadLocalEvaluationResultsForPresentation(
+          window.localStorage,
         );
+        setSnapshot(loadResult.snapshot);
+        setLoadError(loadResult.loadError);
+      } catch {
+        setSnapshot(emptySnapshot);
+        setLoadError(corruptLocalReviewArtifactMessage);
       }
 
       try {
@@ -104,13 +133,11 @@ export function LocalEvaluationResults() {
             loadCasePackagesFromSessionStoreV01(window.sessionStorage),
           ),
         );
-      } catch (error) {
+      } catch {
         setMapPackageImportStatus({
           state: "error",
           message:
-            error instanceof Error
-              ? error.message
-              : "Cached CasePackage metadata could not be loaded.",
+            "Cached CasePackage metadata is invalid and was not loaded. Supplied values are not shown.",
         });
       }
     }, 0);
@@ -131,7 +158,10 @@ export function LocalEvaluationResults() {
     try {
       const result = importLocalEvaluationResultsBundleV01(
         window.localStorage,
-        await file.text(),
+        await readBoundedLocalJsonFile(
+          file,
+          REVIEW_ARTIFACT_JSON_MAX_BYTES,
+        ),
       );
       setSnapshot(result.snapshot);
       setLoadError(undefined);
@@ -156,11 +186,14 @@ export function LocalEvaluationResults() {
           message: formatRejectedImportMessage(result),
         });
       }
-    } catch {
+    } catch (error) {
       setImportStatus({
         state: "error",
         message:
-          "The selected review artifact JSON could not be read. No full evidence ReviewResults or quick disposition artifacts were imported.",
+          error instanceof LocalJsonFileReadError &&
+          error.code === "file_too_large"
+            ? `The selected review artifact exceeds the ${formatLocalJsonByteLimit(REVIEW_ARTIFACT_JSON_MAX_BYTES)} local JSON limit. No artifacts were imported.`
+            : "The selected review artifact JSON could not be read. No full evidence ReviewResults or quick disposition artifacts were imported.",
       });
     } finally {
       input.value = "";
@@ -180,7 +213,9 @@ export function LocalEvaluationResults() {
     setMapPackageImportStatus({ state: "reading" });
 
     try {
-      const result = importResultsMapCasePackageV01Json(await file.text());
+      const result = importResultsMapCasePackageV01Json(
+        await readBoundedLocalJsonFile(file, CASE_PACKAGE_JSON_MAX_BYTES),
+      );
 
       if (!result.ok) {
         setMapPackageImportStatus({
@@ -204,11 +239,14 @@ export function LocalEvaluationResults() {
         state: "success",
         message: formatMapPackageImportSuccess(result),
       });
-    } catch {
+    } catch (error) {
       setMapPackageImportStatus({
         state: "error",
         message:
-          "The selected CasePackage map JSON could not be read. No map coordinates were imported.",
+          error instanceof LocalJsonFileReadError &&
+          error.code === "file_too_large"
+            ? `The selected CasePackage exceeds the ${formatLocalJsonByteLimit(CASE_PACKAGE_JSON_MAX_BYTES)} local JSON limit. No map coordinates were imported.`
+            : "The selected CasePackage map JSON could not be read. No map coordinates were imported.",
       });
     } finally {
       input.value = "";
@@ -730,7 +768,7 @@ function getImportStatusCopy(status: ResultsImportStatus): string {
       return status.message;
     case "idle":
     default:
-      return "Local JSON only. Validation runs before any result is stored.";
+      return `Local JSON only, up to ${formatLocalJsonByteLimit(REVIEW_ARTIFACT_JSON_MAX_BYTES)}. Validation runs before any result is stored.`;
   }
 }
 
@@ -745,7 +783,7 @@ function getMapPackageImportStatusCopy(
       return status.message;
     case "idle":
     default:
-      return "Optional: import matching CasePackage JSON to enable map coordinates.";
+      return `Optional: import matching CasePackage JSON up to ${formatLocalJsonByteLimit(CASE_PACKAGE_JSON_MAX_BYTES)} to enable map coordinates.`;
   }
 }
 

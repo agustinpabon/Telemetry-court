@@ -8,6 +8,7 @@ import {
   buildClusterRefinementV01,
   getClusterRefinementJsonExportFilenameV01,
   serializeClusterRefinementJsonV01,
+  type ClusterRefinementV01,
   validateClusterRefinementV01,
 } from "@/lib/clusterRefinementV01";
 
@@ -488,6 +489,151 @@ test("cluster refinement validation rejects unsupported schemas and export valid
   );
 });
 
+test("cluster refinement download filenames sanitize CasePackage IDs", () => {
+  const review = createReviewResult();
+  const artifact = buildClusterRefinementV01({
+    report: aggregateReviewResultsV01([review]),
+    sourceReviewResults: [review],
+    generatedAt: "2026-06-23T12:00:00.000Z",
+    refinementId: "refinement-safe-filename",
+  });
+  const artifactWithUnsafeCaseId = {
+    ...artifact,
+    case_package: {
+      ...artifact.case_package,
+      case_id: "../../private\\case:\u0000report\n",
+    },
+  };
+
+  assert.equal(
+    getClusterRefinementJsonExportFilenameV01(artifactWithUnsafeCaseId),
+    "private-case-report-cluster-refinement.json",
+  );
+});
+
+test("cluster refinement validation rejects duplicate IDs in sorted ID sets", () => {
+  const artifact = createArtifactWithStructuredRefinement();
+  const cases: Array<{
+    path: string;
+    mutate: (input: ClusterRefinementV01) => void;
+  }> = [
+    {
+      path: "$.source_review_ids",
+      mutate: (input) => {
+        input.source_review_ids = ["review-a", "review-a"];
+      },
+    },
+    {
+      path: "$.prune_session_ids",
+      mutate: (input) => {
+        input.prune_session_ids = ["session-a", "session-a"];
+      },
+    },
+    {
+      path: "$.split_recommendations[0].details.affected_session_ids",
+      mutate: (input) => {
+        input.split_recommendations[0]!.details!.affected_session_ids = ["session-a", "session-a"];
+      },
+    },
+    {
+      path: "$.split_recommendations[0].details.evidence_ids",
+      mutate: (input) => {
+        input.split_recommendations[0]!.details!.evidence_ids = ["evidence-2", "evidence-2"];
+      },
+    },
+    {
+      path: "$.merge_recommendations[0].target.neighbor_cluster_ids",
+      mutate: (input) => {
+        const target = input.merge_recommendations[0]!.target;
+        if (target.status === "selected") {
+          target.neighbor_cluster_ids = [
+            "cluster-neighbor-a",
+            "cluster-neighbor-a",
+          ];
+        }
+      },
+    },
+  ];
+
+  for (const testCase of cases) {
+    const duplicateArtifact = structuredClone(artifact);
+    testCase.mutate(duplicateArtifact);
+    const validation = validateClusterRefinementV01(duplicateArtifact);
+
+    assert.equal(validation.ok, false, testCase.path);
+    if (!validation.ok) {
+      assert.ok(
+        validation.errors.some(
+          (error) =>
+            error.path === testCase.path && error.code === "duplicate_value",
+        ),
+        testCase.path,
+      );
+    }
+  }
+});
+
+test("cluster refinement validation rejects duplicate IDs in object collections", () => {
+  const artifact = createArtifactWithStructuredRefinement();
+  const cases: Array<{
+    path: string;
+    mutate: (input: ClusterRefinementV01) => void;
+  }> = [
+    {
+      path: "$.source_reviews[1].review_id",
+      mutate: (input) => {
+        input.source_reviews = [
+          structuredClone(input.source_reviews[0]!),
+          structuredClone(input.source_reviews[0]!),
+        ];
+      },
+    },
+    {
+      path: "$.session_exclusion_recommendations[1].session_id",
+      mutate: (input) => {
+        input.session_exclusion_recommendations = [
+          structuredClone(input.session_exclusion_recommendations[0]!),
+          structuredClone(input.session_exclusion_recommendations[0]!),
+        ];
+      },
+    },
+    {
+      path: "$.split_recommendations[1].cluster_id",
+      mutate: (input) => {
+        input.split_recommendations = [
+          structuredClone(input.split_recommendations[0]!),
+          structuredClone(input.split_recommendations[0]!),
+        ];
+      },
+    },
+    {
+      path: "$.merge_recommendations[1].cluster_id",
+      mutate: (input) => {
+        input.merge_recommendations = [
+          structuredClone(input.merge_recommendations[0]!),
+          structuredClone(input.merge_recommendations[0]!),
+        ];
+      },
+    },
+  ];
+
+  for (const testCase of cases) {
+    const duplicateArtifact = structuredClone(artifact);
+    testCase.mutate(duplicateArtifact);
+    const validation = validateClusterRefinementV01(duplicateArtifact);
+
+    assert.equal(validation.ok, false, testCase.path);
+    if (!validation.ok) {
+      assert.ok(
+        validation.errors.some(
+          (error) => error.path === testCase.path && error.code === "duplicate_id",
+        ),
+        testCase.path,
+      );
+    }
+  }
+});
+
 test("cluster refinement builder rejects incompatible source inputs", () => {
   const review = createReviewResult();
   const report = aggregateReviewResultsV01([review]);
@@ -525,6 +671,35 @@ test("cluster refinement builder rejects incompatible source inputs", () => {
     /without compatible source ReviewResult inputs/,
   );
 });
+
+function createArtifactWithStructuredRefinement(): ClusterRefinementV01 {
+  const review = createReviewResult({
+    selectedSessionId: "session-a",
+    finalVerdict: "needs_merge",
+    recommendedAction: "merge_cluster",
+    failureModes: ["cluster_seems_mixed"],
+    clusterRefinement: {
+      split_recommendation: {
+        status: "recommended",
+        reason: "boundary_sessions",
+        affected_session_ids: ["session-a"],
+        evidence_ids: ["evidence-2"],
+      },
+      merge_recommendation: {
+        status: "recommended",
+        target_neighbor_cluster_id: "cluster-neighbor-a",
+        reason: "shared_behavior",
+      },
+    },
+  });
+
+  return buildClusterRefinementV01({
+    report: aggregateReviewResultsV01([review]),
+    sourceReviewResults: [review],
+    generatedAt: "2026-06-23T12:00:00.000Z",
+    refinementId: "refinement-duplicate-validation",
+  });
+}
 
 function createReviewResult({
   reviewId = "review-a",

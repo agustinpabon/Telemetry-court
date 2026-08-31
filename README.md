@@ -10,7 +10,8 @@
       AI names the cluster. Humans test the evidence. 
 ```
 
-Telemetry Court is an evidence-based human-in-the-loop validation bench for AI-generated telemetry cluster interpretations.
+Telemetry Court is an evidence-based human-in-the-loop validation bench and
+topological refiner for AI-generated telemetry cluster interpretations.
 
 It exists to answer one question:
 
@@ -19,22 +20,46 @@ Given a telemetry cluster and an AI-generated label or explanation,
 is that interpretation actually supported by the evidence?
 ```
 
-Telemetry Court turns generated labels into testable claims, exposes the evidence behind them, and records structured human judgments that can improve labels, prompts, embeddings, evidence extraction, and clustering pipelines.
+Telemetry Court turns generated labels into testable claims, exposes the
+evidence behind them, and records structured human judgments that can improve
+labels, prompts, embeddings, evidence extraction, and cluster topology.
 
 ## Current State
 
-The repository currently contains a high-quality static validation slice built with Next.js, TypeScript, Tailwind, and synthetic cases. It demonstrates:
+The repository contains a local Next.js/TypeScript research product with safe
+synthetic built-in cases and a strict external-package path. The implemented
+loop includes:
 
-- telemetry landscape and case selection;
-- blind review before the AI label is revealed;
-- claim-level evidence inspection and classification;
-- candidate-label comparison;
-- impostor or outlier selection;
-- structured verdicts and local JSON export;
-- browser-local `ReviewResult` persistence and a read-only fixture-backed
-  `EvaluationReport` results view with JSON/CSV downloads.
+- manual `CasePackage v0.1` JSON import, actionable validation diagnostics, and
+  a local validation CLI;
+- an optional configured Hot-Folder scan/polling path plus a standard-library
+  Python companion for atomic package writes and refinement reads;
+- blind review, AI-label reveal, evidence classification, label comparison,
+  outlier or impostor selection, split/merge recommendations, and structured
+  verdict export;
+- optional sanitized field highlights and a deterministic mocked Evidence
+  Assistance panel that uses fixed questions and exact validated package IDs;
+- browser-local reviewer identity/context, `ReviewResult` persistence,
+  semantic warnings, strict result/bundle import and export, and separate quick
+  disposition artifacts;
+- compatible multi-reviewer `EvaluationReport v0.1` aggregation, JSON/CSV
+  export, explicit unavailable states, and a results topology map using
+  coordinates supplied by a matching CasePackage;
+- validated `cluster_refinement.v0.1` export for external upstream pruning,
+  split, merge, uncertainty, and disagreement handling.
 
-This slice demonstrates the review protocol and current local report/export shape. It does not yet ingest real Toponymy or ACME4-derived outputs, persist multi-reviewer results in durable infrastructure, or produce research-grade evaluation reports from a real report workflow. Those are target capabilities, not current claims.
+This is a local file-contract workflow, not a production multi-user service.
+It does not execute Toponymy, DataMapPlot, UMAP/HDBSCAN, ACME4, or raw telemetry
+processing; call a live AI provider; provide durable server-side persistence;
+or prove research validity. The tracked examples are synthetic, and the real
+study still requires approved realistic packages and independent human
+reviewers.
+
+Browser and Hot-Folder CasePackage reads are bounded at 2 MiB. Browser imports
+of ReviewResult bundles and quick-disposition artifacts are bounded at 8 MiB.
+The UI checks declared size before reading and actual UTF-8 bytes after reading;
+byte-backed imports reject invalid UTF-8. Oversized, malformed-encoding, or
+unreadable local files fail without echoing supplied content.
 
 ## Product Boundary
 
@@ -46,20 +71,26 @@ Upstream clustering or labeling pipeline
 -> Telemetry Court review and validation
 -> ReviewResult JSON
 -> EvaluationReport metrics
--> upstream pipeline improvement
+-> cluster_refinement.v0.1
+-> external upstream pipeline improvement
 ```
 
 Telemetry Court owns reviewability, evidence grounding, auditability, structured human judgment, and evaluation output. It does not own the full telemetry-processing stack.
 
 ## What It Is
 
-- A validation bench for AI-generated cluster labels and explanations.
+- A validation bench and topological refiner for AI-generated cluster labels
+  and explanations.
 - A structured human-in-the-loop evaluation environment.
 - A claim-to-evidence inspection interface.
 - A way to preserve blind review before AI-label reveal.
 - A way to collect multiple reviewers' structured verdicts.
 - A downstream companion to systems such as Toponymy.
-- Evaluation infrastructure for comparing labels, prompts, models, embeddings, evidence extraction, and cluster quality.
+- Versioned evaluation artifacts that can support explicitly designed external
+  comparisons of labels, prompts, models, embeddings, evidence extraction, and
+  cluster quality; v0.1 does not rank packages or runs by itself.
+- A local, versioned refinement handoff for upstream pruning, split, merge, and
+  rerun decisions.
 
 ## What It Is Not
 
@@ -87,23 +118,26 @@ Telemetry landscape
 -> structured verdict
 -> ReviewResult export
 -> multi-reviewer EvaluationReport
+-> cluster_refinement export
+-> external upstream refinement/rerun
 ```
 
 The main workflow is structured-choice first. Reviewers should classify evidence as supporting, weak support, irrelevant, contradictory, insufficient, or needing more context without being required to type.
 
 ## Definition Of Real Usefulness
 
-Telemetry Court becomes serious validation infrastructure only when it can:
+The repository now implements the local contract loop needed for a serious
+validation study. It can accept a precomputed, defensible CasePackage, preserve
+blind review, exchange multiple structured human results, aggregate compatible
+judgments, and export an upstream refinement recipe.
 
-- ingest a real or realistic precomputed cluster;
-- generate or accept a defensible evidence package;
-- let multiple humans review it;
-- preserve blind review before AI-label reveal;
-- store structured verdicts;
-- aggregate reviewer judgments;
-- export metrics that improve labels, prompts, embeddings, or pipeline design.
-
-Until then, the current application remains a polished static validation interface rather than complete validation infrastructure.
+Real usefulness is not established by implementation alone. It requires a
+human-approved set of realistic/sanitized packages, 2-3 independent reviewers,
+auditable exported artifacts, and an external upstream team applying or
+rejecting the resulting recommendations or recording an explicit no-action
+handoff. Until that study is run, Telemetry Court may claim an implemented
+local research workflow, not scientific
+validation, model superiority, or real-world operational impact.
 
 ## Data Posture
 
@@ -113,9 +147,19 @@ Toponymy and ACME4-style integrations should be adapters that produce versioned 
 
 See [the approved evidence package workflow](./docs/ADAPTER_BOUNDARY.md#approved-evidence-package-workflow) for the synthetic, sanitized controlled, and real/approved controlled postures; required provenance, sanitization, safe-reference, and approval metadata; and contributor handling rules.
 
-## Next Milestone
+## Current Milestones And Next Proof
 
-The next implementation milestone is the **Local Utility Gate**, not a generic backend. It establishes the external/approved CasePackage validation workflow, package authoring/inspection support, and realistic/sanitized package readiness by enabling local CasePackage JSON file import, local ReviewResult persistence/export/import, and local EvaluationReport aggregation.
+Milestone 3 (Local Utility Gate) and the repository-owned engineering for
+Milestone 4 (adapter/Hot-Folder/refinement loop) are implemented. Milestone 5
+now includes a deliberately narrow, deterministic mocked assistance panel on
+the Evidence Board. It is secondary to human evidence ratings and has no live
+provider, arbitrary prompt, streaming, transcript, or ReviewResult metadata.
+
+The highest-value next action is Milestone 6: run the approved protocol with
+3-5 realistic/sanitized CasePackages and 2-3 independent reviewers, validate
+and aggregate their actual ReviewResults, export EvaluationReports and
+`cluster_refinement.v0.1`, and evaluate the next upstream iteration. That is a
+human/external proof step; repository code must not fabricate it.
 
 See:
 
@@ -125,6 +169,9 @@ See:
 - [Case package contract](./docs/CASE_PACKAGE_CONTRACT.md)
 - [Reviewer rubric](./docs/REVIEWER_RUBRIC.md)
 - [Evaluation infrastructure](./docs/EVALUATION_INFRASTRUCTURE.md)
+- [Hot-Folder and Python companion](./docs/HOT_FOLDER_PYTHON_CLIENT.md)
+- [Cluster refinement handoff](./docs/CLUSTER_REFINEMENT_HANDOFF.md)
+- [Mocked Evidence Assistance contract](./docs/AI_ASSISTANCE_RESPONSE_CONTRACT.md)
 - [Research validation study protocol](./docs/VALIDATION_PILOT_PROTOCOL.md)
 - [Architecture](./docs/ARCHITECTURE.md)
 - [Roadmap](./docs/ROADMAP.md)
@@ -134,16 +181,29 @@ See:
 ## Development
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
 ```bash
-npm test
-npm run lint
-npm run build
+npm run check
+```
+
+`npm run check` runs typecheck, lint, TypeScript/JavaScript tests with 80%
+line, branch, and function coverage thresholds, Python tests, and the
+production build without hiding their individual output. The same steps
+remain available as `npm run typecheck`, `npm run lint`,
+`npm run test:coverage`, `npm test`, `npm run test:python`, and
+`npm run build`.
+
+The deterministic Evidence Assistance browser smoke uses Playwright/Chromium
+and only synthetic package data:
+
+```bash
+npm run test:browser:assistance
+npm run test:browser:release
 ```
 
 Validate and inspect one local `CasePackage` JSON file:

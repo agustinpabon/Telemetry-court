@@ -19,6 +19,227 @@ Use this file to record AI-assisted changes that affect product context, archite
 - Suggested commit message:
 ```
 
+## 2026-08-30: Release-Candidate Local Loop Hardening
+
+- Agent/model: Codex (GPT-5.6, maximum reasoning)
+- Prompt scope: Audit and harden the complete browser-local review,
+  Hot-Folder, Python refinement, export, Results, CI, and responsive browser
+  loop after the guarded mocked Evidence Assistance slice, without changing
+  v0.1 artifact semantics or adding backend/live-provider scope.
+- Files changed:
+  - `.github/workflows/ci.yml`
+  - `.gitignore`
+  - `package.json`
+  - `package-lock.json`
+  - `next.config.ts`
+  - `next-env.d.ts` (removed from version control as generated output)
+  - `components/arena/AppShell.tsx`
+  - `components/arena/AppShell.test.ts`
+  - `components/arena/CaseFilePanel.tsx`
+  - `components/arena/CasePackageImportControl.tsx`
+  - `components/arena/ReviewResultBundleControl.tsx`
+  - `components/arena/ReviewResultBundleControl.test.ts`
+  - `components/arena/WorkflowPrimitives.test.tsx`
+  - `components/evaluation/LocalEvaluationResults.tsx`
+  - `components/evaluation/LocalEvaluationResults.test.ts`
+  - `app/page.test.ts`
+  - `lib/arenaReviewState.ts`
+  - `lib/arenaReviewState.test.ts`
+  - `lib/arenaSessionHydrationV01.ts`
+  - `lib/artifactFilenameV01.ts`
+  - `lib/artifactFilenameV01.test.ts`
+  - `lib/localJsonFileRead.ts`
+  - `lib/localJsonFileRead.test.ts`
+  - `lib/hotFolderCasePackageScan.ts`
+  - `lib/hotFolderCasePackageScan.test.ts`
+  - `lib/reviewResultImportV01.ts`
+  - `lib/reviewResultImportV01.test.ts`
+  - `lib/reviewResultBundleV01.ts`
+  - `lib/reviewResultBundleV01.test.ts`
+  - `lib/exportReview.ts`
+  - `lib/exportReview.test.ts`
+  - `lib/quickDispositionV01.ts`
+  - `lib/quickDispositionV01.test.ts`
+  - `lib/evaluationReportExportV01.ts`
+  - `lib/evaluationReportExportV01.test.ts`
+  - `lib/resultsGalaxyMapV01.ts`
+  - `lib/resultsGalaxyMapV01.test.ts`
+  - `lib/clusterRefinementV01.ts`
+  - `lib/clusterRefinementV01.test.ts`
+  - `lib/clusterRefinementValidationHelpersV01.ts`
+  - `lib/clusterRefinementValidationV01.ts`
+  - `python/telemetry_court_client.py`
+  - `python/cluster_refinement_v01.py`
+  - `python/tests/telemetry_court_client_test.py`
+  - `scripts/evidence-assistance-browser-smoke.mjs`
+  - `scripts/release-browser-smoke.mts`
+  - `scripts/screenshots.js`
+  - `README.md`
+  - `docs/DEVELOPMENT_WORKFLOW.md`
+  - `docs/HOT_FOLDER_PYTHON_CLIENT.md`
+  - `docs/CLUSTER_REFINEMENT_HANDOFF.md`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Preserved review state across built-in and imported route transitions,
+    delayed route guards until browser-session hydration completes, and
+    sanitized every nested persisted review field before it reaches the
+    reducer.
+  - Replaced demo-specific IAM/synthetic copy on imported CasePackage case
+    files with package-neutral language while preserving the blind-review
+    boundary.
+  - Bounded CasePackage reads at 2 MiB and review/bundle reads at 8 MiB,
+    decoded byte-backed files as fatal UTF-8, redacted invalid artifact
+    details, and sanitized every local download filename segment.
+  - Hardened Hot-Folder discovery against hidden/nested/non-JSON files,
+    symbolic links, descriptor/path replacement, unstable size/timestamps,
+    malformed UTF-8, partial/oversized reads, nondeterministic ordering, and
+    content-bearing validation errors. The CasePackage scanner now ignores
+    refinement handoffs in the same bidirectional folder instead of reporting
+    them as invalid packages.
+  - Added a strict standard-library Python `cluster_refinement.v0.1` consumer
+    that enforces path containment, regular non-symlink files, bounded stable
+    reads, exact compatibility/count/ID/recommendation coherence, and valid
+    explicit no-action artifacts without mutating payloads.
+  - Rejected duplicate refinement IDs in TypeScript and preserved exact
+    ReviewResult, EvaluationReport, and refinement compatibility semantics.
+  - Upgraded Next.js and `eslint-config-next` from `16.2.9` to `16.3.3`,
+    removed the resulting high-severity dependency audit findings, stopped
+    Next from rewriting repository agent instructions, and excluded generated
+    `next-env.d.ts` from version control.
+  - Added explicit Node/Python CI versions, typecheck, Python tests, dependency
+    audit, 80% production-code line/branch/function coverage thresholds, the
+    deterministic Evidence Assistance smoke, and a full synthetic local-loop
+    browser smoke.
+  - Extended screenshot verification to Results and configurable
+    desktop/tablet/mobile output directories, with route-level overflow,
+    console, page-error, and Next overlay failures.
+- Decisions made:
+  - Kept all storage and exchange local; no auth, database, server persistence,
+    raw telemetry, live provider, or upstream clustering execution was added.
+  - Kept quick dispositions separate from full ReviewResults and excluded from
+    EvaluationReport/refinement calculations.
+  - Treated a canonical no-action refinement as a valid, provenance-preserving
+    stop decision, while rejecting malformed or internally inconsistent
+    actionable recommendations.
+  - Extracted only the new pure browser-session sanitizer from the large arena
+    reducer; no application-wide state or component rewrite was attempted.
+- Checks run:
+  - `npm run test:coverage` passed with `416` tests and production-code
+    coverage of `91.22%` lines, `82.37%` branches, and `89.47%` functions;
+  - `npm run test:python` passed with `27` tests;
+  - focused arena hydration and Hot-Folder suites passed;
+  - `npm run typecheck` and scoped lint passed;
+  - `npm run test:browser:release` passed the imported/built-in/quick/full/
+    Results/refinement/Python/corrupt-storage/keyboard loop;
+  - all nine routes were captured at 1440, 820, and 390 pixels with no
+    horizontal overflow, console errors, page errors, or Next.js overlays.
+- Assumptions: The shared Hot-Folder is an approved local handoff containing
+  sanitized JSON artifacts only. Browser storage is convenience state, not a
+  durable or trusted study database.
+- Risks/follow-ups: The engineering loop remains local and single-browser.
+  Independent realistic-package reviewers, research governance, and an
+  external upstream refinement/rerun are still required before any validation
+  or model-quality claim.
+- Next recommended step: Freeze an approved realistic/sanitized package
+  manifest and reviewer roster, then execute the independent Milestone 6 study
+  without substituting synthetic results.
+- Suggested commit message:
+  `fix: harden the local evaluation and refinement loop`
+
+## 2026-08-30: Current Capability And Pilot Truth Reconciliation
+
+- Agent/model: Codex (GPT-5.6, maximum reasoning)
+- Prompt scope: Reconcile canonical capability, milestone, architecture,
+  development, historical release, and study guidance against current code,
+  tests, merged history, and GitHub state without fabricating pilot results or
+  expanding live AI scope.
+- Files changed:
+  - `AGENTS.md`
+  - `CLAUDE.md`
+  - `START_HERE_FOR_AGENTS.md`
+  - `README.md`
+  - `CONTRIBUTING.md`
+  - `PROMPTING_GUIDE.md`
+  - `RELEASE_v0.1.md`
+  - `docs/PRODUCT_VISION.md`
+  - `docs/PRODUCT_POSITIONING.md`
+  - `docs/PROJECT_CONTEXT.md`
+  - `docs/PRODUCT_DECISIONS.md`
+  - `docs/ROADMAP.md`
+  - `docs/ARCHITECTURE.md`
+  - `docs/DEVELOPMENT_WORKFLOW.md`
+  - `docs/DESIGN_DIRECTION.md`
+  - `docs/AGENT_WORKFLOWS.md`
+  - `docs/DATA_MODEL.md`
+  - `docs/GITHUB_PLANNING.md`
+  - `docs/MILESTONE_4_ADAPTER_PROTOTYPE_PLAN.md`
+  - `docs/AI_ASSISTANCE_RESPONSE_CONTRACT.md`
+  - `docs/CASE_PACKAGE_CONTRACT.md`
+  - `docs/EVALUATION_INFRASTRUCTURE.md`
+  - `docs/CLUSTER_REFINEMENT_HANDOFF.md`
+  - `docs/HOT_FOLDER_PYTHON_CLIENT.md`
+  - `docs/REVIEW_RESULT_CONTRACT.md`
+  - `docs/TOPONYMY_NOTES.md`
+  - `docs/VALIDATION_PILOT_PROTOCOL.md`
+  - `docs/REVIEWER_RUBRIC.md`
+  - `docs/PILOT_74_PREFLIGHT.md`
+  - `docs/CHANGELOG_AI.md`
+- Summary:
+  - Replaced stale static-slice and future-Local-Utility-Gate claims with the
+    verified local artifact loop: package import/validation, full ReviewResult
+    exchange, separate quick dispositions, EvaluationReport aggregation,
+    results topology, and cluster-refinement export.
+  - Marked Milestone 3 complete and Milestone 4 repository engineering
+    complete while preserving the explicit boundary that Toponymy, DataMapPlot,
+    UMAP/HDBSCAN, ACME4, raw telemetry, and upstream refinement execution remain
+    external.
+  - Recorded the first Milestone 5 UI as deterministic mocked assistance only:
+    fixed questions, exact package IDs, guardrails, response validation, and
+    critic, with no live provider or review-artifact metadata.
+  - Reframed Milestone 6 as the incomplete human/external proof boundary:
+    issue #72 delivered protocol guidance, while #74 closed as not
+    planned/superseded after one synthetic expert walkthrough rather than the
+    required independent realistic-package study.
+  - Made the study handoff executable with reviewer metadata, one consistent
+    mocked-assistance condition, quick-disposition exclusions, package/result
+    validation CLIs, results-map recovery, refinement validation, and an
+    external apply/reject/defer/no-action record.
+  - Documented the 2 MiB CasePackage and 8 MiB review-artifact local import
+    bounds, fatal UTF-8 decoding for byte-backed inputs, redacted Hot-Folder
+    validation/unsupported review-schema errors, and the consolidated
+    developer verification commands.
+  - Preserved `RELEASE_v0.1.md` as a truthful historical `v0.1.0` snapshot
+    while pointing readers to current capability documents.
+- Decisions made:
+  - Described implemented local mechanics separately from unproven research
+    value; no synthetic fixture or automated check is pilot evidence.
+  - Kept quick dispositions outside full ReviewResult/EvaluationReport/
+    refinement semantics and kept mocked assistance outside ReviewResult v0.1.
+  - Treated the browser/Python/Hot-Folder path as a local file-contract handoff,
+    not a backend, daemon service, direct upstream integration, or clustering
+    engine.
+  - Kept valid explicit no-action refinement artifacts valid across the
+    TypeScript/Python boundary; consumers preserve provenance and make no
+    upstream mutation.
+- Checks run:
+  - verified GitHub issue #72 and #74 closure state, #74's closure comments,
+    and current milestone issue counts;
+  - searched canonical docs for stale static/future-capability language;
+  - verified all relative Markdown links in edited files resolve;
+  - `npm test` (`414` passing, `0` failing);
+  - `git diff --check` on the documentation set.
+- Assumptions: The guarded mocked Evidence Assistance commit and release
+  hardening changes are reviewed as the current branch stack; none changes the
+  existing v0.1 artifact schemas or authorizes a live provider.
+- Risks/follow-ups: The repository still needs human approval of realistic
+  packages and reviewers, actual independent ReviewResults, and an external
+  refinement/rerun before it can claim validation value.
+- Next recommended step: Run the preflight with the study owner, freeze the
+  approved package manifest and reviewer roster, and execute Milestone 6
+  without substituting synthetic artifacts.
+- Suggested commit message:
+  `docs: reconcile current capability and pilot readiness`
+
 ## 2026-08-30: Guarded Mocked Evidence Assistance Panel
 
 - Agent/model: Codex (GPT-5.6, maximum reasoning)

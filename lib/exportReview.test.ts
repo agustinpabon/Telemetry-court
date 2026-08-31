@@ -291,6 +291,21 @@ test("serialized review export is readable JSON with a stable filename", () => {
   assert.deepEqual(JSON.parse(serializedExport), exportResult);
 });
 
+test("review result download filenames sanitize CasePackage IDs", () => {
+  const caseFile: CaseFile = {
+    ...sampleCases[0],
+    casePackageReference: {
+      ...sampleCases[0].casePackageReference!,
+      case_id: "../../private\\case:\u0000report\n",
+    },
+  };
+
+  assert.equal(
+    getReviewResultExportFilename(caseFile),
+    "private-case-report-review-result.json",
+  );
+});
+
 test("ReviewResult v0.1 exposes the complete canonical decision vocabulary", () => {
   assert.deepEqual(REVIEW_RESULT_V01_EVIDENCE_RATINGS, [
     "supports",

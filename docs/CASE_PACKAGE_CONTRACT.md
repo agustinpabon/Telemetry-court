@@ -11,6 +11,8 @@ upstream pipeline or notebook
 -> Telemetry Court review
 -> ReviewResult
 -> EvaluationReport
+-> cluster_refinement.v0.1
+-> external upstream refinement
 ```
 
 `CasePackage v0.1` is defined in `lib/types.ts` as `CasePackageV01`.
@@ -20,7 +22,11 @@ The separate reviewer-decision artifact is documented in
 references package identity and pipeline metadata; it does not duplicate this
 package.
 
-This document explains the field intent for that TypeScript contract and the current runtime validation boundary. It does not implement package import, UI adapters, persistence, Toponymy integration, ACME4 ingestion, or evaluation aggregation.
+This document explains the field intent for that TypeScript contract and the
+runtime validation boundary. The repository implements package import, UI
+mapping, browser-local review persistence, and evaluation/refinement
+aggregation around this contract. It does not directly integrate with or
+execute Toponymy, DataMapPlot, UMAP/HDBSCAN, or ACME4.
 
 For the upstream adapter boundary, including Toponymy, DataMapPlot,
 ACME4-style, CloudTrail-style, and synthetic/sanitized producer categories, see
@@ -711,12 +717,15 @@ The v0.1 validator checks:
 - explicit synthetic posture without a real-data approval claim;
 - canonical evidence-rating, verdict, recommended-action, stage, and reviewer-action values.
 
-The validator intentionally does not yet:
+The CasePackage validator intentionally does not:
 
-- convert current static `CaseFile` samples into `CasePackage` fixtures;
-- adapt `CasePackage` data into the existing UI;
-- produce or validate `ReviewResult` or `EvaluationReport`;
+- produce or validate `ReviewResult`, `EvaluationReport`, quick-disposition, or
+  cluster-refinement artifacts; each has a separate boundary;
 - resolve safe references or fetch raw telemetry;
-- implement Toponymy, ACME4, persistence, auth, databases, or backend import services.
+- execute Toponymy, DataMapPlot, UMAP/HDBSCAN, or ACME4;
+- implement auth, databases, durable persistence, or a generic backend import
+  service.
 
-Issue #49 should convert or add package-shaped fixtures that pass this boundary. Issue #50 should build the narrow `CasePackage`-to-current-UI adapter after fixture conversion is validated.
+Package-shaped fixtures and the narrow CasePackage-to-UI adapter are
+implemented and tested. Manual import and Hot-Folder candidates both pass
+through the strict package import/validation boundary before review starts.

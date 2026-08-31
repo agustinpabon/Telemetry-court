@@ -10,6 +10,7 @@ import {
   getContextLimitedBlindOptionId,
   type ReviewReadinessChoice,
 } from "@/lib/reviewReadiness";
+import { sanitizeHydratedReviewsForCases } from "@/lib/arenaSessionHydrationV01";
 import type { EvidenceArenaReview } from "@/lib/exportReview";
 import {
   DEFAULT_MERGE_RECOMMENDATION_REASON,
@@ -70,7 +71,7 @@ export type ArenaAction =
   | {
       type: "hydrateSession";
       selectedCaseId?: string;
-      reviewsByCase?: Partial<Record<string, CaseReviewState>>;
+      reviewsByCase?: unknown;
     }
   | { type: "openCaseFile" }
   | { type: "startInvestigation" }
@@ -145,6 +146,10 @@ export function arenaReducer(
         action.selectedCaseId && caseIdExists(cases, action.selectedCaseId)
           ? action.selectedCaseId
           : state.selectedCaseId;
+      const hydratedReviews = sanitizeHydratedReviewsForCases(
+        cases,
+        action.reviewsByCase,
+      );
 
       return {
         ...state,
@@ -152,7 +157,7 @@ export function arenaReducer(
         reviewsByCase: mergeHydratedReviewsForVerdictDemo(
           state,
           hydratedSelectedCaseId,
-          action.reviewsByCase,
+          hydratedReviews,
         ),
       };
     }

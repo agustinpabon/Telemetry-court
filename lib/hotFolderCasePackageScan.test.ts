@@ -1,5 +1,13 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm, utimes, writeFile } from "node:fs/promises";
+import {
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  symlink,
+  utimes,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -67,13 +75,36 @@ test("Hot-Folder scan reports malformed JSON without making it a valid candidate
   });
 });
 
+test("Hot-Folder scan rejects invalid UTF-8 bytes without replacement decoding", async () => {
+  await withTempHotFolder(async (folderPath) => {
+    const privateMarker = "PRIVATE_UTF8_HOT_FOLDER_MARKER";
+    const invalidBytes = new Uint8Array([
+      ...new TextEncoder().encode(`{"schema_version":"${privateMarker}`),
+      0xc3,
+      0x28,
+      ...new TextEncoder().encode('"}'),
+    ]);
+    await writeFile(path.join(folderPath, "invalid-utf8.json"), invalidBytes);
+
+    const scan = await scanHotFolderCasePackages({ folderPath });
+
+    assert.equal(scan.validCandidates.length, 0);
+    assert.equal(scan.invalidCandidates.length, 1);
+    assert.equal(scan.invalidCandidates[0].reason, "read_error");
+    assert.equal(scan.invalidCandidates[0].errors[0].path, "$file");
+    assert.equal(scan.invalidCandidates[0].errors[0].code, "invalid_utf8");
+    assert.doesNotMatch(JSON.stringify(scan), new RegExp(privateMarker));
+  });
+});
+
 test("Hot-Folder scan reports CasePackage validation failures", async () => {
   await withTempHotFolder(async (folderPath) => {
+    const privateMarker = "PRIVATE_HOT_FOLDER_SCHEMA_MARKER";
     const invalidPackage = structuredClone(minimalSyntheticCasePackageV01) as Record<
       string,
       unknown
     >;
-    invalidPackage.schema_version = "case_package.v9";
+    invalidPackage.schema_version = `case_package.${privateMarker}`;
     await writeFile(
       path.join(folderPath, "invalid-package.json"),
       JSON.stringify(invalidPackage),
@@ -86,18 +117,72 @@ test("Hot-Folder scan reports CasePackage validation failures", async () => {
     assert.equal(scan.invalidCandidates[0].filename, "invalid-package.json");
     assert.equal(scan.invalidCandidates[0].reason, "schema_version");
     assert.equal(scan.invalidCandidates[0].errors[0].path, "$.schema_version");
+    assert.equal(
+      scan.invalidCandidates[0].errors[0].code,
+      "unsupported_schema_version",
+    );
+    assert.equal(
+      scan.invalidCandidates[0].errors[0].message,
+      "The Hot-Folder candidate did not satisfy this CasePackage validation rule.",
+    );
+    assert.doesNotMatch(JSON.stringify(scan), new RegExp(privateMarker));
   });
 });
 
-test("Hot-Folder scan ignores hidden files, non-JSON files, and nested JSON files", async () => {
+test("Hot-Folder CasePackage scan ignores refinement artifacts from the shared local loop", async () => {
   await withTempHotFolder(async (folderPath) => {
-    await writeFile(path.join(folderPath, ".hidden.json"), "{not-json");
-    await writeFile(path.join(folderPath, "notes.txt"), "{not-json");
+    await writeFile(
+      path.join(folderPath, "case-001-cluster-refinement.json"),
+      JSON.stringify({
+        schema_version: "cluster_refinement.v0.1",
+        private_marker: "REFINEMENT_CONTENT_MUST_NOT_APPEAR",
+      }),
+    );
+    await writeFile(
+      path.join(folderPath, "custom-handoff.json"),
+      JSON.stringify({
+        schema_version: "cluster_refinement.v0.1",
+        private_marker: "REFINEMENT_CONTENT_MUST_NOT_APPEAR",
+      }),
+    );
 
     const scan = await scanHotFolderCasePackages({ folderPath });
 
     assert.equal(scan.validCandidates.length, 0);
     assert.equal(scan.invalidCandidates.length, 0);
+    assert.doesNotMatch(JSON.stringify(scan), /REFINEMENT_CONTENT_MUST_NOT_APPEAR/);
+  });
+});
+
+test("Hot-Folder scan ignores hidden, non-JSON, nested, and symlink candidates", async () => {
+  await withTempHotFolder(async (folderPath) => {
+    const outsideFolderPath = await mkdtemp(
+      path.join(tmpdir(), "tc-hot-folder-outside-"),
+    );
+
+    try {
+      await mkdir(path.join(folderPath, "nested"));
+      await writeFile(path.join(folderPath, ".hidden.json"), "{not-json");
+      await writeFile(path.join(folderPath, "notes.txt"), "{not-json");
+      await writeFile(
+        path.join(folderPath, "nested", "nested-package.json"),
+        "{not-json",
+      );
+      const outsideFilePath = path.join(outsideFolderPath, "outside-package.json");
+      await writeFile(outsideFilePath, "{not-json");
+      await symlink(outsideFilePath, path.join(folderPath, "linked-package.json"));
+
+      const scan = await scanHotFolderCasePackages({ folderPath });
+
+      assert.equal(scan.validCandidates.length, 0);
+      assert.equal(scan.invalidCandidates.length, 0);
+      assert.doesNotMatch(
+        JSON.stringify(scan),
+        new RegExp(escapeRegExp(outsideFolderPath)),
+      );
+    } finally {
+      await rm(outsideFolderPath, { recursive: true, force: true });
+    }
   });
 });
 
@@ -115,6 +200,52 @@ test("Hot-Folder scan enforces the configured size cap before reading a candidat
     assert.equal(scan.invalidCandidates[0].filename, "too-large.json");
     assert.equal(scan.invalidCandidates[0].reason, "file_too_large");
     assert.equal(scan.invalidCandidates[0].errors[0].code, "file_too_large");
+  });
+});
+
+test("Hot-Folder scan enforces the byte cap again after a candidate is read", async () => {
+  await withTempHotFolder(async (folderPath) => {
+    await writeFile(path.join(folderPath, "grew-during-read.json"), "{}");
+
+    const scan = await scanHotFolderCasePackages({
+      folderPath,
+      maxBytes: 2,
+      readFileBytes: async () => Buffer.from("{} ", "utf8"),
+    });
+
+    assert.equal(scan.validCandidates.length, 0);
+    assert.equal(scan.invalidCandidates.length, 1);
+    assert.equal(scan.invalidCandidates[0].filename, "grew-during-read.json");
+    assert.equal(scan.invalidCandidates[0].reason, "file_too_large");
+    assert.equal(scan.invalidCandidates[0].sizeBytes, 3);
+  });
+});
+
+test("Hot-Folder scan rejects a candidate that changes while it is read", async () => {
+  await withTempHotFolder(async (folderPath) => {
+    await writeCasePackage(folderPath, "changing-package.json", {
+      package_id: "pkg-hot-folder-changing-001",
+      case: {
+        case_id: "case-hot-folder-changing-001",
+        title: "Changing package",
+      },
+    });
+
+    const scan = await scanHotFolderCasePackages({
+      folderPath,
+      readFileBytes: async (filePath) => {
+        const originalBytes = await readFile(filePath);
+        await writeFile(filePath, Buffer.concat([originalBytes, Buffer.from(" ")]));
+        return originalBytes;
+      },
+    });
+
+    assert.equal(scan.validCandidates.length, 0);
+    assert.equal(scan.invalidCandidates.length, 1);
+    assert.equal(scan.invalidCandidates[0].filename, "changing-package.json");
+    assert.equal(scan.invalidCandidates[0].reason, "read_error");
+    assert.equal(scan.invalidCandidates[0].errors[0].code, "file_read_failed");
+    assert.doesNotMatch(JSON.stringify(scan), new RegExp(escapeRegExp(folderPath)));
   });
 });
 

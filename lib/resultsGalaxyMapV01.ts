@@ -266,13 +266,10 @@ export function importResultsMapCasePackageV01Json(
   const validation = validateCasePackageV01(parsedPackage);
 
   if (!validation.ok) {
-    const firstError = validation.errors[0];
-
     return {
       ok: false,
-      message: firstError
-        ? `CasePackage map JSON failed validation at ${firstError.path}: ${firstError.message}`
-        : "CasePackage map JSON failed validation.",
+      message:
+        "CasePackage map JSON failed validation. Supplied values are not shown; review the CasePackage contract and retry.",
     };
   }
 

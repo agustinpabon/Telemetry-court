@@ -83,16 +83,34 @@ artifact.
 
 ### Minimal Validation Behavior
 
-The consumer should reject or explicitly stop before pruning when:
+The consumer should reject before pruning when:
 
 - `schema_version` is missing or is not exactly `cluster_refinement.v0.1`;
-- required fields such as `refinement_id`, `source_review_ids`,
-  `prune_session_ids`, `split_recommendations`, `merge_recommendations`,
-  `uncertainty`, or `disagreement` are missing;
-- `prune_session_ids` contains duplicate IDs;
+- calculation, source-application, local format, CasePackage, review protocol,
+  ReviewResult, or EvaluationReport compatibility metadata is missing or
+  unsupported;
+- required source-review, reviewer-count, recommendation, uncertainty, or
+  disagreement fields are missing or malformed;
+- source, recommendation, or prune ID arrays are unsorted or contain
+  duplicates;
+- `prune_session_ids` differs from the sorted session IDs whose exclusion
+  recommendation status is `recommended`;
 - the upstream session table or draft object does not expose a stable
   `session_id` field;
-- every refinement signal is empty and the export is effectively a no-op.
+
+The repository's Python Hot-Folder companion chooses the strict form of this
+boundary for malformed inputs: it rejects symbolic-link inputs, artifacts
+larger than 8 MiB, unknown top-level or recommendation fields, incompatible
+versions, inconsistent counts, unstable files, and malformed actionable
+recommendations before returning data to an upstream notebook. The TypeScript
+validator remains canonical for detailed uncertainty and disagreement
+presentation metadata.
+
+An otherwise valid export with empty `prune_session_ids`,
+`split_recommendations`, and `merge_recommendations` is an explicit no-action
+handoff, not a schema error. The Python companion returns it unchanged. The
+upstream consumer must preserve the refinement and source-review provenance,
+record the no-action decision, and leave the upstream working set unchanged.
 
 The consumer should report, without failing the whole handoff by default, when
 one or more `prune_session_ids` are not found in the upstream table or draft.
@@ -222,7 +240,8 @@ the private upstream run has verified:
 - [ ] Duplicate `prune_session_ids` are rejected.
 - [ ] Prune IDs absent from the upstream table or draft are reported and
       preserved in provenance.
-- [ ] Empty or no-op refinement exports produce an explicit no-op record.
+- [ ] Empty or no-op refinement exports are recorded as an explicit upstream
+      stop/no-op decision and do not mutate the upstream working set.
 - [ ] Valid prune IDs remove only matching upstream rows.
 - [ ] `split_recommendations` and `merge_recommendations` remain analyst hints
       and are not executed automatically.

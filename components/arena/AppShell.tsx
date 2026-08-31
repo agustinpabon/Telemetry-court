@@ -153,7 +153,8 @@ export function AppShell({
       createInitialArenaState(initialCases, nextInitialStage),
   );
   const sessionHydrationCheckedRef = useRef(false);
-  const sessionHydrationPendingRef = useRef(false);
+  const [sessionHydrationComplete, setSessionHydrationComplete] =
+    useState(false);
   const [previewCaseId, setPreviewCaseId] = useState<string>();
   const [exportMessage, setExportMessage] = useState<string>();
   const [quickDispositionMessage, setQuickDispositionMessage] = useState<string>();
@@ -223,31 +224,23 @@ export function AppShell({
     const storedState = readArenaSessionState(cases);
 
     if (storedState) {
-      sessionHydrationPendingRef.current = true;
       rawDispatch({ type: "hydrateSession", ...storedState });
     }
 
     sessionHydrationCheckedRef.current = true;
+    setSessionHydrationComplete(true);
   }, [cases]);
 
   useEffect(() => {
-    if (
-      !sessionHydrationCheckedRef.current ||
-      sessionHydrationPendingRef.current
-    ) {
+    if (!sessionHydrationComplete) {
       return;
     }
 
     persistArenaSessionState(arenaState, sessionPersistableCaseIds);
-  }, [arenaState, sessionPersistableCaseIds]);
+  }, [arenaState, sessionHydrationComplete, sessionPersistableCaseIds]);
 
   useEffect(() => {
-    if (!sessionHydrationCheckedRef.current) {
-      return;
-    }
-
-    if (sessionHydrationPendingRef.current) {
-      sessionHydrationPendingRef.current = false;
+    if (!sessionHydrationComplete) {
       return;
     }
 
@@ -265,8 +258,6 @@ export function AppShell({
     if (protectedPath !== pathname) {
       navigatePath({
         nextPath: protectedPath,
-        preserveImportedState: selectedCaseIsImported,
-        onNavigatePath,
         onNavigatePathPreservingState,
       });
     }
@@ -278,10 +269,9 @@ export function AppShell({
     aiLabelRevealed,
     arenaState.activeStage,
     blindChoiceId,
-    onNavigatePath,
     onNavigatePathPreservingState,
     pathname,
-    selectedCaseIsImported,
+    sessionHydrationComplete,
   ]);
 
   const handleImportCasePackageJson = useCallback(
@@ -606,8 +596,6 @@ export function AppShell({
     if (nextPath !== pathname) {
       navigatePath({
         nextPath,
-        preserveImportedState: selectedCaseIsImported,
-        onNavigatePath,
         onNavigatePathPreservingState,
       });
     }
@@ -819,8 +807,6 @@ export function AppShell({
     if (nextPath !== pathname) {
       navigatePath({
         nextPath,
-        preserveImportedState: selectedCaseIsImported,
-        onNavigatePath,
         onNavigatePathPreservingState,
       });
     }
@@ -1034,6 +1020,7 @@ export function AppShell({
               landscapeContextNodes,
               selectedCase,
               selectedCasePackage,
+              selectedCaseIsImported,
               previewCaseId,
               activeStage,
               reviewState,
@@ -1154,21 +1141,12 @@ function cacheCasePackageForResults(casePackage: CasePackageV01): boolean {
 
 export function navigatePath({
   nextPath,
-  preserveImportedState,
-  onNavigatePath,
   onNavigatePathPreservingState,
 }: {
   nextPath: string;
-  preserveImportedState: boolean;
-  onNavigatePath: (path: string) => void;
   onNavigatePathPreservingState: (path: string) => void;
 }) {
-  if (preserveImportedState) {
-    onNavigatePathPreservingState(nextPath);
-    return;
-  }
-
-  onNavigatePath(nextPath);
+  onNavigatePathPreservingState(nextPath);
 }
 
 export function findCasePackageForCaseFile(
@@ -1335,6 +1313,7 @@ function renderStage({
   landscapeContextNodes,
   selectedCase,
   selectedCasePackage,
+  selectedCaseIsImported,
   previewCaseId,
   activeStage,
   reviewState,
@@ -1357,6 +1336,7 @@ function renderStage({
   landscapeContextNodes: LandscapeContextNode[];
   selectedCase: CaseFile;
   selectedCasePackage?: CasePackageV01;
+  selectedCaseIsImported: boolean;
   previewCaseId?: string;
   activeStage: ReturnType<typeof createInitialArenaState>["activeStage"];
   reviewState: ReturnType<typeof getCurrentReviewState>;
@@ -1381,6 +1361,7 @@ function renderStage({
         <CaseFilePanel
           caseFile={selectedCase}
           cases={cases}
+          isImportedCase={selectedCaseIsImported}
           landscapeContextNodes={landscapeContextNodes}
           quickDispositionStatusMessage={quickDispositionMessage}
           onBackToLandscape={() => navigateToStage("landscape")}
